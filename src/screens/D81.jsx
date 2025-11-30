@@ -13,17 +13,20 @@ import {
   Wallet,
   Settings,
 } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
 
 // EVzone Driver App – D81 Active Route with Stop Contact Screen (v1)
 // Active route view with per-stop contact details and quick actions.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active, onClick = () => {} }) {
   return (
     <button
+      type="button"
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
         active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
       }`}
+      onClick={onClick}
     >
       <Icon className="h-5 w-5 mb-0.5" />
       <span>{label}</span>
@@ -31,7 +34,16 @@ function BottomNavItem({ icon: Icon, label, active }) {
   );
 }
 
-function StopContactRow({ index, label, detail, eta, contactName, contactPhone }) {
+function StopContactRow({
+  index,
+  label,
+  detail,
+  eta,
+  contactName,
+  contactPhone,
+  onMessage = () => {},
+  onCall = () => {},
+}) {
   return (
     <div className="rounded-2xl border border-slate-100 bg-white px-3 py-2.5 shadow-sm text-[11px] text-slate-600 flex flex-col space-y-2">
       <div className="flex items-center justify-between">
@@ -62,11 +74,19 @@ function StopContactRow({ index, label, detail, eta, contactName, contactPhone }
           {contactPhone}
         </span>
         <div className="inline-flex items-center space-x-1">
-          <button className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-[10px] font-medium text-slate-700">
+          <button
+            type="button"
+            onClick={onMessage}
+            className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-[10px] font-medium text-slate-700"
+          >
             <MessageCircle className="h-3 w-3 mr-1" />
             Message
           </button>
-          <button className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-[10px] font-medium text-slate-700">
+          <button
+            type="button"
+            onClick={onCall}
+            className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-[10px] font-medium text-slate-700"
+          >
             <Phone className="h-3 w-3 mr-1" />
             Call
           </button>
@@ -78,9 +98,17 @@ function StopContactRow({ index, label, detail, eta, contactName, contactPhone }
 
 export default function ActiveRouteWithStopContactScreen() {
   const [nav] = useState("home");
+  const navigate = useNavigate();
+  const { stopId } = useParams();
+  const bottomNavRoutes = {
+    home: "/driver/dashboard/online",
+    manager: "/driver/jobs/list",
+    wallet: "/driver/earnings/overview",
+    settings: "/driver/preferences",
+  };
 
-  const stops = [
-    {
+  const stopsById = {
+    "alpha-stop": {
       index: 1,
       label: "FreshMart, Lugogo",
       detail: "Deliver order #3235 · Groceries",
@@ -88,7 +116,7 @@ export default function ActiveRouteWithStopContactScreen() {
       contactName: "Sarah",
       contactPhone: "+256 700 000 333",
     },
-    {
+    "beta-stop": {
       index: 2,
       label: "Ntinda (Main Road)",
       detail: "Deliver order #3230 · Pharmacy",
@@ -96,7 +124,21 @@ export default function ActiveRouteWithStopContactScreen() {
       contactName: "Michael",
       contactPhone: "+256 700 000 444",
     },
-  ];
+  };
+
+  const selectedStop = stopsById[stopId] || stopsById["alpha-stop"];
+
+  const sanitizePhone = (phone) => (phone || "").replace(/[^\d+]/g, "");
+  const handleCall = (phone) => {
+    const target = sanitizePhone(phone);
+    if (!target) return;
+    window.open(`tel:${target}`);
+  };
+  const handleMessage = (phone) => {
+    const target = sanitizePhone(phone);
+    if (!target) return;
+    window.open(`sms:${target}`);
+  };
 
   return (
     <div className="min-h-screen flex justify-center bg-[#0f172a] py-4">
@@ -123,7 +165,11 @@ export default function ActiveRouteWithStopContactScreen() {
               </h1>
             </div>
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
+          <button
+            type="button"
+            onClick={() => navigate("/driver/ridesharing/notification")}
+            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
+          >
             <Bell className="h-4 w-4" />
           </button>
         </header>
@@ -131,7 +177,11 @@ export default function ActiveRouteWithStopContactScreen() {
         {/* Content */}
         <main className="flex-1 px-4 pb-4 overflow-y-auto scrollbar-hide space-y-4">
           {/* Map preview */}
-          <section className="relative rounded-3xl overflow-hidden border border-slate-100 bg-slate-200 h-[200px]">
+          <button
+            type="button"
+            onClick={() => navigate("/driver/delivery/route/demo-route/map")}
+            className="relative rounded-3xl overflow-hidden border border-slate-100 bg-slate-200 h-[200px] w-full text-left active:scale-[0.99] transition-transform"
+          >
             <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
 
             {/* Route polyline */}
@@ -164,25 +214,54 @@ export default function ActiveRouteWithStopContactScreen() {
                 Start route
               </span>
             </div>
-          </section>
+          </button>
 
-          {/* Stops with contact details */}
+          {/* Stop with contact details */}
           <section className="space-y-2 pt-1 pb-4">
             <h2 className="text-sm font-semibold text-slate-900 mb-1">
-              Stops & contacts
+              Stop & contact
             </h2>
-            {stops.map((s) => (
-              <StopContactRow key={s.index} {...s} />
-            ))}
+            <StopContactRow
+              {...selectedStop}
+              onMessage={() => handleMessage(selectedStop.contactPhone)}
+              onCall={() => handleCall(selectedStop.contactPhone)}
+            />
+            <button
+              type="button"
+              onClick={() => navigate("/driver/delivery/route/demo-route/active")}
+              className="w-full rounded-full border border-slate-200 bg-white px-3 py-2 text-[11px] font-semibold text-slate-700 active:scale-[0.98] transition-transform"
+            >
+              Back to active route
+            </button>
           </section>
         </main>
 
         {/* Bottom navigation – Home active (route & contacts context) */}
         <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"} />
-          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"} />
+          <BottomNavItem
+            icon={Home}
+            label="Home"
+            active={nav === "home"}
+            onClick={() => navigate(bottomNavRoutes.home)}
+          />
+          <BottomNavItem
+            icon={Briefcase}
+            label="Manager"
+            active={nav === "manager"}
+            onClick={() => navigate(bottomNavRoutes.manager)}
+          />
+          <BottomNavItem
+            icon={Wallet}
+            label="Wallet"
+            active={nav === "wallet"}
+            onClick={() => navigate(bottomNavRoutes.wallet)}
+          />
+          <BottomNavItem
+            icon={Settings}
+            label="Settings"
+            active={nav === "settings"}
+            onClick={() => navigate(bottomNavRoutes.settings)}
+          />
         </nav>
       </div>
     </div>

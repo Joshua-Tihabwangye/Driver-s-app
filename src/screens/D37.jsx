@@ -13,17 +13,20 @@ import {
   Wallet,
   Settings,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D37 Driver App – Map Settings & Report Issues (v1)
 // Screen for adjusting map preferences (theme, traffic, compass) and reporting map issues.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active, onClick = () => {} }) {
   return (
     <button
+      type="button"
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
         active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
       }`}
+      onClick={onClick}
     >
       <Icon className="h-5 w-5 mb-0.5" />
       <span>{label}</span>
@@ -34,6 +37,7 @@ function BottomNavItem({ icon: Icon, label, active }) {
 function ToggleRow({ icon: Icon, title, subtitle, checked, onChange }) {
   return (
     <button
+      type="button"
       onClick={onChange}
       className="flex items-center justify-between rounded-2xl border border-slate-100 bg-white px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform"
     >
@@ -66,6 +70,18 @@ export default function MapSettingsScreen() {
   const [nightMode, setNightMode] = useState(false);
   const [showTraffic, setShowTraffic] = useState(true);
   const [showCompass, setShowCompass] = useState(true);
+  const [issueText, setIssueText] = useState("");
+  const navigate = useNavigate();
+  const bottomNavRoutes = {
+    home: "/driver/dashboard/online",
+    manager: "/driver/jobs/list",
+    wallet: "/driver/earnings/overview",
+    settings: "/driver/preferences",
+  };
+
+  const handleSubmitIssue = () => {
+    navigate("/driver/safety/toolkit");
+  };
 
   return (
     <div className="min-h-screen flex justify-center bg-[#0f172a] py-4">
@@ -174,9 +190,15 @@ export default function MapSettingsScreen() {
               rows={3}
               placeholder="Describe the issue (e.g. wrong street name, pin is in the wrong place)"
               className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-[11px] text-slate-900 placeholder:text-slate-400 focus:border-[#03cd8c] focus:outline-none focus:ring-1 focus:ring-[#03cd8c]"
+              value={issueText}
+              onChange={(e) => setIssueText(e.target.value)}
             />
 
-            <button className="w-full rounded-full py-2.5 text-sm font-semibold shadow-sm bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c] flex items-center justify-center">
+            <button
+              type="button"
+              onClick={handleSubmitIssue}
+              className="w-full rounded-full py-2.5 text-sm font-semibold shadow-sm bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c] flex items-center justify-center"
+            >
               <Send className="h-4 w-4 mr-2" />
               Send map issue report
             </button>
@@ -185,10 +207,30 @@ export default function MapSettingsScreen() {
 
         {/* Bottom navigation – Home active (map settings context) */}
         <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"} />
-          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"} />
+          <BottomNavItem
+            icon={Home}
+            label="Home"
+            active={nav === "home"}
+            onClick={() => navigate(bottomNavRoutes.home)}
+          />
+          <BottomNavItem
+            icon={Briefcase}
+            label="Manager"
+            active={nav === "manager"}
+            onClick={() => navigate(bottomNavRoutes.manager)}
+          />
+          <BottomNavItem
+            icon={Wallet}
+            label="Wallet"
+            active={nav === "wallet"}
+            onClick={() => navigate(bottomNavRoutes.wallet)}
+          />
+          <BottomNavItem
+            icon={Settings}
+            label="Settings"
+            active={nav === "settings"}
+            onClick={() => navigate(bottomNavRoutes.settings)}
+          />
         </nav>
       </div>
     </div>

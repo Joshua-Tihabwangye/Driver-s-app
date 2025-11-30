@@ -18,12 +18,14 @@ import { useNavigate } from "react-router-dom";
 // Vehicle detail / add-vehicle screen.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active, onClick }) {
   return (
     <button
+      type="button"
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
         active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
       }`}
+      onClick={onClick}
     >
       <Icon className="h-5 w-5 mb-0.5" />
       <span>{label}</span>
@@ -34,6 +36,7 @@ function BottomNavItem({ icon: Icon, label, active }) {
 function VehicleTypeChip({ icon: Icon, label, active, onClick }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       className={`flex flex-col items-center justify-center flex-1 rounded-2xl border px-3 py-3 text-xs font-semibold transition-colors active:scale-[0.97] ${
         active
@@ -66,6 +69,12 @@ export default function VehiclesDetailScreen() {
   const [nav] = useState("manager");
   const [type, setType] = useState("car");
   const navigate = useNavigate();
+  const bottomNavRoutes = {
+    home: "/driver/dashboard/online",
+    manager: "/driver/jobs/list",
+    wallet: "/driver/earnings/overview",
+    settings: "/driver/preferences",
+  };
 
   return (
     <div className="min-h-screen flex justify-center bg-[#0f172a] py-4">
@@ -91,7 +100,11 @@ export default function VehiclesDetailScreen() {
               </h1>
             </div>
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
+          <button
+            type="button"
+            onClick={() => navigate("/driver/ridesharing/notification")}
+            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
+          >
             <Bell className="h-4 w-4" />
             <span className="absolute -top-0.5 -right-0.5 inline-flex h-3 w-3 items-center justify-center rounded-full bg-[#f77f00]" />
           </button>
@@ -153,7 +166,7 @@ export default function VehiclesDetailScreen() {
           <section className="space-y-2 pt-1">
             <button
               type="button"
-              onClick={() => navigate("/driver/vehicles/demo-vehicle")}
+              onClick={() => navigate("/driver/vehicles/accessories")}
               className="flex items-center justify-between rounded-2xl border border-slate-100 bg-white px-3 py-2.5 shadow-sm active:scale-[0.97] transition-transform"
             >
               <div className="flex items-center space-x-2">
@@ -226,10 +239,30 @@ export default function VehiclesDetailScreen() {
 
         {/* Bottom navigation – Manager active (Driver Personal context) */}
         <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"} />
-          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"} />
+          <BottomNavItem
+            icon={Home}
+            label="Home"
+            active={nav === "home"}
+            onClick={() => navigate(bottomNavRoutes.home)}
+          />
+          <BottomNavItem
+            icon={Briefcase}
+            label="Manager"
+            active={nav === "manager"}
+            onClick={() => navigate(bottomNavRoutes.manager)}
+          />
+          <BottomNavItem
+            icon={Wallet}
+            label="Wallet"
+            active={nav === "wallet"}
+            onClick={() => navigate(bottomNavRoutes.wallet)}
+          />
+          <BottomNavItem
+            icon={Settings}
+            label="Settings"
+            active={nav === "settings"}
+            onClick={() => navigate(bottomNavRoutes.settings)}
+          />
         </nav>
       </div>
     </div>

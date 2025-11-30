@@ -10,17 +10,20 @@ import {
   Wallet,
   Settings,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D27 Driver App – Dashboard (Offline State) (v1)
 // Driver dashboard when offline, showing status + any blocking issues.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active, onClick }) {
   return (
     <button
+      type="button"
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
         active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
       }`}
+      onClick={onClick}
     >
       <Icon className="h-5 w-5 mb-0.5" />
       <span>{label}</span>
@@ -28,7 +31,7 @@ function BottomNavItem({ icon: Icon, label, active }) {
   );
 }
 
-function IssueRow({ title, text, type }) {
+function IssueRow({ title, text, type, onClick }) {
   const isBlocking = type === "blocking";
   const Icon = isBlocking ? AlertCircle : Info;
   const color = isBlocking ? "text-red-600" : "text-slate-600";
@@ -36,7 +39,10 @@ function IssueRow({ title, text, type }) {
   const border = isBlocking ? "border-red-100" : "border-slate-100";
 
   return (
-    <div className={`flex items-start space-x-2 rounded-2xl border ${border} ${bg} px-3 py-2.5 text-[11px]`}
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex items-start space-x-2 rounded-2xl border ${border} ${bg} px-3 py-2.5 text-[11px] text-left w-full active:scale-[0.99] transition-transform`}
     >
       <div className={`mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white ${color}`}>
         <Icon className="h-4 w-4" />
@@ -45,12 +51,19 @@ function IssueRow({ title, text, type }) {
         <p className="font-semibold text-xs text-slate-900 mb-0.5">{title}</p>
         <p>{text}</p>
       </div>
-    </div>
+    </button>
   );
 }
 
 export default function OfflineDashboardScreen() {
   const [nav] = useState("home");
+  const navigate = useNavigate();
+  const bottomNavRoutes = {
+    home: "/driver/dashboard/online",
+    manager: "/driver/jobs/list",
+    wallet: "/driver/earnings/overview",
+    settings: "/driver/preferences",
+  };
 
   return (
     <div className="min-h-screen flex justify-center bg-[#0f172a] py-4">
@@ -76,7 +89,11 @@ export default function OfflineDashboardScreen() {
               </h1>
             </div>
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
+          <button
+            type="button"
+            onClick={() => navigate("/driver/ridesharing/notification")}
+            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
+          >
             <Bell className="h-4 w-4" />
           </button>
         </header>
@@ -97,7 +114,11 @@ export default function OfflineDashboardScreen() {
                   <p className="text-xs font-semibold">You&apos;re not receiving requests</p>
                 </div>
               </div>
-              <button className="rounded-full bg-[#03cd8c] px-3 py-1 text-[11px] font-semibold text-slate-900 hover:bg-[#02b77c]">
+              <button
+                type="button"
+                onClick={() => navigate("/driver/dashboard/online")}
+                className="rounded-full bg-[#03cd8c] px-3 py-1 text-[11px] font-semibold text-slate-900 hover:bg-[#02b77c]"
+              >
                 Go online
               </button>
             </div>
@@ -117,11 +138,13 @@ export default function OfflineDashboardScreen() {
               title="Upload police clearance document"
               text="Your police clearance is missing or expired. Upload a valid document so we can verify it."
               type="blocking"
+              onClick={() => navigate("/driver/onboarding/profile/documents/upload")}
             />
             <IssueRow
               title="Complete safety training module"
               text="We recommend finishing the Safety & SOS module so you know how to respond in an emergency."
               type="recommendation"
+              onClick={() => navigate("/driver/training/intro")}
             />
           </section>
 
@@ -131,16 +154,37 @@ export default function OfflineDashboardScreen() {
               title="Take a break when you need to"
               text="You can go offline at any time between trips. Just remember to stop in a safe place before changing your status."
               type="recommendation"
+              onClick={() => navigate("/driver/safety/hub")}
             />
           </section>
         </main>
 
         {/* Bottom navigation – Home active (dashboard context) */}
         <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"} />
-          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"} />
+          <BottomNavItem
+            icon={Home}
+            label="Home"
+            active={nav === "home"}
+            onClick={() => navigate(bottomNavRoutes.home)}
+          />
+          <BottomNavItem
+            icon={Briefcase}
+            label="Manager"
+            active={nav === "manager"}
+            onClick={() => navigate(bottomNavRoutes.manager)}
+          />
+          <BottomNavItem
+            icon={Wallet}
+            label="Wallet"
+            active={nav === "wallet"}
+            onClick={() => navigate(bottomNavRoutes.wallet)}
+          />
+          <BottomNavItem
+            icon={Settings}
+            label="Settings"
+            active={nav === "settings"}
+            onClick={() => navigate(bottomNavRoutes.settings)}
+          />
         </nav>
       </div>
     </div>

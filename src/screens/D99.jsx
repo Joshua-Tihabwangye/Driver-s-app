@@ -11,6 +11,7 @@ import {
   Wallet,
   Settings,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D99 Ambulance Job Incoming Screen (v1)
 // Specialized incoming view for Ambulance jobs.
@@ -24,12 +25,14 @@ import {
 
 const CODES = ["Code 1", "Code 2"];
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active, onClick = () => {} }) {
   return (
     <button
+      type="button"
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
         active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
       }`}
+      onClick={onClick}
     >
       <Icon className="h-5 w-5 mb-0.5" />
       <span>{label}</span>
@@ -41,6 +44,13 @@ export default function AmbulanceJobIncomingScreen() {
   const [nav] = useState("home");
   const [code, setCode] = useState("Code 1");
   const [timeLeft, setTimeLeft] = useState(20);
+  const navigate = useNavigate();
+  const bottomNavRoutes = {
+    home: "/driver/dashboard/online",
+    manager: "/driver/jobs/list",
+    wallet: "/driver/earnings/overview",
+    settings: "/driver/preferences",
+  };
 
   useEffect(() => {
     if (timeLeft <= 0) return;
@@ -178,10 +188,18 @@ export default function AmbulanceJobIncomingScreen() {
               <span>if you don&apos;t respond</span>
             </div>
             <div className="flex space-x-2">
-              <button className="flex-1 rounded-full py-2.5 text-sm font-semibold border border-red-200 text-red-600 bg-white">
+              <button
+                type="button"
+                onClick={() => navigate("/driver/dashboard/offline")}
+                className="flex-1 rounded-full py-2.5 text-sm font-semibold border border-red-200 text-red-600 bg-white"
+              >
                 Decline
               </button>
-              <button className="flex-1 rounded-full py-2.5 text-sm font-semibold bg-red-600 text-slate-50 hover:bg-red-700">
+              <button
+                type="button"
+                onClick={() => navigate("/driver/ambulance/job/demo-job/status")}
+                className="flex-1 rounded-full py-2.5 text-sm font-semibold bg-red-600 text-slate-50 hover:bg-red-700"
+              >
                 Accept dispatch
               </button>
             </div>
@@ -190,10 +208,30 @@ export default function AmbulanceJobIncomingScreen() {
 
         {/* Bottom navigation – Home active (ambulance context) */}
         <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"} />
-          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"} />
+          <BottomNavItem
+            icon={Home}
+            label="Home"
+            active={nav === "home"}
+            onClick={() => navigate(bottomNavRoutes.home)}
+          />
+          <BottomNavItem
+            icon={Briefcase}
+            label="Manager"
+            active={nav === "manager"}
+            onClick={() => navigate(bottomNavRoutes.manager)}
+          />
+          <BottomNavItem
+            icon={Wallet}
+            label="Wallet"
+            active={nav === "wallet"}
+            onClick={() => navigate(bottomNavRoutes.wallet)}
+          />
+          <BottomNavItem
+            icon={Settings}
+            label="Settings"
+            active={nav === "settings"}
+            onClick={() => navigate(bottomNavRoutes.settings)}
+          />
         </nav>
       </div>
     </div>

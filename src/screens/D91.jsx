@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Bell,
   QrCode,
@@ -9,18 +9,21 @@ import {
   Wallet,
   Settings,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D91 Scan QR Code – Active Camera View (v2)
 // Fullscreen-ish active camera view while scanning a QR code,
 // with a green scan line that sweeps down across the frame.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active, onClick = () => {} }) {
   return (
     <button
+      type="button"
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
         active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
       }`}
+      onClick={onClick}
     >
       <Icon className="h-5 w-5 mb-0.5" />
       <span>{label}</span>
@@ -30,6 +33,47 @@ function BottomNavItem({ icon: Icon, label, active }) {
 
 export default function QrActiveCameraViewScreen() {
   const [nav] = useState("home");
+  const [scanMessage, setScanMessage] = useState("Scanning for QR code…");
+  const videoRef = useRef(null);
+  const streamRef = useRef(null);
+  const navigate = useNavigate();
+  const bottomNavRoutes = {
+    home: "/driver/dashboard/online",
+    manager: "/driver/jobs/list",
+    wallet: "/driver/earnings/overview",
+    settings: "/driver/preferences",
+  };
+
+  // Simple camera activation: try to get user media and show video feed.
+  useEffect(() => {
+    let mounted = true;
+    const startCamera = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" },
+        });
+        if (!mounted) {
+          stream.getTracks().forEach((t) => t.stop());
+          return;
+        }
+        streamRef.current = stream;
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          await videoRef.current.play();
+          setScanMessage("Camera active. Align the QR within the frame.");
+        }
+      } catch (err) {
+        setScanMessage("Camera unavailable. Check permissions.");
+      }
+    };
+    startCamera();
+    return () => {
+      mounted = false;
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop());
+      }
+    };
+  }, []);
 
   return (
     <div className="min-h-screen flex justify-center bg-[#0f172a] py-4">
@@ -67,7 +111,11 @@ export default function QrActiveCameraViewScreen() {
               </h1>
             </div>
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
+          <button
+            type="button"
+            onClick={() => navigate("/driver/ridesharing/notification")}
+            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
+          >
             <Bell className="h-4 w-4" />
           </button>
         </header>
@@ -76,8 +124,16 @@ export default function QrActiveCameraViewScreen() {
         <main className="flex-1 px-4 pb-4 overflow-y-auto scrollbar-hide space-y-4">
           {/* Camera / scanner view */}
           <section className="relative rounded-3xl overflow-hidden border border-slate-100 bg-black h-[320px] flex items-center justify-center">
-            {/* Simulated camera background */}
-            <div className="absolute inset-0 bg-slate-900/80" />
+            {/* Live camera */}
+            <video
+              ref={videoRef}
+              className="absolute inset-0 w-full h-full object-cover opacity-90"
+              playsInline
+              muted
+            />
+
+            {/* Overlay darken */}
+            <div className="absolute inset-0 bg-slate-900/50" />
 
             {/* Scan frame */}
             <div className="relative flex h-44 w-44 items-center justify-center">
@@ -87,7 +143,7 @@ export default function QrActiveCameraViewScreen() {
               <div className="absolute left-4 right-4 top-4 h-0.5 bg-gradient-to-r from-transparent via-[#03cd8c] to-transparent qr-scan-line" />
 
               {/* Camera icon hint */}
-              <Camera className="relative h-6 w-6 text-slate-400" />
+              <Camera className="relative h-6 w-6 text-slate-100 drop-shadow" />
             </div>
           </section>
 
@@ -96,7 +152,7 @@ export default function QrActiveCameraViewScreen() {
             <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-3 py-2.5 border border-slate-100 text-[11px] text-slate-600">
               <div className="inline-flex items-center">
                 <Info className="h-4 w-4 mr-1 text-slate-500" />
-                <span>Scanning for QR code…</span>
+                <span>{scanMessage}</span>
               </div>
               <span className="text-[10px] text-slate-500">Hold steady</span>
             </div>
@@ -105,10 +161,30 @@ export default function QrActiveCameraViewScreen() {
 
         {/* Bottom navigation – Home active (scanner context) */}
         <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"} />
-          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"} />
+          <BottomNavItem
+            icon={Home}
+            label="Home"
+            active={nav === "home"}
+            onClick={() => navigate(bottomNavRoutes.home)}
+          />
+          <BottomNavItem
+            icon={Briefcase}
+            label="Manager"
+            active={nav === "manager"}
+            onClick={() => navigate(bottomNavRoutes.manager)}
+          />
+          <BottomNavItem
+            icon={Wallet}
+            label="Wallet"
+            active={nav === "wallet"}
+            onClick={() => navigate(bottomNavRoutes.wallet)}
+          />
+          <BottomNavItem
+            icon={Settings}
+            label="Settings"
+            active={nav === "settings"}
+            onClick={() => navigate(bottomNavRoutes.settings)}
+          />
         </nav>
       </div>
     </div>

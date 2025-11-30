@@ -13,6 +13,7 @@ import {
   Wallet,
   Settings,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D42 Driver App – Ride Request Incoming (v2)
 // Full-screen incoming job request with timer, pickup/drop details, accept/decline actions
@@ -21,12 +22,14 @@ import {
 
 const JOB_TYPES = ["ride", "delivery", "rental", "tour", "ambulance", "shuttle"];
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active, onClick = () => {} }) {
   return (
     <button
+      type="button"
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
         active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
       }`}
+      onClick={onClick}
     >
       <Icon className="h-5 w-5 mb-0.5" />
       <span>{label}</span>
@@ -100,6 +103,13 @@ export default function RideRequestIncomingScreen() {
   const [timeLeft, setTimeLeft] = useState(15);
   // Demo state so you can preview all variants inside the canvas
   const [jobType, setJobType] = useState("ride");
+  const navigate = useNavigate();
+  const bottomNavRoutes = {
+    home: "/driver/dashboard/online",
+    manager: "/driver/jobs/list",
+    wallet: "/driver/earnings/overview",
+    settings: "/driver/preferences",
+  };
 
   useEffect(() => {
     if (timeLeft <= 0) return;
@@ -161,6 +171,26 @@ export default function RideRequestIncomingScreen() {
   // Primary action label
   const primaryCta = isShuttle ? "Open Shuttle Driver App" : "Accept";
 
+  const handleAccept = () => {
+    if (isShuttle) {
+      navigate("/driver/help/shuttle-link");
+    } else if (isAmbulance) {
+      navigate("/driver/ambulance/job/demo-job/status");
+    } else if (jobType === "rental") {
+      navigate("/driver/rental/job/demo-job");
+    } else if (jobType === "tour") {
+      navigate("/driver/tour/demo-tour/today");
+    } else if (jobType === "delivery") {
+      navigate("/driver/delivery/orders");
+    } else {
+      navigate("/driver/trip/demo-trip/navigate-to-pickup");
+    }
+  };
+
+  const handleDecline = () => {
+    navigate("/driver/jobs/list");
+  };
+
   return (
     <div className="min-h-screen flex justify-center bg-[#0f172a] py-4">
       {/* Local style: hide scrollbars but keep swipe scrolling */}
@@ -185,7 +215,11 @@ export default function RideRequestIncomingScreen() {
               </h1>
             </div>
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
+          <button
+            type="button"
+            onClick={() => navigate("/driver/ridesharing/notification")}
+            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
+          >
             <Bell className="h-4 w-4" />
           </button>
         </header>
@@ -195,6 +229,7 @@ export default function RideRequestIncomingScreen() {
           {JOB_TYPES.map((type) => (
             <button
               key={type}
+              type="button"
               onClick={() => setJobType(type)}
               className={`rounded-full px-2 py-0.5 border text-[10px] font-medium ${
                 jobType === type
@@ -282,7 +317,11 @@ export default function RideRequestIncomingScreen() {
                   Arrive by 18:42
                 </span>
                 {!isShuttle && (
-                  <button className="inline-flex items-center rounded-full border border-slate-400 px-2 py-0.5 text-[10px]">
+                  <button
+                    type="button"
+                    onClick={() => navigate("/driver/delivery/route/demo-route/stop/alpha-stop/contact")}
+                    className="inline-flex items-center rounded-full border border-slate-400 px-2 py-0.5 text-[10px]"
+                  >
                     <Phone className="h-3 w-3 mr-1" />
                     Contact
                   </button>
@@ -306,12 +345,20 @@ export default function RideRequestIncomingScreen() {
 
             <div className="flex space-x-2">
               {!isShuttle && (
-                <button className="flex-1 rounded-full py-2.5 text-sm font-semibold border border-red-200 text-red-600 bg-white flex items-center justify-center">
+                <button
+                  type="button"
+                  onClick={handleDecline}
+                  className="flex-1 rounded-full py-2.5 text-sm font-semibold border border-red-200 text-red-600 bg-white flex items-center justify-center"
+                >
                   <X className="h-4 w-4 mr-1" />
                   Decline
                 </button>
               )}
-              <button className="flex-1 rounded-full py-2.5 text-sm font-semibold bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c] flex items-center justify-center">
+              <button
+                type="button"
+                onClick={handleAccept}
+                className="flex-1 rounded-full py-2.5 text-sm font-semibold bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c] flex items-center justify-center"
+              >
                 {!isShuttle && <Check className="h-4 w-4 mr-1" />}
                 {primaryCta}
               </button>
@@ -321,10 +368,30 @@ export default function RideRequestIncomingScreen() {
 
         {/* Bottom navigation – Home active (incoming request context) */}
         <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"} />
-          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"} />
+          <BottomNavItem
+            icon={Home}
+            label="Home"
+            active={nav === "home"}
+            onClick={() => navigate(bottomNavRoutes.home)}
+          />
+          <BottomNavItem
+            icon={Briefcase}
+            label="Manager"
+            active={nav === "manager"}
+            onClick={() => navigate(bottomNavRoutes.manager)}
+          />
+          <BottomNavItem
+            icon={Wallet}
+            label="Wallet"
+            active={nav === "wallet"}
+            onClick={() => navigate(bottomNavRoutes.wallet)}
+          />
+          <BottomNavItem
+            icon={Settings}
+            label="Settings"
+            active={nav === "settings"}
+            onClick={() => navigate(bottomNavRoutes.settings)}
+          />
         </nav>
       </div>
     </div>

@@ -12,17 +12,20 @@ import {
   Wallet,
   Settings,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D80 Active Delivery Route Screen (v1)
 // Active delivery route view combining map + next stop card + quick contact.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active, onClick = () => {} }) {
   return (
     <button
+      type="button"
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
         active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
       }`}
+      onClick={onClick}
     >
       <Icon className="h-5 w-5 mb-0.5" />
       <span>{label}</span>
@@ -32,6 +35,13 @@ function BottomNavItem({ icon: Icon, label, active }) {
 
 export default function ActiveDeliveryRouteScreen() {
   const [nav] = useState("home");
+  const navigate = useNavigate();
+  const bottomNavRoutes = {
+    home: "/driver/dashboard/online",
+    manager: "/driver/jobs/list",
+    wallet: "/driver/earnings/overview",
+    settings: "/driver/preferences",
+  };
 
   return (
     <div className="min-h-screen flex justify-center bg-[#0f172a] py-4">
@@ -58,7 +68,11 @@ export default function ActiveDeliveryRouteScreen() {
               </h1>
             </div>
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
+          <button
+            type="button"
+            onClick={() => navigate("/driver/ridesharing/notification")}
+            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
+          >
             <Bell className="h-4 w-4" />
           </button>
         </header>
@@ -66,7 +80,11 @@ export default function ActiveDeliveryRouteScreen() {
         {/* Content */}
         <main className="flex-1 px-4 pb-4 overflow-y-auto scrollbar-hide space-y-4">
           {/* Map container */}
-          <section className="relative rounded-3xl overflow-hidden border border-slate-100 bg-slate-200 h-[260px]">
+          <button
+            type="button"
+            onClick={() => navigate("/driver/delivery/route/demo-route/map")}
+            className="relative rounded-3xl overflow-hidden border border-slate-100 bg-slate-200 h-[260px] w-full text-left active:scale-[0.99] transition-transform"
+          >
             <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
 
             {/* Route polyline */}
@@ -99,7 +117,7 @@ export default function ActiveDeliveryRouteScreen() {
                 Next stop
               </span>
             </div>
-          </section>
+          </button>
 
           {/* Next stop info */}
           <section className="space-y-3">
@@ -145,7 +163,11 @@ export default function ActiveDeliveryRouteScreen() {
                   Only call or message when stopped in a safe place.
                 </span>
               </div>
-              <button className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-[10px] font-medium text-slate-700">
+              <button
+                type="button"
+                onClick={() => navigate("/driver/delivery/route/demo-route/stop/alpha-stop/contact")}
+                className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-[10px] font-medium text-slate-700"
+              >
                 <Phone className="h-3 w-3 mr-1" />
                 Call
               </button>
@@ -155,10 +177,30 @@ export default function ActiveDeliveryRouteScreen() {
 
         {/* Bottom navigation – Home active (active route context) */}
         <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"} />
-          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"} />
+          <BottomNavItem
+            icon={Home}
+            label="Home"
+            active={nav === "home"}
+            onClick={() => navigate(bottomNavRoutes.home)}
+          />
+          <BottomNavItem
+            icon={Briefcase}
+            label="Manager"
+            active={nav === "manager"}
+            onClick={() => navigate(bottomNavRoutes.manager)}
+          />
+          <BottomNavItem
+            icon={Wallet}
+            label="Wallet"
+            active={nav === "wallet"}
+            onClick={() => navigate(bottomNavRoutes.wallet)}
+          />
+          <BottomNavItem
+            icon={Settings}
+            label="Settings"
+            active={nav === "settings"}
+            onClick={() => navigate(bottomNavRoutes.settings)}
+          />
         </nav>
       </div>
     </div>

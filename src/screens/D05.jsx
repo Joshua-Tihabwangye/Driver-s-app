@@ -18,12 +18,14 @@ import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D05 Driver Personal (no internal scrollbars)
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active, onClick = () => {} }) {
   return (
     <button
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
         active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
       }`}
+      type="button"
+      onClick={onClick}
     >
       <Icon className="h-5 w-5 mb-0.5" />
       <span>{label}</span>
@@ -86,6 +88,12 @@ function DocRow({ icon: Icon, title, description, statusTone, statusLabel, onCli
 export default function DriverPersonalScreen() {
   const [canGoOnline] = useState(false); // derive from docs & training in real app
   const navigate = useNavigate();
+  const bottomNavRoutes = {
+    home: "/driver/dashboard/online",
+    manager: "/driver/jobs/list",
+    wallet: "/driver/earnings/overview",
+    settings: "/driver/preferences",
+  };
 
   return (
     <div className="min-h-screen flex justify-center bg-[#0f172a] py-4">
@@ -277,10 +285,27 @@ export default function DriverPersonalScreen() {
 
         {/* Bottom navigation – Profile view under Manager */}
         <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" />
-          <BottomNavItem icon={Briefcase} label="Manager" active />
-          <BottomNavItem icon={Wallet} label="Wallet" />
-          <BottomNavItem icon={Settings} label="Settings" />
+          <BottomNavItem
+            icon={Home}
+            label="Home"
+            onClick={() => navigate(bottomNavRoutes.home)}
+          />
+          <BottomNavItem
+            icon={Briefcase}
+            label="Manager"
+            active
+            onClick={() => navigate(bottomNavRoutes.manager)}
+          />
+          <BottomNavItem
+            icon={Wallet}
+            label="Wallet"
+            onClick={() => navigate(bottomNavRoutes.wallet)}
+          />
+          <BottomNavItem
+            icon={Settings}
+            label="Settings"
+            onClick={() => navigate(bottomNavRoutes.settings)}
+          />
         </nav>
       </div>
     </div>

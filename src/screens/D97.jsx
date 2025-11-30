@@ -13,6 +13,7 @@ import {
   Wallet,
   Settings,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D97 Rental Job Overview / On Rental Screen (v1)
 // Long-duration rental view for chauffeur / car rental jobs.
@@ -24,19 +25,16 @@ import {
 // - CTAs: "Open navigation to next stop", "End rental" (hook up to D56 in real app)
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-const STATUSES = [
-  "On rental",
-  "Waiting at hotel",
-  "With client",
-  "Returning to base",
-];
+const STATUSES = ["On rental", "Waiting at hotel", "With client", "Returning to base"];
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active, onClick }) {
   return (
     <button
+      type="button"
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
         active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
       }`}
+      onClick={onClick}
     >
       <Icon className="h-5 w-5 mb-0.5" />
       <span>{label}</span>
@@ -47,6 +45,7 @@ function BottomNavItem({ icon: Icon, label, active }) {
 function StatusChip({ label, active, onClick }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       className={`rounded-full px-3 py-1 text-[11px] font-medium border active:scale-[0.97] transition-transform ${
         active
@@ -62,6 +61,13 @@ function StatusChip({ label, active, onClick }) {
 export default function RentalJobOverviewScreen() {
   const [nav] = useState("home");
   const [status, setStatus] = useState("On rental");
+  const navigate = useNavigate();
+  const bottomNavRoutes = {
+    home: "/driver/dashboard/online",
+    manager: "/driver/jobs/list",
+    wallet: "/driver/earnings/overview",
+    settings: "/driver/map/online",
+  };
 
   return (
     <div className="min-h-screen flex justify-center bg-[#0f172a] py-4">
@@ -91,7 +97,11 @@ export default function RentalJobOverviewScreen() {
               </span>
             </div>
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
+          <button
+            type="button"
+            onClick={() => navigate("/driver/ridesharing/notification")}
+            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
+          >
             <Bell className="h-4 w-4" />
           </button>
         </header>
@@ -228,10 +238,18 @@ export default function RentalJobOverviewScreen() {
 
           {/* CTAs */}
           <section className="pt-1 pb-4 flex flex-col space-y-2">
-            <button className="w-full rounded-full py-2.5 text-sm font-semibold shadow-sm bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c]">
+            <button
+              type="button"
+              onClick={() => navigate("/driver/trip/demo-trip/navigation")}
+              className="w-full rounded-full py-2.5 text-sm font-semibold shadow-sm bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c]"
+            >
               Open navigation to next stop
             </button>
-            <button className="w-full rounded-full py-2.5 text-sm font-semibold border border-slate-200 text-slate-800 bg-white">
+            <button
+              type="button"
+              onClick={() => navigate("/driver/trip/demo-trip/completed")}
+              className="w-full rounded-full py-2.5 text-sm font-semibold border border-slate-200 text-slate-800 bg-white"
+            >
               End rental
             </button>
             <p className="text-[10px] text-slate-500 text-center max-w-[260px] mx-auto">
@@ -244,10 +262,30 @@ export default function RentalJobOverviewScreen() {
 
         {/* Bottom navigation – Home active (rental context) */}
         <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"} />
-          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"} />
+          <BottomNavItem
+            icon={Home}
+            label="Home"
+            active={nav === "home"}
+            onClick={() => navigate(bottomNavRoutes.home)}
+          />
+          <BottomNavItem
+            icon={Briefcase}
+            label="Manager"
+            active={nav === "manager"}
+            onClick={() => navigate(bottomNavRoutes.manager)}
+          />
+          <BottomNavItem
+            icon={Wallet}
+            label="Wallet"
+            active={nav === "wallet"}
+            onClick={() => navigate(bottomNavRoutes.wallet)}
+          />
+          <BottomNavItem
+            icon={Settings}
+            label="Settings"
+            active={nav === "settings"}
+            onClick={() => navigate(bottomNavRoutes.settings)}
+          />
         </nav>
       </div>
     </div>

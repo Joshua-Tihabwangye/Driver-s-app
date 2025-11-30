@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   Bell,
   ShieldCheck,
@@ -12,6 +12,7 @@ import {
   Wallet,
   Settings,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D67 Driver – Proof of Trip Status Flow – Main View (v2)
 // Main hub for proof-of-trip status, now job-type aware for:
@@ -25,12 +26,14 @@ import {
 
 const JOB_TYPES = ["ride", "delivery", "rental", "tour", "ambulance"];
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active, onClick }) {
   return (
     <button
+      type="button"
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
         active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
       }`}
+      onClick={onClick}
     >
       <Icon className="h-5 w-5 mb-0.5" />
       <span>{label}</span>
@@ -65,6 +68,16 @@ export default function ProofOfTripMainScreen() {
   const [nav] = useState("home");
   const [status, setStatus] = useState("idle"); // idle | submitting | submitted
   const [jobType, setJobType] = useState("ride");
+  const [photoCount, setPhotoCount] = useState(0);
+  const [noteText, setNoteText] = useState("");
+  const navigate = useNavigate();
+  const fileInputRef = useRef(null);
+  const bottomNavRoutes = {
+    home: "/driver/dashboard/online",
+    manager: "/driver/jobs/list",
+    wallet: "/driver/earnings/overview",
+    settings: "/driver/preferences",
+  };
 
   const jobTypeLabelMap = {
     ride: "Ride",
@@ -108,10 +121,37 @@ export default function ProofOfTripMainScreen() {
 
   const handleSubmitProof = () => {
     setStatus("submitting");
-    setTimeout(() => setStatus("submitted"), 1500);
+    setTimeout(() => {
+      setStatus("submitted");
+      navigate("/driver/trip/demo-trip/completed");
+    }, 900);
   };
 
-  const handleReset = () => setStatus("idle");
+  const handleReset = () => {
+    setStatus("idle");
+    setPhotoCount(0);
+    setNoteText("");
+  };
+
+  const handleAddPhoto = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handlePhotoChange = (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      setPhotoCount(files.length);
+    }
+  };
+
+  const handleAddNote = () => {
+    const next = window.prompt("Add a short note", noteText);
+    if (next !== null) {
+      setNoteText(next.trim());
+    }
+  };
 
   return (
     <div className="min-h-screen flex justify-center bg-[#0f172a] py-4">
@@ -141,7 +181,11 @@ export default function ProofOfTripMainScreen() {
               </span>
             </div>
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
+          <button
+            type="button"
+            onClick={() => navigate("/driver/ridesharing/notification")}
+            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
+          >
             <Bell className="h-4 w-4" />
           </button>
         </header>
@@ -153,13 +197,14 @@ export default function ProofOfTripMainScreen() {
           </span>
           <div className="flex flex-wrap gap-1">
             {JOB_TYPES.map((type) => (
-              <button
-                key={type}
-                onClick={() => setJobType(type)}
-                className={`rounded-full px-3 py-0.5 text-[11px] font-medium border transition-colors ${
-                  jobType === type
-                    ? "bg-[#03cd8c] text-slate-900 border-[#03cd8c]"
-                    : "bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300"
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => setJobType(type)}
+                  className={`rounded-full px-3 py-0.5 text-[11px] font-medium border transition-colors ${
+                    jobType === type
+                      ? "bg-[#03cd8c] text-slate-900 border-[#03cd8c]"
+                      : "bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300"
                 }`}
               >
                 {jobTypeLabelMap[type]}
@@ -199,7 +244,11 @@ export default function ProofOfTripMainScreen() {
               What you can capture
             </h2>
             <div className="space-y-2">
-              <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-white px-3 py-2.5 text-[11px] text-slate-600">
+              <button
+                type="button"
+                onClick={handleAddPhoto}
+                className="w-full flex items-center justify-between rounded-2xl border border-slate-100 bg-white px-3 py-2.5 text-[11px] text-slate-600 text-left active:scale-[0.99] transition-transform"
+              >
                 <div className="flex items-center space-x-2">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50">
                     <Camera className="h-4 w-4 text-[#03cd8c]" />
@@ -211,10 +260,16 @@ export default function ProofOfTripMainScreen() {
                     <span>{photosText}</span>
                   </div>
                 </div>
-                <span className="text-[10px] text-slate-400">0 added</span>
-              </div>
+                <span className="text-[10px] text-slate-400">
+                  {photoCount > 0 ? `${photoCount} added` : "0 added"}
+                </span>
+              </button>
 
-              <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-white px-3 py-2.5 text-[11px] text-slate-600">
+              <button
+                type="button"
+                onClick={handleAddNote}
+                className="w-full flex items-center justify-between rounded-2xl border border-slate-100 bg-white px-3 py-2.5 text-[11px] text-slate-600 text-left active:scale-[0.99] transition-transform"
+              >
                 <div className="flex items-center space-x-2">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50">
                     <FileText className="h-4 w-4 text-[#03cd8c]" />
@@ -223,13 +278,19 @@ export default function ProofOfTripMainScreen() {
                     <span className="text-xs font-semibold text-slate-900">
                       Short notes
                     </span>
-                    <span>{notesText}</span>
+                    <span>{noteText || "Describe what happened in a few words."}</span>
                   </div>
                 </div>
-                <span className="text-[10px] text-slate-400">0 notes</span>
-              </div>
+                <span className="text-[10px] text-slate-400">
+                  {noteText ? "1 note" : "0 notes"}
+                </span>
+              </button>
 
-              <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-white px-3 py-2.5 text-[11px] text-slate-600">
+              <button
+                type="button"
+                onClick={() => navigate("/driver/map/online")}
+                className="w-full flex items-center justify-between rounded-2xl border border-slate-100 bg-white px-3 py-2.5 text-[11px] text-slate-600 text-left active:scale-[0.99] transition-transform"
+              >
                 <div className="flex items-center space-x-2">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50">
                     <MapPin className="h-4 w-4 text-[#03cd8c]" />
@@ -238,13 +299,20 @@ export default function ProofOfTripMainScreen() {
                     <span className="text-xs font-semibold text-slate-900">
                       Time & location snapshot
                     </span>
-                    <span>Where you were when you captured proof.</span>
+                    <span>Open map to confirm where you captured proof.</span>
                   </div>
                 </div>
                 <span className="text-[10px] text-slate-400">Captured automatically</span>
-              </div>
+              </button>
             </div>
           </section>
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            className="hidden"
+            onChange={handlePhotoChange}
+          />
 
           {/* Actions / variants */}
           <section className="space-y-2 pt-1 pb-4">
@@ -268,12 +336,14 @@ export default function ProofOfTripMainScreen() {
 
             <div className="flex space-x-2">
               <button
+                type="button"
                 onClick={handleSubmitProof}
                 className="flex-1 rounded-full py-2.5 text-sm font-semibold shadow-sm bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c]"
               >
                 Submit proof for this trip
               </button>
               <button
+                type="button"
                 onClick={handleReset}
                 className="flex-1 rounded-full py-2.5 text-sm font-semibold border border-slate-200 text-slate-800 bg-white"
               >
@@ -289,10 +359,30 @@ export default function ProofOfTripMainScreen() {
 
         {/* Bottom navigation – Home active (safety / proof-of-trip context) */}
         <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"} />
-          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"} />
+          <BottomNavItem
+            icon={Home}
+            label="Home"
+            active={nav === "home"}
+            onClick={() => navigate(bottomNavRoutes.home)}
+          />
+          <BottomNavItem
+            icon={Briefcase}
+            label="Manager"
+            active={nav === "manager"}
+            onClick={() => navigate(bottomNavRoutes.manager)}
+          />
+          <BottomNavItem
+            icon={Wallet}
+            label="Wallet"
+            active={nav === "wallet"}
+            onClick={() => navigate(bottomNavRoutes.wallet)}
+          />
+          <BottomNavItem
+            icon={Settings}
+            label="Settings"
+            active={nav === "settings"}
+            onClick={() => navigate(bottomNavRoutes.settings)}
+          />
         </nav>
       </div>
     </div>

@@ -12,6 +12,7 @@ import {
   Wallet,
   Settings,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D44 Ride Requests (v3)
 // List of available job requests (Ride / Delivery / Rental / Shuttle / Tour / Ambulance)
@@ -96,12 +97,14 @@ const JOBS = [
   },
 ];
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active, onClick }) {
   return (
     <button
+      type="button"
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
         active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
       }`}
+      onClick={onClick}
     >
       <Icon className="h-5 w-5 mb-0.5" />
       <span>{label}</span>
@@ -161,6 +164,7 @@ function RequestCard({ job, onClick }) {
 
   return (
     <button
+      type="button"
       onClick={() => onClick(job)}
       className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform flex flex-col space-y-2 text-[11px] text-slate-600"
     >
@@ -194,6 +198,13 @@ function RequestCard({ job, onClick }) {
 export default function RideRequestsListScreen() {
   const [nav] = useState("home");
   const [filter, setFilter] = useState("all");
+  const navigate = useNavigate();
+  const bottomNavRoutes = {
+    home: "/driver/dashboard/online",
+    manager: "/driver/jobs/list",
+    wallet: "/driver/earnings/overview",
+    settings: "/driver/preferences",
+  };
 
   const filteredJobs =
     filter === "all" ? JOBS : JOBS.filter((job) => job.jobType === filter);
@@ -201,18 +212,24 @@ export default function RideRequestsListScreen() {
   const hasShuttleJob = filteredJobs.some((j) => j.jobType === "shuttle");
 
   const handleCardClick = (job) => {
+    // Route to the appropriate flow for each job type
     if (job.jobType === "shuttle") {
-      // In the real app, this should deep-link into the Shuttle Driver App
-      // with the appropriate job id / context.
-      // e.g. openShuttleApp(job.id)
+      navigate("/driver/help/shuttle-link");
+    } else if (job.jobType === "delivery") {
+      navigate("/driver/delivery/orders");
+    } else if (job.jobType === "rental") {
+      navigate("/driver/rental/job/demo-job");
+    } else if (job.jobType === "tour") {
+      navigate("/driver/tour/demo-tour/today");
+    } else if (job.jobType === "ambulance") {
+      navigate("/driver/ambulance/job/demo-job/status");
     } else {
-      // In the real app, this would open the internal trip flow for the job.
+      navigate("/driver/jobs/incoming");
     }
   };
 
   const handleOpenShuttleHelp = () => {
-    // In the real app, navigate to the Shuttle Link Info screen (D102), e.g.:
-    // navigate("/driver/help/shuttle-link");
+    navigate("/driver/help/shuttle-link");
   };
 
   return (
@@ -252,7 +269,11 @@ export default function RideRequestsListScreen() {
               <span className="font-semibold text-slate-900">Sorted by</span>
               <span>Closest pickup · Highest fare</span>
             </div>
-            <button className="inline-flex items-center rounded-full border border-slate-200 px-2 py-0.5 text-[11px] text-slate-700">
+            <button
+              type="button"
+              onClick={() => navigate("/driver/delivery/orders/filter")}
+              className="inline-flex items-center rounded-full border border-slate-200 px-2 py-0.5 text-[11px] text-slate-700"
+            >
               <ListFilter className="h-3 w-3 mr-1" /> Filters
             </button>
           </section>
@@ -266,6 +287,7 @@ export default function RideRequestsListScreen() {
               {JOB_FILTERS.map((f) => (
                 <button
                   key={f.key}
+                  type="button"
                   onClick={() => setFilter(f.key)}
                   className={`rounded-full px-2.5 py-0.5 border font-medium ${
                     filter === f.key
@@ -337,21 +359,29 @@ export default function RideRequestsListScreen() {
 
         {/* Bottom navigation – Home active (requests context) */}
         <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
+          <BottomNavItem
+            icon={Home}
+            label="Home"
+            active={nav === "home"}
+            onClick={() => navigate(bottomNavRoutes.home)}
+          />
           <BottomNavItem
             icon={Briefcase}
             label="Manager"
             active={nav === "manager"}
+            onClick={() => navigate(bottomNavRoutes.manager)}
           />
           <BottomNavItem
             icon={Wallet}
             label="Wallet"
             active={nav === "wallet"}
+            onClick={() => navigate(bottomNavRoutes.wallet)}
           />
           <BottomNavItem
             icon={Settings}
             label="Settings"
             active={nav === "settings"}
+            onClick={() => navigate(bottomNavRoutes.settings)}
           />
         </nav>
       </div>

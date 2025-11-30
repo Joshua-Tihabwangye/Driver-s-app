@@ -11,6 +11,7 @@ import {
   Wallet,
   Settings,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D56 Driver – Arrived / Trip Completion Screen (v3)
 // Trip completion screen now accepts an optional initialJobType prop so it can be
@@ -20,12 +21,14 @@ import {
 
 const JOB_TYPES = ["ride", "delivery", "rental", "tour", "ambulance"];
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active, onClick }) {
   return (
     <button
+      type="button"
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
         active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
       }`}
+      onClick={onClick}
     >
       <Icon className="h-5 w-5 mb-0.5" />
       <span>{label}</span>
@@ -36,6 +39,13 @@ function BottomNavItem({ icon: Icon, label, active }) {
 export default function TripCompletionScreen({ initialJobType = "ride" }) {
   const [nav] = useState("home");
   const [jobType, setJobType] = useState(initialJobType);
+  const navigate = useNavigate();
+  const bottomNavRoutes = {
+    home: "/driver/dashboard/online",
+    manager: "/driver/jobs/list",
+    wallet: "/driver/earnings/overview",
+    settings: "/driver/preferences",
+  };
 
   const jobTypeLabelMap = {
     ride: "Ride",
@@ -127,7 +137,11 @@ export default function TripCompletionScreen({ initialJobType = "ride" }) {
               </span>
             </div>
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
+          <button
+            type="button"
+            onClick={() => navigate("/driver/ridesharing/notification")}
+            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
+          >
             <Bell className="h-4 w-4" />
           </button>
         </header>
@@ -232,10 +246,18 @@ export default function TripCompletionScreen({ initialJobType = "ride" }) {
 
           {/* Actions */}
           <section className="pt-1 pb-4 flex flex-col space-y-2">
-            <button className="w-full rounded-full py-2.5 text-sm font-semibold shadow-sm bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c]">
+            <button
+              type="button"
+              onClick={() => navigate("/driver/dashboard/online")}
+              className="w-full rounded-full py-2.5 text-sm font-semibold shadow-sm bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c]"
+            >
               Go back online
             </button>
-            <button className="w-full rounded-full py-2.5 text-sm font-semibold border border-slate-200 text-slate-800 bg-white">
+            <button
+              type="button"
+              onClick={() => navigate("/driver/history/rides")}
+              className="w-full rounded-full py-2.5 text-sm font-semibold border border-slate-200 text-slate-800 bg-white"
+            >
               View trip details
             </button>
             <p className="text-[10px] text-slate-500 text-center max-w-[260px] mx-auto">
@@ -252,10 +274,30 @@ export default function TripCompletionScreen({ initialJobType = "ride" }) {
 
         {/* Bottom navigation – Home active (post-trip context) */}
         <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"} />
-          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"} />
+          <BottomNavItem
+            icon={Home}
+            label="Home"
+            active={nav === "home"}
+            onClick={() => navigate(bottomNavRoutes.home)}
+          />
+          <BottomNavItem
+            icon={Briefcase}
+            label="Manager"
+            active={nav === "manager"}
+            onClick={() => navigate(bottomNavRoutes.manager)}
+          />
+          <BottomNavItem
+            icon={Wallet}
+            label="Wallet"
+            active={nav === "wallet"}
+            onClick={() => navigate(bottomNavRoutes.wallet)}
+          />
+          <BottomNavItem
+            icon={Settings}
+            label="Settings"
+            active={nav === "settings"}
+            onClick={() => navigate(bottomNavRoutes.settings)}
+          />
         </nav>
       </div>
     </div>

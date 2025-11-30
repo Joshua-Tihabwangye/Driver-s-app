@@ -17,12 +17,14 @@ import { useNavigate } from "react-router-dom";
 // EVzone Driver App – D09 Driver Personal – Document Rejected (v1)
 // Shows rejection reason and prompts driver to re-upload corrected documents.
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active, onClick }) {
   return (
     <button
+      type="button"
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
         active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
       }`}
+      onClick={onClick}
     >
       <Icon className="h-5 w-5 mb-0.5" />
       <span>{label}</span>
@@ -30,7 +32,7 @@ function BottomNavItem({ icon: Icon, label, active }) {
   );
 }
 
-function RejectedDocRow({ icon: Icon, title, reason, onClick }) {
+function RejectedDocRow({ icon: Icon, title, reason, onClick, status = "Rejected", fileName }) {
   return (
     <div className="rounded-2xl border border-red-100 bg-red-50 px-3 py-2.5 flex items-start space-x-3">
       <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white">
@@ -39,9 +41,9 @@ function RejectedDocRow({ icon: Icon, title, reason, onClick }) {
       <div className="flex-1 flex flex-col items-start space-y-1">
         <div className="flex items-center space-x-1">
           <span className="text-xs font-semibold text-red-700">{title}</span>
-          <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-medium text-red-600">
+          <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-medium text-red-600 border border-red-200">
             <XCircle className="mr-1 h-3 w-3" />
-            Rejected
+            {status}
           </span>
         </div>
         <span className="text-[11px] text-red-700">{reason}</span>
@@ -53,6 +55,9 @@ function RejectedDocRow({ icon: Icon, title, reason, onClick }) {
           <Upload className="mr-1 h-3 w-3" />
           Re-upload document
         </button>
+        {fileName && (
+          <span className="text-[10px] text-slate-500">Selected: {fileName}</span>
+        )}
       </div>
     </div>
   );
@@ -61,6 +66,30 @@ function RejectedDocRow({ icon: Icon, title, reason, onClick }) {
 export default function DocumentRejectedScreen() {
   const [nav] = useState("manager");
   const navigate = useNavigate();
+  const bottomNavRoutes = {
+    home: "/driver/dashboard/online",
+    manager: "/driver/jobs/list",
+    wallet: "/driver/earnings/overview",
+    settings: "/driver/preferences",
+  };
+  const [docs, setDocs] = useState({
+    license: { status: "Rejected", fileName: "" },
+    id: { status: "Rejected", fileName: "" },
+  });
+
+  const handleFileSelected = (key, event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setDocs((prev) => ({
+      ...prev,
+      [key]: { status: "Uploaded", fileName: file.name },
+    }));
+  };
+
+  const triggerFilePick = (key) => {
+    const input = document.getElementById(`reupload-${key}`);
+    if (input) input.click();
+  };
 
   return (
     <div className="min-h-screen flex justify-center bg-[#0f172a] py-4">
@@ -86,7 +115,11 @@ export default function DocumentRejectedScreen() {
               </h1>
             </div>
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
+          <button
+            type="button"
+            onClick={() => navigate("/driver/ridesharing/notification")}
+            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
+          >
             <Bell className="h-4 w-4" />
             <span className="absolute -top-0.5 -right-0.5 inline-flex h-3 w-3 items-center justify-center rounded-full bg-[#f77f00]" />
           </button>
@@ -108,28 +141,44 @@ export default function DocumentRejectedScreen() {
             </p>
           </section>
 
-          {/* Rejected docs */}
-          <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-slate-900 mb-1">
-              What needs to be fixed
-            </h2>
-            <RejectedDocRow
-              icon={FileBadge2}
-              title="Driver’s license"
-              reason="The image is blurry and the expiry date is not readable. Please retake the photo in good light and upload again."
-              onClick={() =>
-                navigate("/driver/onboarding/profile/documents/upload")
-              }
+        {/* Rejected docs */}
+        <section className="space-y-2">
+          <h2 className="text-sm font-semibold text-slate-900 mb-1">
+            What needs to be fixed
+          </h2>
+          <RejectedDocRow
+            icon={FileBadge2}
+            title="Driver’s license"
+            reason="The image is blurry and the expiry date is not readable. Please retake the photo in good light and upload again."
+            status={docs.license.status}
+            fileName={docs.license.fileName}
+            onClick={() => triggerFilePick("license")}
+          />
+          <RejectedDocRow
+            icon={IdCard}
+            title="National ID"
+            reason="The back side is missing. Please upload both front and back of your ID."
+            status={docs.id.status}
+            fileName={docs.id.fileName}
+            onClick={() => triggerFilePick("id")}
+          />
+        </section>
+
+          {/* Hidden file pickers */}
+          <div className="hidden">
+            <input
+              id="reupload-license"
+              type="file"
+              accept="image/*,.pdf"
+              onChange={(e) => handleFileSelected("license", e)}
             />
-            <RejectedDocRow
-              icon={IdCard}
-              title="National ID"
-              reason="The back side is missing. Please upload both front and back of your ID."
-              onClick={() =>
-                navigate("/driver/onboarding/profile/documents/upload")
-              }
+            <input
+              id="reupload-id"
+              type="file"
+              accept="image/*,.pdf"
+              onChange={(e) => handleFileSelected("id", e)}
             />
-          </section>
+          </div>
 
           {/* Help text */}
           <section className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 text-[11px] text-slate-600 space-y-1">
@@ -159,10 +208,30 @@ export default function DocumentRejectedScreen() {
 
         {/* Bottom navigation */}
         <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"} />
-          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"} />
+          <BottomNavItem
+            icon={Home}
+            label="Home"
+            active={nav === "home"}
+            onClick={() => navigate(bottomNavRoutes.home)}
+          />
+          <BottomNavItem
+            icon={Briefcase}
+            label="Manager"
+            active={nav === "manager"}
+            onClick={() => navigate(bottomNavRoutes.manager)}
+          />
+          <BottomNavItem
+            icon={Wallet}
+            label="Wallet"
+            active={nav === "wallet"}
+            onClick={() => navigate(bottomNavRoutes.wallet)}
+          />
+          <BottomNavItem
+            icon={Settings}
+            label="Settings"
+            active={nav === "settings"}
+            onClick={() => navigate(bottomNavRoutes.settings)}
+          />
         </nav>
       </div>
     </div>

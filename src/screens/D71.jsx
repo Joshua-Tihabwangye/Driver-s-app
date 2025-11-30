@@ -12,17 +12,20 @@ import {
   Wallet,
   Settings,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D71 Safety Hub (Expanded View) (v1)
 // Expanded Safety Hub with more detailed sections for policies, training, and reporting.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active, onClick = () => {} }) {
   return (
     <button
+      type="button"
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
         active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
       }`}
+      onClick={onClick}
     >
       <Icon className="h-5 w-5 mb-0.5" />
       <span>{label}</span>
@@ -30,9 +33,13 @@ function BottomNavItem({ icon: Icon, label, active }) {
   );
 }
 
-function SectionCard({ icon: Icon, title, subtitle }) {
+function SectionCard({ icon: Icon, title, subtitle, onClick = () => {} }) {
   return (
-    <button className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-3 shadow-sm flex items-start space-x-2 text-[11px] text-slate-600 active:scale-[0.98] transition-transform">
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-3 shadow-sm flex items-start space-x-2 text-[11px] text-slate-600 active:scale-[0.98] transition-transform"
+    >
       <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-slate-50">
         <Icon className="h-4 w-4 text-slate-700" />
       </div>
@@ -48,6 +55,13 @@ function SectionCard({ icon: Icon, title, subtitle }) {
 
 export default function SafetyHubExpandedScreen() {
   const [nav] = useState("home");
+  const navigate = useNavigate();
+  const bottomNavRoutes = {
+    home: "/driver/dashboard/online",
+    manager: "/driver/jobs/list",
+    wallet: "/driver/earnings/overview",
+    settings: "/driver/preferences",
+  };
 
   return (
     <div className="min-h-screen flex justify-center bg-[#0f172a] py-4">
@@ -111,11 +125,13 @@ export default function SafetyHubExpandedScreen() {
               icon={FileText}
               title="Driver safety policy"
               subtitle="Review rules for safe driving, pick-ups, drop-offs and behaviour on the platform."
+              onClick={() => navigate("/driver/safety/driving-hours")}
             />
             <SectionCard
               icon={FileText}
               title="Rider conduct & expectations"
               subtitle="See what riders agree to when using EVzone (harassment, abuse, damage, etc.)."
+              onClick={() => navigate("/driver/safety/driving-hours")}
             />
           </section>
 
@@ -128,11 +144,13 @@ export default function SafetyHubExpandedScreen() {
               icon={LifeBuoy}
               title="Safety & SOS module"
               subtitle="Learn how to use SOS, follow-ride and incident reporting while on a trip."
+              onClick={() => navigate("/driver/safety/sos/sending")}
             />
             <SectionCard
               icon={MapPin}
               title="Pick-ups & drop-offs"
               subtitle="Best practices for meeting riders at safe, visible locations."
+              onClick={() => navigate("/driver/safety/driving-hours")}
             />
           </section>
 
@@ -145,21 +163,43 @@ export default function SafetyHubExpandedScreen() {
               icon={AlertTriangle}
               title="Report an incident"
               subtitle="Log safety issues, dangerous driving, harassment or other concerns."
+              onClick={() => navigate("/driver/safety/toolkit")}
             />
             <SectionCard
               icon={Phone}
               title="Contact EVzone support"
               subtitle="Call or message support about urgent safety concerns or follow-up questions."
+              onClick={() => navigate("/driver/safety/emergency/call")}
             />
           </section>
         </main>
 
         {/* Bottom navigation – Home active (expanded safety hub context) */}
         <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"} />
-          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"} />
+          <BottomNavItem
+            icon={Home}
+            label="Home"
+            active={nav === "home"}
+            onClick={() => navigate(bottomNavRoutes.home)}
+          />
+          <BottomNavItem
+            icon={Briefcase}
+            label="Manager"
+            active={nav === "manager"}
+            onClick={() => navigate(bottomNavRoutes.manager)}
+          />
+          <BottomNavItem
+            icon={Wallet}
+            label="Wallet"
+            active={nav === "wallet"}
+            onClick={() => navigate(bottomNavRoutes.wallet)}
+          />
+          <BottomNavItem
+            icon={Settings}
+            label="Settings"
+            active={nav === "settings"}
+            onClick={() => navigate(bottomNavRoutes.settings)}
+          />
         </nav>
       </div>
     </div>

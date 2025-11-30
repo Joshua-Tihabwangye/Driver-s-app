@@ -17,12 +17,14 @@ import { useNavigate } from "react-router-dom";
 // EVzone Driver App – D07 Driver Personal – Document Verification (v1)
 // Detailed document upload screen. 375x812 phone frame with swipe scroll and hidden scrollbar.
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active, onClick }) {
   return (
     <button
+      type="button"
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
         active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
       }`}
+      onClick={onClick}
     >
       <Icon className="h-5 w-5 mb-0.5" />
       <span>{label}</span>
@@ -30,7 +32,15 @@ function BottomNavItem({ icon: Icon, label, active }) {
   );
 }
 
-function DocItem({ icon: Icon, title, subtitle, status, emphasise, onClick }) {
+function DocItem({
+  icon: Icon,
+  title,
+  subtitle,
+  status,
+  emphasise,
+  onClick,
+  fileName,
+}) {
   const tone =
     status === "Missing"
       ? "bg-red-50 text-red-600 border-red-100"
@@ -69,6 +79,9 @@ function DocItem({ icon: Icon, title, subtitle, status, emphasise, onClick }) {
           <Upload className="mr-1 h-3 w-3" />
           Upload
         </span>
+        {fileName && (
+          <span className="text-[10px] text-slate-400">Selected: {fileName}</span>
+        )}
       </div>
     </button>
   );
@@ -77,6 +90,31 @@ function DocItem({ icon: Icon, title, subtitle, status, emphasise, onClick }) {
 export default function DocumentVerificationScreen() {
   const [nav] = useState("manager");
   const navigate = useNavigate();
+  const bottomNavRoutes = {
+    home: "/driver/dashboard/online",
+    manager: "/driver/jobs/list",
+    wallet: "/driver/earnings/overview",
+    settings: "/driver/preferences",
+  };
+  const [docs, setDocs] = useState({
+    id: { status: "Uploaded", emphasise: false, fileName: "national-id.pdf" },
+    license: { status: "Missing", emphasise: true, fileName: "" },
+    police: { status: "Missing", emphasise: false, fileName: "" },
+  });
+
+  const handleFileSelected = (key, event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setDocs((prev) => ({
+      ...prev,
+      [key]: { ...prev[key], status: "Uploaded", emphasise: false, fileName: file.name },
+    }));
+  };
+
+  const triggerFilePick = (key) => {
+    const input = document.getElementById(`doc-upload-${key}`);
+    if (input) input.click();
+  };
 
   return (
     <div className="min-h-screen flex justify-center bg-[#0f172a] py-4">
@@ -102,7 +140,11 @@ export default function DocumentVerificationScreen() {
               </h1>
             </div>
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
+          <button
+            type="button"
+            onClick={() => navigate("/driver/ridesharing/notification")}
+            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
+          >
             <Bell className="h-4 w-4" />
             <span className="absolute -top-0.5 -right-0.5 inline-flex h-3 w-3 items-center justify-center rounded-full bg-[#f77f00]" />
           </button>
@@ -133,33 +175,52 @@ export default function DocumentVerificationScreen() {
               icon={IdCard}
               title="National ID"
               subtitle="Front and back, all corners visible."
-              status="Uploaded"
-              emphasise={false}
-              onClick={() =>
-                navigate("/driver/onboarding/profile/documents/verified")
-              }
+              status={docs.id.status}
+              emphasise={docs.id.emphasise}
+              fileName={docs.id.fileName}
+              onClick={() => triggerFilePick("id")}
             />
             <DocItem
               icon={FileBadge2}
               title="Driver’s license"
               subtitle="Valid and not expired."
-              status="Missing"
-              emphasise={true}
-              onClick={() =>
-                navigate("/driver/onboarding/profile/documents/upload")
-              }
+              status={docs.license.status}
+              emphasise={docs.license.emphasise}
+              fileName={docs.license.fileName}
+              onClick={() => triggerFilePick("license")}
             />
             <DocItem
               icon={ClipboardCheck}
               title="Police clearance"
               subtitle="Issued within the last 6–12 months."
-              status="Missing"
-              emphasise={false}
-              onClick={() =>
-                navigate("/driver/onboarding/profile/documents/upload")
-              }
+              status={docs.police.status}
+              emphasise={docs.police.emphasise}
+              fileName={docs.police.fileName}
+              onClick={() => triggerFilePick("police")}
             />
           </section>
+
+          {/* Hidden file pickers */}
+          <div className="hidden">
+            <input
+              id="doc-upload-id"
+              type="file"
+              accept="image/*,.pdf"
+              onChange={(e) => handleFileSelected("id", e)}
+            />
+            <input
+              id="doc-upload-license"
+              type="file"
+              accept="image/*,.pdf"
+              onChange={(e) => handleFileSelected("license", e)}
+            />
+            <input
+              id="doc-upload-police"
+              type="file"
+              accept="image/*,.pdf"
+              onChange={(e) => handleFileSelected("police", e)}
+            />
+          </div>
 
           {/* Helper text */}
           <section className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 flex items-start space-x-2">
@@ -194,10 +255,30 @@ export default function DocumentVerificationScreen() {
 
         {/* Bottom navigation */}
         <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"} />
-          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"} />
+          <BottomNavItem
+            icon={Home}
+            label="Home"
+            active={nav === "home"}
+            onClick={() => navigate(bottomNavRoutes.home)}
+          />
+          <BottomNavItem
+            icon={Briefcase}
+            label="Manager"
+            active={nav === "manager"}
+            onClick={() => navigate(bottomNavRoutes.manager)}
+          />
+          <BottomNavItem
+            icon={Wallet}
+            label="Wallet"
+            active={nav === "wallet"}
+            onClick={() => navigate(bottomNavRoutes.wallet)}
+          />
+          <BottomNavItem
+            icon={Settings}
+            label="Settings"
+            active={nav === "settings"}
+            onClick={() => navigate(bottomNavRoutes.settings)}
+          />
         </nav>
       </div>
     </div>

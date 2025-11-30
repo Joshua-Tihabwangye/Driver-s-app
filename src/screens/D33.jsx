@@ -11,17 +11,20 @@ import {
   Wallet,
   Settings,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D33 Driver App – Earnings Overview (v1)
 // Snapshot of earnings with a simple period selector and mini bar chart.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active, onClick = () => {} }) {
   return (
     <button
+      type="button"
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
         active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
       }`}
+      onClick={onClick}
     >
       <Icon className="h-5 w-5 mb-0.5" />
       <span>{label}</span>
@@ -42,6 +45,17 @@ const MOCK_BARS = [
 export default function EarningsOverviewScreen() {
   const [nav] = useState("wallet");
   const [period, setPeriod] = useState("week");
+  const navigate = useNavigate();
+  const bottomNavRoutes = {
+    home: "/driver/dashboard/online",
+    manager: "/driver/jobs/list",
+    wallet: "/driver/earnings/overview",
+    settings: "/driver/preferences",
+  };
+
+  const cyclePeriod = () => {
+    setPeriod((prev) => (prev === "week" ? "month" : "week"));
+  };
 
   return (
     <div className="min-h-screen flex justify-center bg-[#0f172a] py-4">
@@ -67,7 +81,11 @@ export default function EarningsOverviewScreen() {
               </h1>
             </div>
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
+          <button
+            type="button"
+            onClick={() => navigate("/driver/ridesharing/notification")}
+            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
+          >
             <Bell className="h-4 w-4" />
           </button>
         </header>
@@ -88,7 +106,11 @@ export default function EarningsOverviewScreen() {
                   <p className="text-sm font-semibold">Total earnings: $242.80</p>
                 </div>
               </div>
-              <button className="inline-flex items-center rounded-full bg-slate-900/70 px-3 py-1 text-[11px] font-medium text-slate-50">
+              <button
+                type="button"
+                onClick={cyclePeriod}
+                className="inline-flex items-center rounded-full bg-slate-900/70 px-3 py-1 text-[11px] font-medium text-slate-50"
+              >
                 <Calendar className="h-3.5 w-3.5 mr-1" />
                 <span className="mr-1">
                   {period === "week" ? "This week" : "This month"}
@@ -150,15 +172,51 @@ export default function EarningsOverviewScreen() {
                 </p>
               </div>
             </div>
+            <div className="flex space-x-2">
+              <button
+                type="button"
+                onClick={() => navigate("/driver/earnings/goals")}
+                className="flex-1 rounded-full bg-[#03cd8c] text-slate-900 font-semibold text-sm py-2.5 active:scale-[0.99] transition-transform shadow-sm"
+              >
+                Set weekly goal
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate("/driver/history/rides")}
+                className="flex-1 rounded-full border border-slate-200 bg-white text-slate-800 font-semibold text-sm py-2.5 active:scale-[0.99] transition-transform"
+              >
+                View ride history
+              </button>
+            </div>
           </section>
         </main>
 
         {/* Bottom navigation – Wallet active (earnings context) */}
         <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"} />
-          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"} />
+          <BottomNavItem
+            icon={Home}
+            label="Home"
+            active={nav === "home"}
+            onClick={() => navigate(bottomNavRoutes.home)}
+          />
+          <BottomNavItem
+            icon={Briefcase}
+            label="Manager"
+            active={nav === "manager"}
+            onClick={() => navigate(bottomNavRoutes.manager)}
+          />
+          <BottomNavItem
+            icon={Wallet}
+            label="Wallet"
+            active={nav === "wallet"}
+            onClick={() => navigate(bottomNavRoutes.wallet)}
+          />
+          <BottomNavItem
+            icon={Settings}
+            label="Settings"
+            active={nav === "settings"}
+            onClick={() => navigate(bottomNavRoutes.settings)}
+          />
         </nav>
       </div>
     </div>

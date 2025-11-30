@@ -6,11 +6,13 @@ import {
   Clock,
   Phone,
   MessageCircle,
+  X,
   Home,
   Briefcase,
   Wallet,
   Settings,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D50 Driver App – Arrived at Pickup Point (v2)
 // State after the driver marks "I've arrived" at the pickup location, with
@@ -23,12 +25,14 @@ import {
 
 const JOB_TYPES = ["ride", "delivery", "rental", "tour", "ambulance"];
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active, onClick = () => {} }) {
   return (
     <button
+      type="button"
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
         active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
       }`}
+      onClick={onClick}
     >
       <Icon className="h-5 w-5 mb-0.5" />
       <span>{label}</span>
@@ -54,6 +58,22 @@ function JobTypeLabel({ jobType }) {
 export default function ArrivedAtPickupScreen() {
   const [nav] = useState("home");
   const [jobType, setJobType] = useState("ride");
+  const navigate = useNavigate();
+  const bottomNavRoutes = {
+    home: "/driver/dashboard/online",
+    manager: "/driver/jobs/list",
+    wallet: "/driver/earnings/overview",
+    settings: "/driver/preferences",
+  };
+  const sanitizePhone = (phone) => (phone || "").replace(/[^\d+]/g, "");
+  const handleCall = (phone) => {
+    const target = sanitizePhone(phone);
+    if (target) window.open(`tel:${target}`);
+  };
+  const handleMessage = (phone) => {
+    const target = sanitizePhone(phone);
+    if (target) window.open(`sms:${target}`);
+  };
 
   const isRental = jobType === "rental";
   const isTour = jobType === "tour";
@@ -109,7 +129,11 @@ export default function ArrivedAtPickupScreen() {
               <JobTypeLabel jobType={jobType} />
             </div>
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
+          <button
+            type="button"
+            onClick={() => navigate("/driver/ridesharing/notification")}
+            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
+          >
             <Bell className="h-4 w-4" />
           </button>
         </header>
@@ -123,6 +147,7 @@ export default function ArrivedAtPickupScreen() {
             {JOB_TYPES.map((type) => (
               <button
                 key={type}
+                type="button"
                 onClick={() => setJobType(type)}
                 className={`rounded-full px-3 py-0.5 text-[11px] font-medium border transition-colors ${
                   jobType === type
@@ -197,36 +222,70 @@ export default function ArrivedAtPickupScreen() {
                 </div>
               </div>
               <div className="flex flex-col items-end space-y-1">
-                <button className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-[10px] font-medium text-slate-700">
+                <button
+                  type="button"
+                  onClick={() => handleMessage("+256700000123")}
+                  className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-[10px] font-medium text-slate-700"
+                >
                   <MessageCircle className="h-3 w-3 mr-1" />
                   Message
                 </button>
-                <button className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-[10px] font-medium text-slate-700">
+                <button
+                  type="button"
+                  onClick={() => handleCall("+256700000123")}
+                  className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-[10px] font-medium text-slate-700"
+                >
                   <Phone className="h-3 w-3 mr-1" />
                   Call
                 </button>
               </div>
+            </div>
+
+            <div className="flex space-x-2">
+              <button
+                type="button"
+                onClick={() => navigate("/driver/trip/demo-trip/cancel/reason")}
+                className="flex-1 rounded-full py-2.5 text-sm font-semibold border border-red-200 text-red-600 bg-white flex items-center justify-center"
+              >
+                <X className="h-4 w-4 mr-1" />
+                Cancel trip
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate("/driver/trip/demo-trip/waiting")}
+                className="flex-1 rounded-full py-2.5 text-sm font-semibold bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c] flex items-center justify-center"
+              >
+                I&apos;ve arrived
+              </button>
             </div>
           </section>
         </main>
 
         {/* Bottom navigation – Home active (arrival context) */}
         <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
+          <BottomNavItem
+            icon={Home}
+            label="Home"
+            active={nav === "home"}
+            onClick={() => navigate(bottomNavRoutes.home)}
+          />
           <BottomNavItem
             icon={Briefcase}
             label="Manager"
             active={nav === "manager"}
+            onClick={() => navigate(bottomNavRoutes.manager)}
           />
           <BottomNavItem
             icon={Wallet}
             label="Wallet"
             active={nav === "wallet"}
+            onClick={() => navigate(bottomNavRoutes.wallet)}
           />
           <BottomNavItem
             icon={Settings}
             label="Settings"
             active={nav === "settings"}
+            onClick={() => navigate(bottomNavRoutes.settings)}
           />
         </nav>
       </div>

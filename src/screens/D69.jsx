@@ -11,6 +11,7 @@ import {
   Wallet,
   Settings,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D69 Driver – Ride History (v2)
 // Ride / Job history list with:
@@ -102,12 +103,14 @@ const TRIPS = [
   },
 ];
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active, onClick }) {
   return (
     <button
+      type="button"
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
         active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
       }`}
+      onClick={onClick}
     >
       <Icon className="h-5 w-5 mb-0.5" />
       <span>{label}</span>
@@ -161,9 +164,13 @@ function JobTypeChip({ jobType }) {
   );
 }
 
-function TripRow({ from, to, date, time, amount, hasProof, jobType }) {
+function TripRow({ from, to, date, time, amount, hasProof, jobType, onClick }) {
   return (
-    <button className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform flex items-center justify-between text-[11px] text-slate-600">
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform flex items-center justify-between text-[11px] text-slate-600"
+    >
       <div className="flex flex-col items-start max-w-[190px]">
         <span className="text-xs font-semibold text-slate-900 truncate">
           {from} → {to}
@@ -203,6 +210,13 @@ function TripRow({ from, to, date, time, amount, hasProof, jobType }) {
 export default function RideHistoryScreen() {
   const [nav] = useState("home");
   const [filter, setFilter] = useState("all");
+  const navigate = useNavigate();
+  const bottomNavRoutes = {
+    home: "/driver/dashboard/online",
+    manager: "/driver/jobs/list",
+    wallet: "/driver/earnings/overview",
+    settings: "/driver/preferences",
+  };
 
   const filteredTrips =
     filter === "all"
@@ -234,7 +248,11 @@ export default function RideHistoryScreen() {
               </h1>
             </div>
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
+          <button
+            type="button"
+            onClick={() => navigate("/driver/ridesharing/notification")}
+            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
+          >
             <Bell className="h-4 w-4" />
           </button>
         </header>
@@ -262,6 +280,7 @@ export default function RideHistoryScreen() {
               {JOB_FILTERS.map((f) => (
                 <button
                   key={f.key}
+                  type="button"
                   onClick={() => setFilter(f.key)}
                   className={`rounded-full px-2.5 py-0.5 border font-medium ${
                     filter === f.key
@@ -277,9 +296,23 @@ export default function RideHistoryScreen() {
 
           {/* Ride / job list */}
           <section className="space-y-2">
-            {filteredTrips.map((trip) => (
-              <TripRow key={trip.id} {...trip} />
-            ))}
+            {filteredTrips.map((trip) => {
+              const tripRoutes = {
+                ride: "/driver/trip/demo-trip/proof",
+                delivery: "/driver/delivery/route/demo-route/details",
+                rental: "/driver/rental/job/demo-job/status",
+                tour: "/driver/tour/demo-tour/today",
+                shuttle: "/driver/help/shuttle-link",
+                ambulance: "/driver/ambulance/job/demo-job/status",
+              };
+              return (
+                <TripRow
+                  key={trip.id}
+                  {...trip}
+                  onClick={() => navigate(tripRoutes[trip.jobType] || "/driver/trip/demo-trip/proof")}
+                />
+              );
+            })}
 
             {filteredTrips.length === 0 && (
               <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 text-[11px] text-slate-600">
@@ -292,21 +325,29 @@ export default function RideHistoryScreen() {
 
         {/* Bottom navigation – Home active (history context) */}
         <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
+          <BottomNavItem
+            icon={Home}
+            label="Home"
+            active={nav === "home"}
+            onClick={() => navigate(bottomNavRoutes.home)}
+          />
           <BottomNavItem
             icon={Briefcase}
             label="Manager"
             active={nav === "manager"}
+            onClick={() => navigate(bottomNavRoutes.manager)}
           />
           <BottomNavItem
             icon={Wallet}
             label="Wallet"
             active={nav === "wallet"}
+            onClick={() => navigate(bottomNavRoutes.wallet)}
           />
           <BottomNavItem
             icon={Settings}
             label="Settings"
             active={nav === "settings"}
+            onClick={() => navigate(bottomNavRoutes.settings)}
           />
         </nav>
       </div>

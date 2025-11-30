@@ -12,6 +12,7 @@ import {
   Wallet,
   Settings,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D47 Driver App – Navigate to Pick-Up Location (v2)
 // Navigate-to-pickup view with job type awareness and special variants for
@@ -25,12 +26,14 @@ import {
 
 const JOB_TYPES = ["ride", "delivery", "rental", "tour", "ambulance"];
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active, onClick = () => {} }) {
   return (
     <button
+      type="button"
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
         active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
       }`}
+      onClick={onClick}
     >
       <Icon className="h-5 w-5 mb-0.5" />
       <span>{label}</span>
@@ -41,6 +44,13 @@ function BottomNavItem({ icon: Icon, label, active }) {
 export default function NavigateToPickupScreen() {
   const [nav] = useState("home");
   const [jobType, setJobType] = useState("ride"); // "ride" | "delivery" | "rental" | "tour" | "ambulance"
+  const navigate = useNavigate();
+  const bottomNavRoutes = {
+    home: "/driver/dashboard/online",
+    manager: "/driver/jobs/list",
+    wallet: "/driver/earnings/overview",
+    settings: "/driver/preferences",
+  };
 
   const jobTypeLabelMap = {
     ride: "Ride",
@@ -104,7 +114,11 @@ export default function NavigateToPickupScreen() {
               )}
             </div>
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
+          <button
+            type="button"
+            onClick={() => navigate("/driver/ridesharing/notification")}
+            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
+          >
             <Bell className="h-4 w-4" />
           </button>
         </header>
@@ -118,6 +132,7 @@ export default function NavigateToPickupScreen() {
             {JOB_TYPES.map((type) => (
               <button
                 key={type}
+                type="button"
                 onClick={() => setJobType(type)}
                 className={`rounded-full px-3 py-0.5 text-[11px] font-medium border transition-colors ${
                   jobType === type
@@ -203,7 +218,11 @@ export default function NavigateToPickupScreen() {
                   </span>
                 )}
                 {!isAmbulance && (
-                  <button className="mt-1 inline-flex items-center rounded-full border border-slate-200 px-2 py-0.5 text-[10px] text-slate-700">
+                  <button
+                    type="button"
+                    onClick={() => navigate("/driver/trip/demo-trip/en-route-details")}
+                    className="mt-1 inline-flex items-center rounded-full border border-slate-200 px-2 py-0.5 text-[10px] text-slate-700"
+                  >
                     <Phone className="h-3 w-3 mr-1" />
                     Contact rider
                   </button>
@@ -212,11 +231,19 @@ export default function NavigateToPickupScreen() {
             </div>
 
             <div className="flex space-x-2">
-              <button className="flex-1 rounded-full py-2.5 text-sm font-semibold border border-red-200 text-red-600 bg-white flex items-center justify-center">
+              <button
+                type="button"
+                onClick={() => navigate("/driver/trip/demo-trip/cancel/reason")}
+                className="flex-1 rounded-full py-2.5 text-sm font-semibold border border-red-200 text-red-600 bg-white flex items-center justify-center"
+              >
                 <X className="h-4 w-4 mr-1" />
                 Cancel trip
               </button>
-              <button className="flex-1 rounded-full py-2.5 text-sm font-semibold bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c] flex items-center justify-center">
+              <button
+                type="button"
+                onClick={() => navigate("/driver/trip/demo-trip/arrived")}
+                className="flex-1 rounded-full py-2.5 text-sm font-semibold bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c] flex items-center justify-center"
+              >
                 I&apos;ve arrived
               </button>
             </div>
@@ -231,21 +258,29 @@ export default function NavigateToPickupScreen() {
 
         {/* Bottom navigation – Home active (navigation context) */}
         <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
+          <BottomNavItem
+            icon={Home}
+            label="Home"
+            active={nav === "home"}
+            onClick={() => navigate(bottomNavRoutes.home)}
+          />
           <BottomNavItem
             icon={Briefcase}
             label="Manager"
             active={nav === "manager"}
+            onClick={() => navigate(bottomNavRoutes.manager)}
           />
           <BottomNavItem
             icon={Wallet}
             label="Wallet"
             active={nav === "wallet"}
+            onClick={() => navigate(bottomNavRoutes.wallet)}
           />
           <BottomNavItem
             icon={Settings}
             label="Settings"
             active={nav === "settings"}
+            onClick={() => navigate(bottomNavRoutes.settings)}
           />
         </nav>
       </div>

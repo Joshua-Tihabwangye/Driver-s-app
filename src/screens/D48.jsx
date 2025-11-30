@@ -12,17 +12,20 @@ import {
   Wallet,
   Settings,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D48 Driver App – Navigation in Progress (v1)
 // Navigation view while driving to drop-off or along the route.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active, onClick }) {
   return (
     <button
+      type="button"
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
         active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
       }`}
+      onClick={onClick}
     >
       <Icon className="h-5 w-5 mb-0.5" />
       <span>{label}</span>
@@ -32,6 +35,13 @@ function BottomNavItem({ icon: Icon, label, active }) {
 
 export default function NavigationInProgressScreen() {
   const [nav] = useState("home");
+  const navigate = useNavigate();
+  const bottomNavRoutes = {
+    home: "/driver/dashboard/online",
+    manager: "/driver/jobs/list",
+    wallet: "/driver/earnings/overview",
+    settings: "/driver/preferences",
+  };
 
   return (
     <div className="min-h-screen flex justify-center bg-[#0f172a] py-4">
@@ -57,7 +67,11 @@ export default function NavigationInProgressScreen() {
               </h1>
             </div>
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
+          <button
+            type="button"
+            onClick={() => navigate("/driver/ridesharing/notification")}
+            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
+          >
             <Bell className="h-4 w-4" />
           </button>
         </header>
@@ -65,7 +79,11 @@ export default function NavigationInProgressScreen() {
         {/* Content */}
         <main className="flex-1 px-4 pb-4 overflow-y-auto scrollbar-hide">
           {/* Map container */}
-          <section className="relative rounded-3xl overflow-hidden border border-slate-100 bg-slate-200 h-[360px] mb-3">
+          <button
+            type="button"
+            onClick={() => navigate("/driver/map/online")}
+            className="relative rounded-3xl overflow-hidden border border-slate-100 bg-slate-200 h-[360px] mb-3 w-full text-left active:scale-[0.99] transition-transform"
+          >
             <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
 
             {/* Route polyline */}
@@ -98,11 +116,15 @@ export default function NavigationInProgressScreen() {
                 Drop-off
               </span>
             </div>
-          </section>
+          </button>
 
           {/* Trip info + controls */}
           <section className="space-y-3">
-            <div className="rounded-2xl border border-slate-100 bg-white px-3 py-3 flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => navigate("/driver/trip/demo-trip/en-route-details")}
+              className="rounded-2xl border border-slate-100 bg-white px-3 py-3 flex items-center justify-between w-full text-left active:scale-[0.99] transition-transform"
+            >
               <div className="flex flex-col items-start">
                 <span className="text-xs font-semibold text-slate-900">
                   To · Bugolobi
@@ -117,14 +139,22 @@ export default function NavigationInProgressScreen() {
                   ETA 18:34
                 </span>
               </div>
-            </div>
+            </button>
 
             <div className="flex space-x-2">
-              <button className="flex-1 rounded-full py-2.5 text-sm font-semibold border border-slate-200 text-slate-700 bg-white flex items-center justify-center">
+              <button
+                type="button"
+                onClick={() => navigate("/driver/trip/demo-trip/in-progress")}
+                className="flex-1 rounded-full py-2.5 text-sm font-semibold border border-slate-200 text-slate-700 bg-white flex items-center justify-center"
+              >
                 <PauseCircle className="h-4 w-4 mr-1" />
                 Pause navigation
               </button>
-              <button className="flex-1 rounded-full py-2.5 text-sm font-semibold bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c] flex items-center justify-center">
+              <button
+                type="button"
+                onClick={() => navigate("/driver/trip/demo-trip/completed")}
+                className="flex-1 rounded-full py-2.5 text-sm font-semibold bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c] flex items-center justify-center"
+              >
                 <Square className="h-4 w-4 mr-1" />
                 End trip
               </button>
@@ -139,10 +169,30 @@ export default function NavigationInProgressScreen() {
 
         {/* Bottom navigation – Home active (navigation context) */}
         <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"} />
-          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"} />
+          <BottomNavItem
+            icon={Home}
+            label="Home"
+            active={nav === "home"}
+            onClick={() => navigate(bottomNavRoutes.home)}
+          />
+          <BottomNavItem
+            icon={Briefcase}
+            label="Manager"
+            active={nav === "manager"}
+            onClick={() => navigate(bottomNavRoutes.manager)}
+          />
+          <BottomNavItem
+            icon={Wallet}
+            label="Wallet"
+            active={nav === "wallet"}
+            onClick={() => navigate(bottomNavRoutes.wallet)}
+          />
+          <BottomNavItem
+            icon={Settings}
+            label="Settings"
+            active={nav === "settings"}
+            onClick={() => navigate(bottomNavRoutes.settings)}
+          />
         </nav>
       </div>
     </div>

@@ -11,17 +11,20 @@ import {
   Wallet,
   Settings,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D38 Set Weekly Earning Goal (Driver App) (v1)
 // Screen to set a weekly earnings goal with quick presets and +/- controls.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active, onClick = () => {} }) {
   return (
     <button
+      type="button"
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
         active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
       }`}
+      onClick={onClick}
     >
       <Icon className="h-5 w-5 mb-0.5" />
       <span>{label}</span>
@@ -32,6 +35,7 @@ function BottomNavItem({ icon: Icon, label, active }) {
 function PresetButton({ label, active, onClick }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       className={`rounded-2xl px-3 py-2 text-[11px] font-medium border flex-1 min-w-[0] active:scale-[0.97] transition-transform ${
         active
@@ -47,12 +51,28 @@ function PresetButton({ label, active, onClick }) {
 export default function WeeklyEarningGoalScreen() {
   const [nav] = useState("wallet");
   const [goal, setGoal] = useState(80); // default weekly goal
+  const navigate = useNavigate();
+  const bottomNavRoutes = {
+    home: "/driver/dashboard/online",
+    manager: "/driver/jobs/list",
+    wallet: "/driver/earnings/overview",
+    settings: "/driver/preferences",
+  };
+
+  const clampGoal = (value) => Math.max(20, Math.min(value, 500));
 
   const handleAdjust = (delta) => {
-    setGoal((g) => Math.max(20, Math.min(g + delta, 500)));
+    setGoal((g) => clampGoal(g + delta));
   };
 
   const handlePreset = (amount) => setGoal(amount);
+  const handleCustom = () => {
+    const input = window.prompt("Enter your weekly goal (20 - 500)", goal);
+    const parsed = parseInt(input || "", 10);
+    if (!Number.isNaN(parsed)) {
+      setGoal(clampGoal(parsed));
+    }
+  };
 
   return (
     <div className="min-h-screen flex justify-center bg-[#0f172a] py-4">
@@ -78,7 +98,11 @@ export default function WeeklyEarningGoalScreen() {
               </h1>
             </div>
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
+          <button
+            type="button"
+            onClick={() => navigate("/driver/ridesharing/notification")}
+            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
+          >
             <Bell className="h-4 w-4" />
           </button>
         </header>
@@ -165,7 +189,7 @@ export default function WeeklyEarningGoalScreen() {
                 <PresetButton
                   label="Custom"
                   active={![60, 100, 150].includes(goal)}
-                  onClick={() => {}}
+                  onClick={handleCustom}
                 />
               </div>
             </div>
@@ -188,14 +212,47 @@ export default function WeeklyEarningGoalScreen() {
               </div>
             </div>
           </section>
+
+          <div className="space-y-1 pb-2">
+            <button
+              type="button"
+              onClick={() => navigate("/driver/earnings/overview")}
+              className="w-full rounded-full bg-[#03cd8c] text-slate-900 font-semibold text-sm py-3 active:scale-[0.99] transition-transform shadow-sm"
+            >
+              Save weekly goal
+            </button>
+            <p className="text-[11px] text-slate-500 text-center">
+              You can adjust this anytime from your earnings overview.
+            </p>
+          </div>
         </main>
 
         {/* Bottom navigation – Wallet active (earnings context) */}
         <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"} />
-          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"} />
+          <BottomNavItem
+            icon={Home}
+            label="Home"
+            active={nav === "home"}
+            onClick={() => navigate(bottomNavRoutes.home)}
+          />
+          <BottomNavItem
+            icon={Briefcase}
+            label="Manager"
+            active={nav === "manager"}
+            onClick={() => navigate(bottomNavRoutes.manager)}
+          />
+          <BottomNavItem
+            icon={Wallet}
+            label="Wallet"
+            active={nav === "wallet"}
+            onClick={() => navigate(bottomNavRoutes.wallet)}
+          />
+          <BottomNavItem
+            icon={Settings}
+            label="Settings"
+            active={nav === "settings"}
+            onClick={() => navigate(bottomNavRoutes.settings)}
+          />
         </nav>
       </div>
     </div>

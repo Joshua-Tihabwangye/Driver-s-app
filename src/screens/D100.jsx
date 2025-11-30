@@ -15,6 +15,7 @@ import {
   Ambulance,
   Hospital,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D100 Ambulance Job Status Screen (v2)
 // In-progress view tailored for Ambulance runs.
@@ -35,12 +36,14 @@ const STAGES = [
   { key: "atHospital", label: "At hospital / handover completed" },
 ];
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active, onClick = () => {} }) {
   return (
     <button
+      type="button"
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
         active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
       }`}
+      onClick={onClick}
     >
       <Icon className="h-5 w-5 mb-0.5" />
       <span>{label}</span>
@@ -62,6 +65,13 @@ export default function AmbulanceJobStatusScreen() {
   const [dispatchSeconds, setDispatchSeconds] = useState(0);
   const [onSceneSeconds, setOnSceneSeconds] = useState(0);
   const [transportSeconds, setTransportSeconds] = useState(0);
+  const navigate = useNavigate();
+  const bottomNavRoutes = {
+    home: "/driver/dashboard/online",
+    manager: "/driver/jobs/list",
+    wallet: "/driver/earnings/overview",
+    settings: "/driver/preferences",
+  };
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -96,9 +106,7 @@ export default function AmbulanceJobStatusScreen() {
   };
 
   const handleOpenCompletion = () => {
-    // In the real app, navigate to D56 Trip Completion with jobType="ambulance",
-    // for example:
-    // navigate("/driver/trip-completion", { state: { jobType: "ambulance" } });
+    navigate("/driver/trip/demo-trip/completed");
   };
 
   const handlePrimaryClick = () => {
@@ -246,28 +254,32 @@ export default function AmbulanceJobStatusScreen() {
               </div>
             </div>
             <div className="flex space-x-2">
-              <div className="flex-1 rounded-2xl border border-slate-100 bg-white px-3 py-3 flex flex-col text-[11px] text-slate-600">
-                <span className="text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-0.5">
-                  Transport time
-                </span>
-                <span className="inline-flex items-center text-sm font-semibold text-slate-900">
-                  <Clock className="h-3.5 w-3.5 mr-1" />
-                  {transportTime}
-                </span>
-              </div>
-              <div className="flex-1 rounded-2xl border border-slate-100 bg-white px-3 py-3 flex flex-col text-[11px] text-slate-600">
-                <span className="text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-0.5">
-                  Status hint
-                </span>
-                <span>
-                  {stage === "enRouteToPatient" && "Drive safely to the patient location."}
-                  {stage === "onScene" && "Provide assistance and prepare for transport."}
-                  {stage === "enRouteToHospital" && "Drive steadily to the hospital and follow route guidance."}
-                  {stage === "atHospital" && "Handover complete – follow operator instructions."}
-                </span>
-              </div>
+            <div className="flex-1 rounded-2xl border border-slate-100 bg-white px-3 py-3 flex flex-col text-[11px] text-slate-600">
+              <span className="text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-0.5">
+                Transport time
+              </span>
+              <span className="inline-flex items-center text-sm font-semibold text-slate-900">
+                <Clock className="h-3.5 w-3.5 mr-1" />
+                {transportTime}
+              </span>
             </div>
-          </section>
+            <button
+              type="button"
+              onClick={() => navigate("/driver/safety/toolkit")}
+              className="flex-1 rounded-2xl border border-slate-100 bg-white px-3 py-3 flex flex-col text-[11px] text-slate-600 text-left active:scale-[0.98] transition-transform"
+            >
+              <span className="text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-0.5">
+                Status hint
+              </span>
+              <span>
+                {stage === "enRouteToPatient" && "Drive safely to the patient location."}
+                {stage === "onScene" && "Provide assistance and prepare for transport."}
+                {stage === "enRouteToHospital" && "Drive steadily to the hospital and follow route guidance."}
+                {stage === "atHospital" && "Handover complete – follow operator instructions."}
+              </span>
+            </button>
+          </div>
+        </section>
 
           {/* Safety & actions */}
           <section className="space-y-3 pt-1 pb-4">
@@ -290,6 +302,7 @@ export default function AmbulanceJobStatusScreen() {
 
             {/* Primary CTA */}
             <button
+              type="button"
               onClick={handlePrimaryClick}
               className={`w-full rounded-full py-2.5 text-sm font-semibold flex items-center justify-center shadow-sm ${
                 isFinalStage
@@ -304,10 +317,30 @@ export default function AmbulanceJobStatusScreen() {
 
         {/* Bottom navigation – Home active (ambulance context) */}
         <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"} />
-          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"} />
+          <BottomNavItem
+            icon={Home}
+            label="Home"
+            active={nav === "home"}
+            onClick={() => navigate(bottomNavRoutes.home)}
+          />
+          <BottomNavItem
+            icon={Briefcase}
+            label="Manager"
+            active={nav === "manager"}
+            onClick={() => navigate(bottomNavRoutes.manager)}
+          />
+          <BottomNavItem
+            icon={Wallet}
+            label="Wallet"
+            active={nav === "wallet"}
+            onClick={() => navigate(bottomNavRoutes.wallet)}
+          />
+          <BottomNavItem
+            icon={Settings}
+            label="Settings"
+            active={nav === "settings"}
+            onClick={() => navigate(bottomNavRoutes.settings)}
+          />
         </nav>
       </div>
     </div>

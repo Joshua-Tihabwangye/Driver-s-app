@@ -11,18 +11,21 @@ import {
   Wallet,
   Settings,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D63 Driver – Emergency Calling Screen (v3, light mode)
 // In-call UI while driver is connected to emergency services or EVzone support.
 // Copy is generic and works for all job types (Ride / Delivery / Rental / Tour / Ambulance).
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active, onClick = () => {} }) {
   return (
     <button
+      type="button"
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
         active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
       }`}
+      onClick={onClick}
     >
       <Icon className="h-5 w-5 mb-0.5" />
       <span>{label}</span>
@@ -41,6 +44,16 @@ function formatCallTime(seconds) {
 export default function EmergencyCallingScreen() {
   const [nav] = useState("home");
   const [seconds, setSeconds] = useState(0);
+  const [muted, setMuted] = useState(false);
+  const [speaker, setSpeaker] = useState(false);
+  const [keypadOpen, setKeypadOpen] = useState(false);
+  const navigate = useNavigate();
+  const bottomNavRoutes = {
+    home: "/driver/dashboard/online",
+    manager: "/driver/jobs/list",
+    wallet: "/driver/earnings/overview",
+    settings: "/driver/preferences",
+  };
 
   useEffect(() => {
     const id = setInterval(() => setSeconds((s) => s + 1), 1000);
@@ -74,7 +87,11 @@ export default function EmergencyCallingScreen() {
               </h1>
             </div>
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
+          <button
+            type="button"
+            onClick={() => navigate("/driver/ridesharing/notification")}
+            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
+          >
             <Bell className="h-4 w-4" />
           </button>
         </header>
@@ -120,28 +137,44 @@ export default function EmergencyCallingScreen() {
           {/* Call controls */}
           <section className="w-full max-w-[280px] pb-6 flex flex-col items-center space-y-4">
             <div className="flex items-center justify-between w-full text-[11px] text-slate-700">
-              <button className="flex flex-col items-center space-y-1">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100">
+              <button
+                type="button"
+                onClick={() => setMuted((v) => !v)}
+                className={`flex flex-col items-center space-y-1 ${muted ? "text-[#03cd8c]" : ""}`}
+              >
+                <div className={`flex h-10 w-10 items-center justify-center rounded-full ${muted ? "bg-emerald-50" : "bg-slate-100"}`}>
                   <MicOff className="h-4 w-4" />
                 </div>
-                <span>Mute</span>
+                <span>{muted ? "Muted" : "Mute"}</span>
               </button>
-              <button className="flex flex-col items-center space-y-1">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100">
+              <button
+                type="button"
+                onClick={() => setSpeaker((v) => !v)}
+                className={`flex flex-col items-center space-y-1 ${speaker ? "text-[#03cd8c]" : ""}`}
+              >
+                <div className={`flex h-10 w-10 items-center justify-center rounded-full ${speaker ? "bg-emerald-50" : "bg-slate-100"}`}>
                   <Volume2 className="h-4 w-4" />
                 </div>
-                <span>Speaker</span>
+                <span>{speaker ? "Speaker on" : "Speaker"}</span>
               </button>
-              <button className="flex flex-col items-center space-y-1">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100">
+              <button
+                type="button"
+                onClick={() => setKeypadOpen((v) => !v)}
+                className={`flex flex-col items-center space-y-1 ${keypadOpen ? "text-[#03cd8c]" : ""}`}
+              >
+                <div className={`flex h-10 w-10 items-center justify-center rounded-full ${keypadOpen ? "bg-emerald-50" : "bg-slate-100"}`}>
                   {/* Using Phone icon as a generic keypad control to avoid unsupported Keypad icon */}
                   <Phone className="h-4 w-4" />
                 </div>
-                <span>Keypad</span>
+                <span>{keypadOpen ? "Keypad open" : "Keypad"}</span>
               </button>
             </div>
 
-            <button className="mt-2 flex h-14 w-14 items-center justify-center rounded-full bg-red-600 text-slate-50 hover:bg-red-700 shadow-lg">
+            <button
+              type="button"
+              onClick={() => navigate("/driver/dashboard/offline")}
+              className="mt-2 flex h-14 w-14 items-center justify-center rounded-full bg-red-600 text-slate-50 hover:bg-red-700 shadow-lg"
+            >
               <PhoneOff className="h-6 w-6" />
             </button>
           </section>
@@ -149,10 +182,30 @@ export default function EmergencyCallingScreen() {
 
         {/* Bottom navigation – Home active (call context) */}
         <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"} />
-          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"} />
+          <BottomNavItem
+            icon={Home}
+            label="Home"
+            active={nav === "home"}
+            onClick={() => navigate(bottomNavRoutes.home)}
+          />
+          <BottomNavItem
+            icon={Briefcase}
+            label="Manager"
+            active={nav === "manager"}
+            onClick={() => navigate(bottomNavRoutes.manager)}
+          />
+          <BottomNavItem
+            icon={Wallet}
+            label="Wallet"
+            active={nav === "wallet"}
+            onClick={() => navigate(bottomNavRoutes.wallet)}
+          />
+          <BottomNavItem
+            icon={Settings}
+            label="Settings"
+            active={nav === "settings"}
+            onClick={() => navigate(bottomNavRoutes.settings)}
+          />
         </nav>
       </div>
     </div>

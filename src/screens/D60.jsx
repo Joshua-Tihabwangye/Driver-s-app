@@ -11,6 +11,7 @@ import {
   Wallet,
   Settings,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D60 Driver – Emergency Assistance Screen (map + location preview variant) (v2)
 // Emergency assistance view with a small map + current location, and options to contact
@@ -18,12 +19,14 @@ import {
 // type, including Ambulance runs.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active, onClick = () => {} }) {
   return (
     <button
+      type="button"
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
         active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
       }`}
+      onClick={onClick}
     >
       <Icon className="h-5 w-5 mb-0.5" />
       <span>{label}</span>
@@ -33,6 +36,18 @@ function BottomNavItem({ icon: Icon, label, active }) {
 
 export default function EmergencyAssistanceMapVariantScreen() {
   const [nav] = useState("home");
+  const navigate = useNavigate();
+  const bottomNavRoutes = {
+    home: "/driver/dashboard/online",
+    manager: "/driver/jobs/list",
+    wallet: "/driver/earnings/overview",
+    settings: "/driver/preferences",
+  };
+
+  const callNumber = (phone) => {
+    const target = (phone || "").replace(/[^\d+]/g, "");
+    if (target) window.open(`tel:${target}`);
+  };
 
   return (
     <div className="min-h-screen flex justify-center bg-[#0f172a] py-4">
@@ -58,7 +73,11 @@ export default function EmergencyAssistanceMapVariantScreen() {
               </h1>
             </div>
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
+          <button
+            type="button"
+            onClick={() => navigate("/driver/ridesharing/notification")}
+            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
+          >
             <Bell className="h-4 w-4" />
           </button>
         </header>
@@ -104,7 +123,11 @@ export default function EmergencyAssistanceMapVariantScreen() {
             <h2 className="text-sm font-semibold text-slate-900 mb-1">
               Choose how we can help
             </h2>
-            <button className="w-full rounded-2xl border border-red-200 bg-red-50 px-3 py-3 flex items-start space-x-2 text-[11px] text-red-700 active:scale-[0.98] transition-transform">
+            <button
+              type="button"
+              onClick={() => callNumber("+256112")}
+              className="w-full rounded-2xl border border-red-200 bg-red-50 px-3 py-3 flex items-start space-x-2 text-[11px] text-red-700 active:scale-[0.98] transition-transform"
+            >
               <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white">
                 <AlertTriangle className="h-4 w-4" />
               </div>
@@ -121,7 +144,11 @@ export default function EmergencyAssistanceMapVariantScreen() {
               <Phone className="h-4 w-4 mt-0.5 text-red-500" />
             </button>
 
-            <button className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-3 flex items-start space-x-2 text-[11px] text-slate-600 active:scale-[0.98] transition-transform">
+            <button
+              type="button"
+              onClick={() => callNumber("+256700000555")}
+              className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-3 flex items-start space-x-2 text-[11px] text-slate-600 active:scale-[0.98] transition-transform"
+            >
               <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-slate-50">
                 <Phone className="h-4 w-4 text-slate-700" />
               </div>
@@ -136,7 +163,11 @@ export default function EmergencyAssistanceMapVariantScreen() {
               </div>
             </button>
 
-            <button className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-3 flex items-start space-x-2 text-[11px] text-slate-600 active:scale-[0.98] transition-transform">
+            <button
+              type="button"
+              onClick={() => navigate("/driver/safety/toolkit")}
+              className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-3 flex items-start space-x-2 text-[11px] text-slate-600 active:scale-[0.98] transition-transform"
+            >
               <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-slate-50">
                 <ShieldCheck className="h-4 w-4 text-slate-700" />
               </div>
@@ -156,10 +187,30 @@ export default function EmergencyAssistanceMapVariantScreen() {
 
         {/* Bottom navigation – Home active (emergency context) */}
         <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"} />
-          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"} />
+          <BottomNavItem
+            icon={Home}
+            label="Home"
+            active={nav === "home"}
+            onClick={() => navigate(bottomNavRoutes.home)}
+          />
+          <BottomNavItem
+            icon={Briefcase}
+            label="Manager"
+            active={nav === "manager"}
+            onClick={() => navigate(bottomNavRoutes.manager)}
+          />
+          <BottomNavItem
+            icon={Wallet}
+            label="Wallet"
+            active={nav === "wallet"}
+            onClick={() => navigate(bottomNavRoutes.wallet)}
+          />
+          <BottomNavItem
+            icon={Settings}
+            label="Settings"
+            active={nav === "settings"}
+            onClick={() => navigate(bottomNavRoutes.settings)}
+          />
         </nav>
       </div>
     </div>
