@@ -7,6 +7,7 @@ import {
   MenuItem,
   Typography,
   Paper,
+  InputAdornment,
 } from "@mui/material";
 import {
   Routes,
@@ -16,6 +17,7 @@ import {
   Navigate,
   matchPath,
 } from "react-router-dom";
+import { MapPin, Bell as BellIcon } from "lucide-react";
 import D01Screen from "./screens/D01.jsx";
 import D02Screen from "./screens/D02.jsx";
 import D03Screen from "./screens/D03.jsx";
@@ -861,49 +863,136 @@ export default function App() {
         sx={{
           width: 360,
           mb: 2,
-          display: "flex",
-          flexDirection: "column",
-          gap: 1,
         }}
       >
-        <Typography
-          variant="subtitle2"
-          sx={{ color: "#03CD8C", fontWeight: 600 }}
-          component="div"
-        >
-          EVzone Driver App – Supervisor Preview
-        </Typography>
-        <Typography
-          variant="caption"
-          sx={{ color: "rgba(255,255,255,0.8)" }}
-        >
-          Select any screen ID from D01 to D102 or jump via the official routes
-          from ROUTING_GUIDE.md.
-        </Typography>
         <Paper
-          elevation={3}
+          elevation={6}
           sx={{
-            p: 1.5,
-            borderRadius: 2,
-            bgcolor: "background.paper",
+            borderRadius: 3,
+            overflow: "hidden",
+            bgcolor: "transparent",
+            boxShadow: "0 12px 30px rgba(0,0,0,0.2)",
           }}
         >
-          <FormControl fullWidth size="small">
-            <InputLabel id="screen-select-label">Screen (D01–D102)</InputLabel>
-            <Select
-              labelId="screen-select-label"
-              id="screen-select"
-              value={currentScreen.id}
-              label="Screen (D01–D102)"
-              onChange={handleScreenChange}
+          <Box
+            sx={{
+              px: 2.25,
+              pt: 2,
+              pb: 1.25,
+              background: "linear-gradient(135deg, #0bbf7c, #03cd8c)",
+              color: "#fff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 0.6 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                <MapPin size={16} />
+                <Typography
+                  variant="subtitle1"
+                  sx={{ fontWeight: 700, fontSize: 15, lineHeight: 1.2 }}
+                >
+                  EVzone Driver App – Supervisor Preview
+                </Typography>
+              </Box>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: "rgba(255,255,255,0.9)",
+                  fontSize: 12.5,
+                  lineHeight: 1.45,
+                  maxWidth: 280,
+                }}
+              >
+                Select any screen ID from D01 to D102 or jump via the official
+                routes from ROUTING_GUIDE.md.
+              </Typography>
+            </Box>
+            <Box
+              component="button"
+              onClick={() => navigate("/driver/ridesharing/notification")}
+              sx={{
+                background: "rgba(255,255,255,0.15)",
+                border: "1px solid rgba(255,255,255,0.25)",
+                color: "#fff",
+                borderRadius: "999px",
+                padding: "6px",
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "all 0.15s ease",
+                "&:hover": { background: "rgba(255,255,255,0.25)" },
+              }}
             >
-              {SCREENS.map((screen) => (
-                <MenuItem key={screen.id} value={screen.id}>
-                  {screen.id} – {screen.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+              <BellIcon size={16} />
+            </Box>
+          </Box>
+
+          <Box
+            sx={{
+              px: 2,
+              pb: 2,
+              pt: 1.25,
+              backgroundColor: "#ffffff",
+              borderRadius: "0 0 24px 24px",
+            }}
+          >
+            <FormControl
+              fullWidth
+              size="small"
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: 3,
+                  backgroundColor: "#ffffff",
+                  boxShadow: "0 8px 20px rgba(15,23,42,0.12)",
+                  "& .MuiSelect-select": {
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0.75,
+                    fontWeight: 600,
+                    fontSize: 14,
+                    py: 1.25,
+                  },
+                },
+                "& .MuiInputLabel-root": {
+                  fontSize: 12,
+                  letterSpacing: 0.2,
+                },
+                mt: 0.5,
+              }}
+            >
+              <InputLabel id="screen-select-label">Screen (D01–D102)</InputLabel>
+              <Select
+                labelId="screen-select-label"
+                id="screen-select"
+                value={currentScreen.id}
+                label="Screen (D01–D102)"
+                onChange={handleScreenChange}
+                inputProps={{ "aria-label": "Select screen" }}
+                startAdornment={
+                  <InputAdornment position="start" sx={{ color: "#94a3b8" }}>
+                    <MapPin size={16} />
+                  </InputAdornment>
+                }
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      maxHeight: 360,
+                      borderRadius: 2,
+                    },
+                  },
+                }}
+              >
+                {SCREENS.map((screen) => (
+                  <MenuItem key={screen.id} value={screen.id}>
+                    {screen.id} – {screen.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
         </Paper>
       </Box>
 
