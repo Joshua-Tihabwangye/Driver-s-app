@@ -98,7 +98,7 @@ export default function D29ActiveDashboardScreen() {
 
   // In a real app these would come from backend metrics for the current day.
   const onlineTime = "3h 24m";
-  const jobsToday = 12;
+  const jobsToday: number = 12;
   const earningsToday = "$84.60";
 
   const jobMix = {

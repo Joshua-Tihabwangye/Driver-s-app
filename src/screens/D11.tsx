@@ -30,7 +30,7 @@ function BottomNavItem({ icon: Icon, label, active }) {
   );
 }
 
-function InfoRow({ icon: Icon, label, value, muted }) {
+function InfoRow({ icon: Icon, label, value, muted = false }: { icon: React.ElementType; label: string; value: string; muted?: boolean }) {
   return (
     <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-white px-3 py-2.5">
       <div className="flex items-center space-x-3">

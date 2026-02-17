@@ -37,7 +37,7 @@ function BottomNavItem({ icon: Icon, label, active }) {
   );
 }
 
-function LegendCard({ icon: Icon, title, description, bgClass, iconBgClass, children }) {
+function LegendCard({ icon: Icon, title, description, bgClass, iconBgClass, children }: { icon: React.ElementType; title: string; description: string; bgClass: string; iconBgClass: string; children?: React.ReactNode }) {
   return (
     <div
       className={`rounded-2xl border px-3 py-3 flex flex-col space-y-2 text-[11px] ${bgClass}`}

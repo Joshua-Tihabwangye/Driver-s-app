@@ -67,7 +67,7 @@ export default function WeeklyEarningGoalScreen() {
 
   const handlePreset = (amount) => setGoal(amount);
   const handleCustom = () => {
-    const input = window.prompt("Enter your weekly goal (20 - 500)", goal);
+    const input = window.prompt("Enter your weekly goal (20 - 500)", String(goal));
     const parsed = parseInt(input || "", 10);
     if (!Number.isNaN(parsed)) {
       setGoal(clampGoal(parsed));

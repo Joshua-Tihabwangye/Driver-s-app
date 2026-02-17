@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 // 375x812 phone frame. Content scrolls by swipe inside <main>.
 // Scrollbars are visually hidden using a local <style> and the `scrollbar-hide` utility.
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active = false }: { icon: React.ElementType; label: string; active?: boolean }) {
   return (
     <button
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${

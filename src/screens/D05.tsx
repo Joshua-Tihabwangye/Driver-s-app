@@ -18,7 +18,7 @@ import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D05 Driver Personal (no internal scrollbars)
 
-function BottomNavItem({ icon: Icon, label, active, onClick = () => {} }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }: { icon: React.ElementType; label: string; active?: boolean; onClick?: () => void }) {
   return (
     <button
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${

@@ -22,7 +22,7 @@ import { useNavigate } from "react-router-dom";
 // EVzone Driver App – D06 Preferences (v2)
 // 375x812 phone frame, swipe scrolling in main, no visible scrollbar.
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active = false }: { icon: React.ElementType; label: string; active?: boolean }) {
   return (
     <button
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${

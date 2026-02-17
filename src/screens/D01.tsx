@@ -43,7 +43,7 @@ const services = [
   },
 ];
 
-function BottomNavItem({ icon: Icon, label, active, onClick }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick }: { icon: React.ElementType; label: string; active?: boolean; onClick?: () => void }) {
   return (
     <button
       type="button"
