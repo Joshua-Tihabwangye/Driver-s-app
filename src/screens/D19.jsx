@@ -1,11 +1,9 @@
 import React, { useState } from "react";
 import {
   Bell,
-  BookOpen,
-  Users,
-  Car,
+  ChevronLeft,
+  Play,
   CheckCircle2,
-  Clock,
   Home,
   Briefcase,
   Wallet,
@@ -13,16 +11,17 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-// EVzone Driver App – D19 Preferences – Info Session for Driver-Partners (v1)
-// Entry to the training hub for driver-partners.
-// 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
+// EVzone Driver App – D19 Info Session for Driver-Partners
+// Redesigned to match Screenshot 0.
+// Green header, navy progress card, module list with thumbnails.
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active, onClick }) {
   return (
     <button
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
-        active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
-      }`}
+      type="button"
+      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${active ? "text-white" : "text-white/60 hover:text-white/80"
+        }`}
+      onClick={onClick}
     >
       <Icon className="h-5 w-5 mb-0.5" />
       <span>{label}</span>
@@ -30,150 +29,136 @@ function BottomNavItem({ icon: Icon, label, active }) {
   );
 }
 
-function ModuleRow({ title, description, duration, status }) {
-  const isDone = status === "Completed";
-  const isInProgress = status === "In progress";
-
+function ModuleCard({ title, description, image, completed, onClick }) {
   return (
-    <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-white px-3 py-2.5 shadow-sm">
-      <div className="flex flex-col items-start">
-        <span className="text-xs font-semibold text-slate-900">{title}</span>
-        <span className="text-[11px] text-slate-500 mb-1">{description}</span>
-        <div className="flex items-center space-x-2 text-[10px] text-slate-500">
-          <span className="inline-flex items-center">
-            <Clock className="mr-1 h-3 w-3" /> {duration}
-          </span>
-          <span className="h-1 w-1 rounded-full bg-slate-300" />
-          <span>{status}</span>
+    <div
+      onClick={onClick}
+      className="flex items-center space-x-4 rounded-3xl border border-slate-100 bg-white p-3 shadow-sm active:scale-[0.98] transition-all cursor-pointer"
+    >
+      <div className="relative h-20 w-28 flex-shrink-0 overflow-hidden rounded-2xl bg-slate-100">
+        <img src={image} alt={title} className="h-full w-full object-cover" />
+        {/* Play overlay */}
+        <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white/80 backdrop-blur-sm">
+            <Play className="h-3 w-3 fill-slate-900 text-slate-900 ml-0.5" />
+          </div>
         </div>
+        {/* Completion checkmark */}
+        {completed && (
+          <div className="absolute top-1 right-1 h-4 w-4 rounded-full bg-[#03cd8c] flex items-center justify-center border border-white">
+            <CheckCircle2 className="h-2.5 w-2.5 text-white" />
+          </div>
+        )}
       </div>
-      {isDone && (
-        <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-      )}
-      {isInProgress && (
-        <span className="text-[10px] font-medium text-[#f77f00]">Next</span>
-      )}
+      <div className="flex-1 flex flex-col items-start overflow-hidden">
+        <h3 className="text-[13px] font-bold text-slate-900 leading-tight mb-1">
+          {title}
+        </h3>
+        <p className="text-[11px] text-slate-500 leading-snug line-clamp-2">
+          {description}
+        </p>
+      </div>
     </div>
   );
 }
 
-export default function InfoSessionDriverPartnersScreen() {
+export default function InfoSessionListScreen() {
   const [nav] = useState("settings");
   const navigate = useNavigate();
 
-  return (
-    <div className="min-h-screen flex justify-center bg-[#0f172a] py-4">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
+  const modules = [
+    {
+      title: "Getting Started with Uber: A Complete Driver's Guide",
+      description: "Step-by-step guide for new Uber drivers to start driving and earning.",
+      image: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=300&h=200&fit=crop",
+      completed: true,
+    },
+    {
+      title: "How to Navigate the Uber Driver App Like a Pro",
+      description: "Master the Uber Driver app with pro tips for smooth, efficient rides.",
+      image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=300&h=200&fit=crop",
+      completed: true,
+    },
+    {
+      title: "Top Tips for New Uber Drivers: Boost Your Earnings!",
+      description: "Essential tips to help new Uber drivers maximize earnings.",
+      image: "https://images.unsplash.com/photo-1549194382-346a188f6159?w=300&h=200&fit=crop",
+      completed: false,
+    },
+    {
+      title: "Essential Safety Tips for Uber Drivers",
+      description: "Key safety tips to help Uber drivers ensure a secure driving experience.",
+      image: "https://images.unsplash.com/photo-1517021897933-0e0319cfbc28?w=300&h=200&fit=crop",
+      completed: false,
+    },
+  ];
 
-      <div className="w-[375px] h-[812px] bg-white rounded-[32px] shadow-2xl overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-              <BookOpen className="h-4 w-4 text-[#03cd8c]" />
+  return (
+    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
+      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col relative">
+
+        {/* Green curved header */}
+        <div className="relative" style={{ minHeight: 80 }}>
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+              borderRadius: "0 0 32px 32px",
+            }}
+          />
+          <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm"
+            >
+              <ChevronLeft className="h-5 w-5 text-white" />
+            </button>
+            <h1 className="text-base font-semibold text-white">Driver App</h1>
+            <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm">
+              <Bell className="h-5 w-5 text-white" />
+              <span className="absolute -top-0.5 -right-0.5 inline-flex h-3 w-3 items-center justify-center rounded-full bg-[#f77f00] border border-white" />
+            </button>
+          </header>
+        </div>
+
+        {/* Navy Progress Section */}
+        <section className="bg-[#242f4b] px-6 pt-8 pb-10">
+          <h2 className="text-2xl font-bold text-white mb-2">Let's begin Info Session</h2>
+          <p className="text-sm text-slate-300 mb-6">Getting Started Session for Driver-Partners</p>
+
+          <div className="space-y-2">
+            <div className="h-2 w-full bg-white rounded-full overflow-hidden">
+              <div className="h-full bg-[#03cd8c]" style={{ width: '60%' }} />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                Preferences · Training
-              </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Info session for driver-partners
-              </h1>
+            <div className="flex justify-between text-[11px] font-medium text-white/80">
+              <span>You're 60% completing your info session....</span>
+              <span>4/9</span>
             </div>
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
-            <Bell className="h-4 w-4" />
-            <span className="absolute -top-0.5 -right-0.5 inline-flex h-3 w-3 items-center justify-center rounded-full bg-[#f77f00]" />
-          </button>
-        </header>
+        </section>
 
         {/* Content */}
-        <main className="flex-1 px-4 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
-          {/* Hero card */}
-          <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-3">
-            <div className="flex items-center space-x-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#03cd8c] text-slate-900">
-                <Users className="h-5 w-5" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] tracking-[0.18em] uppercase text-[#a5f3fc]">
-                  Driver-partner info session
-                </span>
-                <p className="text-sm font-semibold">
-                  Understand your role, benefits and expectations.
-                </p>
-              </div>
-            </div>
-            <p className="text-[11px] text-slate-100 leading-snug">
-              This session introduces what it means to drive with EVzone – how
-              we work with drivers, what riders expect, and how to keep your
-              earnings and safety on track.
-            </p>
-            <div className="flex items-center space-x-2 text-[10px] text-emerald-300">
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              <span>Best completed before your first trip</span>
-            </div>
-          </section>
-
-          {/* Modules list */}
-          <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-slate-900 mb-1">
-              Session modules
-            </h2>
-            <ModuleRow
-              title="Welcome & EVzone mission"
-              description="Why EVzone focuses on EV drivers and sustainable mobility."
-              duration="2–3 min"
-              status="Completed"
-            />
-            <ModuleRow
-              title="How trips & orders work"
-              description="From going online to accepting rides and deliveries."
-              duration="4–5 min"
-              status="In progress"
-            />
-            <ModuleRow
-              title="Driver-partner benefits & support"
-              description="Earnings, incentives, safety tools and support channels."
-              duration="3–4 min"
-              status="Not started"
-            />
-          </section>
-
-          {/* Actions */}
-          <section className="pt-1 pb-4 flex flex-col space-y-2">
-            <button
-              type="button"
-              onClick={() => navigate("/driver/training/earnings-tutorial")}
-              className="w-full rounded-full py-2.5 text-sm font-semibold shadow-sm bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c] flex items-center justify-center"
-            >
-              <BookOpen className="h-4 w-4 mr-2" />
-              Resume info session
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate("/driver/training/earnings-tutorial")}
-              className="w-full rounded-full py-2.5 text-sm font-semibold border border-slate-200 text-slate-800 bg-white"
-            >
-              View all training modules
-            </button>
-            <p className="text-[10px] text-slate-500 text-center">
-              You can complete this session in parts – your progress is saved
-              automatically.
-            </p>
-          </section>
+        <main className="app-main flex-1 -mt-6 bg-white rounded-t-[32px] px-5 pt-8 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
+          <div className="space-y-4 pb-10">
+            {modules.map((m, idx) => (
+              <ModuleCard
+                key={idx}
+                title={m.title}
+                description={m.description}
+                image={m.image}
+                completed={m.completed}
+                onClick={() => navigate("/driver/training/earnings-tutorial")}
+              />
+            ))}
+          </div>
         </main>
 
-        {/* Bottom navigation – Settings active (Preferences context) */}
-        <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"} />
-          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"} />
+        {/* Bottom Navigation – Green */}
+        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
+          <BottomNavItem icon={Home} label="Home" onClick={() => navigate("/driver/dashboard/online")} />
+          <BottomNavItem icon={Briefcase} label="Manager" onClick={() => navigate("/driver/jobs/list")} />
+          <BottomNavItem icon={Wallet} label="Wallet" onClick={() => navigate("/driver/earnings/overview")} />
+          <BottomNavItem icon={Settings} label="Settings" active onClick={() => navigate("/driver/preferences")} />
         </nav>
       </div>
     </div>

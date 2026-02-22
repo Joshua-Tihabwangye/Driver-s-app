@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --evz-green: #12c98c;
+  --evz-stage: #eef3f2;
+  --evz-surface: #ffffff;
+  --evz-border: #dde5e4;
+}
+
 /* Global scrollbar hide utility used in phone frames */
 .scrollbar-hide::-webkit-scrollbar {
   width: 0;
@@ -16,5 +23,199 @@
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "Poppins", "Manrope", "Avenir Next", "Segoe UI", sans-serif;
+  background: var(--evz-stage);
+}
+
+.preview-root[data-screen-id]:not([data-screen-id="D102"])
+  .screen-preview-host
+  > .min-h-screen.flex.justify-center {
+  background: var(--evz-stage) !important;
+  padding-top: 16px !important;
+  padding-bottom: 20px !important;
+}
+
+.preview-root[data-screen-id]:not([data-screen-id="D102"])
+  .screen-preview-host
+  > .min-h-screen.flex.justify-center
+  > div[class*="w-[375px]"][class*="h-[812px]"] {
+  border: 1px solid var(--evz-border) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12) !important;
+  background: var(--evz-surface) !important;
+}
+
+.preview-root[data-screen-id]:not([data-screen-id="D102"])
+  .screen-preview-host
+  header {
+  border-bottom: none !important;
+  background: var(--evz-green) !important;
+  color: #ffffff !important;
+  padding-top: 14px !important;
+  padding-bottom: 12px !important;
+}
+
+.preview-root[data-screen-id]:not([data-screen-id="D102"])
+  .screen-preview-host
+  header
+  h1,
+.preview-root[data-screen-id]:not([data-screen-id="D102"])
+  .screen-preview-host
+  header
+  h2,
+.preview-root[data-screen-id]:not([data-screen-id="D102"])
+  .screen-preview-host
+  header
+  p,
+.preview-root[data-screen-id]:not([data-screen-id="D102"])
+  .screen-preview-host
+  header
+  span,
+.preview-root[data-screen-id]:not([data-screen-id="D102"])
+  .screen-preview-host
+  header
+  svg {
+  color: #ffffff !important;
+}
+
+.preview-root[data-screen-id]:not([data-screen-id="D102"])
+  .screen-preview-host
+  header
+  [class*="text-slate-"],
+.preview-root[data-screen-id]:not([data-screen-id="D102"])
+  .screen-preview-host
+  header
+  [class*="text-[#0b1e3a]"],
+.preview-root[data-screen-id]:not([data-screen-id="D102"])
+  .screen-preview-host
+  header
+  [class*="text-[#03cd8c]"] {
+  color: #ffffff !important;
+}
+
+.preview-root[data-screen-id]:not([data-screen-id="D102"])
+  .screen-preview-host
+  header
+  [class*="bg-slate-100"],
+.preview-root[data-screen-id]:not([data-screen-id="D102"])
+  .screen-preview-host
+  header
+  [class*="bg-[#e6fff7]"],
+.preview-root[data-screen-id]:not([data-screen-id="D102"])
+  .screen-preview-host
+  header
+  [class*="bg-white"] {
+  background: rgba(255, 255, 255, 0.18) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: #ffffff !important;
+}
+
+.preview-root[data-screen-id]:not([data-screen-id="D102"])
+  .screen-preview-host
+  nav.border-t.backdrop-blur.flex {
+  border-top: none !important;
+  background: var(--evz-green) !important;
+  backdrop-filter: none;
+}
+
+.preview-root[data-screen-id]:not([data-screen-id="D102"])
+  .screen-preview-host
+  nav.border-t.backdrop-blur.flex
+  button {
+  color: rgba(255, 255, 255, 0.78) !important;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.preview-root[data-screen-id]:not([data-screen-id="D102"])
+  .screen-preview-host
+  nav.border-t.backdrop-blur.flex
+  button[class*="text-[#03cd8c]"],
+.preview-root[data-screen-id]:not([data-screen-id="D102"])
+  .screen-preview-host
+  nav.border-t.backdrop-blur.flex
+  button[class*="text-evzone-green"] {
+  color: #ffffff !important;
+}
+
+.preview-root[data-screen-id]:not([data-screen-id="D102"])
+  .screen-preview-host
+  [class*="rounded-2xl"][class*="border"][class*="bg-white"],
+.preview-root[data-screen-id]:not([data-screen-id="D102"])
+  .screen-preview-host
+  [class*="rounded-3xl"][class*="border"][class*="bg-white"] {
+  border-color: var(--evz-border) !important;
+  box-shadow: none !important;
+}
+
+.preview-root[data-screen-id]:not([data-screen-id="D102"])
+  .screen-preview-host
+  [class*="bg-slate-50"] {
+  background: #f5f8f7 !important;
+}
+
+.preview-root[data-screen-id]:not([data-screen-id="D102"])
+  .screen-preview-host
+  input,
+.preview-root[data-screen-id]:not([data-screen-id="D102"])
+  .screen-preview-host
+  textarea,
+.preview-root[data-screen-id]:not([data-screen-id="D102"])
+  .screen-preview-host
+  select {
+  border-color: var(--evz-border) !important;
+  box-shadow: none !important;
+}
+
+/* Extra polish to better match the screenshot style language. */
+.preview-root[data-screen-id]:not([data-screen-id="D102"])
+  .screen-preview-host
+  .app-phone {
+  border-radius: 12px !important;
+}
+
+.preview-root[data-screen-id]:not([data-screen-id="D102"])
+  .screen-preview-host
+  .app-main {
+  background: linear-gradient(180deg, #ffffff 0%, #f9fcfb 100%);
+}
+
+.preview-root[data-screen-id]:not([data-screen-id="D102"])
+  .screen-preview-host
+  .app-main
+  [class*="bg-[#0b1e3a]"] {
+  background: #eef7f5 !important;
+  color: #1f2a37 !important;
+  border: 1px solid #d6ebe6 !important;
+}
+
+.preview-root[data-screen-id]:not([data-screen-id="D102"])
+  .screen-preview-host
+  .app-main
+  [class*="bg-[#0b1e3a]"]
+  :is(h1, h2, h3, p, span, svg) {
+  color: inherit !important;
+}
+
+.preview-root[data-screen-id]:not([data-screen-id="D102"])
+  .screen-preview-host
+  .app-bottom-nav
+  button {
+  position: relative;
+}
+
+.preview-root[data-screen-id]:not([data-screen-id="D102"])
+  .screen-preview-host
+  .app-bottom-nav
+  button[class*="text-[#03cd8c]"]::before,
+.preview-root[data-screen-id]:not([data-screen-id="D102"])
+  .screen-preview-host
+  .app-bottom-nav
+  button[class*="text-evzone-green"]::before {
+  content: "";
+  position: absolute;
+  inset: 6px 8px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.18);
+  z-index: -1;
 }

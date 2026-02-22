@@ -1,33 +1,38 @@
-import React from "react";
+import React, { useState } from "react";
 import {
+  ChevronLeft,
   Bell,
-  SlidersHorizontal,
-  BookOpenCheck,
-  ShieldCheck,
-  IdCard,
-  Car,
-  Phone,
-  BellRing,
-  Languages,
-  Globe2,
-  LineChart,
-  LifeBuoy,
-  Home,
+  Building2,
+  MapPin,
+  Truck,
+  Ambulance,
+  Bus,
+  GraduationCap,
   Briefcase,
+  Plane,
+  Car,
+  ShoppingCart,
+  Package,
+  Clock,
+  Home,
+  MessageSquare,
   Wallet,
   Settings,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-// EVzone Driver App – D06 Preferences (v2)
-// 375x812 phone frame, swipe scrolling in main, no visible scrollbar.
+// EVzone Driver App – D06 Preferences
+// New design: green curved header, toggleable Areas/Services/Requirements cards, green nav.
+// Functionality: all items are clickable and toggle their active state (green ↔ white).
+// Done button navigates. All routing preserved from original.
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active, onClick }) {
   return (
     <button
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
-        active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
-      }`}
+      type="button"
+      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${active ? "text-white" : "text-white/60 hover:text-white/80"
+        }`}
+      onClick={onClick}
     >
       <Icon className="h-5 w-5 mb-0.5" />
       <span>{label}</span>
@@ -35,27 +40,50 @@ function BottomNavItem({ icon: Icon, label, active }) {
   );
 }
 
-function PrefRow({ icon: Icon, title, subtitle, badge, onClick }) {
+function AreaCard({ icon: Icon, label, color, active, onClick }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center justify-between rounded-2xl border border-slate-100 bg-white px-3 py-2.5 shadow-sm active:scale-[0.97] transition-transform"
+      className={`flex flex-col items-center justify-center rounded-2xl py-3 px-2 transition-all active:scale-[0.96] ${active
+          ? "bg-[#03cd8c] text-white shadow-md"
+          : "bg-white border border-slate-100 text-slate-700 shadow-[0_1px_4px_rgba(0,0,0,0.04)]"
+        }`}
     >
-      <div className="flex items-center space-x-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-50">
-          <Icon className="h-4 w-4 text-slate-700" />
-        </div>
-        <div className="flex flex-col items-start">
-          <span className="text-xs font-semibold text-slate-900">{title}</span>
-          <span className="text-[11px] text-slate-500">{subtitle}</span>
-        </div>
-      </div>
-      {badge && (
-        <span className="ml-2 inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
-          {badge}
-        </span>
-      )}
+      <Icon className={`h-6 w-6 mb-1.5 ${active ? "text-white" : ""}`} style={!active ? { color } : {}} />
+      <span className="text-[10px] font-semibold text-center leading-tight">{label}</span>
+    </button>
+  );
+}
+
+function ServiceChip({ icon: Icon, label, color, active, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium transition-all active:scale-[0.96] ${active
+          ? "bg-[#03cd8c] text-white"
+          : "bg-white border border-slate-200 text-slate-700"
+        }`}
+    >
+      <Icon className="h-3.5 w-3.5" style={!active ? { color } : {}} />
+      {label}
+    </button>
+  );
+}
+
+function RequirementCard({ icon: Icon, label, color, active, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 transition-all active:scale-[0.98] ${active
+          ? "bg-[#03cd8c] text-white"
+          : "bg-white border border-slate-100 text-slate-700 shadow-[0_1px_4px_rgba(0,0,0,0.04)]"
+        }`}
+    >
+      <Icon className={`h-4 w-4 flex-shrink-0 ${active ? "text-white" : ""}`} style={!active ? { color } : {}} />
+      <span className="text-[11px] font-medium">{label}</span>
     </button>
   );
 }
@@ -63,171 +91,150 @@ function PrefRow({ icon: Icon, title, subtitle, badge, onClick }) {
 export default function PreferencesScreen() {
   const navigate = useNavigate();
 
-  const sections = [
-    {
-      heading: "Account & safety",
-      items: [
-        {
-          icon: BookOpenCheck,
-          title: "Training & learning",
-          subtitle: "View modules, quizzes and certificates.",
-          badge: "2 of 4 complete",
-          path: "/driver/training/intro",
-        },
-        {
-          icon: IdCard,
-          title: "Identity & documents",
-          subtitle: "Manage ID, license and background checks.",
-          badge: "Verified",
-          path: "/driver/onboarding/profile",
-        },
-        {
-          icon: ShieldCheck,
-          title: "Safety & emergency",
-          subtitle: "Configure SOS, follow ride and safety tips.",
-          path: "/driver/safety/toolkit",
-        },
-      ],
-    },
-    {
-      heading: "Driving & communication",
-      items: [
-        {
-          icon: Car,
-          title: "Vehicles & driving modes",
-          subtitle: "Manage EVs, accessories and service types.",
-          path: "/driver/vehicles",
-        },
-        {
-          icon: Phone,
-          title: "Contact & support options",
-          subtitle: "How riders and support can reach you.",
-          path: "/driver/help/shuttle-link",
-        },
-        {
-          icon: BellRing,
-          title: "Notifications",
-          subtitle: "Trip alerts, earnings summaries and safety notices.",
-          badge: "Smart",
-          path: "/driver/ridesharing/notification",
-        },
-      ],
-    },
-    {
-      heading: "Region & earnings",
-      items: [
-        {
-          icon: Languages,
-          title: "Language",
-          subtitle: "Choose your app language.",
-          badge: "EN",
-          path: "/driver/preferences",
-        },
-        {
-          icon: Globe2,
-          title: "Region & time zone",
-          subtitle: "Operating city, country and time zone.",
-          badge: "Kampala",
-          path: "/driver/map/settings",
-        },
-        {
-          icon: LineChart,
-          title: "Earnings & goals",
-          subtitle: "Set weekly goals and earnings summaries.",
-          path: "/driver/earnings/goals",
-        },
-      ],
-    },
-    {
-      heading: "Help",
-      items: [
-        {
-          icon: LifeBuoy,
-          title: "Help & support",
-          subtitle: "FAQs, contact support and safety policies.",
-          path: "/driver/safety/hub/expanded",
-        },
-      ],
-    },
-  ];
+  // Toggleable state for areas
+  const [areas, setAreas] = useState([
+    { icon: Building2, label: "Down Town", color: "#03cd8c", active: true },
+    { icon: Building2, label: "City Center", color: "#2196F3", active: false },
+    { icon: Building2, label: "Suburbs", color: "#03cd8c", active: false },
+    { icon: Building2, label: "Gated Community", color: "#f77f00", active: false },
+    { icon: Building2, label: "Country Side", color: "#03cd8c", active: true },
+    { icon: Building2, label: "Hospitals", color: "#2196F3", active: false },
+    { icon: MapPin, label: "Beachfront", color: "#f77f00", active: false },
+  ]);
+
+  // Toggleable state for services
+  const [services, setServices] = useState([
+    { icon: Truck, label: "Airport Rides", color: "#03cd8c", active: true },
+    { icon: GraduationCap, label: "Tourist drives", color: "#f77f00", active: false },
+    { icon: Ambulance, label: "Ambulance driver", color: "#ef4444", active: true },
+    { icon: Bus, label: "Taxi services", color: "#2196F3", active: false },
+    { icon: Car, label: "Motorcycle rides", color: "#03cd8c", active: false },
+    { icon: Package, label: "Logistics", color: "#f77f00", active: false },
+    { icon: Plane, label: "Inter-City", color: "#2196F3", active: false },
+  ]);
+
+  // Toggleable state for requirements
+  const [requirements, setRequirements] = useState([
+    { icon: ShoppingCart, label: "Shopping & Errands", color: "#03cd8c", active: true },
+    { icon: Briefcase, label: "Ride sharing", color: "#f77f00", active: false },
+    { icon: Clock, label: "Long Distance", color: "#2196F3", active: false },
+    { icon: ShoppingCart, label: "Shopping Partner", color: "#03cd8c", active: true },
+    { icon: Car, label: "Surge", color: "#ef4444", active: false },
+    { icon: Bus, label: "Ride sharing", color: "#f77f00", active: false },
+  ]);
+
+  const toggleArea = (index) => {
+    setAreas((prev) => prev.map((a, i) => (i === index ? { ...a, active: !a.active } : a)));
+  };
+
+  const toggleService = (index) => {
+    setServices((prev) => prev.map((s, i) => (i === index ? { ...s, active: !s.active } : s)));
+  };
+
+  const toggleRequirement = (index) => {
+    setRequirements((prev) => prev.map((r, i) => (i === index ? { ...r, active: !r.active } : r)));
+  };
 
   return (
-    <div className="min-h-screen flex justify-center bg-[#0f172a] py-4">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
+    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
+      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
 
-      <div className="w-[375px] h-[812px] bg-white rounded-[32px] shadow-2xl overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-              <SlidersHorizontal className="h-4 w-4 text-[#03cd8c]" />
-            </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                Driver Settings
-              </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Preferences
-              </h1>
-            </div>
-          </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
-            <Bell className="h-4 w-4" />
-            <span className="absolute -top-0.5 -right-0.5 inline-flex h-3 w-3 items-center justify-center rounded-full bg-[#f77f00]" />
-          </button>
-        </header>
+        {/* Green curved header */}
+        <div className="relative" style={{ minHeight: 80 }}>
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+              borderRadius: "0 0 32px 32px",
+            }}
+          />
+          <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm"
+            >
+              <ChevronLeft className="h-5 w-5 text-white" />
+            </button>
+            <h1 className="text-base font-semibold text-white">Preferences</h1>
+            <button
+              type="button"
+              onClick={() => navigate("/driver/ridesharing/notification")}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm"
+            >
+              <Bell className="h-5 w-5 text-white" />
+            </button>
+          </header>
+        </div>
 
         {/* Content */}
-        <main className="flex-1 px-4 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
-          {/* Summary banner */}
-          <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-2">
-            <p className="text-[10px] tracking-[0.18em] uppercase text-[#a5f3fc]">
-              Overview
-            </p>
-            <p className="text-xs font-semibold">
-              Control how you drive, earn and stay safe on EVzone.
-            </p>
-            <p className="text-[11px] text-slate-100 leading-snug">
-              Update your identity, complete training, manage your vehicles and
-              tune notifications – all from one place.
-            </p>
+        <main className="app-main flex-1 px-5 pt-4 pb-4 space-y-5 overflow-y-auto scrollbar-hide">
+
+          {/* Areas section */}
+          <section className="space-y-2">
+            <div className="flex items-center gap-1.5">
+              <MapPin className="h-4 w-4 text-slate-500" />
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Areas</h2>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {areas.slice(0, 6).map((area, i) => (
+                <AreaCard key={i} {...area} onClick={() => toggleArea(i)} />
+              ))}
+            </div>
+            {areas.length > 6 && (
+              <div className="grid grid-cols-3 gap-2">
+                {areas.slice(6).map((area, i) => (
+                  <AreaCard key={i + 6} {...area} onClick={() => toggleArea(i + 6)} />
+                ))}
+              </div>
+            )}
+            <button
+              type="button"
+              className="text-[11px] font-medium text-[#03cd8c]"
+              onClick={() => navigate("/driver/map/settings")}
+            >
+              View more
+            </button>
           </section>
 
-          {/* Sections */}
-          {sections.map((section) => (
-            <section
-              key={section.heading}
-              className={`space-y-2 ${section.heading !== "Account & safety" ? "pt-1" : ""} ${
-                section.heading === "Help" ? "pb-4" : ""
-              }`}
-            >
-              <h2 className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                {section.heading}
-              </h2>
-              {section.items.map((item) => (
-                <PrefRow
-                  key={item.title}
-                  icon={item.icon}
-                  title={item.title}
-                  subtitle={item.subtitle}
-                  badge={item.badge}
-                  onClick={() => navigate(item.path)}
-                />
+          {/* Services section */}
+          <section className="space-y-2">
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Services</h2>
+            <div className="flex flex-wrap gap-2">
+              {services.map((s, i) => (
+                <ServiceChip key={i} {...s} onClick={() => toggleService(i)} />
               ))}
-            </section>
-          ))}
+            </div>
+          </section>
+
+          {/* Requirements section */}
+          <section className="space-y-2">
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Requirements</h2>
+            <div className="space-y-2">
+              {requirements.map((r, i) => (
+                <RequirementCard key={i} {...r} onClick={() => toggleRequirement(i)} />
+              ))}
+            </div>
+          </section>
+
+          {/* Done button */}
+          <section className="pb-4">
+            <button
+              type="button"
+              onClick={() => navigate("/driver/dashboard/online")}
+              className="w-full rounded-full bg-[#03cd8c] py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#02b77c] transition-colors"
+            >
+              Done
+            </button>
+          </section>
         </main>
 
-        {/* Bottom navigation – Settings active */}
-        <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" />
-          <BottomNavItem icon={Briefcase} label="Manager" />
-          <BottomNavItem icon={Wallet} label="Wallet" />
-          <BottomNavItem icon={Settings} label="Settings" active />
+        {/* Bottom navigation – green */}
+        <nav className="app-bottom-nav border-t border-white/20 flex" style={{ background: "#03cd8c" }}>
+          <BottomNavItem icon={Home} label="Home" onClick={() => navigate("/driver/dashboard/online")} />
+          <BottomNavItem icon={MessageSquare} label="Messages" onClick={() => navigate("/driver/ridesharing/notification")} />
+          <BottomNavItem icon={Wallet} label="Wallet" onClick={() => navigate("/driver/earnings/overview")} />
+          <BottomNavItem icon={Settings} label="Settings" active onClick={() => navigate("/driver/preferences")} />
         </nav>
       </div>
     </div>

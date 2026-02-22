@@ -4,10 +4,8 @@ import {
   Activity,
   Map,
   MapPin,
-  Target,
   ShieldCheck,
   DollarSign,
-  Clock,
   Home,
   Briefcase,
   Wallet,
@@ -17,17 +15,15 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-// EVzone Driver App – D31 Driver App – Online Dashboard (Active Mode) (v1, fixed imports)
-// Main working dashboard while the driver is online: status + mini map + quick actions.
-// 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
+// EVzone Driver App – D31 Online Dashboard (Active Mode)
+// Restoration of the original design from Driver-s-app.
 
 function BottomNavItem({ icon: Icon, label, active, onClick }) {
   return (
     <button
       type="button"
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
-        active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
-      }`}
+      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
+        }`}
       onClick={onClick}
     >
       <Icon className="h-5 w-5 mb-0.5" />
@@ -54,7 +50,7 @@ function QuickAction({ icon: Icon, label, sub, onClick }) {
   );
 }
 
-export default function OnlineDashboardActiveScreen() {
+export default function OnlineMapDashboardScreen() {
   const [nav] = useState("home");
   const navigate = useNavigate();
   const bottomNavRoutes = {

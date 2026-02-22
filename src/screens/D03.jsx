@@ -1,26 +1,32 @@
 import React, { useState } from "react";
 import {
+  ChevronLeft,
   Bell,
   Camera,
   Pencil,
   ChevronDown,
+  User,
+  Plus,
   Home,
-  CalendarDays,
-  ClipboardList,
+  MessageSquare,
+  Wallet,
   Settings,
+  MapPin,
+  Shield,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-// EVzone Driver App – D03 Registration (base profile, v3)
-// 375x812 phone frame. Content scrolls by swipe inside <main>.
-// Scrollbars are visually hidden using a local <style> and the `scrollbar-hide` utility.
+// EVzone Driver App – D03 Registration (profile page)
+// New design: green curved header, profile photo, info rows, accordions, green bottom nav.
+// Original functionality preserved: form inputs, validation, accordion expand/collapse, routing.
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active, onClick }) {
   return (
     <button
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
-        active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
-      }`}
+      type="button"
+      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${active ? "text-white" : "text-white/60 hover:text-white/80"
+        }`}
+      onClick={onClick}
     >
       <Icon className="h-5 w-5 mb-0.5" />
       <span>{label}</span>
@@ -43,30 +49,35 @@ function Input({ label, type = "text", value, onChange, placeholder }) {
   );
 }
 
-function Accordion({ title, description, cta, path, onNavigate }) {
+function AccordionCard({ icon: Icon, title, description, cta, iconColor, borderColor, path, onNavigate }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="rounded-2xl border border-slate-100 bg-white shadow-sm overflow-hidden">
+    <div
+      className="rounded-2xl border bg-white overflow-hidden"
+      style={{ borderColor: borderColor || "#e2e8f0" }}
+    >
       <button
-        className="flex w-full items-center justify-between px-3 py-3"
+        className="flex w-full items-center justify-between px-4 py-3"
         onClick={() => setOpen((v) => !v)}
       >
-        <div className="flex flex-col items-start">
-          <span className="text-xs font-semibold text-slate-900">
-            {title}
-          </span>
-          <span className="text-[11px] text-slate-500">{description}</span>
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-8 w-8 items-center justify-center rounded-full"
+            style={{ backgroundColor: `${iconColor}15` }}
+          >
+            <Icon className="h-4 w-4" style={{ color: iconColor }} />
+          </div>
+          <span className="text-xs font-semibold text-slate-900">{title}</span>
         </div>
-        <ChevronDown
-          className={`h-4 w-4 text-slate-500 transition-transform ${
-            open ? "rotate-180" : "rotate-0"
-          }`}
+        <Plus
+          className={`h-4 w-4 text-slate-400 transition-transform ${open ? "rotate-45" : ""}`}
         />
       </button>
       {open && (
-        <div className="border-t border-slate-100 px-3 pb-3 pt-2 text-[11px] text-slate-600 space-y-2">
-          <p>{cta}</p>
+        <div className="px-4 pb-3 text-[11px] text-slate-500 leading-relaxed border-t border-slate-50 space-y-2">
+          <p className="pt-2">{description}</p>
+          <p className="text-[11px] text-slate-600">{cta}</p>
           <button
             type="button"
             onClick={() => onNavigate(path)}
@@ -108,60 +119,87 @@ export default function RegistrationScreen() {
   };
 
   return (
-    <div className="min-h-screen flex justify-center bg-[#0f172a] py-4">
-      {/* Local style to hide scrollbars for this canvas */}
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
+    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
+      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
 
-      <div className="w-[375px] h-[812px] bg-white rounded-[32px] shadow-2xl overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="flex items-center justify-between px-4 pt-4 pb-2">
-          <h1 className="text-base font-semibold text-slate-900">Registration</h1>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
-            <Bell className="h-4 w-4" />
-            <span className="absolute -top-0.5 -right-0.5 inline-flex h-3 w-3 items-center justify-center rounded-full bg-[#f77f00]" />
-          </button>
-        </header>
+        {/* Green curved header */}
+        <div className="relative" style={{ minHeight: 80 }}>
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+              borderRadius: "0 0 32px 32px",
+            }}
+          />
+          <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm"
+            >
+              <ChevronLeft className="h-5 w-5 text-white" />
+            </button>
+            <h1 className="text-base font-semibold text-white">Registration</h1>
+            <button
+              type="button"
+              onClick={() => navigate("/driver/ridesharing/notification")}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm"
+            >
+              <Bell className="h-5 w-5 text-white" />
+            </button>
+          </header>
+        </div>
 
-        {/* Content – swipe scroll, scrollbar hidden */}
-        <main className="flex-1 px-4 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
-          {/* Profile block */}
-          <section className="rounded-2xl bg-slate-50 px-3 py-3 flex items-center space-x-3">
-            <div className="relative">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#e6fff7] border border-[#03cd8c]">
-                <Camera className="h-5 w-5 text-[#03cd8c]" />
+        {/* Content */}
+        <main className="app-main flex-1 px-5 pt-4 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
+          {/* Profile photo + name */}
+          <section className="flex flex-col items-center">
+            <div className="relative mb-2">
+              <div className="h-20 w-20 rounded-full bg-slate-100 border-[3px] border-[#03cd8c] flex items-center justify-center overflow-hidden">
+                <User className="h-10 w-10 text-slate-400" />
               </div>
               <button
                 type="button"
                 onClick={() => navigate("/driver/preferences/identity/upload-image")}
-                className="absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#03cd8c] border border-white"
+                className="absolute bottom-0 right-0 flex h-6 w-6 items-center justify-center rounded-full bg-[#03cd8c] border-2 border-white shadow-sm"
               >
                 <Pencil className="h-3 w-3 text-white" />
               </button>
             </div>
-            <div className="flex-1 flex flex-col items-start">
-              <div className="flex w-full items-center justify-between">
-                <span className="text-sm font-semibold text-slate-900 truncate max-w-[180px]">
-                  {fullName || "Your Name"}
-                </span>
-              </div>
-              <span className="text-[11px] text-slate-500">
-                Upload a clear profile photo so riders and partners can
-                recognize you.
-              </span>
+            <h2 className="text-base font-bold text-slate-900">
+              {fullName || "John Doe"} ✏️
+            </h2>
+          </section>
+
+          {/* Info display rows (read-only summary) */}
+          <section>
+            <div className="flex items-center justify-between py-2.5 border-b border-slate-100">
+              <span className="text-xs text-slate-500">Country</span>
+              <span className="text-xs font-medium text-slate-900">{country || "Uganda"}</span>
+            </div>
+            <div className="flex items-center justify-between py-2.5 border-b border-slate-100">
+              <span className="text-xs text-slate-500">Date of Birth</span>
+              <span className="text-xs font-medium text-slate-900">{dob || "19.05.1989"}</span>
+            </div>
+            <div className="flex items-center justify-between py-2.5 border-b border-slate-100">
+              <span className="text-xs text-slate-500">Email</span>
+              <span className="text-xs font-medium text-slate-900">{email || "johndoe45@gmail.com"}</span>
+            </div>
+            <div className="flex items-center justify-between py-2.5">
+              <span className="text-xs text-slate-500">Mobile</span>
+              <span className="text-xs font-medium text-slate-900">{phone || "+258 8868564885"}</span>
             </div>
           </section>
 
-          {/* Personal info */}
+          {/* Divider */}
+          <div className="h-px bg-[#03cd8c]/20" />
+
+          {/* Personal Info heading + form fields */}
           <section className="space-y-3">
             <div>
-              <h2 className="text-sm font-semibold text-slate-900">
-                Personal Information
-              </h2>
+              <h3 className="text-sm font-bold text-[#03cd8c] mb-1">Personal Info</h3>
               <p className="text-[11px] text-slate-500">
-                Let’s get started by setting up your profile.
+                Let's get started by setting up your profile
               </p>
             </div>
 
@@ -171,18 +209,14 @@ export default function RegistrationScreen() {
               onChange={setFullName}
               placeholder="e.g. John Doe"
             />
-
             <Input
               label="Country"
               value={country}
               onChange={setCountry}
               placeholder="e.g. Uganda"
             />
-
             <label className="flex flex-col space-y-1">
-              <span className="text-[11px] font-medium text-slate-600">
-                Date of Birth
-              </span>
+              <span className="text-[11px] font-medium text-slate-600">Date of Birth</span>
               <input
                 type="date"
                 value={dob}
@@ -190,7 +224,6 @@ export default function RegistrationScreen() {
                 className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-[13px] text-slate-900 placeholder:text-slate-400 focus:border-[#03cd8c] focus:outline-none focus:ring-1 focus:ring-[#03cd8c]"
               />
             </label>
-
             <Input
               label="Email"
               type="email"
@@ -198,7 +231,6 @@ export default function RegistrationScreen() {
               onChange={setEmail}
               placeholder="name@example.com"
             />
-
             <Input
               label="Mobile Number"
               value={phone}
@@ -208,18 +240,24 @@ export default function RegistrationScreen() {
           </section>
 
           {/* Expandable sections */}
-          <section className="space-y-2 pt-2">
-            <Accordion
+          <section className="space-y-3">
+            <AccordionCard
+              icon={Shield}
               title="General ID"
-              description="Upload your national ID or passport."
+              description="Adding your identification Documents helps us ensure the security of our platform and verify your identity."
               cta="Upload or update an official ID document so we can verify your identity and protect your account."
+              iconColor="#03cd8c"
+              borderColor="#d6ebe6"
               path="/driver/preferences/identity"
               onNavigate={handleAccordionNavigate}
             />
-            <Accordion
+            <AccordionCard
+              icon={MapPin}
               title="Addresses"
-              description="Add your home or work address."
+              description="Your address is important for personalizing your experience and ensuring that you receive relevant information and opportunities tailored to your location."
               cta="Add at least one valid address so we can personalize your experience and show you the right cities and services."
+              iconColor="#f77f00"
+              borderColor="#ffe0b2"
               path="/driver/onboarding/profile"
               onNavigate={handleAccordionNavigate}
             />
@@ -231,23 +269,22 @@ export default function RegistrationScreen() {
               type="button"
               disabled={!isValid}
               onClick={handleNext}
-              className={`w-full rounded-full py-2.5 text-sm font-semibold shadow-sm transition-colors ${
-                isValid
-                  ? "bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c]"
+              className={`w-full rounded-full py-3 text-sm font-semibold shadow-sm transition-colors ${isValid
+                  ? "bg-[#03cd8c] text-white hover:bg-[#02b77c]"
                   : "bg-slate-200 text-slate-400 cursor-not-allowed"
-              }`}
+                }`}
             >
               Next
             </button>
           </section>
         </main>
 
-        {/* Bottom navigation – Bookings tab active */}
-        <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" />
-          <BottomNavItem icon={CalendarDays} label="Bookings" active />
-          <BottomNavItem icon={ClipboardList} label="Tasks" />
-          <BottomNavItem icon={Settings} label="Settings" />
+        {/* Bottom navigation – green */}
+        <nav className="app-bottom-nav border-t border-white/20 flex" style={{ background: "#03cd8c" }}>
+          <BottomNavItem icon={Home} label="Home" onClick={() => navigate("/driver/dashboard/online")} />
+          <BottomNavItem icon={MessageSquare} label="Messages" onClick={() => navigate("/driver/ridesharing/notification")} />
+          <BottomNavItem icon={Wallet} label="Wallet" onClick={() => navigate("/driver/earnings/overview")} />
+          <BottomNavItem icon={Settings} label="Settings" active onClick={() => navigate("/driver/preferences")} />
         </nav>
       </div>
     </div>

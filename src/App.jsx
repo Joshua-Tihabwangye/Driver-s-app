@@ -849,6 +849,8 @@ export default function App() {
 
   return (
     <Box
+      className="preview-root"
+      data-screen-id={currentScreen.id}
       sx={{
         minHeight: "100vh",
         bgcolor: "#0f172a",
@@ -996,7 +998,7 @@ export default function App() {
         </Paper>
       </Box>
 
-      <Box sx={{ width: "100%" }}>
+      <Box className="screen-preview-host" sx={{ width: "100%" }}>
         <Routes>
           {SCREENS.map((screen) => (
             <Route
