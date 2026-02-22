@@ -37,7 +37,11 @@ function BottomNavItem({ icon: Icon, label, active, onClick }) {
   );
 }
 
+<<<<<<< HEAD:src/screens/D11.jsx
 function DocRow({ icon: Icon, title, subtitle, dateLabel, onClick }) {
+=======
+function InfoRow({ icon: Icon, label, value, muted = false }: { icon: React.ElementType; label: string; value: string; muted?: boolean }) {
+>>>>>>> f37e8a54f2a745f9fd2fc7cc3062553c40e5915c:src/screens/D11.tsx
   return (
     <button
       type="button"

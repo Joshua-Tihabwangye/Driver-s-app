@@ -26,7 +26,11 @@ import { useNavigate } from "react-router-dom";
 // Functionality: all items are clickable and toggle their active state (green ↔ white).
 // Done button navigates. All routing preserved from original.
 
+<<<<<<< HEAD:src/screens/D06.jsx
 function BottomNavItem({ icon: Icon, label, active, onClick }) {
+=======
+function BottomNavItem({ icon: Icon, label, active = false }: { icon: React.ElementType; label: string; active?: boolean }) {
+>>>>>>> f37e8a54f2a745f9fd2fc7cc3062553c40e5915c:src/screens/D06.tsx
   return (
     <button
       type="button"

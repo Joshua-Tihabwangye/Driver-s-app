@@ -43,7 +43,11 @@ function BottomNavItem({ icon: Icon, label, active, onClick }) {
   );
 }
 
+<<<<<<< HEAD:src/screens/D02.jsx
 function ServiceTile({ icon: Icon, label, color, onClick }) {
+=======
+function BottomNavItem({ icon: Icon, label, active = false }: { icon: React.ElementType; label: string; active?: boolean }) {
+>>>>>>> f37e8a54f2a745f9fd2fc7cc3062553c40e5915c:src/screens/D02.tsx
   return (
     <button
       type="button"

@@ -28,7 +28,7 @@ function BottomNavItem({ icon: Icon, label, active }) {
   );
 }
 
-function StatChip({ icon: Icon, label, value, accent }) {
+function StatChip({ icon: Icon, label, value, accent }: { icon: React.ElementType; label: string; value: string; accent?: string }) {
   return (
     <div className="flex flex-col rounded-2xl bg-white px-3 py-3 shadow-sm border border-slate-100 flex-1 min-w-[0]">
       <div className="flex items-center justify-between mb-1">
