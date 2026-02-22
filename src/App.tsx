@@ -17,7 +17,8 @@ import {
   Navigate,
   matchPath,
 } from "react-router-dom";
-import { MapPin, Bell as BellIcon } from "lucide-react";
+import { MapPin, Bell as BellIcon, Moon, Sun } from "lucide-react";
+import { useTheme } from "./context/ThemeContext";
 import D01Screen from "./screens/D01.jsx";
 import D02Screen from "./screens/D02.jsx";
 import D03Screen from "./screens/D03.jsx";
@@ -801,6 +802,7 @@ const SCREENS = [
 const DEFAULT_SCREEN = SCREENS[0];
 
 export default function App() {
+  const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -849,7 +851,7 @@ export default function App() {
 
   return (
     <Box
-      className="preview-root"
+      className={`preview-root ${isDark ? "dark" : ""}`}
       data-screen-id={currentScreen.id}
       sx={{
         minHeight: "100vh",
@@ -861,6 +863,21 @@ export default function App() {
         py: 2,
       }}
     >
+      {/* Global Theme Toggle FAB */}
+      <button
+        type="button"
+        onClick={toggleTheme}
+        className="fixed bottom-6 right-6 z-[9999] p-3 rounded-full shadow-2xl transition-all active:scale-90 hover:scale-110 flex items-center justify-center border"
+        style={{
+          backgroundColor: isDark ? "#1e293b" : "#ffffff",
+          borderColor: isDark ? "#334155" : "#e2e8f0",
+          color: isDark ? "#fbbf24" : "#475569"
+        }}
+        title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+      >
+        {isDark ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
+      </button>
+
       <Box
         sx={{
           width: 360,
