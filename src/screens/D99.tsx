@@ -59,7 +59,7 @@ export default function AmbulanceJobIncomingScreen() {
   }, [timeLeft]);
 
   return (
-    <div className="min-h-screen flex justify-center bg-[#0f172a] py-4">
+    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
       {/* Local style: hide scrollbars but keep swipe scrolling */}
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
@@ -67,9 +67,9 @@ export default function AmbulanceJobIncomingScreen() {
       `}</style>
 
       {/* Phone frame */}
-      <div className="w-[375px] h-[812px] bg-white rounded-[32px] shadow-2xl overflow-hidden flex flex-col">
+      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
         {/* Header */}
-        <header className="flex items-center justify-between px-4 pt-4 pb-2">
+        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
           <div className="flex items-start space-x-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-50 border border-red-100 mt-0.5">
               <AlertTriangle className="h-4 w-4 text-red-500" />
@@ -93,7 +93,7 @@ export default function AmbulanceJobIncomingScreen() {
         </header>
 
         {/* Content */}
-        <main className="flex-1 px-4 pb-4 overflow-y-auto scrollbar-hide space-y-4">
+        <main className="app-main flex-1 px-4 pb-4 overflow-y-auto scrollbar-hide space-y-4">
           {/* Code + context card */}
           <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-3">
             <div className="flex items-center justify-between">
@@ -207,7 +207,7 @@ export default function AmbulanceJobIncomingScreen() {
         </main>
 
         {/* Bottom navigation – Home active (ambulance context) */}
-        <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
+        <nav className="app-bottom-nav border-t border-slate-100 bg-white/95 backdrop-blur flex">
           <BottomNavItem
             icon={Home}
             label="Home"

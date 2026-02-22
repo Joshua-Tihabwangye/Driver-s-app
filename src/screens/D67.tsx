@@ -17,11 +17,6 @@ import { useNavigate } from "react-router-dom";
 // EVzone Driver App – D67 Driver – Proof of Trip Status Flow – Main View (v2)
 // Main hub for proof-of-trip status, now job-type aware for:
 // Ride / Delivery / Rental / Tour / Ambulance.
-// - Adds job type label in header (e.g., "Proof of trip status · Ambulance")
-// - For Ambulance: guidance limited to location/time and non-sensitive context
-//   (no patient ID, no patient photos).
-// - For Tours: copy clarifies that proof is attached to the relevant
-//   segment/day of the tour.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
 const JOB_TYPES = ["ride", "delivery", "rental", "tour", "ambulance"];
@@ -30,9 +25,8 @@ function BottomNavItem({ icon: Icon, label, active, onClick }) {
   return (
     <button
       type="button"
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
-        active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
-      }`}
+      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
+        }`}
       onClick={onClick}
     >
       <Icon className="h-5 w-5 mb-0.5" />
@@ -102,8 +96,8 @@ export default function ProofOfTripMainScreen() {
   const introText = isAmbulance
     ? ambulanceIntro
     : isTour
-    ? tourIntro
-    : baseIntro;
+      ? tourIntro
+      : baseIntro;
 
   const photosText = isAmbulance
     ? "Capture the surroundings, street signs, entrances or vehicle position – avoid taking photos of the patient or any ID documents."
@@ -116,8 +110,8 @@ export default function ProofOfTripMainScreen() {
   const footerText = isTour
     ? "Submitted proof is stored with this segment/day of your tour in Ride History and can be reviewed by support if needed."
     : isAmbulance
-    ? "Submitted proof is stored with this ambulance run for operational review. Avoid attaching sensitive medical details."
-    : "Submitted proof is stored with this trip in Ride History and can be reviewed by support if needed.";
+      ? "Submitted proof is stored with this ambulance run for operational review. Avoid attaching sensitive medical details."
+      : "Submitted proof is stored with this trip in Ride History and can be reviewed by support if needed.";
 
   const handleSubmitProof = () => {
     setStatus("submitting");
@@ -162,7 +156,7 @@ export default function ProofOfTripMainScreen() {
       `}</style>
 
       {/* Phone frame */}
-      <div className="w-[375px] h-[812px] bg-white rounded-[32px] shadow-2xl overflow-hidden flex flex-col">
+      <div className="w-[375px] h-[812px] bg-white rounded-[32px] shadow-2xl overflow-hidden flex flex-col relative text-left">
         {/* Header */}
         <header className="flex items-center justify-between px-4 pt-4 pb-2">
           <div className="flex items-center space-x-2">
@@ -197,15 +191,14 @@ export default function ProofOfTripMainScreen() {
           </span>
           <div className="flex flex-wrap gap-1">
             {JOB_TYPES.map((type) => (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => setJobType(type)}
-                  className={`rounded-full px-3 py-0.5 text-[11px] font-medium border transition-colors ${
-                    jobType === type
-                      ? "bg-[#03cd8c] text-slate-900 border-[#03cd8c]"
-                      : "bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300"
-                }`}
+              <button
+                key={type}
+                type="button"
+                onClick={() => setJobType(type)}
+                className={`rounded-full px-3 py-0.5 text-[11px] font-medium border transition-colors ${jobType === type
+                    ? "bg-[#03cd8c] text-slate-900 border-[#03cd8c]"
+                    : "bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300"
+                  }`}
               >
                 {jobTypeLabelMap[type]}
               </button>
@@ -218,8 +211,8 @@ export default function ProofOfTripMainScreen() {
           {/* Intro / status card */}
           <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#03cd8c] text-slate-900">
+              <div className="flex items-center space-x-3 text-left">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#03cd8c] text-white">
                   <ShieldCheck className="h-5 w-5" />
                 </div>
                 <div className="flex flex-col items-start">
@@ -257,7 +250,7 @@ export default function ProofOfTripMainScreen() {
                     <span className="text-xs font-semibold text-slate-900">
                       Photos of pickup / drop-off
                     </span>
-                    <span>{photosText}</span>
+                    <span className="text-[10px]">{photosText}</span>
                   </div>
                 </div>
                 <span className="text-[10px] text-slate-400">
@@ -278,7 +271,7 @@ export default function ProofOfTripMainScreen() {
                     <span className="text-xs font-semibold text-slate-900">
                       Short notes
                     </span>
-                    <span>{noteText || "Describe what happened in a few words."}</span>
+                    <span className="text-[10px] truncate max-w-[160px]">{noteText || "Describe what happened"}</span>
                   </div>
                 </div>
                 <span className="text-[10px] text-slate-400">
@@ -299,10 +292,10 @@ export default function ProofOfTripMainScreen() {
                     <span className="text-xs font-semibold text-slate-900">
                       Time & location snapshot
                     </span>
-                    <span>Open map to confirm where you captured proof.</span>
+                    <span className="text-[10px]">Open map to confirm capture location.</span>
                   </div>
                 </div>
-                <span className="text-[10px] text-slate-400">Captured automatically</span>
+                <span className="text-[10px] text-slate-400">Auto</span>
               </button>
             </div>
           </section>
@@ -316,20 +309,20 @@ export default function ProofOfTripMainScreen() {
 
           {/* Actions / variants */}
           <section className="space-y-2 pt-1 pb-4">
-            <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 text-[11px] text-slate-600 flex items-start space-x-2">
-              <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white">
+            <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 text-[11px] text-slate-600 flex items-start space-x-2 text-left">
+              <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white flex-shrink-0">
                 <AlertCircle className="h-4 w-4 text-slate-600" />
               </div>
               <div className="flex-1">
                 <p className="font-semibold text-xs text-slate-900 mb-0.5">
                   When should I use this?
                 </p>
-                <p>
+                <p className="leading-snug">
                   {isAmbulance
                     ? "Use proof-of-trip for Ambulance runs only when needed by your operator – for example, to show where and when you arrived or waited. Avoid capturing sensitive medical details."
                     : isTour
-                    ? "Use proof-of-trip on this tour segment/day if there is a dispute about stops, timing or route. Normal, smooth segments don’t require extra proof."
-                    : "Use proof-of-trip only when needed – e.g. disputes, no-show, safety issues or incorrect addresses. Normal trips don’t require extra proof."}
+                      ? "Use proof-of-trip on this tour segment/day if there is a dispute about stops, timing or route. Normal, smooth segments don’t require extra proof."
+                      : "Use proof-of-trip only when needed – e.g. disputes, no-show, safety issues or incorrect addresses. Normal trips don’t require extra proof."}
                 </p>
               </div>
             </div>
@@ -338,26 +331,26 @@ export default function ProofOfTripMainScreen() {
               <button
                 type="button"
                 onClick={handleSubmitProof}
-                className="flex-1 rounded-full py-2.5 text-sm font-semibold shadow-sm bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c]"
+                className="flex-1 rounded-full py-2.5 text-sm font-semibold shadow-sm bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c] transition-all active:scale-[0.98]"
               >
-                Submit proof for this trip
+                Submit proof
               </button>
               <button
                 type="button"
                 onClick={handleReset}
-                className="flex-1 rounded-full py-2.5 text-sm font-semibold border border-slate-200 text-slate-800 bg-white"
+                className="flex-1 rounded-full py-2.5 text-sm font-semibold border border-slate-200 text-slate-800 bg-white transition-all active:scale-[0.98]"
               >
-                Reset status
+                Reset
               </button>
             </div>
 
-            <p className="text-[10px] text-slate-500 text-center max-w-[260px] mx-auto">
+            <p className="text-[10px] text-slate-500 text-center max-w-[260px] mx-auto leading-tight pt-2">
               {footerText}
             </p>
           </section>
         </main>
 
-        {/* Bottom navigation – Home active (safety / proof-of-trip context) */}
+        {/* Bottom navigation */}
         <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
           <BottomNavItem
             icon={Home}

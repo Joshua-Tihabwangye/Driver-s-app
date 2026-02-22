@@ -1,60 +1,32 @@
 import React, { useState, useEffect } from "react";
 import {
-  Bell,
-  Phone,
-  AlertTriangle,
+  X,
+  ChevronRight,
   MicOff,
   Volume2,
+  Phone,
   PhoneOff,
-  Home,
-  Briefcase,
-  Wallet,
-  Settings,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-// EVzone Driver App – D63 Driver – Emergency Calling Screen (v3, light mode)
-// In-call UI while driver is connected to emergency services or EVzone support.
-// Copy is generic and works for all job types (Ride / Delivery / Rental / Tour / Ambulance).
-// 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
-
-function BottomNavItem({ icon: Icon, label, active, onClick = () => {} }) {
-  return (
-    <button
-      type="button"
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
-        active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
-      }`}
-      onClick={onClick}
-    >
-      <Icon className="h-5 w-5 mb-0.5" />
-      <span>{label}</span>
-    </button>
-  );
-}
+// EVzone Driver App – D63 Driver – Emergency Calling Screen (v4)
+// Redesigned to match the high-fidelity orbit animation with avatars and swipe-to-cancel slider.
+// + Restored: formatCallTime(), call timer, mute/speaker controls, end call button
 
 function formatCallTime(seconds) {
-  const m = Math.floor(seconds / 60)
-    .toString()
-    .padStart(2, "0");
+  const m = Math.floor(seconds / 60).toString().padStart(2, "0");
   const s = (seconds % 60).toString().padStart(2, "0");
   return `${m}:${s}`;
 }
 
 export default function EmergencyCallingScreen() {
-  const [nav] = useState("home");
+  const navigate = useNavigate();
+  const [isSwiped, setIsSwiped] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [muted, setMuted] = useState(false);
   const [speaker, setSpeaker] = useState(false);
-  const [keypadOpen, setKeypadOpen] = useState(false);
-  const navigate = useNavigate();
-  const bottomNavRoutes = {
-    home: "/driver/dashboard/online",
-    manager: "/driver/jobs/list",
-    wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences",
-  };
 
+  // Call timer (restored from original)
   useEffect(() => {
     const id = setInterval(() => setSeconds((s) => s + 1), 1000);
     return () => clearInterval(id);
@@ -62,152 +34,154 @@ export default function EmergencyCallingScreen() {
 
   const callTime = formatCallTime(seconds);
 
-  return (
-    <div className="min-h-screen flex justify-center bg-[#0f172a] py-4">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
+  // Orbiting Avatars Data
+  const avatars = [
+    { img: 'https://i.pravatar.cc/150?u=12', pos: 'top-0 left-1/2 -translate-x-1/2' },
+    { img: 'https://i.pravatar.cc/150?u=22', pos: 'top-1/4 right-0' },
+    { img: 'https://i.pravatar.cc/150?u=32', pos: 'bottom-1/4 right-0' },
+    { img: 'https://i.pravatar.cc/150?u=42', pos: 'bottom-0 left-1/2 -translate-x-1/2' },
+    { img: 'https://i.pravatar.cc/150?u=52', pos: 'bottom-1/4 left-0' },
+    { img: 'https://i.pravatar.cc/150?u=62', pos: 'top-1/4 left-0' }
+  ];
 
-      {/* Phone frame in light mode */}
-      <div className="w-[375px] h-[812px] bg-white rounded-[32px] shadow-2xl overflow-hidden flex flex-col text-slate-900">
-        {/* Header */}
-        <header className="flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-50 border border-red-100">
-              <AlertTriangle className="h-4 w-4 text-red-500" />
-            </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                Driver · Emergency call
-              </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Calling emergency services
-              </h1>
+  return (
+    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
+      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col relative">
+
+        {/* Green curved header */}
+        <div className="relative" style={{ minHeight: 80 }}>
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+              borderRadius: "0 0 32px 32px",
+            }}
+          />
+          <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
+            <button
+              onClick={() => navigate('/driver/safety/toolkit')}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm"
+            >
+              <X className="h-5 w-5 text-white" />
+            </button>
+            <h1 className="text-base font-semibold text-white">SOS</h1>
+            <div className="w-9" />
+          </header>
+        </div>
+
+        {/* Content Area */}
+        <main className="flex-1 flex flex-col p-8 relative items-center text-center">
+
+          <div className="space-y-4 mb-8">
+            <h3 className="text-[28px] font-black text-slate-900 leading-tight">Emergency Calling...</h3>
+            <p className="text-[14px] text-slate-400 font-bold px-6 leading-relaxed">
+              Your request for assistance will be sent to your emergency contacts and the closest help center
+            </p>
+            <p className="text-[12px] text-slate-500">Call time: {callTime}</p>
+          </div>
+
+          {/* Orbit Animation */}
+          <div className="flex-1 flex items-center justify-center relative w-full mb-8">
+            <div className="relative h-72 w-72 flex items-center justify-center">
+
+              {/* Dashed Orbiting Circles */}
+              <div className="absolute inset-0 rounded-full border border-dashed border-slate-200 animate-[spin_20s_linear_infinite]" />
+              <div className="absolute inset-10 rounded-full border border-dashed border-slate-200 animate-[spin_15s_linear_infinite_reverse]" />
+              <div className="absolute inset-20 rounded-full border border-dashed border-slate-200 animate-[spin_10s_linear_infinite]" />
+
+              {/* Orbiting Avatars */}
+              {avatars.map((avatar, i) => (
+                <div
+                  key={i}
+                  className={`absolute h-12 w-12 rounded-full border-2 border-white shadow-lg overflow-hidden ${avatar.pos} z-20`}
+                  style={{
+                    animation: `bounce ${2 + i * 0.5}s ease-in-out infinite alternate`
+                  }}
+                >
+                  <img src={avatar.img} alt="Contact" className="h-full w-full object-cover" />
+                </div>
+              ))}
+
+              {/* Central SOS Button */}
+              <div className="h-32 w-32 rounded-full bg-[#ff3b30] flex items-center justify-center text-white shadow-2xl shadow-red-500/40 relative z-30 border-8 border-white outline outline-1 outline-slate-100">
+                <span className="text-[32px] font-black italic tracking-tighter">SOS</span>
+              </div>
+
+              {/* Pulsing Outer Rings */}
+              <div className="absolute inset-16 rounded-full bg-red-500/5 animate-ping duration-1000 z-0" />
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => navigate("/driver/ridesharing/notification")}
-            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
-          >
-            <Bell className="h-4 w-4" />
-          </button>
-        </header>
 
-        {/* Content */}
-        <main className="flex-1 px-4 pb-4 overflow-y-auto scrollbar-hide flex flex-col items-center justify-between">
-          {/* Caller info */}
-          <section className="pt-4 flex flex-col items-center space-y-3">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-50 border border-red-200">
-              <Phone className="h-9 w-9 text-red-500" />
-            </div>
-            <div className="flex flex-col items-center">
-              <span className="text-xs uppercase tracking-[0.18em] text-slate-500">
-                Connected to
-              </span>
-              <span className="text-sm font-semibold text-slate-900">
-                Local emergency services
-              </span>
-              <span className="text-[11px] text-slate-500 mt-1">Call time: {callTime}</span>
-            </div>
-          </section>
-
-          {/* Guidance text */}
-          <section className="w-full max-w-[320px] space-y-2 text-[11px] text-slate-600">
-            <div className="rounded-2xl bg-slate-50 px-3 py-3 border border-slate-100 flex items-start space-x-2">
-              <div className="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-red-50">
-                <AlertTriangle className="h-3.5 w-3.5 text-red-500" />
+          {/* Call controls (restored from original) */}
+          <div className="w-full max-w-[280px] flex items-center justify-between text-[11px] text-slate-700 mb-4">
+            <button
+              type="button"
+              onClick={() => setMuted((v) => !v)}
+              className={`flex flex-col items-center space-y-1 ${muted ? "text-[#03cd8c]" : ""}`}
+            >
+              <div className={`flex h-10 w-10 items-center justify-center rounded-full ${muted ? "bg-emerald-50" : "bg-slate-100"}`}>
+                <MicOff className="h-4 w-4" />
               </div>
-              <div className="flex-1">
-                <p className="font-semibold text-xs text-slate-900 mb-0.5">
-                  Stay calm and speak clearly
-                </p>
-                <p>
-                  Explain where you are, what is happening, and whether anyone is
-                  injured. Follow instructions from the operator. This applies
-                  whether you are on a ride, delivery, rental, tour or ambulance
-                  run.
-                </p>
+              <span>{muted ? "Muted" : "Mute"}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setSpeaker((v) => !v)}
+              className={`flex flex-col items-center space-y-1 ${speaker ? "text-[#03cd8c]" : ""}`}
+            >
+              <div className={`flex h-10 w-10 items-center justify-center rounded-full ${speaker ? "bg-emerald-50" : "bg-slate-100"}`}>
+                <Volume2 className="h-4 w-4" />
               </div>
-            </div>
-          </section>
-
-          {/* Call controls */}
-          <section className="w-full max-w-[280px] pb-6 flex flex-col items-center space-y-4">
-            <div className="flex items-center justify-between w-full text-[11px] text-slate-700">
-              <button
-                type="button"
-                onClick={() => setMuted((v) => !v)}
-                className={`flex flex-col items-center space-y-1 ${muted ? "text-[#03cd8c]" : ""}`}
-              >
-                <div className={`flex h-10 w-10 items-center justify-center rounded-full ${muted ? "bg-emerald-50" : "bg-slate-100"}`}>
-                  <MicOff className="h-4 w-4" />
-                </div>
-                <span>{muted ? "Muted" : "Mute"}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setSpeaker((v) => !v)}
-                className={`flex flex-col items-center space-y-1 ${speaker ? "text-[#03cd8c]" : ""}`}
-              >
-                <div className={`flex h-10 w-10 items-center justify-center rounded-full ${speaker ? "bg-emerald-50" : "bg-slate-100"}`}>
-                  <Volume2 className="h-4 w-4" />
-                </div>
-                <span>{speaker ? "Speaker on" : "Speaker"}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setKeypadOpen((v) => !v)}
-                className={`flex flex-col items-center space-y-1 ${keypadOpen ? "text-[#03cd8c]" : ""}`}
-              >
-                <div className={`flex h-10 w-10 items-center justify-center rounded-full ${keypadOpen ? "bg-emerald-50" : "bg-slate-100"}`}>
-                  {/* Using Phone icon as a generic keypad control to avoid unsupported Keypad icon */}
-                  <Phone className="h-4 w-4" />
-                </div>
-                <span>{keypadOpen ? "Keypad open" : "Keypad"}</span>
-              </button>
-            </div>
-
+              <span>{speaker ? "Speaker on" : "Speaker"}</span>
+            </button>
             <button
               type="button"
               onClick={() => navigate("/driver/dashboard/offline")}
-              className="mt-2 flex h-14 w-14 items-center justify-center rounded-full bg-red-600 text-slate-50 hover:bg-red-700 shadow-lg"
+              className="flex flex-col items-center space-y-1 text-red-500"
             >
-              <PhoneOff className="h-6 w-6" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-600 text-white">
+                <PhoneOff className="h-4 w-4" />
+              </div>
+              <span>End Call</span>
             </button>
-          </section>
-        </main>
+          </div>
 
-        {/* Bottom navigation – Home active (call context) */}
-        <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem
-            icon={Home}
-            label="Home"
-            active={nav === "home"}
-            onClick={() => navigate(bottomNavRoutes.home)}
-          />
-          <BottomNavItem
-            icon={Briefcase}
-            label="Manager"
-            active={nav === "manager"}
-            onClick={() => navigate(bottomNavRoutes.manager)}
-          />
-          <BottomNavItem
-            icon={Wallet}
-            label="Wallet"
-            active={nav === "wallet"}
-            onClick={() => navigate(bottomNavRoutes.wallet)}
-          />
-          <BottomNavItem
-            icon={Settings}
-            label="Settings"
-            active={nav === "settings"}
-            onClick={() => navigate(bottomNavRoutes.settings)}
-          />
-        </nav>
+          {/* Swipe Slider */}
+          <div className="w-full pb-8">
+            <div className="relative h-18 bg-[#03cd8c]/10 rounded-full p-1 border border-[#03cd8c]/20 group overflow-hidden">
+              <div
+                className={`flex items-center justify-center w-full h-full text-[#1e7e65] font-black text-[14px] uppercase tracking-widest transition-opacity duration-300 ${isSwiped ? 'opacity-0' : 'opacity-100'}`}
+              >
+                Swipe if you're safe now
+              </div>
+
+              <button
+                onMouseDown={() => { }}
+                draggable
+                onDragEnd={() => { setIsSwiped(true); setTimeout(() => navigate('/driver/dashboard/online'), 500); }}
+                className="absolute left-1 top-1 bottom-1 aspect-square bg-[#03cd8c] rounded-full flex items-center justify-center text-white shadow-lg active:scale-95 transition-transform cursor-grab active:cursor-grabbing hover:bg-[#02bb7e]"
+              >
+                <ChevronRight className="h-6 w-6 stroke-[3px]" />
+              </button>
+
+              {/* Background Fill on Swipe (simulated) */}
+              {isSwiped && (
+                <div className="absolute inset-0 bg-[#03cd8c] flex items-center justify-center text-white font-black text-[14px] uppercase tracking-widest animate-in fade-in duration-300">
+                  You're Safe Now
+                </div>
+              )}
+            </div>
+          </div>
+
+        </main>
       </div>
+
+      <style>{`
+        @keyframes bounce {
+          from { transform: translateY(0px) rotate(0deg); }
+          to { transform: translateY(-5px) rotate(3deg); }
+        }
+      `}</style>
     </div>
   );
 }
