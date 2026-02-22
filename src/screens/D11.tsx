@@ -23,7 +23,7 @@ import { useNavigate } from "react-router-dom";
 // Green curved header design. ALL original functionality preserved:
 // personal details display, linked documents, support contact button, routing.
 
-function BottomNavItem({ icon: Icon, label, active, onClick }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick }) {
   return (
     <button
       type="button"
@@ -37,11 +37,7 @@ function BottomNavItem({ icon: Icon, label, active, onClick }) {
   );
 }
 
-<<<<<<< HEAD:src/screens/D11.jsx
 function DocRow({ icon: Icon, title, subtitle, dateLabel, onClick }) {
-=======
-function InfoRow({ icon: Icon, label, value, muted = false }: { icon: React.ElementType; label: string; value: string; muted?: boolean }) {
->>>>>>> f37e8a54f2a745f9fd2fc7cc3062553c40e5915c:src/screens/D11.tsx
   return (
     <button
       type="button"
@@ -177,10 +173,10 @@ export default function IdentityVerificationScreen() {
 
         {/* Bottom navigation – green */}
         <nav className="app-bottom-nav border-t border-white/20 flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem icon={Home} label="Home" onClick={() => navigate(bottomNavRoutes.home)} />
-          <BottomNavItem icon={MessageSquare} label="Messages" onClick={() => navigate(bottomNavRoutes.messages)} />
-          <BottomNavItem icon={Wallet} label="Wallet" onClick={() => navigate(bottomNavRoutes.wallet)} />
-          <BottomNavItem icon={Settings} label="Settings" active onClick={() => navigate(bottomNavRoutes.settings)} />
+          <BottomNavItem icon={Home} label="Home" active={nav === "home"} onClick={() => navigate(bottomNavRoutes.home)} />
+          <BottomNavItem icon={MessageSquare} label="Messages" active={nav === "messages"} onClick={() => navigate(bottomNavRoutes.messages)} />
+          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"} onClick={() => navigate(bottomNavRoutes.wallet)} />
+          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"} onClick={() => navigate(bottomNavRoutes.settings)} />
         </nav>
       </div>
     </div>

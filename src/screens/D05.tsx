@@ -28,11 +28,7 @@ import { useNavigate } from "react-router-dom";
 // document rows with status chips, training progress ring, Go Online button,
 // all navigation/routing intact.
 
-<<<<<<< HEAD:src/screens/D05.jsx
 function BottomNavItem({ icon: Icon, label, active, onClick = () => { } }) {
-=======
-function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }: { icon: React.ElementType; label: string; active?: boolean; onClick?: () => void }) {
->>>>>>> f37e8a54f2a745f9fd2fc7cc3062553c40e5915c:src/screens/D05.tsx
   return (
     <button
       type="button"
