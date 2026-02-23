@@ -862,12 +862,13 @@ export default function App() {
       data-screen-id={currentScreen.id}
       sx={{
         minHeight: "100vh",
-        bgcolor: "#edf3f2",
-        color: "#1e293b",
+        bgcolor: isDark ? "#0f172a" : "#edf3f2",
+        color: isDark ? "#e2e8f0" : "#1e293b",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         py: 2,
+        transition: "background-color 0.3s ease, color 0.3s ease",
       }}
     >
       {/* Global Theme Toggle FAB */}
@@ -897,7 +898,9 @@ export default function App() {
             borderRadius: 3,
             overflow: "hidden",
             bgcolor: "transparent",
-            boxShadow: "0 12px 30px rgba(0,0,0,0.2)",
+            boxShadow: isDark
+              ? "0 12px 30px rgba(0,0,0,0.5)"
+              : "0 12px 30px rgba(0,0,0,0.2)",
           }}
         >
           <Box
@@ -905,7 +908,9 @@ export default function App() {
               px: 2.25,
               pt: 2,
               pb: 1.25,
-              background: "linear-gradient(135deg, #0bbf7c, #03cd8c)",
+              background: isDark
+                ? "linear-gradient(135deg, #065f46, #047857)"
+                : "linear-gradient(135deg, #0bbf7c, #03cd8c)",
               color: "#fff",
               display: "flex",
               alignItems: "center",
@@ -942,8 +947,9 @@ export default function App() {
               px: 2,
               pb: 2,
               pt: 1.25,
-              backgroundColor: "#ffffff",
+              backgroundColor: isDark ? "#1e293b" : "#ffffff",
               borderRadius: "0 0 24px 24px",
+              transition: "background-color 0.3s ease",
             }}
           >
             <FormControl
@@ -952,8 +958,11 @@ export default function App() {
               sx={{
                 "& .MuiOutlinedInput-root": {
                   borderRadius: 3,
-                  backgroundColor: "#ffffff",
-                  boxShadow: "0 8px 20px rgba(15,23,42,0.12)",
+                  backgroundColor: isDark ? "#263348" : "#ffffff",
+                  boxShadow: isDark
+                    ? "0 8px 20px rgba(0,0,0,0.3)"
+                    : "0 8px 20px rgba(15,23,42,0.12)",
+                  color: isDark ? "#e2e8f0" : undefined,
                   "& .MuiSelect-select": {
                     display: "flex",
                     alignItems: "center",
@@ -962,10 +971,20 @@ export default function App() {
                     fontSize: 14,
                     py: 1.25,
                   },
+                  "& fieldset": {
+                    borderColor: isDark ? "#475569" : undefined,
+                  },
+                  "&:hover fieldset": {
+                    borderColor: isDark ? "#64748b" : undefined,
+                  },
                 },
                 "& .MuiInputLabel-root": {
                   fontSize: 12,
                   letterSpacing: 0.2,
+                  color: isDark ? "#94a3b8" : undefined,
+                },
+                "& .MuiSvgIcon-root": {
+                  color: isDark ? "#94a3b8" : undefined,
                 },
                 mt: 0.5,
               }}
@@ -979,7 +998,7 @@ export default function App() {
                 onChange={handleScreenChange}
                 inputProps={{ "aria-label": "Select screen" }}
                 startAdornment={
-                  <InputAdornment position="start" sx={{ color: "#94a3b8" }}>
+                  <InputAdornment position="start" sx={{ color: isDark ? "#64748b" : "#94a3b8" }}>
                     <MapPin size={16} />
                   </InputAdornment>
                 }
@@ -988,6 +1007,16 @@ export default function App() {
                     sx: {
                       maxHeight: 360,
                       borderRadius: 2,
+                      bgcolor: isDark ? "#1e293b" : "#ffffff",
+                      color: isDark ? "#e2e8f0" : undefined,
+                      "& .MuiMenuItem-root": {
+                        "&:hover": {
+                          bgcolor: isDark ? "#263348" : undefined,
+                        },
+                        "&.Mui-selected": {
+                          bgcolor: isDark ? "#334155" : undefined,
+                        },
+                      },
                     },
                   },
                 }}

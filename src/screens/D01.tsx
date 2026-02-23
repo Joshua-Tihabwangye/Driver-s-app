@@ -12,7 +12,7 @@ import {
   Settings,
   ChevronLeft,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate , useLocation } from "react-router-dom";
 
 // EVzone Driver App – D01 Home (Super App Landing)
 // Reverted to the standardized "final_driver" design:
@@ -47,16 +47,22 @@ const services = [
   },
 ];
 
-function BottomNavItem({ icon: Icon, label, active = false, onClick }: { icon: React.ElementType; label: string; active?: boolean; onClick?: () => void }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       type="button"
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${active ? "text-white" : "text-white/60 hover:text-white/80"
-        }`}
       onClick={onClick}
+      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all ${
+        active
+          ? "text-white relative"
+          : "text-white/50 hover:text-white/80"
+      }`}
     >
-      <Icon className="h-5 w-5 mb-0.5" />
-      <span>{label}</span>
+      {active && (
+        <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />
+      )}
+      <Icon className={`h-5 w-5 mb-0.5 relative z-10 ${active ? "drop-shadow-sm" : ""}`} />
+      <span className="relative z-10">{label}</span>
     </button>
   );
 }
@@ -81,6 +87,12 @@ function ServiceCard({ icon: Icon, title, subtitle, onClick }) {
 
 export default function DriverHomeScreen() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const navActive = (key) => {
+    const p = location.pathname;
+    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
+    return (routes[key] || []).some(r => p.startsWith(r));
+  };
 
   const serviceRoutes = {
     school: "/driver/safety/hub",
@@ -218,23 +230,22 @@ export default function DriverHomeScreen() {
           <BottomNavItem
             icon={Home}
             label="Home"
-            active
-            onClick={() => navigate("/driver/dashboard/online")}
+           active={navActive("home")} onClick={() => navigate("/driver/dashboard/online")}
           />
           <BottomNavItem
             icon={Briefcase}
             label="Manager"
-            onClick={() => navigate("/driver/jobs/list")}
+            active={navActive("manager")} onClick={() => navigate("/driver/jobs/list")}
           />
           <BottomNavItem
             icon={Wallet}
             label="Wallet"
-            onClick={() => navigate("/driver/earnings/overview")}
+            active={navActive("wallet")} onClick={() => navigate("/driver/earnings/overview")}
           />
           <BottomNavItem
             icon={Settings}
             label="Settings"
-            onClick={() => navigate("/driver/preferences")}
+            active={navActive("settings")} onClick={() => navigate("/driver/preferences")}
           />
         </nav>
       </div>

@@ -7,7 +7,7 @@ import {
   Phone,
   PhoneOff
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate , useLocation } from "react-router-dom";
 
 // EVzone Driver App – D63 Driver – Emergency Calling Screen (v4)
 // Redesigned to match the high-fidelity orbit animation with avatars and swipe-to-cancel slider.
@@ -21,6 +21,12 @@ function formatCallTime(seconds) {
 
 export default function EmergencyCallingScreen() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const navActive = (key) => {
+    const p = location.pathname;
+    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
+    return (routes[key] || []).some(r => p.startsWith(r));
+  };
   const [isSwiped, setIsSwiped] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [muted, setMuted] = useState(false);
@@ -147,7 +153,7 @@ export default function EmergencyCallingScreen() {
 
           {/* Swipe Slider */}
           <div className="w-full pb-8">
-            <div className="relative h-18 bg-[#03cd8c]/10 rounded-full p-1 border border-[#03cd8c]/20 group overflow-hidden">
+            <div className="relative h-18 bg-white/20 rounded-full p-1 border border-[#03cd8c]/20 group overflow-hidden">
               <div
                 className={`flex items-center justify-center w-full h-full text-[#1e7e65] font-black text-[14px] uppercase tracking-widest transition-opacity duration-300 ${isSwiped ? 'opacity-0' : 'opacity-100'}`}
               >

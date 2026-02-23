@@ -8,7 +8,7 @@ import {
   Flame,
   Home as HomeIcon
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate , useLocation } from "react-router-dom";
 
 // EVzone Driver App – D60 Driver – Emergency Assistance Screen (v3)
 // Redesigned to match the high-fidelity layout with green header, map, and grid categories.
@@ -21,6 +21,12 @@ const callNumber = (phone) => {
 
 export default function EmergencyAssistanceMapVariantScreen() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const navActive = (key) => {
+    const p = location.pathname;
+    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
+    return (routes[key] || []).some(r => p.startsWith(r));
+  };
   const [selectedCategory, setSelectedCategory] = useState(null);
 
   const categories = [

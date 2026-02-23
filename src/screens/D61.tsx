@@ -5,13 +5,19 @@ import {
   TriangleAlert,
   Phone
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate , useLocation } from "react-router-dom";
 
 // EVzone Driver App – D61 Driver – SOS / Emergency Alert Sending Screen (v3)
 // Redesigned to match the high-fidelity SOS countdown layout with pulsing circle and 112 link.
 
 export default function SosSendingScreen() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const navActive = (key) => {
+    const p = location.pathname;
+    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
+    return (routes[key] || []).some(r => p.startsWith(r));
+  };
   const [sosTimer, setSosTimer] = useState(10);
 
   // SOS Countdown Timer

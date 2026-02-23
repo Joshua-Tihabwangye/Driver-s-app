@@ -9,7 +9,7 @@ import {
   Wallet,
   Settings
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate , useLocation } from "react-router-dom";
 
 // EVzone Driver App – D18 Preferences – Intro to Driving
 // Redesigned to match Screenshot 4.
@@ -20,12 +20,14 @@ function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }
   return (
     <button
       type="button"
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${active ? "text-white" : "text-white/60 hover:text-white/80"
-        }`}
       onClick={onClick}
+      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
+        active ? "text-white" : "text-white/50 hover:text-white/80"
+      }`}
     >
-      <Icon className="h-5 w-5 mb-0.5" />
-      <span>{label}</span>
+      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
+      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
+      <span className="relative z-10">{label}</span>
     </button>
   );
 }
@@ -40,8 +42,13 @@ function Bullet({ children }) {
 }
 
 export default function IntroEvzoneRideScreen() {
-  const [nav] = useState("settings");
   const navigate = useNavigate();
+  const location = useLocation();
+  const navActive = (key) => {
+    const p = location.pathname;
+    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
+    return (routes[key] || []).some(r => p.startsWith(r));
+  };
 
   return (
     <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
@@ -155,10 +162,10 @@ export default function IntroEvzoneRideScreen() {
 
         {/* Bottom Navigation – Green */}
         <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem icon={Home} label="Home" onClick={() => navigate("/driver/dashboard/online")} />
-          <BottomNavItem icon={Briefcase} label="Manager" onClick={() => navigate("/driver/jobs/list")} />
-          <BottomNavItem icon={Wallet} label="Wallet" onClick={() => navigate("/driver/earnings/overview")} />
-          <BottomNavItem icon={Settings} label="Settings" active onClick={() => navigate("/driver/preferences")} />
+          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate("/driver/dashboard/online")} />
+          <BottomNavItem icon={Briefcase} label="Manager" active={navActive("manager")} onClick={() => navigate("/driver/jobs/list")} />
+          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate("/driver/earnings/overview")} />
+          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate("/driver/preferences")} />
         </nav>
       </div>
     </div>

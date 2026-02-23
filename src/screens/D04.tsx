@@ -14,7 +14,7 @@ import {
   Wallet,
   Settings
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate , useLocation } from "react-router-dom";
 
 // EVzone Driver App – D04 Registration – Driver Information
 // New design: green curved header, profile photo, Driver Information section,
@@ -32,12 +32,14 @@ function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }
   return (
     <button
       type="button"
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${active ? "text-white" : "text-white/60 hover:text-white/80"
-        }`}
       onClick={onClick}
+      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
+        active ? "text-white" : "text-white/50 hover:text-white/80"
+      }`}
     >
-      <Icon className="h-5 w-5 mb-0.5" />
-      <span>{label}</span>
+      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
+      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
+      <span className="relative z-10">{label}</span>
     </button>
   );
 }
@@ -49,6 +51,12 @@ export default function D04RegistrationEvzoneDriverScreen() {
   const [ambulance, setAmbulance] = useState(false);
   const [shuttle, setShuttle] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const navActive = (key) => {
+    const p = location.pathname;
+    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
+    return (routes[key] || []).some(r => p.startsWith(r));
+  };
 
   const bottomNavRoutes = {
     home: "/driver/dashboard/online",
@@ -276,10 +284,10 @@ export default function D04RegistrationEvzoneDriverScreen() {
 
         {/* Bottom navigation – green */}
         <nav className="app-bottom-nav border-t border-white/20 flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem icon={Home} label="Home" onClick={() => navigate(bottomNavRoutes.home)} />
+          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate(bottomNavRoutes.home)} />
           <BottomNavItem icon={MessageSquare} label="Messages" onClick={() => navigate(bottomNavRoutes.messages)} />
-          <BottomNavItem icon={Wallet} label="Wallet" onClick={() => navigate(bottomNavRoutes.wallet)} />
-          <BottomNavItem icon={Settings} label="Settings" active onClick={() => navigate(bottomNavRoutes.settings)} />
+          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate(bottomNavRoutes.wallet)} />
+          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate(bottomNavRoutes.settings)} />
         </nav>
       </div>
     </div>
