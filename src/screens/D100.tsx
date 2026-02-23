@@ -14,7 +14,7 @@ import {
   Ambulance,
   Hospital
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate , useLocation } from "react-router-dom";
 
 // EVzone Driver App – D100 Ambulance Job Status Screen (v2)
 // In-progress view tailored for Ambulance runs.
@@ -39,13 +39,14 @@ function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }
   return (
     <button
       type="button"
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
-        active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
+      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
+        active ? "text-white" : "text-white/50 hover:text-white/80"
       }`}
       onClick={onClick}
     >
-      <Icon className="h-5 w-5 mb-0.5" />
-      <span>{label}</span>
+      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
+      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
+      <span className="relative z-10">{label}</span>
     </button>
   );
 }
@@ -59,12 +60,17 @@ function formatTime(seconds) {
 }
 
 export default function AmbulanceJobStatusScreen() {
-  const [nav] = useState("home");
   const [stage, setStage] = useState("enRouteToPatient");
   const [dispatchSeconds, setDispatchSeconds] = useState(0);
   const [onSceneSeconds, setOnSceneSeconds] = useState(0);
   const [transportSeconds, setTransportSeconds] = useState(0);
   const navigate = useNavigate();
+  const location = useLocation();
+  const navActive = (key) => {
+    const p = location.pathname;
+    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
+    return (routes[key] || []).some(r => p.startsWith(r));
+  };
   const bottomNavRoutes = {
     home: "/driver/dashboard/online",
     manager: "/driver/jobs/list",
@@ -312,30 +318,26 @@ export default function AmbulanceJobStatusScreen() {
         </main>
 
         {/* Bottom navigation – Home active (ambulance context) */}
-        <nav className="app-bottom-nav border-t border-slate-100 bg-white/95 backdrop-blur flex">
+        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
           <BottomNavItem
             icon={Home}
             label="Home"
-            active={nav === "home"}
-            onClick={() => navigate(bottomNavRoutes.home)}
+           active={navActive("home")} onClick={() => navigate(bottomNavRoutes.home)}
           />
           <BottomNavItem
             icon={Briefcase}
             label="Manager"
-            active={nav === "manager"}
-            onClick={() => navigate(bottomNavRoutes.manager)}
+           active={navActive("manager")} onClick={() => navigate(bottomNavRoutes.manager)}
           />
           <BottomNavItem
             icon={Wallet}
             label="Wallet"
-            active={nav === "wallet"}
-            onClick={() => navigate(bottomNavRoutes.wallet)}
+           active={navActive("wallet")} onClick={() => navigate(bottomNavRoutes.wallet)}
           />
           <BottomNavItem
             icon={Settings}
             label="Settings"
-            active={nav === "settings"}
-            onClick={() => navigate(bottomNavRoutes.settings)}
+           active={navActive("settings")} onClick={() => navigate(bottomNavRoutes.settings)}
           />
         </nav>
       </div>

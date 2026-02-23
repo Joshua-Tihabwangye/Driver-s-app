@@ -2,14 +2,58 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ──────────────────────────────────────────────
+   CSS Custom Properties – Light (default)
+   ────────────────────────────────────────────── */
 :root {
   --evz-green: #12c98c;
   --evz-stage: #eef3f2;
   --evz-surface: #ffffff;
+  --evz-surface-alt: #f5f8f7;
   --evz-border: #dde5e4;
+  --evz-text: #1e293b;
+  --evz-text-secondary: #64748b;
+  --evz-card-dark-bg: #0b1e3a;
+  --evz-card-dark-text: #ffffff;
+  --evz-card-dark-border: transparent;
+  --evz-input-bg: #ffffff;
+  --evz-input-border: #dde5e4;
+  --evz-header-bg: linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%);
+  --evz-nav-bg: #03cd8c;
+  --evz-chart-bg: #f1f5f9;
+  --evz-stat-bg: #ffffff;
+  --evz-stat-border: #e2e8f0;
+  --evz-banner-blue: #00a3ff;
+  --evz-overlay-bg: rgba(255, 255, 255, 0.95);
 }
 
-/* Global scrollbar hide utility used in phone frames */
+/* ──────────────────────────────────────────────
+   CSS Custom Properties – Dark
+   ────────────────────────────────────────────── */
+.dark {
+  --evz-stage: #0f172a;
+  --evz-surface: #1e293b;
+  --evz-surface-alt: #263348;
+  --evz-border: #334155;
+  --evz-text: #e2e8f0;
+  --evz-text-secondary: #94a3b8;
+  --evz-card-dark-bg: #0f172a;
+  --evz-card-dark-text: #e2e8f0;
+  --evz-card-dark-border: #334155;
+  --evz-input-bg: #263348;
+  --evz-input-border: #475569;
+  --evz-header-bg: linear-gradient(135deg, #065f46 0%, #047857 50%, #059669 100%);
+  --evz-nav-bg: #047857;
+  --evz-chart-bg: #263348;
+  --evz-stat-bg: #263348;
+  --evz-stat-border: #334155;
+  --evz-banner-blue: #0369a1;
+  --evz-overlay-bg: rgba(30, 41, 59, 0.95);
+}
+
+/* ──────────────────────────────────────────────
+   Global scrollbar hide
+   ────────────────────────────────────────────── */
 .scrollbar-hide::-webkit-scrollbar {
   width: 0;
   height: 0;
@@ -19,203 +63,251 @@
   scrollbar-width: none;
 }
 
-/* Smooth font rendering */
+/* ──────────────────────────────────────────────
+   Font rendering
+   ────────────────────────────────────────────── */
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-family: "Poppins", "Manrope", "Avenir Next", "Segoe UI", sans-serif;
   background: var(--evz-stage);
+  color: var(--evz-text);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.preview-root[data-screen-id]:not([data-screen-id="D102"])
-  .screen-preview-host
-  > .min-h-screen.flex.justify-center {
+/* ──────────────────────────────────────────────
+   LIGHT MODE – Preview root overrides
+   ────────────────────────────────────────────── */
+
+/* Stage background */
+.preview-root .screen-preview-host > .min-h-screen.flex.justify-center,
+.preview-root .screen-preview-host > div.app-stage {
   background: var(--evz-stage) !important;
   padding-top: 16px !important;
   padding-bottom: 20px !important;
 }
 
-.preview-root[data-screen-id]:not([data-screen-id="D102"])
-  .screen-preview-host
-  > .min-h-screen.flex.justify-center
-  > div[class*="w-[375px]"][class*="h-[812px]"] {
-  border: 1px solid var(--evz-border) !important;
-  border-radius: 10px !important;
+/* Phone frame */
+.preview-root .screen-preview-host div[class*="w-[375px]"][class*="h-[812px]"] {
+  border-color: var(--evz-border) !important;
+  background: var(--evz-surface) !important;
   box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12) !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* ──────────────────────────────────────────────
+   DARK MODE – Global screen overrides
+   All rules below apply when <html class="dark">
+   ────────────────────────────────────────────── */
+
+/* Stage / outer wrapper */
+.dark .preview-root .screen-preview-host > .min-h-screen.flex.justify-center,
+.dark .preview-root .screen-preview-host > div.app-stage,
+.dark .app-stage {
+  background: var(--evz-stage) !important;
+}
+
+/* Phone frame */
+.dark .preview-root .screen-preview-host div[class*="w-[375px]"][class*="h-[812px]"],
+.dark .app-phone {
+  background: var(--evz-surface) !important;
+  border-color: var(--evz-border) !important;
+}
+
+/* Header – darker green gradient */
+.dark .preview-root .screen-preview-host header,
+.dark header.app-header,
+.dark header[class*="app-header"] {
+  background: var(--evz-header-bg) !important;
+}
+
+/* Green header background div (the gradient overlay) */
+.dark .preview-root .screen-preview-host div[style*="linear-gradient"][class*="absolute"],
+.dark div[style*="linear-gradient(135deg, #a8e6cf"][class*="absolute"] {
+  background: linear-gradient(135deg, #065f46 0%, #047857 50%, #059669 100%) !important;
+}
+
+/* Main content area */
+.dark .app-main,
+.dark .preview-root .screen-preview-host .app-main {
   background: var(--evz-surface) !important;
 }
 
-.preview-root[data-screen-id]:not([data-screen-id="D102"])
-  .screen-preview-host
-  header {
-  border-bottom: none !important;
-  background: var(--evz-green) !important;
-  color: #ffffff !important;
-  padding-top: 14px !important;
-  padding-bottom: 12px !important;
+/* Bottom nav */
+.dark .app-bottom-nav,
+.dark nav[style*="background"][style*="03cd8c"],
+.dark .preview-root .screen-preview-host nav[class*="app-bottom-nav"] {
+  background: #047857 !important;
+}
+.dark .preview-root .screen-preview-host nav.border-t.backdrop-blur.flex {
+  background: #047857 !important;
+  border-color: #065f46 !important;
 }
 
-.preview-root[data-screen-id]:not([data-screen-id="D102"])
-  .screen-preview-host
-  header
-  h1,
-.preview-root[data-screen-id]:not([data-screen-id="D102"])
-  .screen-preview-host
-  header
-  h2,
-.preview-root[data-screen-id]:not([data-screen-id="D102"])
-  .screen-preview-host
-  header
-  p,
-.preview-root[data-screen-id]:not([data-screen-id="D102"])
-  .screen-preview-host
-  header
-  span,
-.preview-root[data-screen-id]:not([data-screen-id="D102"])
-  .screen-preview-host
-  header
-  svg {
-  color: #ffffff !important;
+/* ── Cards & sections ── */
+
+/* White cards → dark surface */
+.dark [class*="bg-white"] {
+  background-color: var(--evz-surface) !important;
 }
 
-.preview-root[data-screen-id]:not([data-screen-id="D102"])
-  .screen-preview-host
-  header
-  [class*="text-slate-"],
-.preview-root[data-screen-id]:not([data-screen-id="D102"])
-  .screen-preview-host
-  header
-  [class*="text-[#0b1e3a]"],
-.preview-root[data-screen-id]:not([data-screen-id="D102"])
-  .screen-preview-host
-  header
-  [class*="text-[#03cd8c]"] {
-  color: #ffffff !important;
+/* Slate-50 backgrounds → dark surface alt */
+.dark [class*="bg-slate-50"] {
+  background-color: var(--evz-surface-alt) !important;
 }
 
-.preview-root[data-screen-id]:not([data-screen-id="D102"])
-  .screen-preview-host
-  header
-  [class*="bg-slate-100"],
-.preview-root[data-screen-id]:not([data-screen-id="D102"])
-  .screen-preview-host
-  header
-  [class*="bg-[#e6fff7]"],
-.preview-root[data-screen-id]:not([data-screen-id="D102"])
-  .screen-preview-host
-  header
-  [class*="bg-white"] {
-  background: rgba(255, 255, 255, 0.18) !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-  color: #ffffff !important;
+/* Slate-100 backgrounds → dark surface alt */
+.dark [class*="bg-slate-100"] {
+  background-color: var(--evz-surface-alt) !important;
 }
 
-.preview-root[data-screen-id]:not([data-screen-id="D102"])
-  .screen-preview-host
-  nav.border-t.backdrop-blur.flex {
-  border-top: none !important;
-  background: var(--evz-green) !important;
-  backdrop-filter: none;
+/* Dark info cards (navy cards) – slightly darker in dark mode */
+.dark [class*="bg-[#0b1e3a]"] {
+  background-color: #0f172a !important;
+  border: 1px solid #334155 !important;
+  color: #e2e8f0 !important;
 }
-
-.preview-root[data-screen-id]:not([data-screen-id="D102"])
-  .screen-preview-host
-  nav.border-t.backdrop-blur.flex
-  button {
-  color: rgba(255, 255, 255, 0.78) !important;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-}
-
-.preview-root[data-screen-id]:not([data-screen-id="D102"])
-  .screen-preview-host
-  nav.border-t.backdrop-blur.flex
-  button[class*="text-[#03cd8c]"],
-.preview-root[data-screen-id]:not([data-screen-id="D102"])
-  .screen-preview-host
-  nav.border-t.backdrop-blur.flex
-  button[class*="text-evzone-green"] {
-  color: #ffffff !important;
-}
-
-.preview-root[data-screen-id]:not([data-screen-id="D102"])
-  .screen-preview-host
-  [class*="rounded-2xl"][class*="border"][class*="bg-white"],
-.preview-root[data-screen-id]:not([data-screen-id="D102"])
-  .screen-preview-host
-  [class*="rounded-3xl"][class*="border"][class*="bg-white"] {
-  border-color: var(--evz-border) !important;
-  box-shadow: none !important;
-}
-
-.preview-root[data-screen-id]:not([data-screen-id="D102"])
-  .screen-preview-host
-  [class*="bg-slate-50"] {
-  background: #f5f8f7 !important;
-}
-
-.preview-root[data-screen-id]:not([data-screen-id="D102"])
-  .screen-preview-host
-  input,
-.preview-root[data-screen-id]:not([data-screen-id="D102"])
-  .screen-preview-host
-  textarea,
-.preview-root[data-screen-id]:not([data-screen-id="D102"])
-  .screen-preview-host
-  select {
-  border-color: var(--evz-border) !important;
-  box-shadow: none !important;
-}
-
-/* Extra polish to better match the screenshot style language. */
-.preview-root[data-screen-id]:not([data-screen-id="D102"])
-  .screen-preview-host
-  .app-phone {
-  border-radius: 12px !important;
-}
-
-.preview-root[data-screen-id]:not([data-screen-id="D102"])
-  .screen-preview-host
-  .app-main {
-  background: linear-gradient(180deg, #ffffff 0%, #f9fcfb 100%);
-}
-
-.preview-root[data-screen-id]:not([data-screen-id="D102"])
-  .screen-preview-host
-  .app-main
-  [class*="bg-[#0b1e3a]"] {
-  background: #eef7f5 !important;
-  color: #1f2a37 !important;
-  border: 1px solid #d6ebe6 !important;
-}
-
-.preview-root[data-screen-id]:not([data-screen-id="D102"])
-  .screen-preview-host
-  .app-main
-  [class*="bg-[#0b1e3a]"]
-  :is(h1, h2, h3, p, span, svg) {
+.dark [class*="bg-[#0b1e3a]"] :is(h1, h2, h3, p, span) {
   color: inherit !important;
 }
 
-.preview-root[data-screen-id]:not([data-screen-id="D102"])
-  .screen-preview-host
-  .app-bottom-nav
-  button {
-  position: relative;
+/* Blue banner cards */
+.dark [class*="bg-[#00a3ff]"] {
+  background-color: #0369a1 !important;
 }
 
-.preview-root[data-screen-id]:not([data-screen-id="D102"])
-  .screen-preview-host
-  .app-bottom-nav
-  button[class*="text-[#03cd8c]"]::before,
-.preview-root[data-screen-id]:not([data-screen-id="D102"])
-  .screen-preview-host
-  .app-bottom-nav
-  button[class*="text-evzone-green"]::before {
-  content: "";
-  position: absolute;
-  inset: 6px 8px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.18);
-  z-index: -1;
+/* Emerald/green light backgrounds */
+.dark [class*="bg-[#e6fff7]"] {
+  background-color: #064e3b !important;
+}
+.dark [class*="bg-[#f0faf7]"],
+.dark [class*="bg-emerald-50"] {
+  background-color: #064e3b !important;
+}
+
+/* Blue light backgrounds */
+.dark [class*="bg-blue-50"] {
+  background-color: #1e3a5f !important;
+}
+
+/* Red/amber light backgrounds */
+.dark [class*="bg-red-50"] {
+  background-color: #450a0a !important;
+}
+.dark [class*="bg-amber-50"] {
+  background-color: #451a03 !important;
+}
+
+/* ── Borders ── */
+.dark [class*="border-slate-100"] {
+  border-color: #334155 !important;
+}
+.dark [class*="border-slate-200"] {
+  border-color: #475569 !important;
+}
+.dark [class*="border-slate-50"] {
+  border-color: #334155 !important;
+}
+.dark [class*="border-emerald-100"] {
+  border-color: #065f46 !important;
+}
+.dark [class*="border-red-100"],
+.dark [class*="border-red-200"] {
+  border-color: #7f1d1d !important;
+}
+.dark [class*="border-amber-100"] {
+  border-color: #78350f !important;
+}
+
+/* ── Text colors ── */
+.dark [class*="text-slate-900"] {
+  color: #e2e8f0 !important;
+}
+.dark [class*="text-slate-800"] {
+  color: #cbd5e1 !important;
+}
+.dark [class*="text-slate-700"] {
+  color: #94a3b8 !important;
+}
+.dark [class*="text-slate-600"] {
+  color: #94a3b8 !important;
+}
+.dark [class*="text-slate-500"] {
+  color: #64748b !important;
+}
+.dark [class*="text-slate-400"] {
+  color: #64748b !important;
+}
+
+/* Keep accent colors intact in dark mode */
+.dark [class*="text-[#03cd8c]"] {
+  color: #34d399 !important;
+}
+.dark [class*="text-emerald-600"],
+.dark [class*="text-emerald-700"],
+.dark [class*="text-emerald-800"] {
+  color: #6ee7b7 !important;
+}
+.dark [class*="text-red-600"],
+.dark [class*="text-red-700"] {
+  color: #fca5a5 !important;
+}
+.dark [class*="text-amber-600"],
+.dark [class*="text-amber-700"],
+.dark [class*="text-amber-800"] {
+  color: #fcd34d !important;
+}
+
+/* ── Inputs ── */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: var(--evz-input-bg) !important;
+  border-color: var(--evz-input-border) !important;
+  color: var(--evz-text) !important;
+}
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* ── Buttons ── */
+
+/* Green primary buttons stay green but slightly adjusted */
+.dark [class*="bg-[#03cd8c]"] {
+  background-color: #059669 !important;
+}
+
+/* Blue primary buttons */
+.dark button[class*="bg-[#00a3ff]"] {
+  background-color: #0284c7 !important;
+}
+
+/* Outline/secondary buttons */
+.dark button[class*="bg-white"][class*="border"] {
+  background-color: var(--evz-surface-alt) !important;
+  border-color: var(--evz-border) !important;
+}
+
+/* ── Charts & progress bars ── */
+.dark [class*="bg-slate-100"][class*="rounded-full"][class*="overflow-hidden"] {
+  background-color: #334155 !important;
+}
+
+/* ── Shadows ── */
+.dark [class*="shadow-sm"] {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+.dark [class*="shadow-lg"] {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* ── Supervisor preview header (App.tsx) ── */
+.dark .preview-root {
+  background-color: #0f172a !important;
+}
+
+/* ── Smooth transitions ── */
+.dark * {
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }

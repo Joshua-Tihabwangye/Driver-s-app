@@ -10,13 +10,19 @@ import {
   Battery,
   Signal
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate , useLocation } from "react-router-dom";
 
 // EVzone Driver App – D64 Driver – Follow My Ride Selection (v3)
 // Redesigned to match high-fidelity screenshots with map background and contact modal.
 
 export default function FollowMyRideSelectionScreen() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const navActive = (key) => {
+    const p = location.pathname;
+    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
+    return (routes[key] || []).some(r => p.startsWith(r));
+  };
   const [selectedContacts, setSelectedContacts] = useState(["Thomas John", "Anna Maria"]);
   const [currentTime] = useState("16:23");
 

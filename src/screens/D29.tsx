@@ -10,7 +10,7 @@ import {
   Bus,
   Ambulance
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate , useLocation } from "react-router-dom";
 
 // EVzone Driver App – D29 Driver App – Active Dashboard (Online Mode, v2)
 // Online dashboard showing time online, rides, earnings and a job mix breakdown
@@ -22,13 +22,14 @@ function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }
   return (
     <button
       type="button"
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
-        active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
+      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
+        active ? "text-white" : "text-white/50 hover:text-white/80"
       }`}
       onClick={onClick}
     >
-      <Icon className="h-5 w-5 mb-0.5" />
-      <span>{label}</span>
+      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
+      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
+      <span className="relative z-10">{label}</span>
     </button>
   );
 }
@@ -79,8 +80,13 @@ function JobMixPill({ icon: Icon, label, value, colorClass, onClick }) {
 }
 
 export default function D29ActiveDashboardScreen() {
-  const [nav] = useState("home");
   const navigate = useNavigate();
+  const location = useLocation();
+  const navActive = (key) => {
+    const p = location.pathname;
+    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
+    return (routes[key] || []).some(r => p.startsWith(r));
+  };
   const bottomNavRoutes = {
     home: "/driver/dashboard/online",
     manager: "/driver/jobs/list",
@@ -264,29 +270,29 @@ export default function D29ActiveDashboardScreen() {
         </main>
 
         {/* Bottom navigation – Home/Online active (dashboard context) */}
-        <nav className="app-bottom-nav border-t border-slate-100 bg-white/95 backdrop-blur flex">
+        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
           <BottomNavItem
             icon={Activity}
             label="Online"
-            active={nav === "home"}
+            active={navActive("home")}
             onClick={() => navigate(bottomNavRoutes.home)}
           />
           <BottomNavItem
             icon={Car}
             label="Jobs"
-            active={nav === "manager"}
+            active={navActive("manager")}
             onClick={() => navigate(bottomNavRoutes.manager)}
           />
           <BottomNavItem
             icon={DollarSign}
             label="Wallet"
-            active={nav === "wallet"}
+            active={navActive("wallet")}
             onClick={() => navigate(bottomNavRoutes.wallet)}
           />
           <BottomNavItem
             icon={Map}
             label="Map"
-            active={nav === "settings"}
+            active={navActive("settings")}
             onClick={() => navigate(bottomNavRoutes.settings)}
           />
         </nav>
