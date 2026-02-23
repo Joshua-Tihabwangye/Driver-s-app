@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  Target,
+    Target,
   DollarSign,
   TrendingUp,
   Plus,
@@ -9,7 +8,7 @@ import {
   Home,
   Briefcase,
   Wallet,
-  Settings,
+  Settings
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -17,7 +16,7 @@ import { useNavigate } from "react-router-dom";
 // Screen to set a weekly earnings goal with quick presets and +/- controls.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active, onClick = () => {} }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       type="button"
@@ -56,8 +55,8 @@ export default function WeeklyEarningGoalScreen() {
     home: "/driver/dashboard/online",
     manager: "/driver/jobs/list",
     wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences",
-  };
+    settings: "/driver/preferences"
+};
 
   const clampGoal = (value) => Math.max(20, Math.min(value, 500));
 
@@ -98,17 +97,10 @@ export default function WeeklyEarningGoalScreen() {
               </h1>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => navigate("/driver/ridesharing/notification")}
-            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
-          >
-            <Bell className="h-4 w-4" />
-          </button>
         </header>
 
         {/* Content */}
-        <main className="app-main flex-1 px-4 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
+        <main className="app-main flex-1 px-4 pt-3 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
           {/* Intro card */}
           <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-3">
             <div className="flex items-center space-x-3">
@@ -132,14 +124,14 @@ export default function WeeklyEarningGoalScreen() {
 
           {/* Goal input */}
           <section className="space-y-3">
-            <div className="flex flex-col items-center rounded-2xl border border-slate-100 bg-white px-4 py-4 shadow-sm">
+            <div className="flex flex-col items-center rounded-2xl border border-slate-100 bg-white shadow-sm px-4 py-4 shadow-sm">
               <span className="text-[11px] text-slate-500 mb-1">
                 Weekly target
               </span>
               <div className="flex items-center space-x-2 mb-2">
                 <button
                   onClick={() => handleAdjust(-10)}
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50 border border-slate-200 active:scale-[0.97]"
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50 border border-slate-200 active:scale-[0.97] transition-transform"
                 >
                   <Minus className="h-4 w-4 text-slate-600" />
                 </button>
@@ -151,7 +143,7 @@ export default function WeeklyEarningGoalScreen() {
                 </div>
                 <button
                   onClick={() => handleAdjust(10)}
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50 border border-slate-200 active:scale-[0.97]"
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50 border border-slate-200 active:scale-[0.97] transition-transform"
                 >
                   <Plus className="h-4 w-4 text-slate-600" />
                 </button>

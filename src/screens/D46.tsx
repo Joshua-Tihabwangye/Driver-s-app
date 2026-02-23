@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  ListFilter,
+    ListFilter,
   MapPin,
   Clock,
   DollarSign,
@@ -10,16 +9,19 @@ import {
   Home,
   Briefcase,
   Wallet,
-  Settings,
+  Settings
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D46 Ride Requests – Active Ride with Additional Requests (v1)
 // Shows the currently active ride plus additional ride-sharing requests the driver can add.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
+      type="button"
+      onClick={onClick}
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
         active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
       }`}
@@ -68,7 +70,7 @@ function ActiveRideCard() {
 
 function AdditionalRequestCard({ from, to, detour, extraFare }) {
   return (
-    <button className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform flex flex-col space-y-2">
+    <button className="w-full rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform flex flex-col space-y-2">
       <div className="flex items-center justify-between">
         <span className="text-xs font-semibold text-slate-900 truncate max-w-[170px]">
           {from} 
@@ -95,6 +97,7 @@ function AdditionalRequestCard({ from, to, detour, extraFare }) {
 }
 
 export default function ActiveRideWithAdditionalRequestsScreen() {
+  const navigate = useNavigate();
   const [nav] = useState("home");
 
   return (
@@ -121,13 +124,10 @@ export default function ActiveRideWithAdditionalRequestsScreen() {
               </h1>
             </div>
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
-            <Bell className="h-4 w-4" />
-          </button>
         </header>
 
         {/* Content */}
-        <main className="app-main flex-1 px-4 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
+        <main className="app-main flex-1 px-4 pt-3 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
           {/* Active ride card */}
           <section className="space-y-2 pt-1">
             <ActiveRideCard />
@@ -175,10 +175,10 @@ export default function ActiveRideWithAdditionalRequestsScreen() {
 
         {/* Bottom navigation – Home active (requests context) */}
         <nav className="app-bottom-nav border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"} />
-          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"} />
+          <BottomNavItem icon={Home} label="Home" active={nav === "home"}  onClick={() => navigate("/driver/dashboard/online")}/>
+          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"}  onClick={() => navigate("/driver/jobs/list")}/>
+          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"}  onClick={() => navigate("/driver/earnings/overview")}/>
+          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"}  onClick={() => navigate("/driver/preferences")}/>
         </nav>
       </div>
     </div>

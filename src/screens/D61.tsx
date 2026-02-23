@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
 import {
-  Bell,
-  ChevronLeft,
+    ChevronLeft,
   X,
   TriangleAlert,
-  Phone,
+  Phone
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -35,9 +34,8 @@ export default function SosSendingScreen() {
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
-              borderRadius: "0 0 32px 32px",
-            }}
+              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)"
+}}
           />
           <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
             <button
@@ -47,10 +45,6 @@ export default function SosSendingScreen() {
               <ChevronLeft className="h-5 w-5 text-white" />
             </button>
             <h1 className="text-base font-semibold text-white">Driver App</h1>
-            <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm">
-              <Bell className="h-5 w-5 text-white" />
-              <span className="absolute -top-0.5 -right-0.5 inline-flex h-3.5 w-3.5 rounded-full bg-red-500 border-2 border-white" />
-            </button>
           </header>
         </div>
 

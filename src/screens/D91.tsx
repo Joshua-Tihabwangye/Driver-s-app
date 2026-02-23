@@ -1,13 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
-  Bell,
-  QrCode,
+    QrCode,
   Camera,
   Info,
   Home,
   Briefcase,
   Wallet,
-  Settings,
+  Settings
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -16,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 // with a green scan line that sweeps down across the frame.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active, onClick = () => {} }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       type="button"
@@ -41,8 +40,8 @@ export default function QrActiveCameraViewScreen() {
     home: "/driver/dashboard/online",
     manager: "/driver/jobs/list",
     wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences",
-  };
+    settings: "/driver/preferences"
+};
 
   // Simple camera activation: try to get user media and show video feed.
   useEffect(() => {
@@ -50,8 +49,8 @@ export default function QrActiveCameraViewScreen() {
     const startCamera = async () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "environment" },
-        });
+          video: { facingMode: "environment" }
+});
         if (!mounted) {
           stream.getTracks().forEach((t) => t.stop());
           return;
@@ -111,17 +110,10 @@ export default function QrActiveCameraViewScreen() {
               </h1>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => navigate("/driver/ridesharing/notification")}
-            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
-          >
-            <Bell className="h-4 w-4" />
-          </button>
         </header>
 
         {/* Content */}
-        <main className="app-main flex-1 px-4 pb-4 overflow-y-auto scrollbar-hide space-y-4">
+        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
           {/* Camera / scanner view */}
           <section className="relative rounded-3xl overflow-hidden border border-slate-100 bg-black h-[320px] flex items-center justify-center">
             {/* Live camera */}

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  Map,
+    Map,
   CalendarDays,
   MapPin,
   Clock,
@@ -10,8 +9,9 @@ import {
   Home,
   Briefcase,
   Wallet,
-  Settings,
+  Settings
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D98 Tour – Today’s Schedule Screen (v1)
 // Daily schedule for a multi-day tour.
@@ -27,25 +27,25 @@ const SEGMENTS = [
     time: "09:00–10:00",
     title: "Airport pickup → Hotel",
     description: "Meet guests at arrivals and transfer to City Hotel.",
-    status: "completed",
-  },
+    status: "completed"
+},
   {
     id: 2,
     time: "11:00–15:00",
     title: "City tour",
     description: "Guided tour of key landmarks and lunch stop.",
-    status: "in-progress",
-  },
+    status: "in-progress"
+},
   {
     id: 3,
     time: "16:00–18:00",
     title: "Hotel → Safari lodge",
     description: "Drive guests to the lodge, check-in and handover.",
-    status: "upcoming",
-  },
+    status: "upcoming"
+},
 ];
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
@@ -78,7 +78,7 @@ function SegmentRow({ segment, onClick }) {
   return (
     <button
       onClick={() => onClick(segment)}
-      className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform flex flex-col space-y-2 text-[11px] text-slate-600 text-left"
+      className="w-full rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform flex flex-col space-y-2 text-[11px] text-slate-600 text-left"
     >
       <div className="flex items-center justify-between">
         <span className="inline-flex items-center text-[10px] text-slate-500">
@@ -108,6 +108,7 @@ function SegmentRow({ segment, onClick }) {
 }
 
 export default function TourTodayScheduleScreen() {
+  const navigate = useNavigate();
   const [nav] = useState("home");
 
   const completedCount = SEGMENTS.filter((s) => s.status === "completed").length;
@@ -149,13 +150,10 @@ export default function TourTodayScheduleScreen() {
               </span>
             </div>
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
-            <Bell className="h-4 w-4" />
-          </button>
         </header>
 
         {/* Content */}
-        <main className="app-main flex-1 px-4 pb-4 overflow-y-auto scrollbar-hide space-y-4">
+        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
           {/* Summary card */}
           <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-3">
             <div className="flex items-center justify-between">
@@ -205,10 +203,10 @@ export default function TourTodayScheduleScreen() {
 
         {/* Bottom navigation – Home active (tour context) */}
         <nav className="app-bottom-nav border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"} />
-          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"} />
+          <BottomNavItem icon={Home} label="Home" active={nav === "home"}  onClick={() => navigate("/driver/dashboard/online")}/>
+          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"}  onClick={() => navigate("/driver/jobs/list")}/>
+          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"}  onClick={() => navigate("/driver/earnings/overview")}/>
+          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"}  onClick={() => navigate("/driver/preferences")}/>
         </nav>
       </div>
     </div>

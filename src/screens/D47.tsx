@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  Map,
+    Map,
   Navigation,
   MapPin,
   Clock,
@@ -10,7 +9,7 @@ import {
   Home,
   Briefcase,
   Wallet,
-  Settings,
+  Settings
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -26,7 +25,7 @@ import { useNavigate } from "react-router-dom";
 
 const JOB_TYPES = ["ride", "delivery", "rental", "tour", "ambulance"];
 
-function BottomNavItem({ icon: Icon, label, active, onClick = () => {} }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       type="button"
@@ -49,16 +48,16 @@ export default function NavigateToPickupScreen() {
     home: "/driver/dashboard/online",
     manager: "/driver/jobs/list",
     wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences",
-  };
+    settings: "/driver/preferences"
+};
 
   const jobTypeLabelMap = {
     ride: "Ride",
     delivery: "Delivery",
     rental: "Rental",
     tour: "Tour",
-    ambulance: "Ambulance",
-  };
+    ambulance: "Ambulance"
+};
 
   const isRental = jobType === "rental";
   const isTour = jobType === "tour";
@@ -114,13 +113,6 @@ export default function NavigateToPickupScreen() {
               )}
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => navigate("/driver/ridesharing/notification")}
-            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
-          >
-            <Bell className="h-4 w-4" />
-          </button>
         </header>
 
         {/* Job type switcher for preview purposes */}
@@ -147,7 +139,7 @@ export default function NavigateToPickupScreen() {
         </section>
 
         {/* Content */}
-        <main className="app-main flex-1 px-4 pb-4 overflow-y-auto scrollbar-hide space-y-4">
+        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
           {/* Map container */}
           <section className="relative rounded-3xl overflow-hidden border border-slate-100 bg-slate-200 h-[260px] mb-3">
             <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
@@ -193,7 +185,7 @@ export default function NavigateToPickupScreen() {
 
           {/* Trip info + actions */}
           <section className="space-y-3">
-            <div className="rounded-2xl border border-slate-100 bg-white px-3 py-3 flex items-center justify-between">
+            <div className="rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 flex items-center justify-between">
               <div className="flex flex-col items-start max-w-[220px]">
                 <span className="text-xs font-semibold text-slate-900">
                   {pickupTitle}

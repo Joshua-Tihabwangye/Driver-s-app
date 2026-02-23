@@ -1,14 +1,13 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  ChevronLeft,
+    ChevronLeft,
   Car,
   PlayCircle,
   CheckCircle2,
   Home,
   Briefcase,
   Wallet,
-  Settings,
+  Settings
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -17,7 +16,7 @@ import { useNavigate } from "react-router-dom";
 // Full-width light green hero with car illustration, navy blue CTA.
 // + Restored: Bullet module outline, video CTA, estimated time, "I'll do this later"
 
-function BottomNavItem({ icon: Icon, label, active, onClick }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       type="button"
@@ -47,15 +46,19 @@ export default function IntroEvzoneRideScreen() {
   return (
     <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
       <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
+        {/* Hide scrollbar */}
+        <style>{`
+          .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
+          .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        `}</style>
 
         {/* Green curved header */}
         <div className="relative" style={{ minHeight: 80 }}>
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
-              borderRadius: "0 0 32px 32px",
-            }}
+              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)"
+}}
           />
           <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
             <button
@@ -66,13 +69,6 @@ export default function IntroEvzoneRideScreen() {
               <ChevronLeft className="h-5 w-5 text-white" />
             </button>
             <h1 className="text-base font-semibold text-white">Preferences</h1>
-            <button
-              type="button"
-              className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm"
-            >
-              <Bell className="h-5 w-5 text-white" />
-              <span className="absolute -top-0.5 -right-0.5 inline-flex h-3.5 w-3.5 rounded-full bg-[#f77f00] border-2 border-white" />
-            </button>
           </header>
         </div>
 

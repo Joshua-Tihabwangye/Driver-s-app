@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  Package,
+    Package,
   MapPin,
   Clock,
   CheckCircle2,
@@ -9,7 +8,7 @@ import {
   Home,
   Briefcase,
   Wallet,
-  Settings,
+  Settings
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -17,7 +16,7 @@ import { useNavigate } from "react-router-dom";
 // Dashboard-style view for orders transitioning from "to pick up" to "to deliver" for the driver.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active, onClick }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       type="button"
@@ -93,8 +92,8 @@ export default function OrdersToDeliveryScreen() {
     home: "/driver/dashboard/online",
     manager: "/driver/jobs/list",
     wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences",
-  };
+    settings: "/driver/preferences"
+};
 
   return (
     <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
@@ -121,17 +120,10 @@ export default function OrdersToDeliveryScreen() {
               </h1>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => navigate("/driver/ridesharing/notification")}
-            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
-          >
-            <Bell className="h-4 w-4" />
-          </button>
         </header>
 
         {/* Content */}
-        <main className="app-main flex-1 px-4 pb-4 overflow-y-auto scrollbar-hide space-y-4">
+        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
           {/* Stats row */}
           <section className="space-y-2">
             <div className="flex space-x-2">

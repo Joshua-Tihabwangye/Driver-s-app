@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  Bell,
-  Map,
+    Map,
   User,
   MapPin,
   Clock,
@@ -9,8 +8,9 @@ import {
   Home,
   Briefcase,
   Wallet,
-  Settings,
+  Settings
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D43 Incoming Ride Request (Rich variant, v2)
 // Map + bottom sheet variant of an incoming job request.
@@ -19,7 +19,7 @@ import {
 
 const JOB_TYPES = ["ride", "delivery", "rental", "tour", "ambulance", "shuttle"];
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
@@ -80,6 +80,7 @@ function JobTypePill({ jobType }) {
 }
 
 export default function IncomingRideRequestRichScreen() {
+  const navigate = useNavigate();
   const [nav] = useState("home");
   const [timeLeft, setTimeLeft] = useState(20);
   // Preview-only job type toggle so you can see all states in the canvas
@@ -174,9 +175,6 @@ export default function IncomingRideRequestRichScreen() {
               </h1>
             </div>
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
-            <Bell className="h-4 w-4" />
-          </button>
         </header>
 
         {/* Job type selector (preview only) */}
@@ -207,7 +205,7 @@ export default function IncomingRideRequestRichScreen() {
         </section>
 
         {/* Content */}
-        <main className="app-main flex-1 px-4 pb-4 overflow-y-auto scrollbar-hide">
+        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide">
           {/* Map */}
           <section className="relative rounded-3xl overflow-hidden border border-slate-100 bg-slate-200 h-[260px] mb-3">
             <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
@@ -303,7 +301,7 @@ export default function IncomingRideRequestRichScreen() {
 
             <div className="flex space-x-2 pt-1">
               {!isShuttle && (
-                <button className="flex-1 rounded-full py-2.5 text-sm font-semibold border border-red-200 text-red-600 bg-white flex items-center justify-center">
+                <button type="button" onClick={() => navigate("/driver/map/searching")} className="flex-1 rounded-full py-2.5 text-sm font-semibold border border-red-200 text-red-600 bg-white flex items-center justify-center">
                   Decline
                 </button>
               )}
@@ -316,10 +314,10 @@ export default function IncomingRideRequestRichScreen() {
 
         {/* Bottom navigation – Home active (incoming request context) */}
         <nav className="app-bottom-nav border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"} />
-          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"} />
+          <BottomNavItem icon={Home} label="Home" active={nav === "home"}  onClick={() => navigate("/driver/dashboard/online")}/>
+          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"}  onClick={() => navigate("/driver/jobs/list")}/>
+          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"}  onClick={() => navigate("/driver/earnings/overview")}/>
+          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"}  onClick={() => navigate("/driver/preferences")}/>
         </nav>
       </div>
     </div>

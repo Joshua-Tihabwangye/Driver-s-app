@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  Camera,
+    Camera,
   SunMedium,
   Eye,
   ArrowLeft,
@@ -11,7 +10,7 @@ import {
   Home,
   Briefcase,
   Wallet,
-  Settings,
+  Settings
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -23,7 +22,7 @@ import { useNavigate } from "react-router-dom";
 // - Step-aware titles, overlays, CTAs, face offset animation
 // - "I'll do this later" escape hatch
 
-function BottomNavItem({ icon: Icon, label, active, onClick }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       type="button"
@@ -39,7 +38,7 @@ function BottomNavItem({ icon: Icon, label, active, onClick }) {
 
 function Tip({ icon: Icon, title, text }) {
   return (
-    <div className="flex items-start space-x-2 rounded-2xl border border-slate-100 bg-white px-3 py-2.5">
+    <div className="flex items-start space-x-2 rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-2.5">
       <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-slate-50">
         <Icon className="h-4 w-4 text-slate-700" />
       </div>
@@ -75,7 +74,7 @@ function DirectionIcon({ step }) {
 const headFrames = {
   1: "/assets/evzone-head-front.png",
   2: "/assets/evzone-head-left.png",
-  3: "/assets/evzone-head-right.png",
+  3: "/assets/evzone-head-right.png"
 };
 
 function HeadImage({ step }) {
@@ -138,9 +137,8 @@ export default function FaceCaptureScreen() {
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
-              borderRadius: "0 0 32px 32px",
-            }}
+              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)"
+}}
           />
           <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
             <button
@@ -151,13 +149,6 @@ export default function FaceCaptureScreen() {
               <ChevronLeft className="h-5 w-5 text-white" />
             </button>
             <h1 className="text-base font-semibold text-white">Preferences</h1>
-            <button
-              type="button"
-              className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm"
-            >
-              <Bell className="h-5 w-5 text-white" />
-              <span className="absolute -top-0.5 -right-0.5 inline-flex h-3.5 w-3.5 rounded-full bg-[#f77f00] border-2 border-white" />
-            </button>
           </header>
         </div>
 

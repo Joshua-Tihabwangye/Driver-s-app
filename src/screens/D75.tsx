@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  ListFilter,
+    ListFilter,
   Package,
   MapPin,
   Clock,
@@ -9,7 +8,7 @@ import {
   Home,
   Briefcase,
   Wallet,
-  Settings,
+  Settings
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -17,7 +16,7 @@ import { useNavigate } from "react-router-dom";
 // List-style view of delivery orders with filters and quick info.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active, onClick }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       type="button"
@@ -41,13 +40,13 @@ function OrderCard({
   eta,
   amount,
   status,
-  onClick,
+  onClick
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform flex flex-col space-y-2 text-[11px] text-slate-600"
+      className="w-full rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform flex flex-col space-y-2 text-[11px] text-slate-600"
     >
       <div className="flex items-center justify-between">
         <span className="text-xs font-semibold text-slate-900 truncate max-w-[170px]">
@@ -82,8 +81,8 @@ export default function ListOfOrdersScreen() {
     home: "/driver/dashboard/online",
     manager: "/driver/jobs/list",
     wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences",
-  };
+    settings: "/driver/preferences"
+};
 
   return (
     <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
@@ -110,17 +109,10 @@ export default function ListOfOrdersScreen() {
               </h1>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => navigate("/driver/ridesharing/notification")}
-            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
-          >
-            <Bell className="h-4 w-4" />
-          </button>
         </header>
 
         {/* Content */}
-        <main className="app-main flex-1 px-4 pb-4 overflow-y-auto scrollbar-hide space-y-4">
+        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
           {/* Filter row */}
           <section className="rounded-2xl bg-slate-50 px-3 py-2 border border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
             <div className="flex items-center space-x-2">

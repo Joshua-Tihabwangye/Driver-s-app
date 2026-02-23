@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  Bell,
-  Map,
+    Map,
   MapPin,
   Navigation,
   Clock,
@@ -13,7 +12,7 @@ import {
   Wallet,
   Settings,
   Ambulance,
-  Hospital,
+  Hospital
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -36,7 +35,7 @@ const STAGES = [
   { key: "atHospital", label: "At hospital / handover completed" },
 ];
 
-function BottomNavItem({ icon: Icon, label, active, onClick = () => {} }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       type="button"
@@ -70,8 +69,8 @@ export default function AmbulanceJobStatusScreen() {
     home: "/driver/dashboard/online",
     manager: "/driver/jobs/list",
     wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences",
-  };
+    settings: "/driver/preferences"
+};
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -145,13 +144,10 @@ export default function AmbulanceJobStatusScreen() {
               </span>
             </div>
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
-            <Bell className="h-4 w-4" />
-          </button>
         </header>
 
         {/* Content */}
-        <main className="app-main flex-1 px-4 pb-4 overflow-y-auto scrollbar-hide space-y-4">
+        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
           {/* Map container */}
           <section className="relative rounded-3xl overflow-hidden border border-slate-100 bg-slate-200 h-[220px]">
             <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
@@ -208,7 +204,7 @@ export default function AmbulanceJobStatusScreen() {
           {/* Status chips & timers */}
           <section className="space-y-3">
             {/* Status chips */}
-            <div className="rounded-2xl border border-slate-100 bg-white px-3 py-3 text-[11px] text-slate-600">
+            <div className="rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 text-[11px] text-slate-600">
               <span className="text-[10px] uppercase tracking-[0.18em] text-slate-500">
                 Status
               </span>
@@ -234,7 +230,7 @@ export default function AmbulanceJobStatusScreen() {
 
             {/* Timers */}
             <div className="flex space-x-2">
-              <div className="flex-1 rounded-2xl border border-slate-100 bg-white px-3 py-3 flex flex-col text-[11px] text-slate-600">
+              <div className="flex-1 rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 flex flex-col text-[11px] text-slate-600">
                 <span className="text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-0.5">
                   Time since dispatch
                 </span>
@@ -243,7 +239,7 @@ export default function AmbulanceJobStatusScreen() {
                   {dispatchTime}
                 </span>
               </div>
-              <div className="flex-1 rounded-2xl border border-slate-100 bg-white px-3 py-3 flex flex-col text-[11px] text-slate-600">
+              <div className="flex-1 rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 flex flex-col text-[11px] text-slate-600">
                 <span className="text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-0.5">
                   On-scene time
                 </span>
@@ -254,7 +250,7 @@ export default function AmbulanceJobStatusScreen() {
               </div>
             </div>
             <div className="flex space-x-2">
-            <div className="flex-1 rounded-2xl border border-slate-100 bg-white px-3 py-3 flex flex-col text-[11px] text-slate-600">
+            <div className="flex-1 rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 flex flex-col text-[11px] text-slate-600">
               <span className="text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-0.5">
                 Transport time
               </span>
@@ -266,7 +262,7 @@ export default function AmbulanceJobStatusScreen() {
             <button
               type="button"
               onClick={() => navigate("/driver/safety/toolkit")}
-              className="flex-1 rounded-2xl border border-slate-100 bg-white px-3 py-3 flex flex-col text-[11px] text-slate-600 text-left active:scale-[0.98] transition-transform"
+              className="flex-1 rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 flex flex-col text-[11px] text-slate-600 text-left active:scale-[0.98] transition-transform"
             >
               <span className="text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-0.5">
                 Status hint

@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  ChevronLeft,
+    ChevronLeft,
   X,
   Phone,
   Stethoscope,
   Car,
   Flame,
-  Home as HomeIcon,
+  Home as HomeIcon
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -40,9 +39,8 @@ export default function EmergencyAssistanceMapVariantScreen() {
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
-              borderRadius: "0 0 32px 32px",
-            }}
+              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)"
+}}
           />
           <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
             <button
@@ -52,10 +50,6 @@ export default function EmergencyAssistanceMapVariantScreen() {
               <ChevronLeft className="h-5 w-5 text-white" />
             </button>
             <h1 className="text-base font-semibold text-white">Driver App</h1>
-            <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm">
-              <Bell className="h-5 w-5 text-white" />
-              <span className="absolute -top-0.5 -right-0.5 inline-flex h-3.5 w-3.5 rounded-full bg-red-500 border-2 border-white" />
-            </button>
           </header>
         </div>
 
@@ -74,7 +68,7 @@ export default function EmergencyAssistanceMapVariantScreen() {
           </div>
 
           {/* Grid Categories */}
-          <div className="grid grid-cols-4 gap-2 mb-8">
+          <div className="grid grid-cols-4 gap-3 mb-8">
             {categories.map((cat) => (
               <button
                 key={cat.label}
@@ -128,7 +122,7 @@ export default function EmergencyAssistanceMapVariantScreen() {
             <button
               type="button"
               onClick={() => callNumber("+256700000555")}
-              className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-3 flex items-start space-x-2 text-[11px] text-slate-600 active:scale-[0.98] transition-transform"
+              className="w-full rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 flex items-start space-x-2 text-[11px] text-slate-600 active:scale-[0.98] transition-transform"
             >
               <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-slate-50 flex-shrink-0">
                 <Phone className="h-4 w-4 text-slate-700" />

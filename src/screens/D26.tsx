@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  Map,
+    Map,
   MapPin,
   Navigation,
   Wifi,
@@ -9,7 +8,7 @@ import {
   Home,
   Briefcase,
   Wallet,
-  Settings,
+  Settings
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -17,7 +16,7 @@ import { useNavigate } from "react-router-dom";
 // Map-centric view when the driver is online and available for requests.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active, onClick }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       type="button"
@@ -40,8 +39,8 @@ export default function OnlineMapViewScreen() {
     home: "/driver/dashboard/online",
     manager: "/driver/jobs/list",
     wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences",
-  };
+    settings: "/driver/preferences"
+};
 
   return (
     <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
@@ -67,23 +66,14 @@ export default function OnlineMapViewScreen() {
               </h1>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <div className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
+          <div className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
               <Wifi className="h-3 w-3 mr-1" />
               Online
             </div>
-            <button
-              type="button"
-              onClick={() => navigate("/driver/ridesharing/notification")}
-              className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
-            >
-              <Bell className="h-4 w-4" />
-            </button>
-          </div>
         </header>
 
         {/* Content */}
-        <main className="app-main flex-1 px-4 pb-4 space-y-3 overflow-y-auto scrollbar-hide">
+        <main className="app-main flex-1 px-4 pt-3 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
           {/* Map container */}
           <section className="relative rounded-3xl overflow-hidden border border-slate-100 bg-slate-200 h-[360px]">
             {/* Fake map background */}

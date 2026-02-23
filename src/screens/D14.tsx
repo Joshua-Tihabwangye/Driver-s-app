@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  ChevronLeft,
+    ChevronLeft,
   Zap,
   Plus,
   CheckCircle2,
@@ -9,7 +8,7 @@ import {
   Home,
   Briefcase,
   Wallet,
-  Settings,
+  Settings
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -17,7 +16,7 @@ import { useNavigate } from "react-router-dom";
 // Redesigned with green curved header and vehicle image cards.
 // + Restored: EV-only banner, badge indicators, Info card from original
 
-function BottomNavItem({ icon: Icon, label, active, onClick }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       type="button"
@@ -72,29 +71,29 @@ export default function MyVehiclesScreen() {
       model: "HUMMER",
       image: "https://images.unsplash.com/photo-1594914141274-b460452d7ee4?w=200&h=150&fit=crop",
       badge: "Main EV",
-      primary: true,
-    },
+      primary: true
+},
     {
       brand: "APRILIA",
       model: "MOJITO CUSTOM 50",
       image: "https://images.unsplash.com/photo-1558981403-c5f91ebde95d?w=200&h=150&fit=crop",
       badge: "Backup",
-      primary: false,
-    },
+      primary: false
+},
     {
       brand: "AUDI",
       model: "ALLROAD QUATTRO",
       image: "https://images.unsplash.com/photo-1603584173870-7f37fe225881?w=200&h=150&fit=crop",
       badge: null,
-      primary: false,
-    },
+      primary: false
+},
     {
       brand: "AM GENERAL",
       model: "HUMMER",
       image: "https://images.unsplash.com/photo-1594914141274-b460452d7ee4?w=200&h=150&fit=crop",
       badge: null,
-      primary: false,
-    },
+      primary: false
+},
   ];
 
   return (
@@ -111,9 +110,8 @@ export default function MyVehiclesScreen() {
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
-              borderRadius: "0 0 32px 32px",
-            }}
+              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)"
+}}
           />
           <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
             <button
@@ -124,13 +122,6 @@ export default function MyVehiclesScreen() {
               <ChevronLeft className="h-5 w-5 text-white" />
             </button>
             <h1 className="text-base font-semibold text-white">My vehicles</h1>
-            <button
-              type="button"
-              className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm"
-            >
-              <Bell className="h-5 w-5 text-white" />
-              <span className="absolute -top-0.5 -right-0.5 inline-flex h-3.5 w-3.5 rounded-full bg-[#f77f00] border-2 border-white" />
-            </button>
           </header>
         </div>
 
@@ -163,7 +154,7 @@ export default function MyVehiclesScreen() {
                 image={v.image}
                 badge={v.badge}
                 primary={v.primary}
-                onClick={() => navigate("/driver/vehicles/edit")}
+                onClick={() => navigate("/driver/vehicles/demo-vehicle")}
               />
             ))}
           </div>
@@ -184,7 +175,7 @@ export default function MyVehiclesScreen() {
         <div className="px-5 pb-6 pt-2 bg-white/80 backdrop-blur-sm">
           <button
             type="button"
-            onClick={() => navigate("/driver/vehicles/edit")}
+            onClick={() => navigate("/driver/vehicles/demo-vehicle")}
             className="w-full rounded-xl bg-[#F77F00] py-3.5 text-sm font-bold text-white shadow-lg active:scale-[0.98] transition-all flex items-center justify-center"
           >
             <Plus className="h-4 w-4 mr-2" />
