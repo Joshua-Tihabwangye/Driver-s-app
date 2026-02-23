@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  MapPin,
+    MapPin,
   Users,
   Phone,
   Mail,
@@ -10,7 +9,7 @@ import {
   Home,
   Briefcase,
   Wallet,
-  Settings,
+  Settings
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -18,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 // Screen for selecting contacts who can follow the driver’s live trip.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active, onClick }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       type="button"
@@ -73,8 +72,8 @@ export default function FollowMyRideScreen() {
     home: "/driver/dashboard/online",
     manager: "/driver/jobs/list",
     wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences",
-  };
+    settings: "/driver/preferences"
+};
 
   const contacts = [
     { id: "c1", name: "Sarah (sister)", detail: "+256 700 000 111", channel: "sms" },
@@ -91,7 +90,7 @@ export default function FollowMyRideScreen() {
   const hasSelection = selectedIds.length > 0;
 
   return (
-    <div className="min-h-screen flex justify-center bg-[#0f172a] py-4">
+    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
       {/* Local style: hide scrollbars but keep swipe scrolling */}
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
@@ -115,17 +114,10 @@ export default function FollowMyRideScreen() {
               </h1>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => navigate("/driver/ridesharing/notification")}
-            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
-          >
-            <Bell className="h-4 w-4" />
-          </button>
         </header>
 
         {/* Content */}
-        <main className="flex-1 px-4 pb-4 overflow-y-auto scrollbar-hide space-y-4">
+        <main className="flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
           {/* Intro card */}
           <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-3">
             <div className="flex items-center space-x-3 text-left">
@@ -187,7 +179,7 @@ export default function FollowMyRideScreen() {
             disabled={!hasSelection}
             onClick={() => navigate("/driver/safety/share-my-ride")}
             className={`w-full rounded-full py-2.5 text-sm font-semibold flex items-center justify-center shadow-sm transition-all ${hasSelection
-                ? "bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c] active:scale-[0.98]"
+                ? "bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c] active:scale-[0.98] transition-transform"
                 : "bg-slate-100 text-slate-400 cursor-not-allowed"
               }`}
           >

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  ChevronLeft,
+    ChevronLeft,
   ChevronRight,
   Home,
   Briefcase,
@@ -12,7 +11,7 @@ import {
   Search,
   Truck,
   History,
-  Info,
+  Info
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -20,7 +19,7 @@ import { useNavigate } from "react-router-dom";
 // Redesigned to match Screenshot 3.
 // Massive scrolling dashboard with welcome banner, wallet, charts, stats grids, and map station lists.
 
-function BottomNavItem({ icon: Icon, label, active, onClick }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       type="button"
@@ -34,14 +33,14 @@ function BottomNavItem({ icon: Icon, label, active, onClick }) {
   );
 }
 
-function StatCard({ label, value, sub, icon: Icon }) {
+function StatCard({ label, value, sub = null, icon: Icon = null }: { label: string; value: string; sub?: string | null; icon?: React.ElementType | null }) {
   return (
-    <div className="rounded-xl bg-slate-100 p-4 space-y-1 relative overflow-hidden">
-      {Icon && <Icon className="absolute top-2 right-2 h-4 w-4 text-slate-300" />}
-      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{label}</span>
+    <div className="rounded-2xl bg-white border border-slate-100 p-4 space-y-1.5 relative overflow-hidden shadow-sm">
+      {Icon && <Icon className="absolute top-3 right-3 h-4 w-4 text-slate-200" />}
+      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{label}</span>
       <div className="flex flex-col">
-        <span className="text-[15px] font-bold text-slate-800">{value}</span>
-        {sub && <span className="text-[10px] text-[#03cd8c] font-medium">{sub}</span>}
+        <span className="text-base font-bold text-slate-800">{value}</span>
+        {sub && <span className="text-[10px] text-[#03cd8c] font-semibold mt-0.5">{sub}</span>}
       </div>
     </div>
   );
@@ -50,7 +49,7 @@ function StatCard({ label, value, sub, icon: Icon }) {
 function StationRow({ name, value, total, colorClass }) {
   const percentage = Math.min((value / total) * 100, 100);
   return (
-    <div className="space-y-1">
+    <div className="rounded-2xl border border-slate-100 bg-white p-3.5 space-y-2 shadow-sm">
       <div className="flex justify-between text-[11px] font-medium">
         <div className="flex flex-col">
           <span className="text-slate-400">Total Riders</span>
@@ -61,12 +60,12 @@ function StationRow({ name, value, total, colorClass }) {
           <span className="text-slate-900 font-bold">UGX 4,200</span>
         </div>
       </div>
-      <div className="text-[10px] text-slate-500 font-medium">Location</div>
-      <div className="text-[12px] text-slate-800 font-bold mb-1">{name}</div>
+      <div className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Location</div>
+      <div className="text-[12px] text-slate-800 font-bold">{name}</div>
       <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-        <div className={`h-full ${colorClass}`} style={{ width: `${percentage}%` }} />
+        <div className={`h-full rounded-full ${colorClass}`} style={{ width: `${percentage}%` }} />
       </div>
-      <div className="flex justify-end text-[10px] font-bold text-slate-400">{percentage}%</div>
+      <div className="flex justify-end text-[10px] font-bold text-slate-400">{percentage.toFixed(0)}%</div>
     </div>
   );
 }
@@ -76,21 +75,31 @@ export default function EarningsStatsDashboardScreen() {
   const navigate = useNavigate();
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#f8fafc] py-4 px-3">
+    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
       <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
+        {/* Hide scrollbar */}
+        <style>{`
+          .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
+          .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        `}</style>
 
-        {/* Green header */}
-        <div className="relative" style={{ minHeight: 60 }}>
-          <div className="absolute inset-0 bg-[#03cd8c]" />
-          <header className="app-header relative z-10 flex items-center justify-between px-5 pt-4 pb-4">
+        {/* Green curved header */}
+        <div className="relative" style={{ minHeight: 80 }}>
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)"
+            }}
+          />
+          <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
             <div className="flex items-center space-x-2">
-              <div className="h-7 w-7 rounded-full bg-white/20 flex items-center justify-center">
+              <div className="h-8 w-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
                 <Car className="h-4 w-4 text-white" />
               </div>
               <h1 className="text-sm font-semibold text-white">EVzone Driver</h1>
             </div>
-            <div className="h-6 w-6 rounded-full bg-red-400 border border-white flex items-center justify-center overflow-hidden">
-              <div className="text-white text-[10px] font-bold">J</div>
+            <div className="h-8 w-8 rounded-full bg-white/20 border-2 border-white flex items-center justify-center overflow-hidden">
+              <div className="text-white text-[11px] font-bold">J</div>
             </div>
           </header>
         </div>
@@ -117,15 +126,15 @@ export default function EarningsStatsDashboardScreen() {
           </section>
 
           {/* Wallet Card */}
-          <section className="rounded-2xl border border-slate-100 bg-white p-4 flex items-center space-x-3 shadow-sm">
-            <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-blue-50">
-              <WalletIcon className="h-5 w-5 text-[#00a3ff]" />
+          <section className="rounded-2xl bg-[#0b1e3a] p-4 flex items-center space-x-3 shadow-lg">
+            <div className="h-11 w-11 flex items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm">
+              <WalletIcon className="h-5 w-5 text-[#a5f3fc]" />
             </div>
             <div className="flex-1">
-              <span className="text-[10px] font-bold text-slate-400">Your Balance</span>
-              <div className="text-[16px] font-bold text-[#03cd8c]">UGX 25,750</div>
+              <span className="text-[10px] font-bold text-[#a5f3fc] uppercase tracking-wider">Your Balance</span>
+              <div className="text-lg font-bold text-white">UGX 25,750</div>
             </div>
-            <button className="rounded-lg bg-[#00a3ff] px-4 py-2 text-[11px] font-bold text-white shadow-md active:scale-95 transition-all">
+            <button type="button" onClick={() => navigate("/driver/earnings/cashout")} className="rounded-xl bg-[#03cd8c] px-4 py-2.5 text-[11px] font-bold text-white shadow-lg shadow-emerald-500/20 active:scale-95 transition-all">
               Cash Out
             </button>
           </section>
@@ -165,7 +174,7 @@ export default function EarningsStatsDashboardScreen() {
                   Start your journey and manage costs professionally.
                 </p>
               </div>
-              <button className="rounded-full bg-[#03cd8c] px-4 py-1.5 text-[10px] font-bold text-white shadow active:scale-95 transition-all">
+              <button type="button" onClick={() => navigate("/driver/delivery/orders")} className="rounded-full bg-[#03cd8c] px-4 py-1.5 text-[10px] font-bold text-white shadow active:scale-95 transition-all">
                 Search
               </button>
             </div>
@@ -205,11 +214,11 @@ export default function EarningsStatsDashboardScreen() {
               <div className="absolute bottom-1/3 right-1/4 h-3 w-3 rounded-full bg-orange-400 border border-white" />
             </div>
 
-            <div className="space-y-6 pt-2">
+            <div className="space-y-3 pt-2">
               <StationRow name="Kampala Central Division" value="20" total="28" colorClass="bg-[#03cd8c]" />
-              <StationRow name="Kampala Central Division" value="14" total="22" colorClass="bg-[#00a3ff]" />
-              <StationRow name="Kampala Central Division" value="5" total="42" colorClass="bg-orange-400" />
-              <StationRow name="Kampala Central Division" value="4" total="10" colorClass="bg-yellow-400" />
+              <StationRow name="Nakasero, Kampala" value="14" total="22" colorClass="bg-[#00a3ff]" />
+              <StationRow name="Ntinda, Kampala" value="5" total="42" colorClass="bg-orange-400" />
+              <StationRow name="Kololo, Kampala" value="4" total="10" colorClass="bg-yellow-400" />
             </div>
           </section>
 
@@ -222,7 +231,7 @@ export default function EarningsStatsDashboardScreen() {
                   Start your journey and manage costs professionally.
                 </p>
               </div>
-              <button className="rounded-full bg-[#03cd8c] px-4 py-1.5 text-[10px] font-bold text-white shadow active:scale-95 transition-all">
+              <button type="button" onClick={() => navigate("/driver/delivery/orders")} className="rounded-full bg-[#03cd8c] px-4 py-1.5 text-[10px] font-bold text-white shadow active:scale-95 transition-all">
                 Search
               </button>
             </div>

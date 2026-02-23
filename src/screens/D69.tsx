@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  History as HistoryIcon,
+    History as HistoryIcon,
   MapPin,
   Clock,
   DollarSign,
@@ -9,7 +8,7 @@ import {
   Home,
   Briefcase,
   Wallet,
-  Settings,
+  Settings
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -39,8 +38,8 @@ const TRIPS = [
     time: "18:10",
     amount: "7.20",
     hasProof: true,
-    jobType: "ride",
-  },
+    jobType: "ride"
+},
   {
     id: "t2",
     from: "City Centre",
@@ -49,8 +48,8 @@ const TRIPS = [
     time: "16:45",
     amount: "5.40",
     hasProof: false,
-    jobType: "ride",
-  },
+    jobType: "ride"
+},
   {
     id: "t3",
     from: "Burger Hub, Acacia Mall",
@@ -59,8 +58,8 @@ const TRIPS = [
     time: "13:25",
     amount: "3.80",
     hasProof: true,
-    jobType: "delivery",
-  },
+    jobType: "delivery"
+},
   {
     id: "t4",
     from: "City Hotel",
@@ -69,8 +68,8 @@ const TRIPS = [
     time: "09:00–17:10",
     amount: "64.80",
     hasProof: true,
-    jobType: "rental",
-  },
+    jobType: "rental"
+},
   {
     id: "t5",
     from: "Airport",
@@ -79,8 +78,8 @@ const TRIPS = [
     time: "08:30–16:40",
     amount: "45.00",
     hasProof: true,
-    jobType: "tour",
-  },
+    jobType: "tour"
+},
   {
     id: "t6",
     from: "School XYZ",
@@ -89,8 +88,8 @@ const TRIPS = [
     time: "07:00–08:30",
     amount: "—",
     hasProof: false,
-    jobType: "shuttle",
-  },
+    jobType: "shuttle"
+},
   {
     id: "t7",
     from: "Patient location",
@@ -99,11 +98,11 @@ const TRIPS = [
     time: "18:10–18:40",
     amount: "—",
     hasProof: true,
-    jobType: "ambulance",
-  },
+    jobType: "ambulance"
+},
 ];
 
-function BottomNavItem({ icon: Icon, label, active, onClick }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       type="button"
@@ -169,7 +168,7 @@ function TripRow({ from, to, date, time, amount, hasProof, jobType, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform flex items-center justify-between text-[11px] text-slate-600"
+      className="w-full rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform flex items-center justify-between text-[11px] text-slate-600"
     >
       <div className="flex flex-col items-start max-w-[190px]">
         <span className="text-xs font-semibold text-slate-900 truncate">
@@ -215,8 +214,8 @@ export default function RideHistoryScreen() {
     home: "/driver/dashboard/online",
     manager: "/driver/jobs/list",
     wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences",
-  };
+    settings: "/driver/preferences"
+};
 
   const filteredTrips =
     filter === "all"
@@ -248,17 +247,10 @@ export default function RideHistoryScreen() {
               </h1>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => navigate("/driver/ridesharing/notification")}
-            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
-          >
-            <Bell className="h-4 w-4" />
-          </button>
         </header>
 
         {/* Content */}
-        <main className="app-main flex-1 px-4 pb-4 overflow-y-auto scrollbar-hide space-y-4">
+        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
           {/* Info card */}
           <section className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 text-[11px] text-slate-600">
             <p className="font-semibold text-xs text-slate-900 mb-0.5">
@@ -303,8 +295,8 @@ export default function RideHistoryScreen() {
                 rental: "/driver/rental/job/demo-job/status",
                 tour: "/driver/tour/demo-tour/today",
                 shuttle: "/driver/help/shuttle-link",
-                ambulance: "/driver/ambulance/job/demo-job/status",
-              };
+                ambulance: "/driver/ambulance/job/demo-job/status"
+};
               return (
                 <TripRow
                   key={trip.id}

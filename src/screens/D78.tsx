@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  Map,
+    Map,
   MapPin,
   Navigation,
   Clock,
@@ -9,16 +8,19 @@ import {
   Home,
   Briefcase,
   Wallet,
-  Settings,
+  Settings
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D78 Route Details (v1)
 // Shows a multi-stop delivery route with upcoming stops and ETA details.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
+      type="button"
+      onClick={onClick}
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
         active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
       }`}
@@ -31,7 +33,7 @@ function BottomNavItem({ icon: Icon, label, active }) {
 
 function StopRow({ index, label, detail, eta, type }) {
   return (
-    <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-white px-3 py-2.5 shadow-sm text-[11px] text-slate-600">
+    <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-2.5 shadow-sm text-[11px] text-slate-600">
       <div className="flex items-center space-x-2">
         <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-50">
           <MapPin className="h-4 w-4 text-[#03cd8c]" />
@@ -57,6 +59,7 @@ function StopRow({ index, label, detail, eta, type }) {
 }
 
 export default function RouteDetailsScreen() {
+  const navigate = useNavigate();
   const [nav] = useState("home");
 
   const stops = [
@@ -65,29 +68,29 @@ export default function RouteDetailsScreen() {
       label: "FreshMart, Lugogo",
       detail: "Pickup groceries",
       eta: "18:10",
-      type: "Pickup",
-    },
+      type: "Pickup"
+},
     {
       index: 2,
       label: "PharmaPlus, City Centre",
       detail: "Pickup pharmacy order",
       eta: "18:25",
-      type: "Pickup",
-    },
+      type: "Pickup"
+},
     {
       index: 3,
       label: "Naguru (Block B)",
       detail: "Deliver groceries",
       eta: "18:40",
-      type: "Deliver",
-    },
+      type: "Deliver"
+},
     {
       index: 4,
       label: "Ntinda (Main Road)",
       detail: "Deliver pharmacy order",
       eta: "18:55",
-      type: "Deliver",
-    },
+      type: "Deliver"
+},
   ];
 
   return (
@@ -115,13 +118,10 @@ export default function RouteDetailsScreen() {
               </h1>
             </div>
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
-            <Bell className="h-4 w-4" />
-          </button>
         </header>
 
         {/* Content */}
-        <main className="app-main flex-1 px-4 pb-4 overflow-y-auto scrollbar-hide space-y-4">
+        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
           {/* Map preview */}
           <section className="relative rounded-3xl overflow-hidden border border-slate-100 bg-slate-200 h-[220px]">
             <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
@@ -171,10 +171,10 @@ export default function RouteDetailsScreen() {
 
         {/* Bottom navigation – Home active (route details context) */}
         <nav className="app-bottom-nav border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"} />
-          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"} />
+          <BottomNavItem icon={Home} label="Home" active={nav === "home"}  onClick={() => navigate("/driver/dashboard/online")}/>
+          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"}  onClick={() => navigate("/driver/jobs/list")}/>
+          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"}  onClick={() => navigate("/driver/earnings/overview")}/>
+          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"}  onClick={() => navigate("/driver/preferences")}/>
         </nav>
       </div>
     </div>

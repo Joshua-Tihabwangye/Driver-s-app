@@ -5,7 +5,7 @@ import {
   MicOff,
   Volume2,
   Phone,
-  PhoneOff,
+  PhoneOff
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -53,9 +53,8 @@ export default function EmergencyCallingScreen() {
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
-              borderRadius: "0 0 32px 32px",
-            }}
+              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)"
+}}
           />
           <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
             <button

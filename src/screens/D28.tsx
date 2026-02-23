@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Bell, Map, Navigation, MapPin, Activity, Wifi, Home, Briefcase, Wallet, Settings } from "lucide-react";
+import { Map, Navigation, MapPin, Activity, Wifi, Home, Briefcase, Wallet, Settings } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D28 Driver App – Map View (Online State, v2)
 // Map-centric "I'm online" view.
@@ -7,10 +8,11 @@ import { Bell, Map, Navigation, MapPin, Activity, Wifi, Home, Briefcase, Wallet,
 // "Ride + Delivery". Job-type logic still handled later by D42 / D43.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       type="button"
+      onClick={onClick}
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
         active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
       }`}
@@ -22,6 +24,7 @@ function BottomNavItem({ icon: Icon, label, active }) {
 }
 
 export default function D28MapViewOnlineScreen() {
+  const navigate = useNavigate();
   const [nav] = useState("home");
   const [mode] = useState("all-jobs"); // preview-only; backend can drive this
 
@@ -55,9 +58,6 @@ export default function D28MapViewOnlineScreen() {
               <h1 className="text-base font-semibold text-slate-900">Map view</h1>
             </div>
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
-            <Bell className="h-4 w-4" />
-          </button>
         </header>
 
         {/* Content */}
@@ -137,8 +137,8 @@ export default function D28MapViewOnlineScreen() {
         <nav className="app-bottom-nav border-t border-slate-100 bg-white/95 backdrop-blur flex">
           <BottomNavItem icon={Activity} label="Online" active={nav === "home"} />
           <BottomNavItem icon={Map} label="Map" active={nav === "manager"} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"} />
-          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"} />
+          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"}  onClick={() => navigate("/driver/earnings/overview")}/>
+          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"}  onClick={() => navigate("/driver/preferences")}/>
         </nav>
       </div>
     </div>

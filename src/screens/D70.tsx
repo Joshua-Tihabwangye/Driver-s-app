@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  ShieldCheck,
+    ShieldCheck,
   LifeBuoy,
   AlertTriangle,
   MapPin,
@@ -10,7 +9,7 @@ import {
   Home,
   Briefcase,
   Wallet,
-  Settings,
+  Settings
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -18,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 // Compact Safety Hub overview screen that links into Safety Toolkit, SOS, and Follow/Share ride flows.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active, onClick = () => {} }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       type="button"
@@ -38,7 +37,7 @@ function HubTile({
   title,
   subtitle,
   tone = "default",
-  onClick = () => {},
+  onClick = () => {}
 }) {
   const bg =
     tone === "primary"
@@ -79,8 +78,8 @@ export default function SafetyHubScreen() {
     home: "/driver/dashboard/online",
     manager: "/driver/jobs/list",
     wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences",
-  };
+    settings: "/driver/preferences"
+};
   const supportNumber = "+256 700 000 999";
   const emergencyNumber = "+256 112";
   const sanitize = (phone) => (phone || "").replace(/[^\d+]/g, "");
@@ -114,17 +113,10 @@ export default function SafetyHubScreen() {
               </h1>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => navigate("/driver/ridesharing/notification")}
-            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
-          >
-            <Bell className="h-4 w-4" />
-          </button>
         </header>
 
         {/* Content */}
-        <main className="app-main flex-1 px-4 pb-4 overflow-y-auto scrollbar-hide space-y-4">
+        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
           {/* Intro card */}
           <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-3">
             <div className="flex items-center space-x-3">
@@ -147,7 +139,7 @@ export default function SafetyHubScreen() {
           </section>
 
           {/* Quick actions */}
-          <section className="grid grid-cols-2 gap-2">
+          <section className="grid grid-cols-2 gap-3">
             <button
               type="button"
               onClick={() => navigate("/driver/safety/sos/sending")}
@@ -161,7 +153,7 @@ export default function SafetyHubScreen() {
             <button
               type="button"
               onClick={() => navigate("/driver/safety/hub/expanded")}
-              className="rounded-2xl border border-slate-100 bg-white px-3 py-3 text-left text-sm font-semibold text-slate-900 active:scale-[0.98] transition-transform shadow-sm"
+              className="rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 text-left text-sm font-semibold text-slate-900 active:scale-[0.98] transition-transform shadow-sm"
             >
               Safety toolkit
               <p className="text-[11px] text-slate-600 font-medium mt-0.5">
@@ -237,7 +229,7 @@ export default function SafetyHubScreen() {
             <button
               type="button"
               onClick={() => navigate("/driver/safety/driving-hours")}
-              className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-3 text-sm font-semibold text-slate-900 active:scale-[0.98] transition-transform shadow-sm"
+              className="w-full rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 text-sm font-semibold text-slate-900 active:scale-[0.98] transition-transform shadow-sm"
             >
               Review driving hours & safety tips
               <p className="text-[11px] text-slate-600 font-medium mt-0.5">

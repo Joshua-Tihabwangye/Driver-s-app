@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  ListFilter,
+    ListFilter,
   MapPin,
   DollarSign,
   Clock,
@@ -10,7 +9,7 @@ import {
   Home,
   Briefcase,
   Wallet,
-  Settings,
+  Settings
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -39,8 +38,8 @@ const JOBS = [
     distance: "5.2 km",
     duration: "14 min",
     fare: "4.90",
-    jobType: "ride",
-  },
+    jobType: "ride"
+},
   {
     id: "3242",
     from: "City Centre",
@@ -48,8 +47,8 @@ const JOBS = [
     distance: "7.8 km",
     duration: "19 min",
     fare: "6.40",
-    jobType: "ride",
-  },
+    jobType: "ride"
+},
   {
     id: "3243",
     from: "Lugogo Mall",
@@ -57,8 +56,8 @@ const JOBS = [
     distance: "3.4 km",
     duration: "10 min",
     fare: "3.70",
-    jobType: "delivery",
-  },
+    jobType: "delivery"
+},
   {
     id: "3244",
     from: "City Hotel",
@@ -66,8 +65,8 @@ const JOBS = [
     distance: "—",
     duration: "09:00–18:00",
     fare: "45.00",
-    jobType: "rental",
-  },
+    jobType: "rental"
+},
   {
     id: "3245",
     from: "Airport",
@@ -75,8 +74,8 @@ const JOBS = [
     distance: "42 km",
     duration: "Day 2 of 5",
     fare: "Tour",
-    jobType: "tour",
-  },
+    jobType: "tour"
+},
   {
     id: "3246",
     from: "Near Acacia Road",
@@ -84,8 +83,8 @@ const JOBS = [
     distance: "3.1 km",
     duration: "8 min",
     fare: "—",
-    jobType: "ambulance",
-  },
+    jobType: "ambulance"
+},
   {
     id: "3247",
     from: "School XYZ",
@@ -93,11 +92,11 @@ const JOBS = [
     distance: "—",
     duration: "07:00–08:30",
     fare: "Shuttle",
-    jobType: "shuttle",
-  },
+    jobType: "shuttle"
+},
 ];
 
-function BottomNavItem({ icon: Icon, label, active, onClick }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       type="button"
@@ -166,7 +165,7 @@ function RequestCard({ job, onClick }) {
     <button
       type="button"
       onClick={() => onClick(job)}
-      className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform flex flex-col space-y-2 text-[11px] text-slate-600"
+      className="w-full rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform flex flex-col space-y-2 text-[11px] text-slate-600"
     >
       <div className="flex items-center justify-between">
         <span className="text-xs font-semibold text-slate-900 truncate max-w-[170px]">
@@ -203,8 +202,8 @@ export default function RideRequestsListScreen() {
     home: "/driver/dashboard/online",
     manager: "/driver/jobs/list",
     wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences",
-  };
+    settings: "/driver/preferences"
+};
 
   const filteredJobs =
     filter === "all" ? JOBS : JOBS.filter((job) => job.jobType === filter);
@@ -256,13 +255,10 @@ export default function RideRequestsListScreen() {
               </h1>
             </div>
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
-            <Bell className="h-4 w-4" />
-          </button>
         </header>
 
         {/* Content */}
-        <main className="app-main flex-1 px-4 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
+        <main className="app-main flex-1 px-4 pt-3 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
           {/* Sort row */}
           <section className="flex items-center justify-between rounded-2xl bg-slate-50 px-3 py-2 border border-slate-100">
             <div className="flex items-center space-x-2 text-[11px] text-slate-600">

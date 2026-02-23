@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  Package,
+    Package,
   MapPin,
   Clock,
   DollarSign,
@@ -9,16 +8,19 @@ import {
   Home,
   Briefcase,
   Wallet,
-  Settings,
+  Settings
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D25 Delivery Driver Dashboard (v1)
 // Overview dashboard focused on deliveries (stats + quick actions).
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
+      type="button"
+      onClick={onClick}
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${active ? "text-white" : "text-white/60 hover:text-white/80"
         }`}
     >
@@ -47,6 +49,7 @@ function StatChip({ icon: Icon, label, value, accent }: { icon: React.ElementTyp
 }
 
 export default function DeliveryDriverDashboardScreen() {
+  const navigate = useNavigate();
   const [nav] = useState("manager");
 
   return (
@@ -64,9 +67,8 @@ export default function DeliveryDriverDashboardScreen() {
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
-              borderRadius: "0 0 32px 32px",
-            }}
+              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)"
+}}
           />
           <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
             <div className="flex items-center space-x-2">
@@ -82,15 +84,11 @@ export default function DeliveryDriverDashboardScreen() {
                 </span>
               </div>
             </div>
-            <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
-              <Bell className="h-4 w-4 text-white" />
-              <span className="absolute -top-0.5 -right-0.5 inline-flex h-3 w-3 items-center justify-center rounded-full bg-[#f77f00] border border-white" />
-            </button>
           </header>
         </div>
 
         {/* Content */}
-        <main className="app-main flex-1 px-4 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
+        <main className="app-main flex-1 px-4 pt-3 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
           {/* Status card */}
           <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-3">
             <div className="flex items-center justify-between">
@@ -164,7 +162,7 @@ export default function DeliveryDriverDashboardScreen() {
               </div>
             </div>
 
-            <button className="w-full rounded-full py-2.5 text-sm font-semibold shadow-sm bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c]">
+            <button type="button" onClick={() => navigate("/driver/map/online")} className="w-full rounded-full py-2.5 text-sm font-semibold shadow-sm bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c]">
               Go online for deliveries
             </button>
           </section>
@@ -172,10 +170,10 @@ export default function DeliveryDriverDashboardScreen() {
 
         {/* Bottom Navigation – Green */}
         <nav className="app-bottom-nav border-t border-white/20 flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"} />
-          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"} />
+          <BottomNavItem icon={Home} label="Home" active={nav === "home"}  onClick={() => navigate("/driver/dashboard/online")}/>
+          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"}  onClick={() => navigate("/driver/jobs/list")}/>
+          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"}  onClick={() => navigate("/driver/earnings/overview")}/>
+          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"}  onClick={() => navigate("/driver/preferences")}/>
         </nav>
       </div>
     </div>

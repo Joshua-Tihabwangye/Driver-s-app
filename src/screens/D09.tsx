@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   ChevronLeft,
-  Bell,
   AlertTriangle,
   XCircle,
   IdCard,
@@ -11,7 +10,7 @@ import {
   Home,
   MessageSquare,
   Wallet,
-  Settings,
+  Settings
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -19,7 +18,7 @@ import { useNavigate } from "react-router-dom";
 // Green curved header design. ALL original functionality preserved:
 // re-upload via hidden file inputs, document status tracking, routing.
 
-function BottomNavItem({ icon: Icon, label, active, onClick }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       type="button"
@@ -71,20 +70,20 @@ export default function DocumentRejectedScreen() {
     home: "/driver/dashboard/online",
     messages: "/driver/ridesharing/notification",
     wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences",
-  };
+    settings: "/driver/preferences"
+};
   const [docs, setDocs] = useState({
     license: { status: "Rejected", fileName: "" },
-    id: { status: "Rejected", fileName: "" },
-  });
+    id: { status: "Rejected", fileName: "" }
+});
 
   const handleFileSelected = (key, event) => {
     const file = event.target.files?.[0];
     if (!file) return;
     setDocs((prev) => ({
       ...prev,
-      [key]: { status: "Uploaded", fileName: file.name },
-    }));
+      [key]: { status: "Uploaded", fileName: file.name }
+}));
   };
 
   const triggerFilePick = (key) => {
@@ -95,15 +94,19 @@ export default function DocumentRejectedScreen() {
   return (
     <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
       <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
+        {/* Hide scrollbar */}
+        <style>{`
+          .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
+          .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        `}</style>
 
         {/* Green curved header */}
         <div className="relative" style={{ minHeight: 80 }}>
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
-              borderRadius: "0 0 32px 32px",
-            }}
+              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)"
+}}
           />
           <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
             <button
@@ -114,19 +117,11 @@ export default function DocumentRejectedScreen() {
               <ChevronLeft className="h-5 w-5 text-white" />
             </button>
             <h1 className="text-base font-semibold text-white">Driver Personal</h1>
-            <button
-              type="button"
-              onClick={() => navigate("/driver/ridesharing/notification")}
-              className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm"
-            >
-              <Bell className="h-5 w-5 text-white" />
-              <span className="absolute -top-0.5 -right-0.5 inline-flex h-3.5 w-3.5 rounded-full bg-[#f77f00] border-2 border-white" />
-            </button>
           </header>
         </div>
 
         {/* Content */}
-        <main className="app-main flex-1 px-4 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
+        <main className="app-main flex-1 px-4 pt-3 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
           {/* Rejection summary */}
           <section className="rounded-2xl border border-red-100 bg-red-50 p-4 space-y-2">
             <div className="flex items-center space-x-2">

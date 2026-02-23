@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  ChevronLeft,
+    ChevronLeft,
   Play,
   CheckCircle2,
   Home,
   Briefcase,
   Wallet,
-  Settings,
+  Settings
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -15,7 +14,7 @@ import { useNavigate } from "react-router-dom";
 // Redesigned to match Screenshot 0.
 // Green header, navy progress card, module list with thumbnails.
 
-function BottomNavItem({ icon: Icon, label, active, onClick }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       type="button"
@@ -71,40 +70,44 @@ export default function InfoSessionListScreen() {
       title: "Getting Started with Uber: A Complete Driver's Guide",
       description: "Step-by-step guide for new Uber drivers to start driving and earning.",
       image: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=300&h=200&fit=crop",
-      completed: true,
-    },
+      completed: true
+},
     {
       title: "How to Navigate the Uber Driver App Like a Pro",
       description: "Master the Uber Driver app with pro tips for smooth, efficient rides.",
       image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=300&h=200&fit=crop",
-      completed: true,
-    },
+      completed: true
+},
     {
       title: "Top Tips for New Uber Drivers: Boost Your Earnings!",
       description: "Essential tips to help new Uber drivers maximize earnings.",
       image: "https://images.unsplash.com/photo-1549194382-346a188f6159?w=300&h=200&fit=crop",
-      completed: false,
-    },
+      completed: false
+},
     {
       title: "Essential Safety Tips for Uber Drivers",
       description: "Key safety tips to help Uber drivers ensure a secure driving experience.",
       image: "https://images.unsplash.com/photo-1517021897933-0e0319cfbc28?w=300&h=200&fit=crop",
-      completed: false,
-    },
+      completed: false
+},
   ];
 
   return (
     <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
       <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col relative">
+        {/* Hide scrollbar */}
+        <style>{`
+          .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
+          .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        `}</style>
 
         {/* Green curved header */}
         <div className="relative" style={{ minHeight: 80 }}>
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
-              borderRadius: "0 0 32px 32px",
-            }}
+              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)"
+}}
           />
           <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
             <button
@@ -114,10 +117,6 @@ export default function InfoSessionListScreen() {
               <ChevronLeft className="h-5 w-5 text-white" />
             </button>
             <h1 className="text-base font-semibold text-white">Driver App</h1>
-            <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm">
-              <Bell className="h-5 w-5 text-white" />
-              <span className="absolute -top-0.5 -right-0.5 inline-flex h-3 w-3 items-center justify-center rounded-full bg-[#f77f00] border border-white" />
-            </button>
           </header>
         </div>
 

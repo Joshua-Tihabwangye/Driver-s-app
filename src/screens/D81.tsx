@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  Map,
+    Map,
   MapPin,
   Navigation,
   Clock,
@@ -11,7 +10,7 @@ import {
   Home,
   Briefcase,
   Wallet,
-  Settings,
+  Settings
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -19,7 +18,7 @@ import { useNavigate, useParams } from "react-router-dom";
 // Active route view with per-stop contact details and quick actions.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active, onClick = () => {} }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       type="button"
@@ -42,10 +41,10 @@ function StopContactRow({
   contactName,
   contactPhone,
   onMessage = () => {},
-  onCall = () => {},
+  onCall = () => {}
 }) {
   return (
-    <div className="rounded-2xl border border-slate-100 bg-white px-3 py-2.5 shadow-sm text-[11px] text-slate-600 flex flex-col space-y-2">
+    <div className="rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-2.5 shadow-sm text-[11px] text-slate-600 flex flex-col space-y-2">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-50">
@@ -104,8 +103,8 @@ export default function ActiveRouteWithStopContactScreen() {
     home: "/driver/dashboard/online",
     manager: "/driver/jobs/list",
     wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences",
-  };
+    settings: "/driver/preferences"
+};
 
   const stopsById = {
     "alpha-stop": {
@@ -114,17 +113,17 @@ export default function ActiveRouteWithStopContactScreen() {
       detail: "Deliver order #3235 · Groceries",
       eta: "18:40",
       contactName: "Sarah",
-      contactPhone: "+256 700 000 333",
-    },
+      contactPhone: "+256 700 000 333"
+},
     "beta-stop": {
       index: 2,
       label: "Ntinda (Main Road)",
       detail: "Deliver order #3230 · Pharmacy",
       eta: "18:55",
       contactName: "Michael",
-      contactPhone: "+256 700 000 444",
-    },
-  };
+      contactPhone: "+256 700 000 444"
+}
+};
 
   const selectedStop = stopsById[stopId] || stopsById["alpha-stop"];
 
@@ -165,17 +164,10 @@ export default function ActiveRouteWithStopContactScreen() {
               </h1>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => navigate("/driver/ridesharing/notification")}
-            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
-          >
-            <Bell className="h-4 w-4" />
-          </button>
         </header>
 
         {/* Content */}
-        <main className="app-main flex-1 px-4 pb-4 overflow-y-auto scrollbar-hide space-y-4">
+        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
           {/* Map preview */}
           <button
             type="button"

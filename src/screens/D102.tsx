@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  Bus,
+    Bus,
   MapPin,
   ExternalLink,
   Home,
   Briefcase,
   Wallet,
-  Settings,
+  Settings
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -16,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 // EVzone School Shuttle Driver App, with an optional CTA to open that app.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active, onClick = () => {} }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       type="button"
@@ -38,8 +37,8 @@ export default function ShuttleLinkInfoScreen() {
     home: "/driver/dashboard/online",
     manager: "/driver/jobs/list",
     wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences",
-  };
+    settings: "/driver/preferences"
+};
 
   const handleOpenShuttleApp = () => {
     // In the real app, attempt to open the EVzone School Shuttle Driver App
@@ -48,7 +47,7 @@ export default function ShuttleLinkInfoScreen() {
   };
 
   return (
-    <div className="min-h-screen flex justify-center bg-[#0f172a] py-4">
+    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
       {/* Local style: hide scrollbars but keep swipe scrolling */}
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
@@ -56,7 +55,7 @@ export default function ShuttleLinkInfoScreen() {
       `}</style>
 
       {/* Phone frame */}
-      <div className="w-[375px] h-[812px] bg-white rounded-[32px] shadow-2xl overflow-hidden flex flex-col">
+      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
         {/* Header */}
         <header className="flex items-center justify-between px-4 pt-4 pb-2">
           <div className="flex items-center space-x-2">
@@ -72,17 +71,10 @@ export default function ShuttleLinkInfoScreen() {
               </h1>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => navigate("/driver/ridesharing/notification")}
-            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
-          >
-            <Bell className="h-4 w-4" />
-          </button>
         </header>
 
         {/* Content */}
-        <main className="flex-1 px-4 pb-4 overflow-y-auto scrollbar-hide space-y-4">
+        <main className="flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
           {/* Intro */}
           <section className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 text-[11px] text-slate-600">
             <p className="font-semibold text-xs text-slate-900 mb-0.5">
@@ -97,7 +89,7 @@ export default function ShuttleLinkInfoScreen() {
 
           {/* Details */}
           <section className="space-y-3">
-            <div className="rounded-2xl border border-slate-100 bg-white px-3 py-3 flex items-start space-x-2 text-[11px] text-slate-600">
+            <div className="rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 flex items-start space-x-2 text-[11px] text-slate-600">
               <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-slate-50">
                 <MapPin className="h-4 w-4 text-slate-700" />
               </div>
@@ -113,7 +105,7 @@ export default function ShuttleLinkInfoScreen() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-100 bg-white px-3 py-3 text-[11px] text-slate-600">
+            <div className="rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 text-[11px] text-slate-600">
               <p className="font-semibold text-xs text-slate-900 mb-0.5">
                 What you manage in the Shuttle app
               </p>

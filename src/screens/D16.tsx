@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  Building2,
+    Building2,
   Car,
   Truck,
   ShieldCheck,
@@ -10,7 +9,7 @@ import {
   Home,
   Briefcase,
   Wallet,
-  Settings,
+  Settings
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -18,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 // Business-owned / fleet vehicles assigned to the driver (separate from personal vehicles).
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active, onClick }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       type="button"
@@ -44,7 +43,7 @@ function FleetVehicleCard({ icon: Icon, title, subtitle, tag, status, onClick })
     <button
       type="button"
       onClick={onClick}
-      className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-3 shadow-sm active:scale-[0.97] transition-transform flex items-center justify-between"
+      className="w-full rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 shadow-sm active:scale-[0.97] transition-transform flex items-center justify-between"
     >
       <div className="flex items-center space-x-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e6fff7]">
@@ -77,8 +76,8 @@ export default function BusinessVehiclesScreen() {
     home: "/driver/dashboard/online",
     manager: "/driver/jobs/list",
     wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences",
-  };
+    settings: "/driver/preferences"
+};
 
   return (
     <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
@@ -105,18 +104,10 @@ export default function BusinessVehiclesScreen() {
               </h1>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => navigate("/driver/ridesharing/notification")}
-            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
-          >
-            <Bell className="h-4 w-4" />
-            <span className="absolute -top-1 -right-0.5 h-2.5 w-2.5 rounded-full bg-red-500 border-2 border-white" />
-          </button>
         </header>
 
         {/* Content */}
-        <main className="app-main flex-1 px-4 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
+        <main className="app-main flex-1 px-4 pt-3 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
           {/* Company banner */}
           <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-2 text-left">
             <div className="flex items-center space-x-2">

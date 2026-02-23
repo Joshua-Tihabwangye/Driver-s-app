@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  ClipboardList,
+    ClipboardList,
   User,
   Car,
   MapPin,
@@ -11,7 +10,7 @@ import {
   Home,
   Briefcase,
   Wallet,
-  Settings,
+  Settings
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -27,7 +26,7 @@ import { useNavigate } from "react-router-dom";
 
 const STATUSES = ["On rental", "Waiting at hotel", "With client", "Returning to base"];
 
-function BottomNavItem({ icon: Icon, label, active, onClick }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       type="button"
@@ -66,8 +65,8 @@ export default function RentalJobOverviewScreen() {
     home: "/driver/dashboard/online",
     manager: "/driver/jobs/list",
     wallet: "/driver/earnings/overview",
-    settings: "/driver/map/online",
-  };
+    settings: "/driver/map/online"
+};
 
   return (
     <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
@@ -97,17 +96,10 @@ export default function RentalJobOverviewScreen() {
               </span>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => navigate("/driver/ridesharing/notification")}
-            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
-          >
-            <Bell className="h-4 w-4" />
-          </button>
         </header>
 
         {/* Content */}
-        <main className="app-main flex-1 px-4 pb-4 overflow-y-auto scrollbar-hide space-y-4">
+        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
           {/* Rental window & status */}
           <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-3">
             <div className="flex items-center justify-between">
@@ -157,7 +149,7 @@ export default function RentalJobOverviewScreen() {
             <h2 className="text-sm font-semibold text-slate-900 mb-1">
               Rental details
             </h2>
-            <div className="rounded-2xl border border-slate-100 bg-white px-3 py-3 flex items-start space-x-2 text-[11px] text-slate-600">
+            <div className="rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 flex items-start space-x-2 text-[11px] text-slate-600">
               <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-slate-50">
                 <User className="h-4 w-4 text-slate-700" />
               </div>
@@ -172,7 +164,7 @@ export default function RentalJobOverviewScreen() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-100 bg-white px-3 py-3 flex items-start space-x-2 text-[11px] text-slate-600">
+            <div className="rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 flex items-start space-x-2 text-[11px] text-slate-600">
               <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-slate-50">
                 <Car className="h-4 w-4 text-slate-700" />
               </div>
@@ -188,7 +180,7 @@ export default function RentalJobOverviewScreen() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-100 bg-white px-3 py-3 flex items-start space-x-2 text-[11px] text-slate-600">
+            <div className="rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 flex items-start space-x-2 text-[11px] text-slate-600">
               <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-slate-50">
                 <MapPin className="h-4 w-4 text-slate-700" />
               </div>
@@ -204,7 +196,7 @@ export default function RentalJobOverviewScreen() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-100 bg-white px-3 py-3 flex items-start space-x-2 text-[11px] text-slate-600">
+            <div className="rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 flex items-start space-x-2 text-[11px] text-slate-600">
               <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-slate-50">
                 <Phone className="h-4 w-4 text-slate-700" />
               </div>
@@ -219,7 +211,7 @@ export default function RentalJobOverviewScreen() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-100 bg-white px-3 py-3 flex items-start space-x-2 text-[11px] text-slate-600">
+            <div className="rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 flex items-start space-x-2 text-[11px] text-slate-600">
               <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-slate-50">
                 <FileText className="h-4 w-4 text-slate-700" />
               </div>

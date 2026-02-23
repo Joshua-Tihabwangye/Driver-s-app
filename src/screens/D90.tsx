@@ -1,22 +1,24 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  QrCode,
+    QrCode,
   Info,
   MapPin,
   Home,
   Briefcase,
   Wallet,
-  Settings,
+  Settings
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D90 Scan QR Code – Instruction Popup (v1)
 // Early instruction popup explaining how to scan the QR code, shown over the scanner view.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
+      type="button"
+      onClick={onClick}
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
         active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
       }`}
@@ -28,6 +30,7 @@ function BottomNavItem({ icon: Icon, label, active }) {
 }
 
 export default function QrScanInstructionPopupScreen() {
+  const navigate = useNavigate();
   const [nav] = useState("home");
 
   return (
@@ -55,13 +58,10 @@ export default function QrScanInstructionPopupScreen() {
               </h1>
             </div>
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
-            <Bell className="h-4 w-4" />
-          </button>
         </header>
 
         {/* Content */}
-        <main className="app-main flex-1 px-4 pb-4 overflow-y-auto scrollbar-hide">
+        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide">
           {/* Camera / scanner view */}
           <section className="relative rounded-3xl overflow-hidden border border-slate-100 bg-black h-[260px] mb-4">
             <div className="absolute inset-0 bg-slate-900/80" />
@@ -100,7 +100,7 @@ export default function QrScanInstructionPopupScreen() {
                     <MapPin className="h-3 w-3 mr-1" />
                     Pickup: Burger Hub, Acacia Mall
                   </span>
-                  <button className="inline-flex items-center rounded-full bg-[#03cd8c] px-2.5 py-0.5 text-[10px] font-semibold text-slate-900">
+                  <button type="button" onClick={() => navigate("/driver/qr/scanner")} className="inline-flex items-center rounded-full bg-[#03cd8c] px-2.5 py-0.5 text-[10px] font-semibold text-slate-900">
                     Got it
                   </button>
                 </div>
@@ -111,10 +111,10 @@ export default function QrScanInstructionPopupScreen() {
 
         {/* Bottom navigation – Home active (scanner context) */}
         <nav className="app-bottom-nav border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"} />
-          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"} />
+          <BottomNavItem icon={Home} label="Home" active={nav === "home"}  onClick={() => navigate("/driver/dashboard/online")}/>
+          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"}  onClick={() => navigate("/driver/jobs/list")}/>
+          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"}  onClick={() => navigate("/driver/earnings/overview")}/>
+          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"}  onClick={() => navigate("/driver/preferences")}/>
         </nav>
       </div>
     </div>

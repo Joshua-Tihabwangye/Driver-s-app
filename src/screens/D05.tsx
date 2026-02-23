@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   ChevronLeft,
-  Bell,
   User,
   Star,
   ShieldCheck,
@@ -19,7 +18,7 @@ import {
   Home,
   MessageSquare,
   Wallet,
-  Settings,
+  Settings
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -28,7 +27,7 @@ import { useNavigate } from "react-router-dom";
 // document rows with status chips, training progress ring, Go Online button,
 // all navigation/routing intact.
 
-function BottomNavItem({ icon: Icon, label, active, onClick = () => { } }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       type="button"
@@ -46,8 +45,8 @@ function StatusChip({ label, tone = "pending" }) {
   const tones = {
     missing: { bg: "bg-red-50", text: "text-red-600", dot: "bg-red-500" },
     pending: { bg: "bg-amber-50", text: "text-amber-700", dot: "bg-amber-500" },
-    approved: { bg: "bg-emerald-50", text: "text-emerald-700", dot: "bg-emerald-500" },
-  }[tone];
+    approved: { bg: "bg-emerald-50", text: "text-emerald-700", dot: "bg-emerald-500" }
+}[tone];
 
   return (
     <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${tones.bg} ${tones.text}`}>
@@ -62,7 +61,7 @@ function DocRow({ icon: Icon, title, description, statusTone, statusLabel, color
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center justify-between rounded-2xl border border-slate-100 bg-white px-3 py-2.5 shadow-[0_1px_4px_rgba(0,0,0,0.04)] active:scale-[0.97] transition-transform"
+      className="flex w-full items-center justify-between rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-2.5 shadow-[0_1px_4px_rgba(0,0,0,0.04)] active:scale-[0.97] transition-transform"
     >
       <div className="flex items-center space-x-3">
         <div
@@ -97,21 +96,25 @@ export default function DriverPersonalScreen() {
     home: "/driver/dashboard/online",
     messages: "/driver/ridesharing/notification",
     wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences",
-  };
+    settings: "/driver/preferences"
+};
 
   return (
     <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
       <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
+        {/* Hide scrollbar */}
+        <style>{`
+          .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
+          .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        `}</style>
 
         {/* Green curved header */}
         <div className="relative" style={{ minHeight: 80 }}>
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
-              borderRadius: "0 0 32px 32px",
-            }}
+              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)"
+}}
           />
           <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
             <button
@@ -122,14 +125,6 @@ export default function DriverPersonalScreen() {
               <ChevronLeft className="h-5 w-5 text-white" />
             </button>
             <h1 className="text-base font-semibold text-white">Driver Personnel</h1>
-            <button
-              type="button"
-              onClick={() => navigate("/driver/ridesharing/notification")}
-              className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm"
-            >
-              <Bell className="h-5 w-5 text-white" />
-              <span className="absolute -top-0.5 -right-0.5 inline-flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#f77f00] border-2 border-white" />
-            </button>
           </header>
         </div>
 
@@ -356,6 +351,8 @@ export default function DriverPersonalScreen() {
           {/* Go Online button */}
           <section className="pt-1 pb-4">
             <button
+              type="button"
+              onClick={() => navigate("/driver/dashboard/online")}
               disabled={!canGoOnline}
               className={`w-full rounded-full py-3 text-sm font-semibold shadow-sm transition-colors ${canGoOnline
                   ? "bg-[#03cd8c] text-white hover:bg-[#02b77c]"

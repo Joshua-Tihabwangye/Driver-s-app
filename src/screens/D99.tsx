@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  Bell,
-  Map,
+    Map,
   AlertTriangle,
   MapPin,
   Phone,
@@ -9,7 +8,7 @@ import {
   Home,
   Briefcase,
   Wallet,
-  Settings,
+  Settings
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -25,7 +24,7 @@ import { useNavigate } from "react-router-dom";
 
 const CODES = ["Code 1", "Code 2"];
 
-function BottomNavItem({ icon: Icon, label, active, onClick = () => {} }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       type="button"
@@ -49,8 +48,8 @@ export default function AmbulanceJobIncomingScreen() {
     home: "/driver/dashboard/online",
     manager: "/driver/jobs/list",
     wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences",
-  };
+    settings: "/driver/preferences"
+};
 
   useEffect(() => {
     if (timeLeft <= 0) return;
@@ -87,13 +86,10 @@ export default function AmbulanceJobIncomingScreen() {
               </span>
             </div>
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
-            <Bell className="h-4 w-4" />
-          </button>
         </header>
 
         {/* Content */}
-        <main className="app-main flex-1 px-4 pb-4 overflow-y-auto scrollbar-hide space-y-4">
+        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
           {/* Code + context card */}
           <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-3">
             <div className="flex items-center justify-between">
@@ -145,7 +141,7 @@ export default function AmbulanceJobIncomingScreen() {
 
           {/* Approximate location & ETA */}
           <section className="space-y-2">
-            <div className="rounded-2xl border border-slate-100 bg-white px-3 py-3 flex items-center justify-between text-[11px] text-slate-600">
+            <div className="rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 flex items-center justify-between text-[11px] text-slate-600">
               <div className="flex items-center space-x-2">
                 <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-50">
                   <MapPin className="h-4 w-4 text-[#03cd8c]" />

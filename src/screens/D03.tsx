@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   ChevronLeft,
-  Bell,
   Camera,
   Pencil,
   ChevronDown,
@@ -12,7 +11,7 @@ import {
   Wallet,
   Settings,
   MapPin,
-  Shield,
+  Shield
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -20,7 +19,7 @@ import { useNavigate } from "react-router-dom";
 // New design: green curved header, profile photo, info rows, accordions, green bottom nav.
 // Original functionality preserved: form inputs, validation, accordion expand/collapse, routing.
 
-function BottomNavItem({ icon: Icon, label, active, onClick }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       type="button"
@@ -121,15 +120,19 @@ export default function RegistrationScreen() {
   return (
     <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
       <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
+        {/* Hide scrollbar */}
+        <style>{`
+          .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
+          .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        `}</style>
 
         {/* Green curved header */}
         <div className="relative" style={{ minHeight: 80 }}>
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
-              borderRadius: "0 0 32px 32px",
-            }}
+              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)"
+}}
           />
           <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
             <button
@@ -140,13 +143,6 @@ export default function RegistrationScreen() {
               <ChevronLeft className="h-5 w-5 text-white" />
             </button>
             <h1 className="text-base font-semibold text-white">Registration</h1>
-            <button
-              type="button"
-              onClick={() => navigate("/driver/ridesharing/notification")}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm"
-            >
-              <Bell className="h-5 w-5 text-white" />
-            </button>
           </header>
         </div>
 

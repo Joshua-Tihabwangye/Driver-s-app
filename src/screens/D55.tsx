@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  Map,
+    Map,
   Navigation,
   MapPin,
   Clock,
@@ -10,8 +9,9 @@ import {
   Home,
   Briefcase,
   Wallet,
-  Settings,
+  Settings
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D55 Driver App – Ride in Progress (v2)
 // Main in-trip screen while driving with rider on board, now job-type aware for:
@@ -25,7 +25,7 @@ import {
 
 const JOB_TYPES = ["ride", "delivery", "rental", "tour", "ambulance"];
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
@@ -39,6 +39,7 @@ function BottomNavItem({ icon: Icon, label, active }) {
 }
 
 export default function RideInProgressScreen() {
+  const navigate = useNavigate();
   const [nav] = useState("home");
   const [jobType, setJobType] = useState("ride");
 
@@ -47,8 +48,8 @@ export default function RideInProgressScreen() {
     delivery: "Delivery",
     rental: "Rental",
     tour: "Tour",
-    ambulance: "Ambulance",
-  };
+    ambulance: "Ambulance"
+};
 
   const isRental = jobType === "rental";
   const isTour = jobType === "tour";
@@ -109,9 +110,6 @@ export default function RideInProgressScreen() {
               </span>
             </div>
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
-            <Bell className="h-4 w-4" />
-          </button>
         </header>
 
         {/* Job type selector for preview */}
@@ -137,7 +135,7 @@ export default function RideInProgressScreen() {
         </section>
 
         {/* Content */}
-        <main className="app-main flex-1 px-4 pb-4 overflow-y-auto scrollbar-hide space-y-4">
+        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
           {/* Map container */}
           <section className="relative rounded-3xl overflow-hidden border border-slate-100 bg-slate-200 h-[320px]">
             <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
@@ -183,7 +181,7 @@ export default function RideInProgressScreen() {
 
           {/* Trip info */}
           <section className="space-y-3">
-            <div className="rounded-2xl border border-slate-100 bg-white px-3 py-3 flex items-center justify-between">
+            <div className="rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 flex items-center justify-between">
               <div className="flex flex-col items-start max-w-[220px]">
                 <span className="text-xs font-semibold text-slate-900">
                   {titleText}
@@ -225,22 +223,22 @@ export default function RideInProgressScreen() {
 
         {/* Bottom navigation – Home active (in-trip context) */}
         <nav className="app-bottom-nav border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
+          <BottomNavItem icon={Home} label="Home" active={nav === "home"}  onClick={() => navigate("/driver/dashboard/online")}/>
           <BottomNavItem
             icon={Briefcase}
             label="Manager"
             active={nav === "manager"}
-          />
+           onClick={() => navigate("/driver/jobs/list")}/>
           <BottomNavItem
             icon={Wallet}
             label="Wallet"
             active={nav === "wallet"}
-          />
+           onClick={() => navigate("/driver/earnings/overview")}/>
           <BottomNavItem
             icon={Settings}
             label="Settings"
             active={nav === "settings"}
-          />
+           onClick={() => navigate("/driver/preferences")}/>
         </nav>
       </div>
     </div>

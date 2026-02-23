@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   ChevronLeft,
-  Bell,
   IdCard,
   ShieldCheck,
   User,
@@ -17,7 +16,7 @@ import {
   Settings,
   CheckCircle2,
   Moon,
-  Sun,
+  Sun
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
@@ -78,8 +77,8 @@ export default function IdentityVerificationScreen() {
     home: "/driver/dashboard/online",
     messages: "/driver/ridesharing/notification",
     wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences",
-  };
+    settings: "/driver/preferences"
+};
 
   return (
     <div className="app-stage min-h-screen flex justify-center bg-white py-4 px-3 transition-colors duration-300">
@@ -93,9 +92,8 @@ export default function IdentityVerificationScreen() {
             style={{
               background: isDark
                 ? "linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%)"
-                : "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
-              borderRadius: "0 0 32px 32px",
-            }}
+                : "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)"
+}}
           />
           <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
             <button
@@ -106,8 +104,7 @@ export default function IdentityVerificationScreen() {
               <ChevronLeft className="h-5 w-5 text-white" />
             </button>
             <h1 className="text-base font-semibold text-white">Preferences</h1>
-            <div className="flex items-center space-x-2">
-              <button
+            <button
                 type="button"
                 onClick={toggleTheme}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm hover:bg-white/40 active:scale-95 transition-all"
@@ -115,20 +112,11 @@ export default function IdentityVerificationScreen() {
               >
                 {isDark ? <Sun className="h-5 w-5 text-white" /> : <Moon className="h-5 w-5 text-white" />}
               </button>
-              <button
-                type="button"
-                onClick={() => navigate("/driver/ridesharing/notification")}
-                className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm hover:bg-white/40 active:scale-95 transition-all"
-              >
-                <Bell className="h-5 w-5 text-white" />
-                <span className="absolute -top-0.5 -right-0.5 inline-flex h-3.5 w-3.5 rounded-full bg-[#f77f00] border-2 border-white" />
-              </button>
-            </div>
           </header>
         </div>
 
         {/* Content */}
-        <main className="app-main flex-1 px-4 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
+        <main className="app-main flex-1 px-4 pt-3 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
           {/* Selfie card */}
           <section className={`rounded-2xl border p-4 space-y-3 mt-4 transition-colors duration-300 ${isDark ? "bg-slate-900/50 border-slate-800" : "bg-white border-slate-100"}`}>
             <div className="flex flex-col items-center">

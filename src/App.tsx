@@ -17,7 +17,7 @@ import {
   Navigate,
   matchPath,
 } from "react-router-dom";
-import { MapPin, Bell as BellIcon, Moon, Sun } from "lucide-react";
+import { MapPin, Moon, Sun } from "lucide-react";
 import { useTheme } from "./context/ThemeContext";
 import D01Screen from "./screens/D01.jsx";
 import D02Screen from "./screens/D02.jsx";
@@ -121,6 +121,7 @@ import D99Screen from "./screens/D99.jsx";
 import D100Screen from "./screens/D100.jsx";
 import D101Screen from "./screens/D101.jsx";
 import D102Screen from "./screens/D102.jsx";
+import CashOutScreen from "./screens/CashOut";
 
 const SAMPLE_IDS = {
   trip: "demo-trip",
@@ -797,6 +798,12 @@ const SCREENS = [
     path: "/driver/help/shuttle-link",
     Component: D102Screen,
   },
+  {
+    id: "CashOut",
+    label: "Cash Out – Payment Gateway",
+    path: "/driver/earnings/cashout",
+    Component: CashOutScreen,
+  },
 ];
 
 const DEFAULT_SCREEN = SCREENS[0];
@@ -855,8 +862,8 @@ export default function App() {
       data-screen-id={currentScreen.id}
       sx={{
         minHeight: "100vh",
-        bgcolor: "#0f172a",
-        color: "#ffffff",
+        bgcolor: "#edf3f2",
+        color: "#1e293b",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -927,25 +934,6 @@ export default function App() {
                 Select any screen ID from D01 to D102 or jump via the official
                 routes from ROUTING_GUIDE.md.
               </Typography>
-            </Box>
-            <Box
-              component="button"
-              onClick={() => navigate("/driver/ridesharing/notification")}
-              sx={{
-                background: "rgba(255,255,255,0.15)",
-                border: "1px solid rgba(255,255,255,0.25)",
-                color: "#fff",
-                borderRadius: "999px",
-                padding: "6px",
-                cursor: "pointer",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                transition: "all 0.15s ease",
-                "&:hover": { background: "rgba(255,255,255,0.25)" },
-              }}
-            >
-              <BellIcon size={16} />
             </Box>
           </Box>
 

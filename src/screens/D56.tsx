@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  CheckCircle2,
+    CheckCircle2,
   MapPin,
   Clock,
   DollarSign,
@@ -9,7 +8,7 @@ import {
   Home,
   Briefcase,
   Wallet,
-  Settings,
+  Settings
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -21,7 +20,7 @@ import { useNavigate } from "react-router-dom";
 
 const JOB_TYPES = ["ride", "delivery", "rental", "tour", "ambulance"];
 
-function BottomNavItem({ icon: Icon, label, active, onClick }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       type="button"
@@ -44,16 +43,16 @@ export default function TripCompletionScreen({ initialJobType = "ride" }) {
     home: "/driver/dashboard/online",
     manager: "/driver/jobs/list",
     wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences",
-  };
+    settings: "/driver/preferences"
+};
 
   const jobTypeLabelMap = {
     ride: "Ride",
     delivery: "Delivery",
     rental: "Rental",
     tour: "Tour",
-    ambulance: "Ambulance",
-  };
+    ambulance: "Ambulance"
+};
 
   const isRental = jobType === "rental";
   const isTour = jobType === "tour";
@@ -137,13 +136,6 @@ export default function TripCompletionScreen({ initialJobType = "ride" }) {
               </span>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => navigate("/driver/ridesharing/notification")}
-            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
-          >
-            <Bell className="h-4 w-4" />
-          </button>
         </header>
 
         {/* Job type selector for preview */}
@@ -169,7 +161,7 @@ export default function TripCompletionScreen({ initialJobType = "ride" }) {
         </section>
 
         {/* Content */}
-        <main className="app-main flex-1 px-4 pb-4 overflow-y-auto scrollbar-hide space-y-4">
+        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
           {/* Trip summary card */}
           <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-3">
             <div className="flex items-center justify-between">
@@ -212,7 +204,7 @@ export default function TripCompletionScreen({ initialJobType = "ride" }) {
 
           {/* Payment & rating info */}
           <section className="space-y-3">
-            <div className="rounded-2xl border border-slate-100 bg-white px-3 py-3 flex items-center justify-between">
+            <div className="rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 flex items-center justify-between">
               <div className="flex flex-col items-start text-[11px] text-slate-600">
                 <span className="text-xs font-semibold text-slate-900 mb-0.5">
                   {paymentTitle}

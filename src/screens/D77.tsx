@@ -1,14 +1,13 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  Package,
+    Package,
   MapPin,
   Clock,
   CheckCircle2,
   Home,
   Briefcase,
   Wallet,
-  Settings,
+  Settings
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -16,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 // Focused view showing orders that have already been picked up and are in the delivery stage.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active, onClick }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       type="button"
@@ -36,7 +35,7 @@ function PickedUpOrderRow({ id, pickup, dropoff, nextStop, eta, sequence, onClic
     <button
       type="button"
       onClick={onClick}
-      className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform flex flex-col space-y-2 text-[11px] text-slate-600"
+      className="w-full rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform flex flex-col space-y-2 text-[11px] text-slate-600"
     >
       <div className="flex items-center justify-between">
         <span className="text-xs font-semibold text-slate-900 truncate max-w-[200px]">
@@ -67,8 +66,8 @@ export default function PickedUpOrdersScreen() {
     home: "/driver/dashboard/online",
     manager: "/driver/jobs/list",
     wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences",
-  };
+    settings: "/driver/preferences"
+};
 
   const pickedUpOrders = [
     {
@@ -77,16 +76,16 @@ export default function PickedUpOrdersScreen() {
       dropoff: "Naguru",
       nextStop: "Naguru (Block B)",
       eta: "Deliver by 18:40",
-      sequence: 1,
-    },
+      sequence: 1
+},
     {
       id: "3230",
       pickup: "Taco Hub, Acacia",
       dropoff: "Kansanga",
       nextStop: "Kansanga (Main Road)",
       eta: "Deliver by 18:55",
-      sequence: 2,
-    },
+      sequence: 2
+},
   ];
 
   return (
@@ -114,17 +113,10 @@ export default function PickedUpOrdersScreen() {
               </h1>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => navigate("/driver/ridesharing/notification")}
-            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
-          >
-            <Bell className="h-4 w-4" />
-          </button>
         </header>
 
         {/* Content */}
-        <main className="app-main flex-1 px-4 pb-4 overflow-y-auto scrollbar-hide space-y-4">
+        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
           {/* Summary card */}
           <section className="rounded-2xl border border-emerald-100 bg-emerald-50 px-3 py-3 flex items-start space-x-2 text-[11px] text-emerald-700">
             <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white">

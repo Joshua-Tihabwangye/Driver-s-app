@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  Activity,
+    Activity,
   Clock,
   DollarSign,
   Map,
@@ -9,7 +8,7 @@ import {
   Package,
   Briefcase,
   Bus,
-  Ambulance,
+  Ambulance
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -19,7 +18,7 @@ import { useNavigate } from "react-router-dom";
 // on top of the original screen – the backend can feed per-job-type counts.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active, onClick }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       type="button"
@@ -86,15 +85,15 @@ export default function D29ActiveDashboardScreen() {
     home: "/driver/dashboard/online",
     manager: "/driver/jobs/list",
     wallet: "/driver/earnings/overview",
-    settings: "/driver/map/online",
-  };
+    settings: "/driver/map/online"
+};
   const jobMixRoutes = {
     ride: "/driver/jobs/list",
     delivery: "/driver/delivery/orders",
     rental: "/driver/rental/job/demo-job",
     tour: "/driver/tour/demo-tour/today",
-    ambulance: "/driver/ambulance/job/demo-job/status",
-  };
+    ambulance: "/driver/ambulance/job/demo-job/status"
+};
 
   // In a real app these would come from backend metrics for the current day.
   const onlineTime = "3h 24m";
@@ -106,8 +105,8 @@ export default function D29ActiveDashboardScreen() {
     delivery: 3,
     rental: 1,
     tour: 1,
-    ambulance: 0,
-  };
+    ambulance: 0
+};
 
   const totalJobs =
     jobMix.ride + jobMix.delivery + jobMix.rental + jobMix.tour + jobMix.ambulance;
@@ -137,17 +136,10 @@ export default function D29ActiveDashboardScreen() {
               </h1>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => navigate("/driver/ridesharing/notification")}
-            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
-          >
-            <Bell className="h-4 w-4" />
-          </button>
         </header>
 
         {/* Content */}
-        <main className="app-main flex-1 px-4 pb-4 overflow-y-auto scrollbar-hide space-y-4">
+        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
           {/* Today overview */}
           <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-3">
             <div className="flex items-center justify-between">
@@ -226,7 +218,7 @@ export default function D29ActiveDashboardScreen() {
                 {totalJobs} job{totalJobs === 1 ? "" : "s"} total
               </span>
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-3">
               <JobMixPill
                 icon={Car}
                 label="Ride jobs"
