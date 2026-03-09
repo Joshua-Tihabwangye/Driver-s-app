@@ -14,7 +14,7 @@ export default {
         },
       },
       borderRadius: {
-        phone: "32px",
+        phone: "24px",
       },
     },
   },

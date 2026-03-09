@@ -1,1021 +1,297 @@
-import React, { useEffect } from "react";
-import {
-  Box,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Typography,
-  Paper,
-  InputAdornment,
-} from "@mui/material";
-import {
-  Routes,
-  Route,
-  useNavigate,
-  useLocation,
-  Navigate,
-  matchPath,
-} from "react-router-dom";
-import { MapPin, Bell as BellIcon } from "lucide-react";
-import D01Screen from "./screens/D01.jsx";
-import D02Screen from "./screens/D02.jsx";
-import D03Screen from "./screens/D03.jsx";
-import D04Screen from "./screens/D04.jsx";
-import D05Screen from "./screens/D05.jsx";
-import D06Screen from "./screens/D06.jsx";
-import D07Screen from "./screens/D07.jsx";
-import D08Screen from "./screens/D08.jsx";
-import D09Screen from "./screens/D09.jsx";
-import D10Screen from "./screens/D10.jsx";
-import D11Screen from "./screens/D11.jsx";
-import D12Screen from "./screens/D12.jsx";
-import D13Screen from "./screens/D13.jsx";
-import D14Screen from "./screens/D14.jsx";
-import D15Screen from "./screens/D15.jsx";
-import D16Screen from "./screens/D16.jsx";
-import D17Screen from "./screens/D17.jsx";
-import D18Screen from "./screens/D18.jsx";
-import D19Screen from "./screens/D19.jsx";
-import D20Screen from "./screens/D20.jsx";
-import D21Screen from "./screens/D21.jsx";
-import D22Screen from "./screens/D22.jsx";
-import D23Screen from "./screens/D23.jsx";
-import D24Screen from "./screens/D24.jsx";
-import D25Screen from "./screens/D25.jsx";
-import D26Screen from "./screens/D26.jsx";
-import D27Screen from "./screens/D27.jsx";
-import D28Screen from "./screens/D28.jsx";
-import D29Screen from "./screens/D29.jsx";
-import D30Screen from "./screens/D30.jsx";
-import D31Screen from "./screens/D31.jsx";
-import D32Screen from "./screens/D32.jsx";
-import D33Screen from "./screens/D33.jsx";
-import D34Screen from "./screens/D34.jsx";
-import D35Screen from "./screens/D35.jsx";
-import D36Screen from "./screens/D36.jsx";
-import D37Screen from "./screens/D37.jsx";
-import D38Screen from "./screens/D38.jsx";
-import D39Screen from "./screens/D39.jsx";
-import D40Screen from "./screens/D40.jsx";
-import D41Screen from "./screens/D41.jsx";
-import D42Screen from "./screens/D42.jsx";
-import D43Screen from "./screens/D43.jsx";
-import D44Screen from "./screens/D44.jsx";
-import D45Screen from "./screens/D45.jsx";
-import D46Screen from "./screens/D46.jsx";
-import D47Screen from "./screens/D47.jsx";
-import D48Screen from "./screens/D48.jsx";
-import D49Screen from "./screens/D49.jsx";
-import D50Screen from "./screens/D50.jsx";
-import D51Screen from "./screens/D51.jsx";
-import D52Screen from "./screens/D52.jsx";
-import D53Screen from "./screens/D53.jsx";
-import D54Screen from "./screens/D54.jsx";
-import D55Screen from "./screens/D55.jsx";
-import D56Screen from "./screens/D56.jsx";
-import D57Screen from "./screens/D57.jsx";
-import D58Screen from "./screens/D58.jsx";
-import D59Screen from "./screens/D59.jsx";
-import D60Screen from "./screens/D60.jsx";
-import D61Screen from "./screens/D61.jsx";
-import D62Screen from "./screens/D62.jsx";
-import D63Screen from "./screens/D63.jsx";
-import D64Screen from "./screens/D64.jsx";
-import D65Screen from "./screens/D65.jsx";
-import D66Screen from "./screens/D66.jsx";
-import D67Screen from "./screens/D67.jsx";
-import D68Screen from "./screens/D68.jsx";
-import D69Screen from "./screens/D69.jsx";
-import D70Screen from "./screens/D70.jsx";
-import D71Screen from "./screens/D71.jsx";
-import D72Screen from "./screens/D72.jsx";
-import D73Screen from "./screens/D73.jsx";
-import D74Screen from "./screens/D74.jsx";
-import D75Screen from "./screens/D75.jsx";
-import D76Screen from "./screens/D76.jsx";
-import D77Screen from "./screens/D77.jsx";
-import D78Screen from "./screens/D78.jsx";
-import D79Screen from "./screens/D79.jsx";
-import D80Screen from "./screens/D80.jsx";
-import D81Screen from "./screens/D81.jsx";
-import D82Screen from "./screens/D82.jsx";
-import D83Screen from "./screens/D83.jsx";
-import D84Screen from "./screens/D84.jsx";
-import D85Screen from "./screens/D85.jsx";
-import D86Screen from "./screens/D86.jsx";
-import D87Screen from "./screens/D87.jsx";
-import D88Screen from "./screens/D88.jsx";
-import D89Screen from "./screens/D89.jsx";
-import D90Screen from "./screens/D90.jsx";
-import D91Screen from "./screens/D91.jsx";
-import D92Screen from "./screens/D92.jsx";
-import D93Screen from "./screens/D93.jsx";
-import D94Screen from "./screens/D94.jsx";
-import D95Screen from "./screens/D95.jsx";
-import D96Screen from "./screens/D96.jsx";
-import D97Screen from "./screens/D97.jsx";
-import D98Screen from "./screens/D98.jsx";
-import D99Screen from "./screens/D99.jsx";
-import D100Screen from "./screens/D100.jsx";
-import D101Screen from "./screens/D101.jsx";
-import D102Screen from "./screens/D102.jsx";
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-const SAMPLE_IDS = {
-  trip: "demo-trip",
-  vehicle: "demo-vehicle",
-  route: "demo-route",
-  stop: "alpha-stop",
-  job: "demo-job",
-  tour: "demo-tour",
-};
+// ── Auth & Landing ──────────────────────────────────────
+import LandingPage from "./screens/LandingPage";
+import Login from "./screens/Login";
 
-const BOTTOM_NAV_DESTINATIONS = {
-  home: "/driver/dashboard/online",
-  manager: "/driver/jobs/list",
-  wallet: "/driver/earnings/overview",
-  settings: "/driver/preferences",
-  bookings: "/driver/jobs/list",
-  tasks: "/driver/delivery/orders",
-  delivery: "/driver/delivery/orders",
-  orders: "/driver/delivery/orders",
-  mode: "/driver/dashboard/offline",
-  online: "/driver/dashboard/online",
-  map: "/driver/map/online",
-  jobs: "/driver/jobs/list",
-  programs: "/driver/training/intro",
-  shuttle: "/driver/help/shuttle-link",
-  safety: "/driver/safety/hub",
-  search: "/driver/search",
-};
+// ── Super-app & registration (D01–D04) ──────────────────
+import D01Screen from "./screens/D01";
+import D02Screen from "./screens/D02";
+import D03Screen from "./screens/D03";
+import D04Screen from "./screens/D04";
 
-const BOTTOM_NAV_CLASS_MARKERS = ["border-t", "backdrop-blur"];
+// ── Profile, documents & identity (D05–D17) ─────────────
+import D05Screen from "./screens/D05";
+import D06Screen from "./screens/D06";
+import D07Screen from "./screens/D07";
+import D08Screen from "./screens/D08";
+import D09Screen from "./screens/D09";
+import D10Screen from "./screens/D10";
+import D11Screen from "./screens/D11";
+import D12Screen from "./screens/D12";
+import D13Screen from "./screens/D13";
+import D14Screen from "./screens/D14";
+import D15Screen from "./screens/D15";
+import D16Screen from "./screens/D16";
+import D17Screen from "./screens/D17";
 
-const SCREENS = [
-  // Super app & registration (ROUTING_GUIDE §3.1)
-  { id: "D01", label: "Home (Super App)", path: "/app/home", Component: D01Screen },
-  {
-    id: "D02",
-    label: "Register Services",
-    path: "/app/register-services",
-    Component: D02Screen,
-  },
-  {
-    id: "D03",
-    label: "Registration",
-    path: "/auth/register",
-    Component: D03Screen,
-  },
-  {
-    id: "D04",
-    label: "Registration – EVzone Driver",
-    path: "/driver/register",
-    Component: D04Screen,
-  },
-  // Profile, documents & identity (§3.2)
-  {
-    id: "D05",
-    label: "Driver Personal",
-    path: "/driver/onboarding/profile",
-    Component: D05Screen,
-  },
-  {
-    id: "D06",
-    label: "Preferences",
-    path: "/driver/preferences",
-    Component: D06Screen,
-  },
-  {
-    id: "D07",
-    label: "Document Verification",
-    path: "/driver/onboarding/profile/documents/upload",
-    Component: D07Screen,
-  },
-  {
-    id: "D08",
-    label: "Document Under Review",
-    path: "/driver/onboarding/profile/documents/review",
-    Component: D08Screen,
-  },
-  {
-    id: "D09",
-    label: "Document Rejected",
-    path: "/driver/onboarding/profile/documents/rejected",
-    Component: D09Screen,
-  },
-  {
-    id: "D10",
-    label: "All Documents Verified",
-    path: "/driver/onboarding/profile/documents/verified",
-    Component: D10Screen,
-  },
-  {
-    id: "D11",
-    label: "Identity Verification",
-    path: "/driver/preferences/identity",
-    Component: D11Screen,
-  },
-  {
-    id: "D12",
-    label: "Face Capture",
-    path: "/driver/preferences/identity/face-capture",
-    Component: D12Screen,
-  },
-  {
-    id: "D13",
-    label: "Upload Your Image",
-    path: "/driver/preferences/identity/upload-image",
-    Component: D13Screen,
-  },
-  {
-    id: "D14",
-    label: "My Vehicles",
-    path: "/driver/vehicles",
-    Component: D14Screen,
-  },
-  {
-    id: "D15",
-    label: "Vehicles",
-    path: "/driver/vehicles/:vehicleId",
-    previewPath: `/driver/vehicles/${SAMPLE_IDS.vehicle}`,
-    Component: D15Screen,
-  },
-  {
-    id: "D16",
-    label: "Business Vehicles",
-    path: "/driver/vehicles/business",
-    Component: D16Screen,
-  },
-  {
-    id: "D17",
-    label: "Vehicle Accessories",
-    path: "/driver/vehicles/accessories",
-    Component: D17Screen,
-  },
-  // Training & quiz (§3.3)
-  {
-    id: "D18",
-    label: "Intro to Driving with EVzone Ride",
-    path: "/driver/training/intro",
-    Component: D18Screen,
-  },
-  {
-    id: "D19",
-    label: "Info Session for Driver-Partners",
-    path: "/driver/training/info-session",
-    Component: D19Screen,
-  },
-  {
-    id: "D20",
-    label: "Driver Info Tutorial",
-    path: "/driver/training/earnings-tutorial",
-    Component: D20Screen,
-  },
-  {
-    id: "D21",
-    label: "Driver Info Session Quiz",
-    path: "/driver/training/quiz",
-    Component: D21Screen,
-  },
-  {
-    id: "D22",
-    label: "Quiz Answer Selected",
-    path: "/driver/training/quiz/answer",
-    Component: D22Screen,
-  },
-  {
-    id: "D23",
-    label: "Quiz Passed Confirmation",
-    path: "/driver/training/quiz/passed",
-    Component: D23Screen,
-  },
-  {
-    id: "D24",
-    label: "Content Completion Screen",
-    path: "/driver/training/completion",
-    Component: D24Screen,
-  },
-  // Dashboards, earnings & map (§3.4)
-  {
-    id: "D25",
-    label: "Delivery Driver Dashboard",
-    path: "/driver/dashboard/delivery",
-    Component: D25Screen,
-  },
-  {
-    id: "D26",
-    label: "Online Map View",
-    path: "/driver/map/online",
-    Component: D26Screen,
-  },
-  {
-    id: "D27",
-    label: "Dashboard (Offline State)",
-    path: "/driver/dashboard/offline",
-    Component: D27Screen,
-  },
-  {
-    id: "D28",
-    label: "Map View (Online Variant)",
-    path: "/driver/map/online/variant",
-    Component: D28Screen,
-  },
-  {
-    id: "D29",
-    label: "Active Dashboard (Online Mode)",
-    path: "/driver/dashboard/active",
-    Component: D29Screen,
-  },
-  {
-    id: "D30",
-    label: "Required Actions Dashboard",
-    path: "/driver/dashboard/required-actions",
-    Component: D30Screen,
-  },
-  {
-    id: "D31",
-    label: "Online Dashboard (Active)",
-    path: "/driver/dashboard/online",
-    Component: D31Screen,
-  },
-  {
-    id: "D32",
-    label: "Searching for Ride",
-    path: "/driver/map/searching",
-    Component: D32Screen,
-  },
-  {
-    id: "D33",
-    label: "Earnings Overview",
-    path: "/driver/earnings/overview",
-    Component: D33Screen,
-  },
-  {
-    id: "D34",
-    label: "Weekly Earnings Summary",
-    path: "/driver/earnings/weekly",
-    Component: D34Screen,
-  },
-  {
-    id: "D35",
-    label: "Monthly Earnings Summary",
-    path: "/driver/earnings/monthly",
-    Component: D35Screen,
-  },
-  {
-    id: "D36",
-    label: "Search Screen",
-    path: "/driver/search",
-    Component: D36Screen,
-  },
-  {
-    id: "D37",
-    label: "Map Settings & Report Issues",
-    path: "/driver/map/settings",
-    Component: D37Screen,
-  },
-  {
-    id: "D38",
-    label: "Set Weekly Earning Goal",
-    path: "/driver/earnings/goals",
-    Component: D38Screen,
-  },
-  {
-    id: "D39",
-    label: "Surge Notification Popup",
-    path: "/driver/surge/notification",
-    Component: D39Screen,
-  },
-  {
-    id: "D40",
-    label: "Ride Sharing Notification Popup",
-    path: "/driver/ridesharing/notification",
-    Component: D40Screen,
-  },
-  {
-    id: "D41",
-    label: "Last Trip Summary Popup",
-    path: "/driver/trip/last-summary",
-    Component: D41Screen,
-  },
-  // Job requests & selection (§3.5)
-  {
-    id: "D42",
-    label: "Ride Request Incoming",
-    path: "/driver/jobs/incoming",
-    Component: D42Screen,
-  },
-  {
-    id: "D43",
-    label: "Incoming Ride Request (Rich)",
-    path: "/driver/jobs/incoming/rich",
-    Component: D43Screen,
-  },
-  {
-    id: "D44",
-    label: "Ride Requests List",
-    path: "/driver/jobs/list",
-    Component: D44Screen,
-  },
-  {
-    id: "D45",
-    label: "Ride Requests Prompt",
-    path: "/driver/jobs/prompt",
-    Component: D45Screen,
-  },
-  {
-    id: "D46",
-    label: "Active Ride with Additional Requests",
-    path: "/driver/jobs/active-with-additional",
-    Component: D46Screen,
-  },
-  // Navigation & trip (§3.6–3.8)
-  {
-    id: "D47",
-    label: "Navigate to Pick-Up Location",
-    path: "/driver/trip/:tripId/navigate-to-pickup",
-    previewPath: `/driver/trip/${SAMPLE_IDS.trip}/navigate-to-pickup`,
-    Component: D47Screen,
-  },
-  {
-    id: "D48",
-    label: "Navigation in Progress",
-    path: "/driver/trip/:tripId/navigation",
-    previewPath: `/driver/trip/${SAMPLE_IDS.trip}/navigation`,
-    Component: D48Screen,
-  },
-  {
-    id: "D49",
-    label: "En Route to Pickup – Details",
-    path: "/driver/trip/:tripId/en-route-details",
-    previewPath: `/driver/trip/${SAMPLE_IDS.trip}/en-route-details`,
-    Component: D49Screen,
-  },
-  {
-    id: "D50",
-    label: "Arrived at Pickup Point",
-    path: "/driver/trip/:tripId/arrived",
-    previewPath: `/driver/trip/${SAMPLE_IDS.trip}/arrived`,
-    Component: D50Screen,
-  },
-  {
-    id: "D51",
-    label: "Waiting for Passenger",
-    path: "/driver/trip/:tripId/waiting",
-    previewPath: `/driver/trip/${SAMPLE_IDS.trip}/waiting`,
-    Component: D51Screen,
-  },
-  {
-    id: "D52",
-    label: "Cancel Ride – Passenger No-Show",
-    path: "/driver/trip/:tripId/cancel/no-show",
-    previewPath: `/driver/trip/${SAMPLE_IDS.trip}/cancel/no-show`,
-    Component: D52Screen,
-  },
-  {
-    id: "D53",
-    label: "Rider Verification Code Entry",
-    path: "/driver/trip/:tripId/verify-rider",
-    previewPath: `/driver/trip/${SAMPLE_IDS.trip}/verify-rider`,
-    Component: D53Screen,
-  },
-  {
-    id: "D54",
-    label: "Start Drive",
-    path: "/driver/trip/:tripId/start",
-    previewPath: `/driver/trip/${SAMPLE_IDS.trip}/start`,
-    Component: D54Screen,
-  },
-  {
-    id: "D55",
-    label: "Ride in Progress",
-    path: "/driver/trip/:tripId/in-progress",
-    previewPath: `/driver/trip/${SAMPLE_IDS.trip}/in-progress`,
-    Component: D55Screen,
-  },
-  {
-    id: "D56",
-    label: "Trip Completion Screen",
-    path: "/driver/trip/:tripId/completed",
-    previewPath: `/driver/trip/${SAMPLE_IDS.trip}/completed`,
-    Component: D56Screen,
-  },
-  {
-    id: "D57",
-    label: "Cancel Ride – Reason",
-    path: "/driver/trip/:tripId/cancel/reason",
-    previewPath: `/driver/trip/${SAMPLE_IDS.trip}/cancel/reason`,
-    Component: D57Screen,
-  },
-  {
-    id: "D58",
-    label: "Cancel Ride – Additional Comment",
-    path: "/driver/trip/:tripId/cancel/details",
-    previewPath: `/driver/trip/${SAMPLE_IDS.trip}/cancel/details`,
-    Component: D58Screen,
-  },
-  // Safety & emergency (§3.9)
-  {
-    id: "D59",
-    label: "Safety Toolkit",
-    path: "/driver/safety/toolkit",
-    Component: D59Screen,
-  },
-  {
-    id: "D60",
-    label: "Emergency Assistance (Map Variant)",
-    path: "/driver/safety/emergency/map",
-    Component: D60Screen,
-  },
-  {
-    id: "D61",
-    label: "SOS / Emergency Alert Sending",
-    path: "/driver/safety/sos/sending",
-    Component: D61Screen,
-  },
-  {
-    id: "D62",
-    label: "Emergency Assistance (Details Variant)",
-    path: "/driver/safety/emergency/details",
-    Component: D62Screen,
-  },
-  {
-    id: "D63",
-    label: "Emergency Calling Screen",
-    path: "/driver/safety/emergency/call",
-    Component: D63Screen,
-  },
-  {
-    id: "D64",
-    label: "Emergency Assistance Confirmation",
-    path: "/driver/safety/emergency/confirmation",
-    Component: D64Screen,
-  },
-  {
-    id: "D65",
-    label: "Follow My Ride",
-    path: "/driver/safety/follow-my-ride",
-    Component: D65Screen,
-  },
-  {
-    id: "D66",
-    label: "Share My Ride",
-    path: "/driver/safety/share-my-ride",
-    Component: D66Screen,
-  },
-  // Proof & history (§3.10)
-  {
-    id: "D67",
-    label: "Proof of Trip Status – Main View",
-    path: "/driver/trip/:tripId/proof",
-    previewPath: `/driver/trip/${SAMPLE_IDS.trip}/proof`,
-    Component: D67Screen,
-  },
-  {
-    id: "D68",
-    label: "Proof of Trip – Active Trip View",
-    path: "/driver/trip/:tripId/proof/active",
-    previewPath: `/driver/trip/${SAMPLE_IDS.trip}/proof/active`,
-    Component: D68Screen,
-  },
-  {
-    id: "D69",
-    label: "Ride History",
-    path: "/driver/history/rides",
-    Component: D69Screen,
-  },
-  // Safety hub additions (§3.9)
-  {
-    id: "D70",
-    label: "Safety Hub",
-    path: "/driver/safety/hub",
-    Component: D70Screen,
-  },
-  {
-    id: "D71",
-    label: "Safety Hub – Expanded",
-    path: "/driver/safety/hub/expanded",
-    Component: D71Screen,
-  },
-  {
-    id: "D72",
-    label: "Driving Hours",
-    path: "/driver/safety/driving-hours",
-    Component: D72Screen,
-  },
-  // Surge & delivery order dashboards (§3.11)
-  {
-    id: "D73",
-    label: "Surge Pricing",
-    path: "/driver/surge/map",
-    Component: D73Screen,
-  },
-  {
-    id: "D74",
-    label: "Orders to Delivery",
-    path: "/driver/delivery/orders-dashboard",
-    Component: D74Screen,
-  },
-  {
-    id: "D75",
-    label: "List of Orders",
-    path: "/driver/delivery/orders",
-    Component: D75Screen,
-  },
-  {
-    id: "D76",
-    label: "Select Order Type",
-    path: "/driver/delivery/orders/filter",
-    Component: D76Screen,
-  },
-  {
-    id: "D77",
-    label: "Picked-Up Orders",
-    path: "/driver/delivery/orders/picked-up",
-    Component: D77Screen,
-  },
-  // Routes & delivery flows (§3.12)
-  {
-    id: "D78",
-    label: "Route Details",
-    path: "/driver/delivery/route/:routeId",
-    previewPath: `/driver/delivery/route/${SAMPLE_IDS.route}`,
-    Component: D78Screen,
-  },
-  {
-    id: "D79",
-    label: "Route Details (Map Variant)",
-    path: "/driver/delivery/route/:routeId/map",
-    previewPath: `/driver/delivery/route/${SAMPLE_IDS.route}/map`,
-    Component: D79Screen,
-  },
-  {
-    id: "D80",
-    label: "Active Delivery Route",
-    path: "/driver/delivery/route/:routeId/active",
-    previewPath: `/driver/delivery/route/${SAMPLE_IDS.route}/active`,
-    Component: D80Screen,
-  },
-  {
-    id: "D81",
-    label: "Active Route – Stop Contact",
-    path: "/driver/delivery/route/:routeId/stop/:stopId/contact",
-    previewPath: `/driver/delivery/route/${SAMPLE_IDS.route}/stop/${SAMPLE_IDS.stop}/contact`,
-    Component: D81Screen,
-  },
-  {
-    id: "D82",
-    label: "Active Route Details",
-    path: "/driver/delivery/route/:routeId/details",
-    previewPath: `/driver/delivery/route/${SAMPLE_IDS.route}/details`,
-    Component: D82Screen,
-  },
-  {
-    id: "D83",
-    label: "Active Route – Expanded Stop Details",
-    path: "/driver/delivery/route/:routeId/stop/:stopId/details",
-    previewPath: `/driver/delivery/route/${SAMPLE_IDS.route}/stop/${SAMPLE_IDS.stop}/details`,
-    Component: D83Screen,
-  },
-  {
-    id: "D84",
-    label: "Pick Your Destination",
-    path: "/driver/delivery/destination/select",
-    Component: D84Screen,
-  },
-  // Pickup confirmation & QR (§3.13)
-  {
-    id: "D85",
-    label: "Pick Up Confirmation",
-    path: "/driver/delivery/pickup/confirm",
-    Component: D85Screen,
-  },
-  {
-    id: "D86",
-    label: "Confirm Current Location as Pick Up",
-    path: "/driver/delivery/pickup/confirm-location",
-    Component: D86Screen,
-  },
-  {
-    id: "D87",
-    label: "Package Pickup Verification",
-    path: "/driver/delivery/pickup/qr",
-    Component: D87Screen,
-  },
-  {
-    id: "D88",
-    label: "QR Code Scanner",
-    path: "/driver/qr/scanner",
-    Component: D88Screen,
-  },
-  {
-    id: "D89",
-    label: "Scan QR Code Confirmation",
-    path: "/driver/qr/scan-confirmation",
-    Component: D89Screen,
-  },
-  {
-    id: "D90",
-    label: "Scan QR Code – Instruction Popup",
-    path: "/driver/qr/instruction",
-    Component: D90Screen,
-  },
-  {
-    id: "D91",
-    label: "Scan QR Code – Active Camera View",
-    path: "/driver/qr/active",
-    Component: D91Screen,
-  },
-  {
-    id: "D92",
-    label: "QR Code Scanned – Confirmation Indicator",
-    path: "/driver/qr/scanned",
-    Component: D92Screen,
-  },
-  {
-    id: "D93",
-    label: "QR Code – Processing Stage",
-    path: "/driver/qr/processing",
-    Component: D93Screen,
-  },
-  {
-    id: "D94",
-    label: "QR Code Scanning – Marketing",
-    path: "/driver/qr/marketing-scan",
-    Component: D94Screen,
-  },
-  {
-    id: "D95",
-    label: "QR Code – Marketing Processing",
-    path: "/driver/qr/marketing-processing",
-    Component: D95Screen,
-  },
-  {
-    id: "D96",
-    label: "Pick-Up Confirmed Screen",
-    path: "/driver/delivery/pickup/confirmed",
-    Component: D96Screen,
-  },
-  // Special job types (§3.14)
-  {
-    id: "D97",
-    label: "Rental Job Overview / On Rental",
-    path: "/driver/rental/job/:jobId",
-    previewPath: `/driver/rental/job/${SAMPLE_IDS.job}`,
-    Component: D97Screen,
-  },
-  {
-    id: "D98",
-    label: "Tour – Today’s Schedule",
-    path: "/driver/tour/:tourId/today",
-    previewPath: `/driver/tour/${SAMPLE_IDS.tour}/today`,
-    Component: D98Screen,
-  },
-  {
-    id: "D99",
-    label: "Ambulance Job Incoming",
-    path: "/driver/ambulance/incoming",
-    Component: D99Screen,
-  },
-  {
-    id: "D100",
-    label: "Ambulance Job Status Screen",
-    path: "/driver/ambulance/job/:jobId/status",
-    previewPath: `/driver/ambulance/job/${SAMPLE_IDS.job}/status`,
-    Component: D100Screen,
-  },
-  {
-    id: "D101",
-    label: "Job Types & Icons Legend",
-    path: "/driver/settings/job-types-legend",
-    Component: D101Screen,
-  },
-  {
-    id: "D102",
-    label: "Shuttle Link Info Screen",
-    path: "/driver/help/shuttle-link",
-    Component: D102Screen,
-  },
-];
+// ── Training & quizzes (D18–D24) ────────────────────────
+import D18Screen from "./screens/D18";
+import D19Screen from "./screens/D19";
+import D20Screen from "./screens/D20";
+import D21Screen from "./screens/D21";
+import D22Screen from "./screens/D22";
+import D23Screen from "./screens/D23";
+import D24Screen from "./screens/D24";
 
-const DEFAULT_SCREEN = SCREENS[0];
+// ── Dashboards, earnings & map (D25–D41) ────────────────
+import D25Screen from "./screens/D25";
+import D26Screen from "./screens/D26";
+import D27Screen from "./screens/D27";
+import D28Screen from "./screens/D28";
+import D29Screen from "./screens/D29";
+import D30Screen from "./screens/D30";
+import D31Screen from "./screens/D31";
+import D32Screen from "./screens/D32";
+import D33Screen from "./screens/D33";
+import D34Screen from "./screens/D34";
+import D35Screen from "./screens/D35";
+import D36Screen from "./screens/D36";
+import D37Screen from "./screens/D37";
+import D38Screen from "./screens/D38";
+import D39Screen from "./screens/D39";
+import D40Screen from "./screens/D40";
+import D41Screen from "./screens/D41";
+
+// ── Job requests & selection (D42–D46) ──────────────────
+import D42Screen from "./screens/D42";
+import D43Screen from "./screens/D43";
+import D44Screen from "./screens/D44";
+import D45Screen from "./screens/D45";
+import D46Screen from "./screens/D46";
+
+// ── Navigation, trip & cancellation (D47–D58) ───────────
+import D47Screen from "./screens/D47";
+import D48Screen from "./screens/D48";
+import D49Screen from "./screens/D49";
+import D50Screen from "./screens/D50";
+import D51Screen from "./screens/D51";
+import D52Screen from "./screens/D52";
+import D53Screen from "./screens/D53";
+import D54Screen from "./screens/D54";
+import D55Screen from "./screens/D55";
+import D56Screen from "./screens/D56";
+import D57Screen from "./screens/D57";
+import D58Screen from "./screens/D58";
+
+// ── Safety & emergency (D59–D66, D70–D72) ───────────────
+import D59Screen from "./screens/D59";
+import D60Screen from "./screens/D60";
+import D61Screen from "./screens/D61";
+import D62Screen from "./screens/D62";
+import D63Screen from "./screens/D63";
+import D64Screen from "./screens/D64";
+import D65Screen from "./screens/D65";
+import D66Screen from "./screens/D66";
+import D70Screen from "./screens/D70";
+import D71Screen from "./screens/D71";
+import D72Screen from "./screens/D72";
+
+// ── Proof, history, surge (D67–D69, D73) ────────────────
+import D67Screen from "./screens/D67";
+import D68Screen from "./screens/D68";
+import D69Screen from "./screens/D69";
+import D73Screen from "./screens/D73";
+
+// ── Delivery orders, routes & QR (D74–D96) ──────────────
+import D74Screen from "./screens/D74";
+import D75Screen from "./screens/D75";
+import D76Screen from "./screens/D76";
+import D77Screen from "./screens/D77";
+import D78Screen from "./screens/D78";
+import D79Screen from "./screens/D79";
+import D80Screen from "./screens/D80";
+import D81Screen from "./screens/D81";
+import D82Screen from "./screens/D82";
+import D83Screen from "./screens/D83";
+import D84Screen from "./screens/D84";
+import D85Screen from "./screens/D85";
+import D86Screen from "./screens/D86";
+import D87Screen from "./screens/D87";
+import D88Screen from "./screens/D88";
+import D89Screen from "./screens/D89";
+import D90Screen from "./screens/D90";
+import D91Screen from "./screens/D91";
+import D92Screen from "./screens/D92";
+import D93Screen from "./screens/D93";
+import D94Screen from "./screens/D94";
+import D95Screen from "./screens/D95";
+import D96Screen from "./screens/D96";
+
+// ── Special job types (D97–D102) ────────────────────────
+import D97Screen from "./screens/D97";
+import D98Screen from "./screens/D98";
+import D99Screen from "./screens/D99";
+import D100Screen from "./screens/D100";
+import D101Screen from "./screens/D101";
+import D102Screen from "./screens/D102";
+
+// ── New screens ─────────────────────────────────────────
+import MoreMenu from "./screens/MoreMenu";
+import HelpScreen from "./screens/Help";
+import AboutScreen from "./screens/About";
+import ProfileScreen from "./screens/Profile";
+import AnalyticsDashboard from "./screens/AnalyticsDashboard";
 
 export default function App() {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const currentScreen =
-    SCREENS.find((screen) =>
-      matchPath({ path: screen.path, end: true }, location.pathname)
-    ) || DEFAULT_SCREEN;
-
-  const handleScreenChange = (event) => {
-    const next = SCREENS.find((screen) => screen.id === event.target.value);
-    if (next) {
-      navigate(next.previewPath ?? next.path);
-    }
-  };
-
-  useEffect(() => {
-    const normalizeLabel = (text) =>
-      text
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "");
-
-    const handleBottomNavClick = (event) => {
-      const button = event.target.closest("button");
-      if (!button) return;
-      const nav = button.closest("nav");
-      if (!nav) return;
-
-      const looksLikeBottomNav = BOTTOM_NAV_CLASS_MARKERS.every((cls) =>
-        nav.classList.contains(cls)
-      );
-      if (!looksLikeBottomNav) return;
-
-      const normalized = normalizeLabel(button.textContent || "");
-      if (!normalized) return;
-
-      const destination = BOTTOM_NAV_DESTINATIONS[normalized];
-      if (!destination) return;
-
-      navigate(destination);
-    };
-
-    document.addEventListener("click", handleBottomNavClick);
-    return () => document.removeEventListener("click", handleBottomNavClick);
-  }, [navigate]);
-
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        bgcolor: "#0f172a",
-        color: "#ffffff",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        py: 2,
-      }}
-    >
-      <Box
-        sx={{
-          width: 360,
-          mb: 2,
-        }}
-      >
-        <Paper
-          elevation={6}
-          sx={{
-            borderRadius: 3,
-            overflow: "hidden",
-            bgcolor: "transparent",
-            boxShadow: "0 12px 30px rgba(0,0,0,0.2)",
-          }}
-        >
-          <Box
-            sx={{
-              px: 2.25,
-              pt: 2,
-              pb: 1.25,
-              background: "linear-gradient(135deg, #0bbf7c, #03cd8c)",
-              color: "#fff",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 0.6 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                <MapPin size={16} />
-                <Typography
-                  variant="subtitle1"
-                  sx={{ fontWeight: 700, fontSize: 15, lineHeight: 1.2 }}
-                >
-                  EVzone Driver App – Supervisor Preview
-                </Typography>
-              </Box>
-              <Typography
-                variant="body2"
-                sx={{
-                  color: "rgba(255,255,255,0.9)",
-                  fontSize: 12.5,
-                  lineHeight: 1.45,
-                  maxWidth: 280,
-                }}
-              >
-                Select any screen ID from D01 to D102 or jump via the official
-                routes from ROUTING_GUIDE.md.
-              </Typography>
-            </Box>
-            <Box
-              component="button"
-              onClick={() => navigate("/driver/ridesharing/notification")}
-              sx={{
-                background: "rgba(255,255,255,0.15)",
-                border: "1px solid rgba(255,255,255,0.25)",
-                color: "#fff",
-                borderRadius: "999px",
-                padding: "6px",
-                cursor: "pointer",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                transition: "all 0.15s ease",
-                "&:hover": { background: "rgba(255,255,255,0.25)" },
-              }}
-            >
-              <BellIcon size={16} />
-            </Box>
-          </Box>
+    <BrowserRouter>
+      <Routes>
+        {/* ─── Entry Point ─── */}
+        <Route index element={<LandingPage />} />
+        <Route path="auth/login" element={<Login />} />
 
-          <Box
-            sx={{
-              px: 2,
-              pb: 2,
-              pt: 1.25,
-              backgroundColor: "#ffffff",
-              borderRadius: "0 0 24px 24px",
-            }}
-          >
-            <FormControl
-              fullWidth
-              size="small"
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 3,
-                  backgroundColor: "#ffffff",
-                  boxShadow: "0 8px 20px rgba(15,23,42,0.12)",
-                  "& .MuiSelect-select": {
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 0.75,
-                    fontWeight: 600,
-                    fontSize: 14,
-                    py: 1.25,
-                  },
-                },
-                "& .MuiInputLabel-root": {
-                  fontSize: 12,
-                  letterSpacing: 0.2,
-                },
-                mt: 0.5,
-              }}
-            >
-              <InputLabel id="screen-select-label">Screen (D01–D102)</InputLabel>
-              <Select
-                labelId="screen-select-label"
-                id="screen-select"
-                value={currentScreen.id}
-                label="Screen (D01–D102)"
-                onChange={handleScreenChange}
-                inputProps={{ "aria-label": "Select screen" }}
-                startAdornment={
-                  <InputAdornment position="start" sx={{ color: "#94a3b8" }}>
-                    <MapPin size={16} />
-                  </InputAdornment>
-                }
-                MenuProps={{
-                  PaperProps: {
-                    sx: {
-                      maxHeight: 360,
-                      borderRadius: 2,
-                    },
-                  },
-                }}
-              >
-                {SCREENS.map((screen) => (
-                  <MenuItem key={screen.id} value={screen.id}>
-                    {screen.id} – {screen.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Box>
-        </Paper>
-      </Box>
+        {/* ═══════════════════════════════════════════════
+            REGISTRATION FLOW
+            ═══════════════════════════════════════════════ */}
+        <Route path="app/home" element={<D01Screen />} />
+        <Route path="app/register-services" element={<D02Screen />} />
+        <Route path="auth/register" element={<D03Screen />} />
+        <Route path="driver/register" element={<D04Screen />} />
 
-      <Box sx={{ width: "100%" }}>
-        <Routes>
-          {SCREENS.map((screen) => (
-            <Route
-              key={screen.id}
-              path={screen.path}
-              element={<screen.Component />}
-            />
-          ))}
-          <Route
-            path="*"
-            element={
-              <Navigate
-                to={DEFAULT_SCREEN.previewPath ?? DEFAULT_SCREEN.path}
-                replace
-              />
-            }
-          />
-        </Routes>
-      </Box>
-    </Box>
+        {/* ═══════════════════════════════════════════════
+            ONBOARDING
+            ═══════════════════════════════════════════════ */}
+        <Route path="driver/onboarding/profile" element={<D05Screen />} />
+        <Route path="driver/onboarding/profile/documents/upload" element={<D07Screen />} />
+        <Route path="driver/onboarding/profile/documents/review" element={<D08Screen />} />
+        <Route path="driver/onboarding/profile/documents/rejected" element={<D09Screen />} />
+        <Route path="driver/onboarding/profile/documents/verified" element={<D10Screen />} />
+        <Route path="driver/preferences/identity" element={<D11Screen />} />
+        <Route path="driver/preferences/identity/face-capture" element={<D12Screen />} />
+        <Route path="driver/preferences/identity/upload-image" element={<D13Screen />} />
+
+        {/* Training */}
+        <Route path="driver/training/intro" element={<D18Screen />} />
+        <Route path="driver/training/info-session" element={<D19Screen />} />
+        <Route path="driver/training/earnings-tutorial" element={<D20Screen />} />
+        <Route path="driver/training/quiz" element={<D21Screen />} />
+        <Route path="driver/training/quiz/answer" element={<D22Screen />} />
+        <Route path="driver/training/quiz/passed" element={<D23Screen />} />
+        <Route path="driver/training/completion" element={<D24Screen />} />
+
+        {/* ═══════════════════════════════════════════════
+            MAIN APP SCREENS (Now self-contained)
+            ═══════════════════════════════════════════════ */}
+
+        {/* ── Dashboards ── */}
+        <Route path="driver/dashboard/online" element={<D31Screen />} />
+        <Route path="driver/dashboard/offline" element={<D27Screen />} />
+        <Route path="driver/dashboard/active" element={<D29Screen />} />
+        <Route path="driver/dashboard/delivery" element={<D25Screen />} />
+        <Route path="driver/dashboard/required-actions" element={<D30Screen />} />
+
+        {/* Map views */}
+        <Route path="driver/map/online" element={<D26Screen />} />
+        <Route path="driver/map/online/variant" element={<D28Screen />} />
+        <Route path="driver/map/searching" element={<D32Screen />} />
+        <Route path="driver/map/settings" element={<D37Screen />} />
+
+        {/* Search */}
+        <Route path="driver/search" element={<D36Screen />} />
+
+        {/* ── Earnings ── */}
+        <Route path="driver/earnings/overview" element={<D33Screen />} />
+        <Route path="driver/earnings/weekly" element={<D34Screen />} />
+        <Route path="driver/earnings/monthly" element={<D35Screen />} />
+        <Route path="driver/earnings/goals" element={<D38Screen />} />
+        <Route path="driver/analytics" element={<AnalyticsDashboard />} />
+
+        {/* Surge */}
+        <Route path="driver/surge/map" element={<D73Screen />} />
+        <Route path="driver/surge/notification" element={<D39Screen />} />
+
+        {/* ── Jobs ── */}
+        <Route path="driver/jobs/incoming" element={<D42Screen />} />
+        <Route path="driver/jobs/incoming/rich" element={<D43Screen />} />
+        <Route path="driver/jobs/list" element={<D44Screen />} />
+        <Route path="driver/jobs/prompt" element={<D45Screen />} />
+        <Route path="driver/jobs/active-with-additional" element={<D46Screen />} />
+
+        {/* Trip lifecycle */}
+        <Route path="driver/trip/:tripId/navigate-to-pickup" element={<D47Screen />} />
+        <Route path="driver/trip/:tripId/navigation" element={<D48Screen />} />
+        <Route path="driver/trip/:tripId/en-route-details" element={<D49Screen />} />
+        <Route path="driver/trip/:tripId/arrived" element={<D50Screen />} />
+        <Route path="driver/trip/:tripId/waiting" element={<D51Screen />} />
+        <Route path="driver/trip/:tripId/cancel/no-show" element={<D52Screen />} />
+        <Route path="driver/trip/:tripId/verify-rider" element={<D53Screen />} />
+        <Route path="driver/trip/:tripId/start" element={<D54Screen />} />
+        <Route path="driver/trip/:tripId/in-progress" element={<D55Screen />} />
+        <Route path="driver/trip/:tripId/completed" element={<D56Screen />} />
+        <Route path="driver/trip/:tripId/cancel/reason" element={<D57Screen />} />
+        <Route path="driver/trip/:tripId/cancel/details" element={<D58Screen />} />
+        <Route path="driver/trip/last-summary" element={<D41Screen />} />
+        <Route path="driver/trip/:tripId/proof" element={<D67Screen />} />
+        <Route path="driver/trip/:tripId/proof/active" element={<D68Screen />} />
+
+        {/* Delivery orders */}
+        <Route path="driver/delivery/orders-dashboard" element={<D74Screen />} />
+        <Route path="driver/delivery/orders" element={<D75Screen />} />
+        <Route path="driver/delivery/orders/filter" element={<D76Screen />} />
+        <Route path="driver/delivery/orders/picked-up" element={<D77Screen />} />
+        <Route path="driver/delivery/route/:routeId" element={<D78Screen />} />
+        <Route path="driver/delivery/route/:routeId/map" element={<D79Screen />} />
+        <Route path="driver/delivery/route/:routeId/active" element={<D80Screen />} />
+        <Route path="driver/delivery/route/:routeId/stop/:stopId/contact" element={<D81Screen />} />
+        <Route path="driver/delivery/route/:routeId/details" element={<D82Screen />} />
+        <Route path="driver/delivery/route/:routeId/stop/:stopId/details" element={<D83Screen />} />
+        <Route path="driver/delivery/destination/select" element={<D84Screen />} />
+        <Route path="driver/delivery/pickup/confirm" element={<D85Screen />} />
+        <Route path="driver/delivery/pickup/confirm-location" element={<D86Screen />} />
+        <Route path="driver/delivery/pickup/qr" element={<D87Screen />} />
+        <Route path="driver/delivery/pickup/confirmed" element={<D96Screen />} />
+
+        {/* QR flows */}
+        <Route path="driver/qr/scanner" element={<D88Screen />} />
+        <Route path="driver/qr/scan-confirmation" element={<D89Screen />} />
+        <Route path="driver/qr/instruction" element={<D90Screen />} />
+        <Route path="driver/qr/active" element={<D91Screen />} />
+        <Route path="driver/qr/scanned" element={<D92Screen />} />
+        <Route path="driver/qr/processing" element={<D93Screen />} />
+        <Route path="driver/qr/marketing-scan" element={<D94Screen />} />
+        <Route path="driver/qr/marketing-processing" element={<D95Screen />} />
+
+        {/* Special job types */}
+        <Route path="driver/rental/job/:jobId" element={<D97Screen />} />
+        <Route path="driver/tour/:tourId/today" element={<D98Screen />} />
+        <Route path="driver/ambulance/incoming" element={<D99Screen />} />
+        <Route path="driver/ambulance/job/:jobId/status" element={<D100Screen />} />
+
+        {/* ── Safety ── */}
+        <Route path="driver/safety/toolkit" element={<D59Screen />} />
+        <Route path="driver/safety/emergency/map" element={<D60Screen />} />
+        <Route path="driver/safety/sos/sending" element={<D61Screen />} />
+        <Route path="driver/safety/emergency/details" element={<D62Screen />} />
+        <Route path="driver/safety/emergency/call" element={<D63Screen />} />
+        <Route path="driver/safety/emergency/confirmation" element={<D64Screen />} />
+        <Route path="driver/safety/follow-my-ride" element={<D65Screen />} />
+        <Route path="driver/safety/share-my-ride" element={<D66Screen />} />
+        <Route path="driver/safety/hub" element={<D70Screen />} />
+        <Route path="driver/safety/hub/expanded" element={<D71Screen />} />
+        <Route path="driver/safety/driving-hours" element={<D72Screen />} />
+
+        {/* ── More ── */}
+        <Route path="driver/more" element={<MoreMenu />} />
+        <Route path="driver/preferences" element={<D06Screen />} />
+        <Route path="driver/vehicles" element={<D14Screen />} />
+        <Route path="driver/vehicles/:vehicleId" element={<D15Screen />} />
+        <Route path="driver/vehicles/business" element={<D16Screen />} />
+        <Route path="driver/vehicles/accessories" element={<D17Screen />} />
+        <Route path="driver/history/rides" element={<D69Screen />} />
+        <Route path="driver/settings/job-types-legend" element={<D101Screen />} />
+        <Route path="driver/help/shuttle-link" element={<D102Screen />} />
+        <Route path="driver/help" element={<HelpScreen />} />
+        <Route path="driver/about" element={<AboutScreen />} />
+        <Route path="driver/profile" element={<ProfileScreen />} />
+
+        {/* Notifications / popups */}
+        <Route path="driver/ridesharing/notification" element={<D40Screen />} />
+
+        {/* ─── Fallback ─── */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }

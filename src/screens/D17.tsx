@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Bell,
   Package,
@@ -6,33 +6,15 @@ import {
   CheckCircle2,
   XCircle,
   Info,
-  Home,
-  Briefcase,
-  Wallet,
-  Settings,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PhoneFrame from "../components/PhoneFrame";
+import BottomNav from "../components/BottomNav";
 
-// EVzone Driver App – D17 Vehicle Accessories (v1)
-// Accessories required / recommended for rides & deliveries (helmet, jackets, delivery box, child seat, etc.).
-// 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
+// EVzone Driver App – D17 Vehicle Accessories
+// Accessories required / recommended for rides & deliveries.
 
-function BottomNavItem({ icon: Icon, label, active, onClick }) {
-  return (
-    <button
-      type="button"
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
-        active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
-      }`}
-      onClick={onClick}
-    >
-      <Icon className="h-5 w-5 mb-0.5" />
-      <span>{label}</span>
-    </button>
-  );
-}
-
-function AccessoryRow({ icon: Icon, name, detail, status }) {
+function AccessoryRow({ icon: Icon, name, detail, status }: { icon: any, name: string, detail: string, status: string }) {
   const tone =
     status === "Required"
       ? {
@@ -55,24 +37,24 @@ function AccessoryRow({ icon: Icon, name, detail, status }) {
   const IconRight = status === "Available" ? CheckCircle2 : status === "Missing" ? XCircle : Info;
 
   return (
-    <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-white px-3 py-2.5 shadow-sm">
-      <div className="flex items-center space-x-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-50">
-          <Icon className="h-4 w-4 text-slate-700" />
+    <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-white px-4 py-4 shadow-sm group hover:border-[#03cd8c]/20 transition-all">
+      <div className="flex items-center space-x-4">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 group-hover:bg-emerald-50 transition-colors">
+          <Icon className="h-5 w-5 text-slate-700 group-hover:text-[#03cd8c]" />
         </div>
         <div className="flex flex-col items-start">
-          <span className="text-xs font-semibold text-slate-900">{name}</span>
-          <span className="text-[11px] text-slate-500">{detail}</span>
+          <span className="text-sm font-bold text-slate-900 leading-tight">{name}</span>
+          <span className="text-[11px] text-slate-500 mt-0.5">{detail}</span>
           <span
-            className={`mt-1 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${tone.chipBg} ${tone.chipText}`}
+            className={`mt-2 inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${tone.chipBg} ${tone.chipText}`}
           >
-            <span className={`mr-1 h-1.5 w-1.5 rounded-full ${tone.chipDot}`} />
+            <span className={`mr-1.5 h-1.5 w-1.5 rounded-full ${tone.chipDot}`} />
             {status}
           </span>
         </div>
       </div>
       <IconRight
-        className={`h-4 w-4 ${
+        className={`h-5 w-5 ${
           status === "Available"
             ? "text-emerald-600"
             : status === "Missing"
@@ -85,153 +67,113 @@ function AccessoryRow({ icon: Icon, name, detail, status }) {
 }
 
 export default function VehicleAccessoriesScreen() {
-  const [nav] = useState("manager");
   const navigate = useNavigate();
-  const bottomNavRoutes = {
-    home: "/driver/dashboard/online",
-    manager: "/driver/jobs/list",
-    wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences",
-  };
 
   return (
-    <div className="min-h-screen flex justify-center bg-[#0f172a] py-4">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
+    <PhoneFrame>
+      {/* Header */}
+      <header className="flex items-center justify-between px-4 pt-4 pb-2">
+        <div className="flex items-center space-x-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
+            <Package className="h-4 w-4 text-[#03cd8c]" />
+          </div>
+          <div className="flex flex-col items-start">
+            <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
+              Fleet Partners
+            </span>
+            <h1 className="text-base font-semibold text-slate-900">
+              Vehicle accessories
+            </h1>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => navigate("/driver/ridesharing/notification")}
+          className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
+        >
+          <Bell className="h-4 w-4" />
+          <span className="absolute top-0 right-0 inline-flex h-2.5 w-2.5 rounded-full bg-[#03cd8c] border-2 border-white" />
+        </button>
+      </header>
 
-      <div className="w-[375px] h-[812px] bg-white rounded-[32px] shadow-2xl overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-              <Package className="h-4 w-4 text-[#03cd8c]" />
+      {/* Content */}
+      <main className="flex-1 px-4 pb-20 space-y-5 overflow-y-auto no-scrollbar">
+        {/* Safety banner */}
+        <section className="rounded-3xl bg-slate-900 text-white p-6 space-y-4 shadow-xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#03cd8c]/10 rounded-full -mr-16 -mt-16 blur-2xl" />
+          <div className="flex items-center space-x-4 relative">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#03cd8c] text-white shadow-lg shadow-[#03cd8c]/30">
+              <ShieldCheck className="h-6 w-6" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                Driver Personal
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] font-bold uppercase text-[#03cd8c]">
+                Compliance Center
               </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Vehicle accessories
-              </h1>
+              <p className="text-sm font-bold tracking-tight">Equipment Checklist</p>
             </div>
           </div>
+          <p className="text-[11px] text-slate-300 leading-relaxed relative">
+            Ensure your EV has all required equipment to remain compliant with local regulations and company safety standards.
+          </p>
+        </section>
+
+        {/* Accessories list */}
+        <section className="space-y-3">
+          <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
+             Safety & Support Assets
+          </h2>
+          <AccessoryRow
+            icon={ShieldCheck}
+            name="Reflective jacket"
+            detail="Required for night shifts and mechanical stops."
+            status="Required"
+          />
+          <AccessoryRow
+            icon={Package}
+            name="Insulated Delivery Box"
+            detail="Required for high-quality food and parcel delivery."
+            status="Available"
+          />
+          <AccessoryRow
+            icon={Package}
+            name="ISOFIX Child Seat"
+            detail="Mandatory for family ride requests under policy."
+            status="Missing"
+          />
+        </section>
+
+        {/* Info + reminder */}
+        <section className="space-y-3 pt-1 pb-4">
+          <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4 flex items-start space-x-4 shadow-sm group">
+            <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm shrink-0">
+              <Info className="h-5 w-5 text-slate-400" />
+            </div>
+            <div className="flex-1">
+              <p className="font-bold text-xs text-slate-900 mb-1">
+                Policy Compliance
+              </p>
+              <p className="text-[11px] text-slate-500 leading-relaxed">
+                Maintaining these accessories ensures you are eligible for premium job types and high-value logistics orders.
+              </p>
+            </div>
+          </div>
+
           <button
             type="button"
-            onClick={() => navigate("/driver/ridesharing/notification")}
-            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
+            onClick={() => navigate("/driver/vehicles/demo-vehicle")}
+            className="w-full rounded-2xl py-4 text-xs font-black uppercase tracking-wider shadow-lg shadow-[#03cd8c]/20 bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c] active:scale-[0.98] transition-all"
           >
-            <Bell className="h-4 w-4" />
-            <span className="absolute -top-0.5 -right-0.5 inline-flex h-3 w-3 items-center justify-center rounded-full bg-[#f77f00]" />
+            Update Accessory List
           </button>
-        </header>
+        </section>
+      </main>
 
-        {/* Content */}
-        <main className="flex-1 px-4 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
-          {/* Safety banner */}
-          <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-2">
-            <div className="flex items-center space-x-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#03cd8c] text-slate-900">
-                <ShieldCheck className="h-4 w-4" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] tracking-[0.18em] uppercase text-[#a5f3fc]">
-                  Safety & equipment
-                </span>
-                <p className="text-xs font-semibold">
-                  Make sure your vehicle has all required accessories.
-                </p>
-              </div>
-            </div>
-            <p className="text-[11px] text-slate-100 leading-snug">
-              Some accessories are required by law or by EVzone policy,
-              especially for deliveries, night rides and rides with children.
-            </p>
-          </section>
+      <BottomNav active="more" />
 
-          {/* Accessories list */}
-          <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-slate-900 mb-1">
-              Accessories for your EV
-            </h2>
-            <AccessoryRow
-              icon={ShieldCheck}
-              name="Reflective jacket"
-              detail="Required for night shifts and roadside stops."
-              status="Required"
-            />
-            <AccessoryRow
-              icon={Package}
-              name="Delivery box / carrier"
-              detail="Food and parcel deliveries must use insulated or secure boxes."
-              status="Available"
-            />
-            <AccessoryRow
-              icon={Package}
-              name="Child seat (if applicable)"
-              detail="Required when transporting children under local regulations."
-              status="Missing"
-            />
-          </section>
-
-          {/* Info + reminder */}
-          <section className="space-y-2 pt-1 pb-4">
-            <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 text-[11px] text-slate-600 flex items-start space-x-2">
-              <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white">
-                <Info className="h-4 w-4 text-slate-600" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-xs text-slate-900 mb-0.5">
-                  Keep this list up to date
-                </p>
-                <p>
-                  If your vehicle accessories change, update them here so your
-                  trips remain compliant with EVzone safety standards and local
-                  regulations.
-                </p>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => navigate("/driver/vehicles/demo-vehicle")}
-              className="w-full rounded-full py-2.5 text-sm font-semibold shadow-sm bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c]"
-            >
-              Update accessories
-            </button>
-          </section>
-        </main>
-
-        {/* Bottom navigation – Manager active (Driver Personal context) */}
-        <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem
-            icon={Home}
-            label="Home"
-            active={nav === "home"}
-            onClick={() => navigate(bottomNavRoutes.home)}
-          />
-          <BottomNavItem
-            icon={Briefcase}
-            label="Manager"
-            active={nav === "manager"}
-            onClick={() => navigate(bottomNavRoutes.manager)}
-          />
-          <BottomNavItem
-            icon={Wallet}
-            label="Wallet"
-            active={nav === "wallet"}
-            onClick={() => navigate(bottomNavRoutes.wallet)}
-          />
-          <BottomNavItem
-            icon={Settings}
-            label="Settings"
-            active={nav === "settings"}
-            onClick={() => navigate(bottomNavRoutes.settings)}
-          />
-        </nav>
-      </div>
-    </div>
+      <style>{`
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
+    </PhoneFrame>
   );
 }

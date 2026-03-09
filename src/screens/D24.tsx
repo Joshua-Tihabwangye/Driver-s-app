@@ -101,10 +101,10 @@ export default function ContentCompletionScreen() {
           <section className="pt-1 pb-4 flex flex-col space-y-2">
             <button
               type="button"
-              onClick={() => navigate("/driver/dashboard/offline")}
+              onClick={() => navigate("/driver/dashboard/online")}
               className="w-full rounded-full py-2.5 text-sm font-semibold shadow-sm bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c]"
             >
-              Go to training hub
+              Go to Dashboard
             </button>
             <button
               type="button"

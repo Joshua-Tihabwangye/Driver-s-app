@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Bell,
   Building2,
@@ -7,31 +7,15 @@ import {
   ShieldCheck,
   AlertTriangle,
   Info,
-  Home,
-  Briefcase,
-  Wallet,
-  Settings,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PhoneFrame from "../components/PhoneFrame";
+import BottomNav from "../components/BottomNav";
 
-// EVzone Driver App – D16 Business Vehicles (v1)
-// Business-owned / fleet vehicles assigned to the driver (separate from personal vehicles).
-// 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
+// EVzone Driver App – D16 Business Vehicles
+// Business-owned / fleet vehicles assigned to the driver.
 
-function BottomNavItem({ icon: Icon, label, active }) {
-  return (
-    <button
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
-        active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
-      }`}
-    >
-      <Icon className="h-5 w-5 mb-0.5" />
-      <span>{label}</span>
-    </button>
-  );
-}
-
-function FleetVehicleCard({ icon: Icon, title, subtitle, tag, status }) {
+function FleetVehicleCard({ icon: Icon, title, subtitle, tag, status, onClick }: { icon: any, title: string, subtitle: string, tag?: string, status: string, onClick: () => void }) {
   const statusTone =
     status === "Active"
       ? "bg-emerald-50 text-emerald-700 border-emerald-100"
@@ -40,23 +24,26 @@ function FleetVehicleCard({ icon: Icon, title, subtitle, tag, status }) {
       : "bg-slate-50 text-slate-600 border-slate-200";
 
   return (
-    <button className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-3 shadow-sm active:scale-[0.97] transition-transform flex items-center justify-between">
-      <div className="flex items-center space-x-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e6fff7]">
-          <Icon className="h-5 w-5 text-[#03cd8c]" />
+    <button 
+      onClick={onClick}
+      className="w-full rounded-2xl border border-slate-100 bg-white px-4 py-4 shadow-sm active:scale-[0.98] transition-all flex items-center justify-between group hover:border-[#03cd8c]/30"
+    >
+      <div className="flex items-center space-x-4">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#e6fff7] group-hover:scale-110 transition-transform">
+          <Icon className="h-6 w-6 text-[#03cd8c]" />
         </div>
         <div className="flex flex-col items-start">
-          <span className="text-xs font-semibold text-slate-900">{title}</span>
-          <span className="text-[11px] text-slate-500">{subtitle}</span>
+          <span className="text-sm font-bold text-slate-900 leading-tight">{title}</span>
+          <span className="text-[11px] text-slate-500 mt-0.5">{subtitle}</span>
           {tag && (
-            <span className="mt-1 inline-flex items-center rounded-full bg-slate-900 px-2 py-0.5 text-[10px] font-medium text-emerald-400">
+            <span className="mt-2 inline-flex items-center rounded-full bg-slate-900 px-2 py-0.5 text-[9px] font-black uppercase text-emerald-400 tracking-wider">
               {tag}
             </span>
           )}
         </div>
       </div>
       <span
-        className={`ml-2 inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium ${statusTone}`}
+        className={`ml-2 inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-tight ${statusTone}`}
       >
         {status}
       </span>
@@ -65,128 +52,121 @@ function FleetVehicleCard({ icon: Icon, title, subtitle, tag, status }) {
 }
 
 export default function BusinessVehiclesScreen() {
-  const [nav] = useState("manager");
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex justify-center bg-[#0f172a] py-4">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
+    <PhoneFrame>
+      {/* Header */}
+      <header className="flex items-center justify-between px-4 pt-4 pb-2">
+        <div className="flex items-center space-x-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
+            <Building2 className="h-4 w-4 text-[#03cd8c]" />
+          </div>
+          <div className="flex flex-col items-start">
+            <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
+              Fleet Partners
+            </span>
+            <h1 className="text-base font-semibold text-slate-900">
+              Business vehicles
+            </h1>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => navigate("/driver/ridesharing/notification")}
+          className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
+        >
+          <Bell className="h-4 w-4" />
+          <span className="absolute top-0 right-0 inline-flex h-2.5 w-2.5 rounded-full bg-[#03cd8c] border-2 border-white" />
+        </button>
+      </header>
 
-      <div className="w-[375px] h-[812px] bg-white rounded-[32px] shadow-2xl overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-              <Building2 className="h-4 w-4 text-[#03cd8c]" />
+      {/* Content */}
+      <main className="flex-1 px-4 pb-20 space-y-5 overflow-y-auto no-scrollbar">
+        {/* Company banner */}
+        <section className="rounded-3xl bg-slate-900 text-white p-6 space-y-4 shadow-xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#03cd8c]/10 rounded-full -mr-16 -mt-16 blur-2xl" />
+          <div className="flex items-center space-x-4 relative">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#03cd8c] text-white shadow-lg shadow-[#03cd8c]/30">
+              <Building2 className="h-6 w-6" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                Driver Personal
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] font-bold uppercase text-[#03cd8c]">
+                Active Fleet
               </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Business vehicles
-              </h1>
+              <p className="text-sm font-bold tracking-tight">GreenFleet Logistics · Kampala</p>
             </div>
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
-            <Bell className="h-4 w-4" />
-            <span className="absolute -top-0.5 -right-0.5 inline-flex h-3 w-3 items-center justify-center rounded-full bg-[#f77f00]" />
+          <p className="text-[11px] text-slate-300 leading-relaxed relative">
+            You are driving on behalf of a partner. These vehicles include insurance, servicing, and charging support.
+          </p>
+        </section>
+
+        {/* Assigned vehicles */}
+        <section className="space-y-3">
+          <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
+             Assigned Fleet Assets
+          </h2>
+          <FleetVehicleCard
+            icon={Car}
+            title="BYD Qin Plus EV"
+            subtitle="GF-12 · Plate: UBF 234Q"
+            tag="Active Shift"
+            status="Active"
+            onClick={() => navigate("/driver/vehicles/demo-vehicle")}
+          />
+          <FleetVehicleCard
+            icon={Truck}
+            title="Maxus eDeliver 3"
+            subtitle="GF-07 · Plate: UBJ 981T"
+            tag="Logistics / Cargo"
+            status="Maintenance"
+            onClick={() => navigate("/driver/vehicles/demo-vehicle")}
+          />
+        </section>
+
+        {/* Info & actions */}
+        <section className="space-y-3 pt-1 pb-4">
+          <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4 flex items-start space-x-4 shadow-sm group">
+            <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm shrink-0">
+              <ShieldCheck className="h-5 w-5 text-[#03cd8c]" />
+            </div>
+            <div className="flex-1">
+              <p className="font-bold text-xs text-slate-900 mb-1">
+                Asset Protection
+              </p>
+              <p className="text-[11px] text-slate-500 leading-relaxed">
+                Report any warnings, unusual sounds, or physical damage immediately via the issue console.
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => navigate("/driver/map/settings")}
+            className="w-full rounded-2xl py-4 text-xs font-black uppercase tracking-wider shadow-sm bg-white text-red-500 border border-red-50 hover:bg-red-50 active:scale-[0.98] transition-all flex items-center justify-center space-x-3"
+          >
+            <AlertTriangle className="h-4 w-4" />
+            <span>Report Vehicle Issue</span>
           </button>
-        </header>
+          
+          <button
+            type="button"
+            onClick={() => navigate("/driver/settings/job-types-legend")}
+            className="w-full rounded-2xl py-4 text-xs font-black uppercase tracking-wider border border-slate-100 text-slate-600 bg-white hover:bg-slate-50 active:scale-[0.98] transition-all flex items-center justify-center space-x-3"
+          >
+            <Info className="h-4 w-4" />
+            <span>Company Asset Policy</span>
+          </button>
+        </section>
+      </main>
 
-        {/* Content */}
-        <main className="flex-1 px-4 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
-          {/* Company banner */}
-          <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-2">
-            <div className="flex items-center space-x-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#03cd8c] text-slate-900">
-                <Building2 className="h-4 w-4" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] tracking-[0.18em] uppercase text-[#a5f3fc]">
-                  Fleet assignment
-                </span>
-                <p className="text-xs font-semibold">GreenFleet Logistics · Kampala</p>
-              </div>
-            </div>
-            <p className="text-[11px] text-slate-100 leading-snug">
-              You are driving on behalf of a business or fleet partner. The
-              vehicles below are provided and maintained by your company.
-            </p>
-          </section>
+      <BottomNav active="more" />
 
-          {/* Assigned vehicles */}
-          <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-slate-900 mb-1">
-              Assigned business vehicles
-            </h2>
-            <FleetVehicleCard
-              icon={Car}
-              title="EV Car · BYD Qin Plus"
-              subtitle="Fleet ID: GF-12 · Plate: UBF 234Q"
-              tag="Today’s shift vehicle"
-              status="Active"
-              onClick={() => navigate("/driver/vehicles/demo-vehicle")}
-            />
-            <FleetVehicleCard
-              icon={Truck}
-              title="EV Van · Maxus eDeliver 3"
-              subtitle="Fleet ID: GF-07 · Plate: UBJ 981T"
-              tag="Cargo / delivery"
-              status="Maintenance"
-              onClick={() => navigate("/driver/vehicles/demo-vehicle")}
-            />
-          </section>
-
-          {/* Info & actions */}
-          <section className="space-y-2 pt-1 pb-4">
-            <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 flex items-start space-x-2">
-              <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white">
-                <ShieldCheck className="h-4 w-4 text-emerald-600" />
-              </div>
-              <div className="flex-1 text-[11px] text-slate-600 space-y-1">
-                <p className="font-semibold text-xs text-slate-900 mb-0.5">
-                  Company safety & maintenance
-                </p>
-                <p>
-                  Your company is responsible for servicing, insurance and EV
-                  compliance. Report any issues as soon as you notice unusual
-                  sounds, warnings or damage.
-                </p>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => navigate("/driver/map/settings")}
-              className="w-full rounded-full py-2.5 text-sm font-semibold shadow-sm bg-white text-red-600 border border-red-200 flex items-center justify-center"
-            >
-              <AlertTriangle className="h-4 w-4 mr-2" />
-              Report an issue with this vehicle
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate("/driver/settings/job-types-legend")}
-              className="w-full rounded-full py-2.5 text-sm font-semibold border border-slate-200 text-slate-800 bg-white flex items-center justify-center"
-            >
-              <Info className="h-4 w-4 mr-2" />
-              View company vehicle policy
-            </button>
-          </section>
-        </main>
-
-        {/* Bottom navigation – Manager active (Driver Personal context) */}
-        <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"} />
-          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"} />
-        </nav>
-      </div>
-    </div>
+      <style>{`
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
+    </PhoneFrame>
   );
 }

@@ -4,22 +4,15 @@ import {
   ListFilter,
   MapPin,
   DollarSign,
-  Clock,
   ArrowRight,
   HelpCircle,
-  Home,
-  Briefcase,
-  Wallet,
-  Settings,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PhoneFrame from "../components/PhoneFrame";
+import BottomNav from "../components/BottomNav";
 
-// EVzone Driver App – D44 Ride Requests (v3)
-// List of available job requests (Ride / Delivery / Rental / Shuttle / Tour / Ambulance)
-// with a job-type filter bar and job type pill per card.
-// For Shuttle jobs, tapping should deep-link to the Shuttle Driver App (simulated here).
-// Adds an optional Help link for Shuttle runs that can open the Shuttle Link Info screen (D102).
-// 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
+// EVzone Driver App – D44 Ride Requests
+// List of available job requests with a job-type filter bar and job type pill per card.
 
 const JOB_FILTERS = [
   { key: "all", label: "All" },
@@ -97,96 +90,43 @@ const JOBS = [
   },
 ];
 
-function BottomNavItem({ icon: Icon, label, active, onClick }) {
-  return (
-    <button
-      type="button"
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
-        active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
-      }`}
-      onClick={onClick}
-    >
-      <Icon className="h-5 w-5 mb-0.5" />
-      <span>{label}</span>
-    </button>
-  );
+function JobTypePill({ jobType }: { jobType: string }) {
+  const base = "inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider border";
+
+  if (jobType === "ambulance") return <span className={`${base} bg-red-50 border-red-100 text-red-600`}>Ambulance</span>;
+  if (jobType === "rental") return <span className={`${base} bg-emerald-50 border-emerald-100 text-emerald-600`}>Rental</span>;
+  if (jobType === "tour") return <span className={`${base} bg-sky-50 border-sky-100 text-sky-600`}>Tour</span>;
+  if (jobType === "shuttle") return <span className={`${base} bg-violet-50 border-violet-100 text-violet-600`}>Shuttle</span>;
+  if (jobType === "delivery") return <span className={`${base} bg-blue-50 border-blue-100 text-blue-600`}>Delivery</span>;
+  return <span className={`${base} bg-slate-100 border-slate-200 text-slate-600`}>Ride</span>;
 }
 
-function JobTypePill({ jobType }) {
-  const base =
-    "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium border";
-
-  if (jobType === "ambulance") {
-    return (
-      <span className={`${base} bg-red-50 border-red-200 text-red-700`}>
-        Ambulance
-      </span>
-    );
-  }
-  if (jobType === "rental") {
-    return (
-      <span className={`${base} bg-emerald-50 border-emerald-200 text-emerald-700`}>
-        Rental
-      </span>
-    );
-  }
-  if (jobType === "tour") {
-    return (
-      <span className={`${base} bg-sky-50 border-sky-200 text-sky-700`}>
-        Tour
-      </span>
-    );
-  }
-  if (jobType === "shuttle") {
-    return (
-      <span className={`${base} bg-violet-50 border-violet-200 text-violet-700`}>
-        Shuttle run
-      </span>
-    );
-  }
-  if (jobType === "delivery") {
-    return (
-      <span className={`${base} bg-blue-50 border-blue-200 text-blue-700`}>
-        Delivery
-      </span>
-    );
-  }
-  // default Ride
-  return (
-    <span className={`${base} bg-slate-900/70 border-slate-700 text-slate-50`}>
-      Ride
-    </span>
-  );
-}
-
-function RequestCard({ job, onClick }) {
-  const { from, to, distance, duration, fare, jobType, id } = job;
+function RequestCard({ job, onClick }: { job: any, onClick: (j: any) => void }) {
+  const { from, to, distance, duration, fare, jobType } = job;
 
   return (
     <button
       type="button"
       onClick={() => onClick(job)}
-      className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform flex flex-col space-y-2 text-[11px] text-slate-600"
+      className="w-full rounded-2xl border border-slate-100 bg-white px-4 py-3.5 shadow-sm active:scale-[0.98] transition-all flex flex-col space-y-3 text-[11px] hover:border-[#03cd8c]/30 group"
     >
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-slate-900 truncate max-w-[170px]">
-          {from}
-          <ArrowRight className="inline h-3 w-3 mx-1 text-slate-400" />
-          {to}
-        </span>
-        <span className="inline-flex items-center text-sm font-semibold text-slate-900">
-          {fare !== "—" && (
-            <>
-              <DollarSign className="h-3 w-3 mr-0.5" />
-              {fare}
-            </>
-          )}
-          {fare === "—" && <span className="text-[11px] text-slate-500">—</span>}
-        </span>
+        <div className="flex flex-col items-start max-w-[200px]">
+          <span className="text-xs font-bold text-slate-900 flex items-center">
+            {from}
+            <ArrowRight className="h-3 w-3 mx-1.5 text-slate-300 group-hover:text-[#03cd8c] transition-colors" />
+            <span className="truncate">{to}</span>
+          </span>
+        </div>
+        <div className="flex flex-col items-end">
+          <span className="text-sm font-bold text-slate-900 flex items-center">
+            {fare !== "Shuttle" && fare !== "Tour" && fare !== "—" ? `$${fare}` : fare}
+          </span>
+        </div>
       </div>
-      <div className="flex items-center justify-between">
-        <span className="inline-flex items-center">
-          <MapPin className="h-3 w-3 mr-1" />
+      <div className="flex items-center justify-between pt-1 border-t border-slate-50">
+        <span className="text-slate-500 font-medium flex items-center">
+          <MapPin className="h-3 w-3 mr-1 text-slate-400" />
           {distance} · {duration}
         </span>
         <JobTypePill jobType={jobType} />
@@ -196,195 +136,118 @@ function RequestCard({ job, onClick }) {
 }
 
 export default function RideRequestsListScreen() {
-  const [nav] = useState("home");
   const [filter, setFilter] = useState("all");
   const navigate = useNavigate();
-  const bottomNavRoutes = {
-    home: "/driver/dashboard/online",
-    manager: "/driver/jobs/list",
-    wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences",
-  };
 
-  const filteredJobs =
-    filter === "all" ? JOBS : JOBS.filter((job) => job.jobType === filter);
-
+  const filteredJobs = filter === "all" ? JOBS : JOBS.filter((job) => job.jobType === filter);
   const hasShuttleJob = filteredJobs.some((j) => j.jobType === "shuttle");
 
-  const handleCardClick = (job) => {
-    // Route to the appropriate flow for each job type
-    if (job.jobType === "shuttle") {
-      navigate("/driver/help/shuttle-link");
-    } else if (job.jobType === "delivery") {
-      navigate("/driver/delivery/orders");
-    } else if (job.jobType === "rental") {
-      navigate("/driver/rental/job/demo-job");
-    } else if (job.jobType === "tour") {
-      navigate("/driver/tour/demo-tour/today");
-    } else if (job.jobType === "ambulance") {
-      navigate("/driver/ambulance/job/demo-job/status");
-    } else {
-      navigate("/driver/jobs/incoming");
-    }
-  };
-
-  const handleOpenShuttleHelp = () => {
-    navigate("/driver/help/shuttle-link");
+  const handleCardClick = (job: any) => {
+    const routes: Record<string, string> = {
+      shuttle: "/driver/help/shuttle-link",
+      delivery: "/driver/delivery/orders",
+      rental: "/driver/rental/job/demo-job",
+      tour: "/driver/tour/demo-tour/today",
+      ambulance: "/driver/ambulance/job/demo-job/status",
+    };
+    navigate(routes[job.jobType] || "/driver/jobs/incoming");
   };
 
   return (
-    <div className="min-h-screen flex justify-center bg-[#0f172a] py-4">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
-
-      <div className="w-[375px] h-[812px] bg-white rounded-[32px] shadow-2xl overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-              <ListFilter className="h-4 w-4 text-[#03cd8c]" />
-            </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                Driver
-              </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Ride requests
-              </h1>
-            </div>
+    <PhoneFrame>
+      {/* Header */}
+      <header className="flex items-center justify-between px-4 pt-4 pb-2">
+        <div className="flex items-center space-x-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
+            <ListFilter className="h-4 w-4 text-[#03cd8c]" />
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
-            <Bell className="h-4 w-4" />
-          </button>
-        </header>
-
-        {/* Content */}
-        <main className="flex-1 px-4 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
-          {/* Sort row */}
-          <section className="flex items-center justify-between rounded-2xl bg-slate-50 px-3 py-2 border border-slate-100">
-            <div className="flex items-center space-x-2 text-[11px] text-slate-600">
-              <span className="font-semibold text-slate-900">Sorted by</span>
-              <span>Closest pickup · Highest fare</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => navigate("/driver/delivery/orders/filter")}
-              className="inline-flex items-center rounded-full border border-slate-200 px-2 py-0.5 text-[11px] text-slate-700"
-            >
-              <ListFilter className="h-3 w-3 mr-1" /> Filters
-            </button>
-          </section>
-
-          {/* Job-type filter bar */}
-          <section className="space-y-1">
-            <span className="text-[11px] font-semibold text-slate-900">
-              Job type
+          <div className="flex flex-col items-start">
+            <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
+              Driver
             </span>
-            <div className="flex flex-wrap gap-1 text-[10px]">
-              {JOB_FILTERS.map((f) => (
-                <button
-                  key={f.key}
-                  type="button"
-                  onClick={() => setFilter(f.key)}
-                  className={`rounded-full px-2.5 py-0.5 border font-medium ${
-                    filter === f.key
-                      ? "bg-[#03cd8c] border-[#03cd8c] text-slate-900"
-                      : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
-                  }`}
-                >
-                  {f.label}
-                </button>
-              ))}
-            </div>
-          </section>
+            <h1 className="text-base font-semibold text-slate-900">
+              Ride requests
+            </h1>
+          </div>
+        </div>
+        <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
+          <Bell className="h-4 w-4" />
+        </button>
+      </header>
 
-          {/* Requests list */}
-          <section className="space-y-2">
-            {filteredJobs.map((job) => (
-              <RequestCard key={job.id} job={job} onClick={handleCardClick} />
+      {/* Content */}
+      <main className="flex-1 px-4 pb-20 space-y-4 overflow-y-auto no-scrollbar">
+        {/* Job-type filter bar */}
+        <section className="sticky top-0 bg-white/80 backdrop-blur-md z-10 py-2 -mx-4 px-4 border-b border-slate-50">
+          <div className="flex items-center space-x-2 overflow-x-auto no-scrollbar pb-1">
+            {JOB_FILTERS.map((f) => (
+              <button
+                key={f.key}
+                type="button"
+                onClick={() => setFilter(f.key)}
+                className={`rounded-full px-4 py-1.5 border-2 text-[10px] font-bold uppercase tracking-wider whitespace-nowplay transition-all ${
+                  filter === f.key
+                    ? "bg-[#03cd8c] border-[#03cd8c] text-white shadow-md shadow-[#03cd8c]/20"
+                    : "bg-white border-slate-100 text-slate-400 hover:border-slate-200"
+                }`}
+              >
+                {f.label}
+              </button>
             ))}
+          </div>
+        </section>
 
-            {filteredJobs.length === 0 && (
-              <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 text-[11px] text-slate-600">
-                No jobs found for this type right now. Try a different filter or
-                check again later.
-              </div>
-            )}
-          </section>
+        {/* Requests list */}
+        <section className="space-y-3 pt-2">
+          {filteredJobs.map((job) => (
+            <RequestCard key={job.id} job={job} onClick={handleCardClick} />
+          ))}
 
-          {/* Shuttle help hint */}
-          {hasShuttleJob && (
-            <section className="space-y-2 pt-1 pb-2">
-              <div className="rounded-2xl border border-violet-100 bg-violet-50 px-3 py-3 text-[11px] text-violet-800 flex items-start space-x-2">
-                <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white">
-                  <HelpCircle className="h-4 w-4" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-semibold text-xs text-violet-900 mb-0.5">
-                    New to Shuttle runs?
-                  </p>
-                  <p>
-                    Shuttle jobs open the EVzone School Shuttle Driver App so
-                    you can manage student lists and routes there.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={handleOpenShuttleHelp}
-                    className="mt-1 inline-flex items-center rounded-full border border-violet-200 bg-white px-2.5 py-0.5 text-[10px] font-medium text-violet-700"
-                  >
-                    Learn more about Shuttle runs
-                  </button>
-                </div>
+          {filteredJobs.length === 0 && (
+            <div className="rounded-2xl border-2 border-dashed border-slate-100 bg-slate-50 px-6 py-12 flex flex-col items-center justify-center text-center">
+              <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center mb-4 shadow-sm">
+                 <ListFilter className="h-6 w-6 text-slate-300" />
               </div>
-            </section>
+              <p className="text-sm font-bold text-slate-900">No requests found</p>
+              <p className="text-xs text-slate-500 mt-1">Try selecting a different category or check back soon.</p>
+            </div>
           )}
+        </section>
 
-          {/* Tip */}
-          <section className="space-y-2 pt-1 pb-4">
-            <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 text-[11px] text-slate-600">
-              <p className="font-semibold text-xs text-slate-900 mb-0.5">
-                Tip
-              </p>
-              <p>
-                Accepting nearby, well-paid jobs first can reduce dead mileage
-                and increase your hourly earnings. For Shuttle jobs, tap to open
-                the Shuttle Driver App.
-              </p>
+        {/* Shuttle help hint */}
+        {hasShuttleJob && (
+          <section className="pt-2">
+            <div className="rounded-2xl border border-violet-100 bg-violet-50 px-4 py-4 flex items-start space-x-3 shadow-sm group">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm shrink-0">
+                <HelpCircle className="h-5 w-5 text-violet-500" />
+              </div>
+              <div className="flex-1">
+                <p className="font-bold text-xs text-violet-900 mb-0.5">
+                  Shuttle Runs
+                </p>
+                <p className="text-[11px] text-violet-800/80 leading-relaxed mb-3">
+                  Requires the School Shuttle App. Click a job or the link below to learn more.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => navigate("/driver/help/shuttle-link")}
+                  className="w-full rounded-lg bg-violet-600 text-white py-2 text-[10px] font-bold uppercase tracking-wider active:scale-[0.98] transition-all"
+                >
+                  Learn More
+                </button>
+              </div>
             </div>
           </section>
-        </main>
+        )}
+      </main>
 
-        {/* Bottom navigation – Home active (requests context) */}
-        <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem
-            icon={Home}
-            label="Home"
-            active={nav === "home"}
-            onClick={() => navigate(bottomNavRoutes.home)}
-          />
-          <BottomNavItem
-            icon={Briefcase}
-            label="Manager"
-            active={nav === "manager"}
-            onClick={() => navigate(bottomNavRoutes.manager)}
-          />
-          <BottomNavItem
-            icon={Wallet}
-            label="Wallet"
-            active={nav === "wallet"}
-            onClick={() => navigate(bottomNavRoutes.wallet)}
-          />
-          <BottomNavItem
-            icon={Settings}
-            label="Settings"
-            active={nav === "settings"}
-            onClick={() => navigate(bottomNavRoutes.settings)}
-          />
-        </nav>
-      </div>
-    </div>
+      {/* Bottom Navigation */}
+      <BottomNav active="earnings" />
+
+      <style>{`
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
+    </PhoneFrame>
   );
 }
