@@ -1,27 +1,40 @@
 import React from "react";
 import {
-  Bell,
-  Package,
+    Package,
   MapPin,
   Clock,
   DollarSign,
   Activity,
+  Home,
+  Briefcase,
+  Wallet,
+  Settings
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import PhoneFrame from "../components/PhoneFrame";
-import BottomNav from "../components/BottomNav";
+import { useNavigate , useLocation } from "react-router-dom";
 
 // EVzone Driver App – D25 Delivery Driver Dashboard
 // Overview dashboard focused on deliveries (stats + quick actions).
 
-function StatChip({ icon: Icon, label, value, accent, color = "#03cd8c" }: { icon: any; label: string; value: string; accent?: string; color?: string }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
-    <div className="flex flex-col rounded-2xl bg-white px-4 py-4 shadow-sm border border-slate-50 flex-1 min-w-[0] group hover:border-[#03cd8c]/30 transition-all">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight truncate">{label}</span>
-        <div className="p-1.5 rounded-lg bg-slate-50 group-hover:bg-emerald-50 transition-colors">
-            <Icon className="h-4 w-4 text-slate-400 group-hover:text-[#03cd8c]" />
-        </div>
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${active ? "text-white" : "text-white/50 hover:text-white/80"
+        }`}
+    >
+      <Icon className="h-5 w-5 mb-0.5" />
+      <span>{label}</span>
+    </button>
+  );
+}
+
+function StatChip({ icon: Icon, label, value, accent }: { icon: React.ElementType; label: string; value: string; accent?: string }) {
+  return (
+    <div className="flex flex-col rounded-2xl bg-white px-3 py-3 shadow-sm border border-slate-100 flex-1 min-w-[0]">
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-[11px] text-slate-500 truncate">{label}</span>
+        <Icon className="h-3.5 w-3.5 text-slate-400" />
       </div>
       <span className="text-base font-bold text-slate-900 tracking-tight">{value}</span>
       {accent && (
@@ -36,45 +49,62 @@ function StatChip({ icon: Icon, label, value, accent, color = "#03cd8c" }: { ico
 
 export default function DeliveryDriverDashboardScreen() {
   const navigate = useNavigate();
-
+  const location = useLocation();
+  const navActive = (key) => {
+    const p = location.pathname;
+    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
+    return (routes[key] || []).some(r => p.startsWith(r));
+  };
   return (
-    <PhoneFrame>
-      {/* Header */}
-      <header className="flex items-center justify-between px-4 pt-4 pb-2">
-        <div className="flex items-center space-x-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-            <Package className="h-4 w-4 text-[#03cd8c]" />
-          </div>
-          <div className="flex flex-col items-start">
-            <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-              Deliveries
-            </span>
-            <h1 className="text-base font-semibold text-slate-900">
-              Delivery dashboard
-            </h1>
-          </div>
-        </div>
-        <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
-          <Bell className="h-4 w-4" />
-          <span className="absolute top-0 right-0 inline-flex h-2.5 w-2.5 rounded-full bg-red-500 border-2 border-white" />
-        </button>
-      </header>
+    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
+      {/* Local style: hide scrollbars but keep swipe scrolling */}
+      <style>{`
+        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
 
-      {/* Content */}
-      <main className="flex-1 px-4 pb-20 space-y-4 overflow-y-auto no-scrollbar">
-        {/* Status card */}
-        <section className="rounded-2xl bg-slate-900 text-white p-5 space-y-4 shadow-lg relative overflow-hidden">
-           <div className="absolute top-0 right-0 w-32 h-32 bg-[#03cd8c]/10 rounded-full -mr-16 -mt-16" />
-          <div className="flex items-center justify-between relative">
-            <div className="flex items-center space-x-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#03cd8c] text-white shadow-lg shadow-[#03cd8c]/20">
-                <Package className="h-5 w-5 fill-white" />
+      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col relative">
+
+        {/* Green curved header */}
+        <div className="relative" style={{ minHeight: 80 }}>
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)"
+}}
+          />
+          <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
+            <div className="flex items-center space-x-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
+                <Package className="h-4 w-4 text-white" />
               </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] tracking-[0.2em] font-bold uppercase text-[#03cd8c]">
-                  Delivery Mode
+              <div className="flex flex-col items-start">
+                <span className="text-[10px] uppercase tracking-wide text-white/80">
+                  Deliveries
                 </span>
-                <p className="text-xs font-bold">Ready for orders</p>
+                <span className="text-sm font-semibold text-white">
+                  Delivery dashboard
+                </span>
+              </div>
+            </div>
+          </header>
+        </div>
+
+        {/* Content */}
+        <main className="app-main flex-1 px-4 pt-3 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
+          {/* Status card */}
+          <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#03cd8c] text-slate-900">
+                  <Package className="h-4 w-4" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] tracking-[0.18em] uppercase text-[#a5f3fc]">
+                    Delivery driver mode
+                  </span>
+                  <p className="text-xs font-semibold">Ready for parcel & food orders</p>
+                </div>
               </div>
             </div>
             <span className="rounded-full bg-slate-800 border border-slate-700 px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
@@ -145,12 +175,20 @@ export default function DeliveryDriverDashboardScreen() {
         </section>
       </main>
 
-      <BottomNav active="manager" />
+            <button type="button" onClick={() => navigate("/driver/map/online")} className="w-full rounded-full py-2.5 text-sm font-semibold shadow-sm bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c]">
+              Go online for deliveries
+            </button>
+          </section>
+        </main>
 
-      <style>{`
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
-    </PhoneFrame>
+        {/* Bottom Navigation – Green */}
+        <nav className="app-bottom-nav border-t border-white/20 flex" style={{ background: "#03cd8c" }}>
+          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate("/driver/dashboard/online")}/>
+          <BottomNavItem icon={Briefcase} label="Manager" active={navActive("manager")} onClick={() => navigate("/driver/jobs/list")}/>
+          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate("/driver/earnings/overview")}/>
+          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate("/driver/preferences")}/>
+        </nav>
+      </div>
+    </div>
   );
 }

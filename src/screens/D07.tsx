@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import {
-  Bell,
+  ChevronLeft,
   ShieldCheck,
   IdCard,
   FileBadge2,
@@ -8,26 +8,28 @@ import {
   Upload,
   Info,
   Home,
-  Briefcase,
+  MessageSquare,
   Wallet,
-  Settings,
+  Settings
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate , useLocation } from "react-router-dom";
 
-// EVzone Driver App – D07 Driver Personal – Document Verification (v1)
-// Detailed document upload screen. 375x812 phone frame with swipe scroll and hidden scrollbar.
+// EVzone Driver App – D07 Driver Personal – Document Verification
+// Green curved header design. ALL original functionality preserved:
+// document upload via hidden file inputs, status tracking, file selection.
 
-function BottomNavItem({ icon: Icon, label, active, onClick }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       type="button"
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
-        active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
-      }`}
       onClick={onClick}
+      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
+        active ? "text-white" : "text-white/50 hover:text-white/80"
+      }`}
     >
-      <Icon className="h-5 w-5 mb-0.5" />
-      <span>{label}</span>
+      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
+      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
+      <span className="relative z-10">{label}</span>
     </button>
   );
 }
@@ -39,22 +41,21 @@ function DocItem({
   status,
   emphasise,
   onClick,
-  fileName,
+  fileName
 }) {
   const tone =
     status === "Missing"
       ? "bg-red-50 text-red-600 border-red-100"
       : status === "Uploaded"
-      ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-      : "bg-amber-50 text-amber-700 border-amber-100";
+        ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+        : "bg-amber-50 text-amber-700 border-amber-100";
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`flex w-full items-center justify-between rounded-2xl border bg-white px-3 py-2.5 shadow-sm active:scale-[0.97] transition-transform ${
-        emphasise ? "border-[#03cd8c]" : "border-slate-100"
-      }`}
+      className={`flex w-full items-center justify-between rounded-2xl border bg-white px-3 py-2.5 shadow-sm active:scale-[0.97] transition-transform ${emphasise ? "border-[#03cd8c]" : "border-slate-100"
+        }`}
     >
       <div className="flex items-center space-x-3">
         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-50">
@@ -88,27 +89,32 @@ function DocItem({
 }
 
 export default function DocumentVerificationScreen() {
-  const [nav] = useState("manager");
   const navigate = useNavigate();
+  const location = useLocation();
+  const navActive = (key) => {
+    const p = location.pathname;
+    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
+    return (routes[key] || []).some(r => p.startsWith(r));
+  };
   const bottomNavRoutes = {
     home: "/driver/dashboard/online",
-    manager: "/driver/jobs/list",
+    messages: "/driver/ridesharing/notification",
     wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences",
-  };
+    settings: "/driver/preferences"
+};
   const [docs, setDocs] = useState({
     id: { status: "Uploaded", emphasise: false, fileName: "national-id.pdf" },
     license: { status: "Missing", emphasise: true, fileName: "" },
-    police: { status: "Missing", emphasise: false, fileName: "" },
-  });
+    police: { status: "Missing", emphasise: false, fileName: "" }
+});
 
   const handleFileSelected = (key, event) => {
     const file = event.target.files?.[0];
     if (!file) return;
     setDocs((prev) => ({
       ...prev,
-      [key]: { ...prev[key], status: "Uploaded", emphasise: false, fileName: file.name },
-    }));
+      [key]: { ...prev[key], status: "Uploaded", emphasise: false, fileName: file.name }
+}));
   };
 
   const triggerFilePick = (key) => {
@@ -117,50 +123,45 @@ export default function DocumentVerificationScreen() {
   };
 
   return (
-    <div className="min-h-screen flex justify-center bg-[#0f172a] py-4">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
+    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
+      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
+        {/* Hide scrollbar */}
+        <style>{`
+          .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
+          .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        `}</style>
 
-      <div className="w-[375px] h-[812px] bg-white rounded-[32px] shadow-2xl overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-              <ShieldCheck className="h-4 w-4 text-[#03cd8c]" />
-            </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                Driver Personal
-              </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Document Verification
-              </h1>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => navigate("/driver/ridesharing/notification")}
-            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
-          >
-            <Bell className="h-4 w-4" />
-            <span className="absolute -top-0.5 -right-0.5 inline-flex h-3 w-3 items-center justify-center rounded-full bg-[#f77f00]" />
-          </button>
-        </header>
+        {/* Green curved header */}
+        <div className="relative" style={{ minHeight: 80 }}>
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)"
+}}
+          />
+          <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm"
+            >
+              <ChevronLeft className="h-5 w-5 text-white" />
+            </button>
+            <h1 className="text-base font-semibold text-white">Driver Personal</h1>
+          </header>
+        </div>
 
         {/* Content */}
-        <main className="flex-1 px-4 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
+        <main className="app-main flex-1 px-4 pt-3 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
           {/* Intro banner */}
-          <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-2">
-            <p className="text-[10px] tracking-[0.18em] uppercase text-[#a5f3fc]">
+          <section className="rounded-2xl bg-[#f0faf7] border border-[#d6ebe6] p-4 space-y-2">
+            <p className="text-[10px] tracking-[0.18em] uppercase text-[#03cd8c] font-semibold">
               Verify your account
             </p>
-            <p className="text-xs font-semibold">
+            <p className="text-xs font-semibold text-slate-900">
               Upload clear photos of your documents to start driving.
             </p>
-            <p className="text-[11px] text-slate-100 leading-snug">
+            <p className="text-[11px] text-slate-600 leading-snug">
               Make sure your name, photo and expiry dates are visible. Blurry or
               cropped images can cause delays.
             </p>
@@ -182,7 +183,7 @@ export default function DocumentVerificationScreen() {
             />
             <DocItem
               icon={FileBadge2}
-              title="Driver’s license"
+              title="Driver's license"
               subtitle="Valid and not expired."
               status={docs.license.status}
               emphasise={docs.license.emphasise}
@@ -246,39 +247,19 @@ export default function DocumentVerificationScreen() {
               onClick={() =>
                 navigate("/driver/onboarding/profile/documents/review")
               }
-              className="w-full rounded-full py-2.5 text-sm font-semibold shadow-sm bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c]"
+              className="w-full rounded-full py-2.5 text-sm font-semibold shadow-sm bg-[#03cd8c] text-white hover:bg-[#02b77c]"
             >
               Submit documents for review
             </button>
           </section>
         </main>
 
-        {/* Bottom navigation */}
-        <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem
-            icon={Home}
-            label="Home"
-            active={nav === "home"}
-            onClick={() => navigate(bottomNavRoutes.home)}
-          />
-          <BottomNavItem
-            icon={Briefcase}
-            label="Manager"
-            active={nav === "manager"}
-            onClick={() => navigate(bottomNavRoutes.manager)}
-          />
-          <BottomNavItem
-            icon={Wallet}
-            label="Wallet"
-            active={nav === "wallet"}
-            onClick={() => navigate(bottomNavRoutes.wallet)}
-          />
-          <BottomNavItem
-            icon={Settings}
-            label="Settings"
-            active={nav === "settings"}
-            onClick={() => navigate(bottomNavRoutes.settings)}
-          />
+        {/* Bottom navigation – green */}
+        <nav className="app-bottom-nav border-t border-white/20 flex" style={{ background: "#03cd8c" }}>
+          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate(bottomNavRoutes.home)} />
+          <BottomNavItem icon={MessageSquare} label="Messages" onClick={() => navigate(bottomNavRoutes.messages)} />
+          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate(bottomNavRoutes.wallet)} />
+          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate(bottomNavRoutes.settings)} />
         </nav>
       </div>
     </div>

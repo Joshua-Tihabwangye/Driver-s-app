@@ -1,14 +1,15 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  History as HistoryIcon,
+    History as HistoryIcon,
   MapPin,
   DollarSign,
   CheckCircle2,
+  Home,
+  Briefcase,
+  Wallet,
+  Settings
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import PhoneFrame from "../components/PhoneFrame";
-import BottomNav from "../components/BottomNav";
+import { useNavigate , useLocation } from "react-router-dom";
 
 // EVzone Driver App – D69 Driver – Ride History
 // Ride / Job history list with job type chips and filters.
@@ -32,8 +33,8 @@ const TRIPS = [
     time: "18:10",
     amount: "7.20",
     hasProof: true,
-    jobType: "ride",
-  },
+    jobType: "ride"
+},
   {
     id: "t2",
     from: "City Centre",
@@ -42,8 +43,8 @@ const TRIPS = [
     time: "16:45",
     amount: "5.40",
     hasProof: false,
-    jobType: "ride",
-  },
+    jobType: "ride"
+},
   {
     id: "t3",
     from: "Burger Hub, Acacia Mall",
@@ -52,8 +53,8 @@ const TRIPS = [
     time: "13:25",
     amount: "3.80",
     hasProof: true,
-    jobType: "delivery",
-  },
+    jobType: "delivery"
+},
   {
     id: "t4",
     from: "City Hotel",
@@ -62,8 +63,8 @@ const TRIPS = [
     time: "09:00–17:10",
     amount: "64.80",
     hasProof: true,
-    jobType: "rental",
-  },
+    jobType: "rental"
+},
   {
     id: "t5",
     from: "Airport",
@@ -72,8 +73,8 @@ const TRIPS = [
     time: "08:30–16:40",
     amount: "45.00",
     hasProof: true,
-    jobType: "tour",
-  },
+    jobType: "tour"
+},
   {
     id: "t6",
     from: "School XYZ",
@@ -82,8 +83,8 @@ const TRIPS = [
     time: "07:00–08:30",
     amount: "—",
     hasProof: false,
-    jobType: "shuttle",
-  },
+    jobType: "shuttle"
+},
   {
     id: "t7",
     from: "Patient location",
@@ -92,11 +93,27 @@ const TRIPS = [
     time: "18:10–18:40",
     amount: "—",
     hasProof: true,
-    jobType: "ambulance",
-  },
+    jobType: "ambulance"
+},
 ];
 
-function JobTypeChip({ jobType }: { jobType: string }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
+  return (
+    <button
+      type="button"
+      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
+        active ? "text-white" : "text-white/50 hover:text-white/80"
+      }`}
+      onClick={onClick}
+    >
+      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
+      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
+      <span className="relative z-10">{label}</span>
+    </button>
+  );
+}
+
+function JobTypeChip({ jobType }) {
   const base =
     "inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-medium border";
 
@@ -147,7 +164,7 @@ function TripRow({ from, to, date, time, amount, hasProof, jobType, onClick }: a
     <button
       type="button"
       onClick={onClick}
-      className="w-full rounded-2xl border border-slate-100 bg-white px-4 py-4 shadow-sm active:scale-[0.98] transition-all flex items-center justify-between group hover:border-[#03cd8c]/30"
+      className="w-full rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform flex items-center justify-between text-[11px] text-slate-600"
     >
       <div className="flex flex-col items-start max-w-[200px]">
         <span className="text-sm font-bold text-slate-900 leading-tight group-hover:text-[#03cd8c] transition-colors">
@@ -179,6 +196,18 @@ function TripRow({ from, to, date, time, amount, hasProof, jobType, onClick }: a
 export default function RideHistoryScreen() {
   const [filter, setFilter] = useState("all");
   const navigate = useNavigate();
+  const location = useLocation();
+  const navActive = (key) => {
+    const p = location.pathname;
+    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
+    return (routes[key] || []).some(r => p.startsWith(r));
+  };
+  const bottomNavRoutes = {
+    home: "/driver/dashboard/online",
+    manager: "/driver/jobs/list",
+    wallet: "/driver/earnings/overview",
+    settings: "/driver/preferences"
+};
 
   const filteredTrips =
     filter === "all"
@@ -186,41 +215,43 @@ export default function RideHistoryScreen() {
       : TRIPS.filter((trip) => trip.jobType === filter);
 
   return (
-    <PhoneFrame>
-      {/* Header */}
-      <header className="flex items-center justify-between px-4 pt-4 pb-2">
-        <div className="flex items-center space-x-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-            <HistoryIcon className="h-4 w-4 text-[#03cd8c]" />
-          </div>
-          <div className="flex flex-col items-start">
-            <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-              Driver
-            </span>
-            <h1 className="text-base font-semibold text-slate-900">
-              Ride history
-            </h1>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={() => navigate("/driver/ridesharing/notification")}
-          className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
-        >
-          <Bell className="h-4 w-4" />
-        </button>
-      </header>
+    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
+      {/* Local style: hide scrollbars but keep swipe scrolling */}
+      <style>{`
+        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
 
-      {/* Content */}
-      <main className="flex-1 px-4 pb-20 overflow-y-auto no-scrollbar space-y-5">
-        {/* Info card */}
-        <section className="rounded-3xl bg-slate-900 text-white p-6 space-y-3 shadow-xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-[#03cd8c]/10 rounded-full -mr-16 -mt-16 blur-2xl" />
-            <h3 className="text-sm font-bold tracking-tight relative">
-              Trips & Proof-of-Trip
-            </h3>
-            <p className="text-[11px] text-slate-300 leading-relaxed relative">
-              View your completed history across all service categories. Items with proof attachments are verified for payouts.
+      {/* Phone frame */}
+      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
+        {/* Header */}
+        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
+          <div className="flex items-center space-x-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
+              <HistoryIcon className="h-4 w-4 text-[#03cd8c]" />
+            </div>
+            <div className="flex flex-col items-start">
+              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
+                Driver
+              </span>
+              <h1 className="text-base font-semibold text-slate-900">
+                Ride history
+              </h1>
+            </div>
+          </div>
+        </header>
+
+        {/* Content */}
+        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
+          {/* Info card */}
+          <section className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 text-[11px] text-slate-600">
+            <p className="font-semibold text-xs text-slate-900 mb-0.5">
+              Trips & proof-of-trip
+            </p>
+            <p>
+              Trips with photos or notes captured via Proof-of-trip are marked
+              here. You can open any trip to see details, route, job type and
+              attached proof.
             </p>
         </section>
 
@@ -244,25 +275,25 @@ export default function RideHistoryScreen() {
           </div>
         </section>
 
-        {/* Ride / job list */}
-        <section className="space-y-3">
-          {filteredTrips.map((trip) => {
-            const tripRoutes: any = {
-              ride: "/driver/trip/demo-trip/proof",
-              delivery: "/driver/delivery/route/demo-route/details",
-              rental: "/driver/rental/job/demo-job/status",
-              tour: "/driver/tour/demo-tour/today",
-              shuttle: "/driver/help/shuttle-link",
-              ambulance: "/driver/ambulance/job/demo-job/status",
-            };
-            return (
-              <TripRow
-                key={trip.id}
-                {...trip}
-                onClick={() => navigate(tripRoutes[trip.jobType] || "/driver/trip/demo-trip/proof")}
-              />
-            );
-          })}
+          {/* Ride / job list */}
+          <section className="space-y-2">
+            {filteredTrips.map((trip) => {
+              const tripRoutes = {
+                ride: "/driver/trip/demo-trip/proof",
+                delivery: "/driver/delivery/route/demo-route/details",
+                rental: "/driver/rental/job/demo-job/status",
+                tour: "/driver/tour/demo-tour/today",
+                shuttle: "/driver/help/shuttle-link",
+                ambulance: "/driver/ambulance/job/demo-job/status"
+};
+              return (
+                <TripRow
+                  key={trip.id}
+                  {...trip}
+                  onClick={() => navigate(tripRoutes[trip.jobType] || "/driver/trip/demo-trip/proof")}
+                />
+              );
+            })}
 
           {filteredTrips.length === 0 && (
             <div className="rounded-2xl border-2 border-dashed border-slate-100 bg-slate-50 px-6 py-12 flex flex-col items-center justify-center text-center">
@@ -273,12 +304,30 @@ export default function RideHistoryScreen() {
         </section>
       </main>
 
-      <BottomNav active="home" />
-
-      <style>{`
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
-    </PhoneFrame>
+        {/* Bottom navigation – Home active (history context) */}
+        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
+          <BottomNavItem
+            icon={Home}
+            label="Home"
+           active={navActive("home")} onClick={() => navigate(bottomNavRoutes.home)}
+          />
+          <BottomNavItem
+            icon={Briefcase}
+            label="Manager"
+           active={navActive("manager")} onClick={() => navigate(bottomNavRoutes.manager)}
+          />
+          <BottomNavItem
+            icon={Wallet}
+            label="Wallet"
+           active={navActive("wallet")} onClick={() => navigate(bottomNavRoutes.wallet)}
+          />
+          <BottomNavItem
+            icon={Settings}
+            label="Settings"
+           active={navActive("settings")} onClick={() => navigate(bottomNavRoutes.settings)}
+          />
+        </nav>
+      </div>
+    </div>
   );
 }

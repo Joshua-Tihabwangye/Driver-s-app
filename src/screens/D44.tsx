@@ -1,15 +1,16 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  ListFilter,
+    ListFilter,
   MapPin,
   DollarSign,
   ArrowRight,
   HelpCircle,
+  Home,
+  Briefcase,
+  Wallet,
+  Settings
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import PhoneFrame from "../components/PhoneFrame";
-import BottomNav from "../components/BottomNav";
+import { useNavigate , useLocation } from "react-router-dom";
 
 // EVzone Driver App – D44 Ride Requests
 // List of available job requests with a job-type filter bar and job type pill per card.
@@ -32,8 +33,8 @@ const JOBS = [
     distance: "5.2 km",
     duration: "14 min",
     fare: "4.90",
-    jobType: "ride",
-  },
+    jobType: "ride"
+},
   {
     id: "3242",
     from: "City Centre",
@@ -41,8 +42,8 @@ const JOBS = [
     distance: "7.8 km",
     duration: "19 min",
     fare: "6.40",
-    jobType: "ride",
-  },
+    jobType: "ride"
+},
   {
     id: "3243",
     from: "Lugogo Mall",
@@ -50,8 +51,8 @@ const JOBS = [
     distance: "3.4 km",
     duration: "10 min",
     fare: "3.70",
-    jobType: "delivery",
-  },
+    jobType: "delivery"
+},
   {
     id: "3244",
     from: "City Hotel",
@@ -59,8 +60,8 @@ const JOBS = [
     distance: "—",
     duration: "09:00–18:00",
     fare: "45.00",
-    jobType: "rental",
-  },
+    jobType: "rental"
+},
   {
     id: "3245",
     from: "Airport",
@@ -68,8 +69,8 @@ const JOBS = [
     distance: "42 km",
     duration: "Day 2 of 5",
     fare: "Tour",
-    jobType: "tour",
-  },
+    jobType: "tour"
+},
   {
     id: "3246",
     from: "Near Acacia Road",
@@ -77,8 +78,8 @@ const JOBS = [
     distance: "3.1 km",
     duration: "8 min",
     fare: "—",
-    jobType: "ambulance",
-  },
+    jobType: "ambulance"
+},
   {
     id: "3247",
     from: "School XYZ",
@@ -86,12 +87,29 @@ const JOBS = [
     distance: "—",
     duration: "07:00–08:30",
     fare: "Shuttle",
-    jobType: "shuttle",
-  },
+    jobType: "shuttle"
+},
 ];
 
-function JobTypePill({ jobType }: { jobType: string }) {
-  const base = "inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider border";
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
+  return (
+    <button
+      type="button"
+      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
+        active ? "text-white" : "text-white/50 hover:text-white/80"
+      }`}
+      onClick={onClick}
+    >
+      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
+      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
+      <span className="relative z-10">{label}</span>
+    </button>
+  );
+}
+
+function JobTypePill({ jobType }) {
+  const base =
+    "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium border";
 
   if (jobType === "ambulance") return <span className={`${base} bg-red-50 border-red-100 text-red-600`}>Ambulance</span>;
   if (jobType === "rental") return <span className={`${base} bg-emerald-50 border-emerald-100 text-emerald-600`}>Rental</span>;
@@ -108,7 +126,7 @@ function RequestCard({ job, onClick }: { job: any, onClick: (j: any) => void }) 
     <button
       type="button"
       onClick={() => onClick(job)}
-      className="w-full rounded-2xl border border-slate-100 bg-white px-4 py-3.5 shadow-sm active:scale-[0.98] transition-all flex flex-col space-y-3 text-[11px] hover:border-[#03cd8c]/30 group"
+      className="w-full rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform flex flex-col space-y-2 text-[11px] text-slate-600"
     >
       <div className="flex items-center justify-between">
         <div className="flex flex-col items-start max-w-[200px]">
@@ -138,6 +156,21 @@ function RequestCard({ job, onClick }: { job: any, onClick: (j: any) => void }) 
 export default function RideRequestsListScreen() {
   const [filter, setFilter] = useState("all");
   const navigate = useNavigate();
+  const location = useLocation();
+  const navActive = (key) => {
+    const p = location.pathname;
+    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
+    return (routes[key] || []).some(r => p.startsWith(r));
+  };
+  const bottomNavRoutes = {
+    home: "/driver/dashboard/online",
+    manager: "/driver/jobs/list",
+    wallet: "/driver/earnings/overview",
+    settings: "/driver/preferences"
+};
+
+  const filteredJobs =
+    filter === "all" ? JOBS : JOBS.filter((job) => job.jobType === filter);
 
   const filteredJobs = filter === "all" ? JOBS : JOBS.filter((job) => job.jobType === filter);
   const hasShuttleJob = filteredJobs.some((j) => j.jobType === "shuttle");
@@ -154,16 +187,52 @@ export default function RideRequestsListScreen() {
   };
 
   return (
-    <PhoneFrame>
-      {/* Header */}
-      <header className="flex items-center justify-between px-4 pt-4 pb-2">
-        <div className="flex items-center space-x-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-            <ListFilter className="h-4 w-4 text-[#03cd8c]" />
+    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
+      {/* Local style: hide scrollbars but keep swipe scrolling */}
+      <style>{`
+        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
+
+      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
+        {/* Header */}
+        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
+          <div className="flex items-center space-x-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
+              <ListFilter className="h-4 w-4 text-[#03cd8c]" />
+            </div>
+            <div className="flex flex-col items-start">
+              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
+                Driver
+              </span>
+              <h1 className="text-base font-semibold text-slate-900">
+                Ride requests
+              </h1>
+            </div>
           </div>
-          <div className="flex flex-col items-start">
-            <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-              Driver
+        </header>
+
+        {/* Content */}
+        <main className="app-main flex-1 px-4 pt-3 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
+          {/* Sort row */}
+          <section className="flex items-center justify-between rounded-2xl bg-slate-50 px-3 py-2 border border-slate-100">
+            <div className="flex items-center space-x-2 text-[11px] text-slate-600">
+              <span className="font-semibold text-slate-900">Sorted by</span>
+              <span>Closest pickup · Highest fare</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate("/driver/delivery/orders/filter")}
+              className="inline-flex items-center rounded-full border border-slate-200 px-2 py-0.5 text-[11px] text-slate-700"
+            >
+              <ListFilter className="h-3 w-3 mr-1" /> Filters
+            </button>
+          </section>
+
+          {/* Job-type filter bar */}
+          <section className="space-y-1">
+            <span className="text-[11px] font-semibold text-slate-900">
+              Job type
             </span>
             <h1 className="text-base font-semibold text-slate-900">
               Ride requests
@@ -241,13 +310,30 @@ export default function RideRequestsListScreen() {
         )}
       </main>
 
-      {/* Bottom Navigation */}
-      <BottomNav active="earnings" />
-
-      <style>{`
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
-    </PhoneFrame>
+        {/* Bottom navigation – Home active (requests context) */}
+        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
+          <BottomNavItem
+            icon={Home}
+            label="Home"
+           active={navActive("home")} onClick={() => navigate(bottomNavRoutes.home)}
+          />
+          <BottomNavItem
+            icon={Briefcase}
+            label="Manager"
+           active={navActive("manager")} onClick={() => navigate(bottomNavRoutes.manager)}
+          />
+          <BottomNavItem
+            icon={Wallet}
+            label="Wallet"
+           active={navActive("wallet")} onClick={() => navigate(bottomNavRoutes.wallet)}
+          />
+          <BottomNavItem
+            icon={Settings}
+            label="Settings"
+           active={navActive("settings")} onClick={() => navigate(bottomNavRoutes.settings)}
+          />
+        </nav>
+      </div>
+    </div>
   );
 }

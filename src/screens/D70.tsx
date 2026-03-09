@@ -1,30 +1,57 @@
 import React from "react";
 import {
-  Bell,
-  ShieldCheck,
+    ShieldCheck,
   LifeBuoy,
   AlertTriangle,
   MapPin,
   Phone,
   Share2,
+  Home,
+  Briefcase,
+  Wallet,
+  Settings
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import PhoneFrame from "../components/PhoneFrame";
-import BottomNav from "../components/BottomNav";
+import { useNavigate , useLocation } from "react-router-dom";
 
-// EVzone Driver App – D70 Safety Hub
-// Safety Hub overview screen that links into toolkit, SOS, and Share ride flows.
+// EVzone Driver App – D70 Safety Hub (v1, fixed Share2 import)
+// Compact Safety Hub overview screen that links into Safety Toolkit, SOS, and Follow/Share ride flows.
+// 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
+
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
+  return (
+    <button
+      type="button"
+      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
+        active ? "text-white" : "text-white/50 hover:text-white/80"
+      }`}
+      onClick={onClick}
+    >
+      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
+      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
+      <span className="relative z-10">{label}</span>
+    </button>
+  );
+}
 
 function HubTile({
   icon: Icon,
   title,
   subtitle,
   tone = "default",
-  onClick = () => {},
-}: { icon: any, title: string, subtitle: string, tone?: string, onClick?: () => void }) {
-  const bg = tone === "warning" ? "bg-red-50" : "bg-white";
-  const border = tone === "warning" ? "border-red-100" : "border-slate-100";
-  const iconBg = tone === "warning" ? "bg-white" : "bg-slate-50";
+  onClick = () => {}
+}) {
+  const bg =
+    tone === "primary"
+      ? "bg-white"
+      : tone === "warning"
+      ? "bg-amber-50"
+      : "bg-slate-50";
+  const border =
+    tone === "primary"
+      ? "border-slate-100"
+      : tone === "warning"
+      ? "border-amber-100"
+      : "border-slate-100";
 
   return (
     <button
@@ -47,6 +74,18 @@ function HubTile({
 
 export default function SafetyHubScreen() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const navActive = (key) => {
+    const p = location.pathname;
+    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
+    return (routes[key] || []).some(r => p.startsWith(r));
+  };
+  const bottomNavRoutes = {
+    home: "/driver/dashboard/online",
+    manager: "/driver/jobs/list",
+    wallet: "/driver/earnings/overview",
+    settings: "/driver/preferences"
+};
   const supportNumber = "+256 700 000 999";
   const emergencyNumber = "+256 112";
   
@@ -56,39 +95,20 @@ export default function SafetyHubScreen() {
   };
 
   return (
-    <PhoneFrame>
-      {/* Header */}
-      <header className="flex items-center justify-between px-4 pt-4 pb-2">
-        <div className="flex items-center space-x-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-            <ShieldCheck className="h-4 w-4 text-[#03cd8c]" />
-          </div>
-          <div className="flex flex-col items-start">
-            <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-              Driver · Safety
-            </span>
-            <h1 className="text-base font-semibold text-slate-900">
-              Safety hub
-            </h1>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={() => navigate("/driver/ridesharing/notification")}
-          className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
-        >
-          <Bell className="h-4 w-4" />
-        </button>
-      </header>
+    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
+      {/* Local style: hide scrollbars but keep swipe scrolling */}
+      <style>{`
+        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
 
-      {/* Content */}
-      <main className="flex-1 px-4 pb-20 overflow-y-auto no-scrollbar space-y-5">
-        {/* Intro card */}
-        <section className="rounded-2xl bg-slate-900 text-white p-5 space-y-4 shadow-lg overflow-hidden relative">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#03cd8c]/10 rounded-full -mr-16 -mt-16" />
-          <div className="flex items-center space-x-4 relative">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#03cd8c] text-white shadow-lg shadow-[#03cd8c]/20">
-              <ShieldCheck className="h-6 w-6 fill-white" />
+      {/* Phone frame */}
+      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
+        {/* Header */}
+        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
+          <div className="flex items-center space-x-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
+              <ShieldCheck className="h-4 w-4 text-[#03cd8c]" />
             </div>
             <div className="flex flex-col">
               <span className="text-[10px] tracking-[0.2em] font-bold uppercase text-[#03cd8c]">
@@ -99,80 +119,153 @@ export default function SafetyHubScreen() {
               </p>
             </div>
           </div>
-          <p className="text-[11px] text-slate-300 leading-relaxed">
-            Open the Safety hub any time you feel unsafe, want someone to follow your trip, or need emergency help.
-          </p>
-        </section>
+        </header>
 
-        {/* Emergency Buttons */}
-        <section className="grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={() => navigate("/driver/safety/sos/sending")}
-            className="rounded-2xl border-2 border-red-50 bg-red-50/30 p-4 text-left active:scale-[0.98] transition-all shadow-sm group hover:border-red-100 hover:bg-red-50"
-          >
-            <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center mb-3 group-hover:bg-red-200 transition-colors">
-               <AlertTriangle className="h-5 w-5 text-red-600" />
+        {/* Content */}
+        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
+          {/* Intro card */}
+          <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-3">
+            <div className="flex items-center space-x-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#03cd8c] text-slate-900">
+                <ShieldCheck className="h-5 w-5" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] tracking-[0.18em] uppercase text-[#a5f3fc]">
+                  Safety first
+                </span>
+                <p className="text-sm font-semibold">
+                  Quick access to all your safety tools.
+                </p>
+              </div>
             </div>
-            <p className="text-sm font-bold text-red-700">SOS</p>
-            <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider mt-1">Immediate Help</p>
-          </button>
-          
-          <button
-            type="button"
-            onClick={() => navigate("/driver/safety/hub/expanded")}
-            className="rounded-2xl border-2 border-emerald-50 bg-emerald-50/30 p-4 text-left active:scale-[0.98] transition-all shadow-sm group hover:border-emerald-100 hover:bg-emerald-50"
-          >
-            <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center mb-3 group-hover:bg-emerald-200 transition-colors">
-               <LifeBuoy className="h-5 w-5 text-emerald-600" />
-            </div>
-            <p className="text-sm font-bold text-emerald-700">Toolkit</p>
-            <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-wider mt-1">All Safety Tools</p>
-          </button>
-        </section>
+            <p className="text-[11px] text-slate-100 leading-snug">
+              Open the Safety hub any time you feel unsafe, notice something
+              unusual, or want someone to follow your trip.
+            </p>
+          </section>
 
-        {/* Core tools */}
-        <section className="space-y-3">
-          <h2 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-1">
-             Security Management
-          </h2>
-          <HubTile
-            icon={MapPin}
-            title="Emergency assistance map"
-            subtitle="Share your precise coordinates with local authorities."
-            onClick={() => navigate("/driver/safety/emergency/map")}
-          />
-          <HubTile
-            icon={MapPin}
-            title="Follow my ride"
-            subtitle="Trusted contacts can track your live movement."
-            onClick={() => navigate("/driver/safety/follow-my-ride")}
-          />
-          <HubTile
-            icon={Share2}
-            title="Trip Status Link"
-            subtitle="Secure public link for friends and family."
-            onClick={() => navigate("/driver/safety/share-my-ride")}
-          />
-        </section>
+          {/* Quick actions */}
+          <section className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => navigate("/driver/safety/sos/sending")}
+              className="rounded-2xl border border-red-100 bg-red-50 px-3 py-3 text-left text-sm font-semibold text-red-700 active:scale-[0.98] transition-transform shadow-sm"
+            >
+              SOS / emergency
+              <p className="text-[11px] text-red-600 font-medium mt-0.5">
+                Call for immediate help
+              </p>
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/driver/safety/hub/expanded")}
+              className="rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 text-left text-sm font-semibold text-slate-900 active:scale-[0.98] transition-transform shadow-sm"
+            >
+              Safety toolkit
+              <p className="text-[11px] text-slate-600 font-medium mt-0.5">
+                All tools in one place
+              </p>
+            </button>
+          </section>
 
-        {/* Support */}
-        <section className="space-y-3 pt-2">
-          <h2 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-1">
-             Crisis Support
-          </h2>
-          <HubTile
-            icon={Phone}
-            title="Call Support Agent"
-            subtitle="Reach an EVzone safety expert immediately."
-            onClick={() => handleCall(supportNumber)}
+          {/* Core tools */}
+          <section className="space-y-2">
+            <h2 className="text-sm font-semibold text-slate-900 mb-1">
+              Core safety tools
+            </h2>
+            <HubTile
+              icon={AlertTriangle}
+              title="SOS / emergency assistance"
+              subtitle="Trigger SOS, share your location and get help from emergency services and EVzone support."
+              tone="warning"
+              onClick={() => navigate("/driver/safety/sos/sending")}
+            />
+            <HubTile
+              icon={LifeBuoy}
+              title="Safety toolkit"
+              subtitle="Access SOS, follow ride, incident reporting and support options in one place."
+              tone="primary"
+              onClick={() => navigate("/driver/safety/hub/expanded")}
+            />
+            <HubTile
+              icon={MapPin}
+              title="Emergency assistance map"
+              subtitle="Share your location with support or emergency services."
+              onClick={() => navigate("/driver/safety/emergency/map")}
+            />
+          </section>
+
+          {/* Follow / share ride */}
+          <section className="space-y-2">
+            <h2 className="text-sm font-semibold text-slate-900 mb-1">
+              Share your trip
+            </h2>
+            <HubTile
+              icon={MapPin}
+              title="Follow my ride"
+              subtitle="Let trusted contacts follow your location for this trip only."
+              onClick={() => navigate("/driver/safety/follow-my-ride")}
+            />
+            <HubTile
+              icon={Share2}
+              title="Share my ride link"
+              subtitle="Create a link or QR code that friends or family can use to see your trip status."
+              onClick={() => navigate("/driver/safety/share-my-ride")}
+            />
+          </section>
+
+          {/* Support */}
+          <section className="space-y-2 pt-1 pb-4">
+            <h2 className="text-sm font-semibold text-slate-900 mb-1">
+              Support & help
+            </h2>
+            <HubTile
+              icon={Phone}
+              title="Call EVzone support"
+              subtitle="Talk to an EVzone agent about safety, account or payment issues."
+              onClick={() => handleCall(supportNumber)}
+            />
+            <HubTile
+              icon={AlertTriangle}
+              title="Call local emergency"
+              subtitle="Dial your local emergency number."
+              tone="warning"
+              onClick={() => handleCall(emergencyNumber)}
+            />
+            <button
+              type="button"
+              onClick={() => navigate("/driver/safety/driving-hours")}
+              className="w-full rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 text-sm font-semibold text-slate-900 active:scale-[0.98] transition-transform shadow-sm"
+            >
+              Review driving hours & safety tips
+              <p className="text-[11px] text-slate-600 font-medium mt-0.5">
+                Stay within limits and keep yourself and riders safe.
+              </p>
+            </button>
+          </section>
+        </main>
+
+        {/* Bottom navigation – Home active (safety hub context) */}
+        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
+          <BottomNavItem
+            icon={Home}
+            label="Home"
+           active={navActive("home")} onClick={() => navigate(bottomNavRoutes.home)}
           />
-          <HubTile
-            icon={AlertTriangle}
-            title="Emergency Services"
-            subtitle="Connect to local police or medical help."
-            tone="warning"
-            onClick={() => handleCall(emergencyNumber)}
+          <BottomNavItem
+            icon={Briefcase}
+            label="Manager"
+           active={navActive("manager")} onClick={() => navigate(bottomNavRoutes.manager)}
+          />
+          <BottomNavItem
+            icon={Wallet}
+            label="Wallet"
+           active={navActive("wallet")} onClick={() => navigate(bottomNavRoutes.wallet)}
+          />
+          <BottomNavItem
+            icon={Settings}
+            label="Settings"
+           active={navActive("settings")} onClick={() => navigate(bottomNavRoutes.settings)}
           />
         </section>
         

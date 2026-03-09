@@ -1,185 +1,271 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  DollarSign,
-  Calendar,
-  LineChart,
-  TrendingUp,
-  ChevronDown,
+    ChevronLeft,
+  ChevronRight,
+  Home,
+  Briefcase,
+  Wallet,
+  Settings,
+  Car,
+  Wallet as WalletIcon,
+  Search,
+  Truck,
+  History,
+  Info
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import PhoneFrame from "../components/PhoneFrame";
-import BottomNav from "../components/BottomNav";
+import { useNavigate , useLocation } from "react-router-dom";
 
-// EVzone Driver App – D33 Driver App – Earnings Overview
-// Snapshot of earnings with a simple period selector and mini bar chart.
+// EVzone Driver App – D33 Driver App – Earnings & Stats Dashboard
+// Redesigned to match Screenshot 3.
+// Massive scrolling dashboard with welcome banner, wallet, charts, stats grids, and map station lists.
 
-const MOCK_BARS = [
-  { label: "Mon", value: 24 },
-  { label: "Tue", value: 32 },
-  { label: "Wed", value: 18 },
-  { label: "Thu", value: 40 },
-  { label: "Fri", value: 52 },
-  { label: "Sat", value: 46 },
-  { label: "Sun", value: 30 },
-];
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
+        active ? "text-white" : "text-white/50 hover:text-white/80"
+      }`}
+    >
+      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
+      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
+      <span className="relative z-10">{label}</span>
+    </button>
+  );
+}
 
-export default function EarningsOverviewScreen() {
-  const [period, setPeriod] = useState("week");
+function StatCard({ label, value, sub = null, icon: Icon = null }: { label: string; value: string; sub?: string | null; icon?: React.ElementType | null }) {
+  return (
+    <div className="rounded-2xl bg-white border border-slate-100 p-4 space-y-1.5 relative overflow-hidden shadow-sm">
+      {Icon && <Icon className="absolute top-3 right-3 h-4 w-4 text-slate-200" />}
+      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{label}</span>
+      <div className="flex flex-col">
+        <span className="text-base font-bold text-slate-800">{value}</span>
+        {sub && <span className="text-[10px] text-[#03cd8c] font-semibold mt-0.5">{sub}</span>}
+      </div>
+    </div>
+  );
+}
+
+function StationRow({ name, value, total, colorClass }) {
+  const percentage = Math.min((value / total) * 100, 100);
+  return (
+    <div className="rounded-2xl border border-slate-100 bg-white p-3.5 space-y-2 shadow-sm">
+      <div className="flex justify-between text-[11px] font-medium">
+        <div className="flex flex-col">
+          <span className="text-slate-400">Total Riders</span>
+          <span className="text-slate-900 font-bold">{value}</span>
+        </div>
+        <div className="flex flex-col items-end">
+          <span className="text-slate-400">Total Earnings</span>
+          <span className="text-slate-900 font-bold">UGX 4,200</span>
+        </div>
+      </div>
+      <div className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Location</div>
+      <div className="text-[12px] text-slate-800 font-bold">{name}</div>
+      <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+        <div className={`h-full rounded-full ${colorClass}`} style={{ width: `${percentage}%` }} />
+      </div>
+      <div className="flex justify-end text-[10px] font-bold text-slate-400">{percentage.toFixed(0)}%</div>
+    </div>
+  );
+}
+
+export default function EarningsStatsDashboardScreen() {
   const navigate = useNavigate();
-
-  const cyclePeriod = () => {
-    setPeriod((prev) => (prev === "week" ? "month" : "week"));
+  const location = useLocation();
+  const navActive = (key) => {
+    const p = location.pathname;
+    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
+    return (routes[key] || []).some(r => p.startsWith(r));
   };
 
   return (
-    <PhoneFrame>
-      {/* Header */}
-      <header className="flex items-center justify-between px-4 pt-4 pb-2">
-        <div className="flex items-center space-x-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-            <DollarSign className="h-4 w-4 text-[#03cd8c]" />
-          </div>
-          <div className="flex flex-col items-start">
-            <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-              Driver
-            </span>
-            <h1 className="text-base font-semibold text-slate-900">
-              Earnings overview
-            </h1>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={() => navigate("/driver/ridesharing/notification")}
-          className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
-        >
-          <Bell className="h-4 w-4" />
-        </button>
-      </header>
+    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
+      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
+        {/* Hide scrollbar */}
+        <style>{`
+          .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
+          .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        `}</style>
 
-      {/* Content */}
-      <main className="flex-1 px-4 pb-20 space-y-4 overflow-y-auto no-scrollbar">
-        {/* Period selector + summary */}
-        <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-3 shadow-lg shadow-[#0b1e3a]/10">
-          <div className="flex items-center justify-between">
+        {/* Green curved header */}
+        <div className="relative" style={{ minHeight: 80 }}>
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)"
+            }}
+          />
+          <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
             <div className="flex items-center space-x-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#03cd8c] text-white">
-                <LineChart className="h-4 w-4 fill-white" />
+              <div className="h-8 w-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                <Car className="h-4 w-4 text-white" />
               </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] tracking-[0.18em] uppercase text-[#a5f3fc]">
-                  This {period === "week" ? "week" : "month"}
-                </span>
-                <p className="text-sm font-bold">Total: $242.80</p>
-              </div>
+              <h1 className="text-sm font-semibold text-white">EVzone Driver</h1>
             </div>
-            <button
-              type="button"
-              onClick={cyclePeriod}
-              className="inline-flex items-center rounded-full bg-slate-900/50 px-3 py-1.5 text-[11px] font-bold text-slate-50 border border-slate-700/50 backdrop-blur-sm"
-            >
-              <Calendar className="h-3.5 w-3.5 mr-1" />
-              <span className="mr-1 truncate max-w-[60px]">
-                {period === "week" ? "Week" : "Month"}
-              </span>
-              <ChevronDown className="h-3 w-3" />
-            </button>
-          </div>
-          <p className="text-[11px] text-slate-100 leading-relaxed">
-            Includes both EV rides and deliveries. You can adjust your goals
-            and see more detail in Analytics.
-          </p>
-        </section>
+            <div className="h-8 w-8 rounded-full bg-white/20 border-2 border-white flex items-center justify-center overflow-hidden">
+              <div className="text-white text-[11px] font-bold">J</div>
+            </div>
+          </header>
+        </div>
 
-        {/* Mini bar chart */}
-        <section className="space-y-2">
-          <h2 className="text-sm font-bold text-slate-900 px-1">
-            Daily breakdown
-          </h2>
-          <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-4 shadow-sm">
-            <div className="flex items-end space-x-2 h-32">
-              {MOCK_BARS.map((bar) => {
-                const max = 60; 
-                const height = Math.max((bar.value / max) * 100, 12);
-                return (
+        {/* Content */}
+        <main className="app-main flex-1 px-4 pt-4 pb-4 space-y-5 overflow-y-auto scrollbar-hide">
+
+          {/* Welcome Banner */}
+          <section className="rounded-2xl bg-[#00a3ff] p-4 flex items-center justify-between text-white relative h-24 overflow-hidden shadow-lg shadow-blue-500/10">
+            <div className="z-10">
+              <h2 className="text-[15px] font-bold">Welcome John Doe</h2>
+              <p className="text-[10px] text-white/80 max-w-[160px] leading-tight mt-1">
+                Welcome to the Driver App! Manage your rides, track your earnings and plan your next journey with ease.
+              </p>
+            </div>
+            <div className="relative h-20 w-20 flex-shrink-0">
+              {/* Mock illustration with SVG */}
+              <svg viewBox="0 0 100 100" className="h-full w-full">
+                <circle cx="50" cy="50" r="40" fill="white" opacity="0.2" />
+                <rect x="30" y="30" width="40" height="40" rx="4" fill="white" opacity="0.5" />
+                <circle cx="70" cy="30" r="10" fill="#fbbf24" />
+              </svg>
+            </div>
+          </section>
+
+          {/* Wallet Card */}
+          <section className="rounded-2xl bg-[#0b1e3a] p-4 flex items-center space-x-3 shadow-lg">
+            <div className="h-11 w-11 flex items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm">
+              <WalletIcon className="h-5 w-5 text-[#a5f3fc]" />
+            </div>
+            <div className="flex-1">
+              <span className="text-[10px] font-bold text-[#a5f3fc] uppercase tracking-wider">Your Balance</span>
+              <div className="text-lg font-bold text-white">UGX 25,750</div>
+            </div>
+            <button type="button" onClick={() => navigate("/driver/earnings/cashout")} className="rounded-xl bg-[#03cd8c] px-4 py-2.5 text-[11px] font-bold text-white shadow-lg shadow-emerald-500/20 active:scale-95 transition-all">
+              Cash Out
+            </button>
+          </section>
+
+          {/* Earnings Chart */}
+          <section className="rounded-2xl border border-slate-100 bg-white p-5 space-y-4 shadow-sm">
+            <div className="flex items-center justify-between text-slate-400">
+              <ChevronLeft className="h-4 w-4" />
+              <span className="text-[11px] font-bold">01 Jan - 07 Jan</span>
+              <ChevronRight className="h-4 w-4" />
+            </div>
+            <div className="text-center">
+              <div className="text-[16px] font-bold text-[#03cd8c]">UGX 12,500</div>
+              <div className="text-[10px] text-slate-400 font-medium tracking-tight">Daily highest $24,141.00</div>
+            </div>
+            <div className="flex items-end justify-between h-32 px-2 pt-2">
+              {[12, 18, 25, 14, 30, 10, 16].map((h, i) => (
+                <div key={i} className="flex flex-col items-center space-y-2">
                   <div
-                    key={bar.label}
-                    className="flex flex-col items-center flex-1 min-w-[0]"
+                    className={`w-4 rounded-t-sm ${i === 4 ? 'bg-[#00a3ff]' : 'bg-slate-100'}`}
+                    style={{ height: `${h * 2}px` }}
                   >
-                    <div className="flex-1 flex items-end w-full group">
-                      <div
-                        className="w-full rounded-t-full bg-slate-200 group-hover:bg-[#03cd8c] transition-all duration-300 relative"
-                        style={{ height: `${height}%` }}
-                      >
-                         <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[8px] font-bold py-1 px-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                            ${bar.value}
-                         </div>
-                      </div>
-                    </div>
-                    <span className="mt-2 text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
-                      {bar.label.slice(0, 3)}
-                    </span>
+                    {i === 4 && <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-[#00a3ff] text-white text-[8px] px-1 py-0.5 rounded shadow">UGX 5,502</div>}
                   </div>
-                );
-              })}
+                  <span className="text-[9px] font-bold text-slate-400 uppercase">{['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][i]}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Ride Banner */}
+          <section className="rounded-2xl bg-[#00a3ff] p-4 flex items-center justify-between text-white overflow-hidden shadow-lg shadow-blue-500/10">
+            <div className="z-10 space-y-3">
+              <div>
+                <h2 className="text-[13px] font-bold">Your rides/trips</h2>
+                <p className="text-[9px] text-white/80 max-w-[150px] leading-tight mt-0.5">
+                  Start your journey and manage costs professionally.
+                </p>
+              </div>
+              <button type="button" onClick={() => navigate("/driver/delivery/orders")} className="rounded-full bg-[#03cd8c] px-4 py-1.5 text-[10px] font-bold text-white shadow active:scale-95 transition-all">
+                Search
+              </button>
+            </div>
+            <div className="h-16 w-24">
+              {/* Car illustration placeholder */}
+              <svg viewBox="0 0 100 60" className="h-full w-full">
+                <rect x="20" y="20" width="60" height="25" rx="5" fill="white" opacity="0.4" />
+                <circle cx="30" cy="45" r="5" fill="white" />
+                <circle cx="70" cy="45" r="5" fill="white" />
+              </svg>
+            </div>
+          </section>
+
+          {/* Stats Grid 1 */}
+          <div className="grid grid-cols-2 gap-3">
+            <StatCard label="Total Earning" value="45" icon={History} />
+            <StatCard label="Revenue" value="UGX 7,500" sub="+ $5.00 than last month" icon={History} />
+            <StatCard label="Total Distance" value="248 miles" />
+            <StatCard label="Upcoming Rides" value="10" icon={History} />
+            <StatCard label="Total Online time" value="36H 20M" />
+            <StatCard label="Successful rides" value="38" />
+          </div>
+
+          {/* Stations List */}
+          <section className="space-y-6 pt-2">
+            <h2 className="text-[14px] font-bold text-slate-800">Top Performing Stations</h2>
+            {/* Map Placeholder */}
+            <div className="rounded-3xl h-40 bg-slate-100 overflow-hidden relative border border-slate-50">
+              <div className="absolute inset-0 opacity-40">
+                <svg className="h-full w-full" viewBox="0 0 100 100">
+                  <path d="M0,50 Q25,30 50,50 T100,50" fill="none" stroke="#ddd" strokeWidth="2" />
+                  <path d="M50,0 Q30,25 50,50 T50,100" fill="none" stroke="#ddd" strokeWidth="2" />
+                </svg>
+              </div>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-4 w-4 rounded-full bg-[#03cd8c] border-2 border-white shadow-md shadow-emerald-500/50" />
+              <div className="absolute top-1/4 left-1/4 h-3 w-3 rounded-full bg-blue-400 border border-white" />
+              <div className="absolute bottom-1/3 right-1/4 h-3 w-3 rounded-full bg-orange-400 border border-white" />
+            </div>
+
+            <div className="space-y-3 pt-2">
+              <StationRow name="Kampala Central Division" value="20" total="28" colorClass="bg-[#03cd8c]" />
+              <StationRow name="Nakasero, Kampala" value="14" total="22" colorClass="bg-[#00a3ff]" />
+              <StationRow name="Ntinda, Kampala" value="5" total="42" colorClass="bg-orange-400" />
+              <StationRow name="Kololo, Kampala" value="4" total="10" colorClass="bg-yellow-400" />
             </div>
           </div>
         </section>
 
-        {/* Highlights */}
-        <section className="space-y-3 pt-1">
-          <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4 flex items-start space-x-3 text-[11px] text-slate-600 shadow-sm relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-[#03cd8c]/5 rounded-full -mr-8 -mt-8" />
-            <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl bg-white shadow-sm shrink-0">
-              <TrendingUp className="h-5 w-5 text-[#03cd8c]" />
+          {/* Delivery Banner */}
+          <section className="rounded-2xl bg-[#00a3ff] p-4 flex items-center justify-between text-white overflow-hidden shadow-lg shadow-blue-500/10">
+            <div className="z-10 space-y-3">
+              <div>
+                <h2 className="text-[13px] font-bold">Your Deliveries</h2>
+                <p className="text-[9px] text-white/80 max-w-[150px] leading-tight mt-0.5">
+                  Start your journey and manage costs professionally.
+                </p>
+              </div>
+              <button type="button" onClick={() => navigate("/driver/delivery/orders")} className="rounded-full bg-[#03cd8c] px-4 py-1.5 text-[10px] font-bold text-white shadow active:scale-95 transition-all">
+                Search
+              </button>
             </div>
-            <div className="flex-1 relative">
-              <p className="font-bold text-xs text-slate-900 mb-0.5">
-                Earnings trend
-              </p>
-              <p className="leading-relaxed">
-                You&apos;re <span className="text-[#03cd8c] font-bold">12% above</span> last week&apos;s earnings.
-                Peak hours are coming up!
-              </p>
+            <div className="h-16 w-24">
+              <Truck className="h-full w-full text-white opacity-40" />
             </div>
+          </section>
+
+          {/* Delivery Stats Grid */}
+          <div className="grid grid-cols-2 gap-3 pb-10">
+            <StatCard label="Order completed" value="45" icon={History} />
+            <StatCard label="Expected Payout" value="UGX 5,500" icon={History} />
+            <StatCard label="Order in-delivery" value="19" sub="+2 than last month" icon={History} />
+            <StatCard label="On-time Delivery" value="85%" icon={History} />
           </div>
 
-          <button
-            type="button"
-            onClick={() => navigate("/driver/analytics")}
-            className="w-full rounded-xl bg-slate-900 text-white font-bold text-sm py-4 active:scale-[0.98] transition-all shadow-lg flex items-center justify-center space-x-2"
-          >
-            <LineChart className="h-4 w-4" />
-            <span>View Full Analytics</span>
-          </button>
+        </main>
 
-          <div className="flex space-x-2">
-            <button
-              type="button"
-              onClick={() => navigate("/driver/earnings/goals")}
-              className="flex-1 rounded-xl bg-[#03cd8c] text-white font-bold text-xs py-3.5 active:scale-[0.98] transition-all"
-            >
-              Set Weekly Goal
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate("/driver/history/rides")}
-              className="flex-1 rounded-xl border-2 border-slate-100 bg-white text-slate-800 font-bold text-xs py-3.5 active:scale-[0.98] transition-all"
-            >
-              Ride History
-            </button>
-          </div>
-        </section>
-      </main>
-
-      {/* Bottom Navigation */}
-      <BottomNav active="earnings" />
-
-      <style>{`
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
-    </PhoneFrame>
+        {/* Bottom Navigation – Green */}
+        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
+          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate("/driver/dashboard/online")} />
+          <BottomNavItem icon={Briefcase} label="Manager" active={navActive("manager")} onClick={() => navigate("/driver/jobs/list")} />
+          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate("/driver/earnings/overview")} />
+          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate("/driver/preferences")} />
+        </nav>
+      </div>
+    </div>
   );
 }

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  Search,
+    Search,
   MapPin,
   Clock,
   User,
@@ -9,9 +8,9 @@ import {
   Package,
   Bus,
   Ambulance,
-  ListFilter,
+  ListFilter
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate , useLocation } from "react-router-dom";
 
 // EVzone Driver App – D36 Driver App – Search Screen (v2)
 // Generic search across locations, jobs, and riders.
@@ -32,17 +31,18 @@ const JOB_TABS = [
   "shuttle",
 ];
 
-function BottomNavItem({ icon: Icon, label, active, onClick = () => {} }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
       type="button"
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
-        active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
+      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
+        active ? "text-white" : "text-white/50 hover:text-white/80"
       }`}
       onClick={onClick}
     >
-      <Icon className="h-5 w-5 mb-0.5" />
-      <span>{label}</span>
+      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
+      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
+      <span className="relative z-10">{label}</span>
     </button>
   );
 }
@@ -71,8 +71,8 @@ function JobTypeChip({ type, active, onClick }) {
     rental: "Rental",
     tour: "Tour",
     ambulance: "Ambulance",
-    shuttle: "Shuttle",
-  };
+    shuttle: "Shuttle"
+};
 
   const colorMap = {
     all: "border-slate-200 bg-white text-slate-600",
@@ -81,8 +81,8 @@ function JobTypeChip({ type, active, onClick }) {
     rental: "border-teal-200 bg-teal-50 text-teal-700",
     tour: "border-orange-200 bg-orange-50 text-orange-700",
     ambulance: "border-red-200 bg-red-50 text-red-700",
-    shuttle: "border-violet-200 bg-violet-50 text-violet-700",
-  };
+    shuttle: "border-violet-200 bg-violet-50 text-violet-700"
+};
 
   return (
     <button
@@ -102,7 +102,7 @@ function LocationRow({ title, subtitle, distance, onClick = () => {} }) {
     <button
       type="button"
       onClick={onClick}
-      className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform flex items-center justify-between text-[11px] text-slate-600"
+      className="w-full rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform flex items-center justify-between text-[11px] text-slate-600"
     >
       <div className="flex items-center space-x-2 max-w-[220px]">
         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50">
@@ -141,7 +141,7 @@ function JobRow({ type, title, detail, eta, onClick = () => {} }) {
     <button
       type="button"
       onClick={onClick}
-      className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform flex items-center justify-between text-[11px] text-slate-600"
+      className="w-full rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform flex items-center justify-between text-[11px] text-slate-600"
     >
       <div className="flex items-center space-x-2 max-w-[220px]">
         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50">
@@ -169,7 +169,7 @@ function RiderRow({ name, trips, rating, onClick = () => {} }) {
     <button
       type="button"
       onClick={onClick}
-      className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform flex items-center justify-between text-[11px] text-slate-600"
+      className="w-full rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform flex items-center justify-between text-[11px] text-slate-600"
     >
       <div className="flex items-center space-x-2 max-w-[220px]">
         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50">
@@ -189,17 +189,22 @@ function RiderRow({ name, trips, rating, onClick = () => {} }) {
 }
 
 export default function DriverSearchScreen() {
-  const [nav] = useState("search");
   const [query, setQuery] = useState("");
   const [mode, setMode] = useState("all");
   const [jobTab, setJobTab] = useState("all");
   const navigate = useNavigate();
+  const location = useLocation();
+  const navActive = (key) => {
+    const p = location.pathname;
+    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
+    return (routes[key] || []).some(r => p.startsWith(r));
+  };
   const bottomNavRoutes = {
     search: "/driver/search",
     manager: "/driver/jobs/list",
     wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences",
-  };
+    settings: "/driver/preferences"
+};
 
   const handleModeChange = (m) => {
     setMode(m);
@@ -216,8 +221,8 @@ export default function DriverSearchScreen() {
     tour: "/driver/trip/demo-trip/navigation",
     ambulance: "/driver/ambulance/incoming",
     shuttle: "/driver/help/shuttle-link",
-    all: "/driver/jobs/list",
-  };
+    all: "/driver/jobs/list"
+};
 
   const handleJobNavigate = (type) => {
     const route = jobRouteMap[type] || jobRouteMap.all;
@@ -231,11 +236,11 @@ export default function DriverSearchScreen() {
     all: "All",
     locations: "Locations",
     jobs: "Jobs",
-    riders: "Riders",
-  }[mode];
+    riders: "Riders"
+}[mode];
 
   return (
-    <div className="min-h-screen flex justify-center bg-[#0f172a] py-4">
+    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
       {/* Local style: hide scrollbars but keep swipe scrolling */}
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
@@ -243,9 +248,9 @@ export default function DriverSearchScreen() {
       `}</style>
 
       {/* Phone frame */}
-      <div className="w-[375px] h-[812px] bg-white rounded-[32px] shadow-2xl overflow-hidden flex flex-col">
+      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
         {/* Header */}
-        <header className="flex items-center justify-between px-4 pt-4 pb-2">
+        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
           <div className="flex items-center space-x-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
               <Search className="h-4 w-4 text-[#03cd8c]" />
@@ -257,17 +262,10 @@ export default function DriverSearchScreen() {
               <h1 className="text-base font-semibold text-slate-900">Search</h1>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => navigate("/driver/ridesharing/notification")}
-            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
-          >
-            <Bell className="h-4 w-4" />
-          </button>
         </header>
 
         {/* Content */}
-        <main className="flex-1 px-4 pb-4 overflow-y-auto scrollbar-hide space-y-4">
+        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
           {/* Search bar */}
           <section className="space-y-2 pt-1">
             <div className="flex items-center rounded-full bg-slate-50 px-3 py-1.5 border border-slate-100">
@@ -480,29 +478,29 @@ export default function DriverSearchScreen() {
         </main>
 
         {/* Bottom navigation – Search active (search context) */}
-        <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
+        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
           <BottomNavItem
             icon={Search}
             label="Search"
-            active={nav === "search"}
+            active={navActive("home")}
             onClick={() => navigate(bottomNavRoutes.search)}
           />
           <BottomNavItem
             icon={User}
             label="Manager"
-            active={nav === "manager"}
+            active={navActive("manager")}
             onClick={() => navigate(bottomNavRoutes.manager)}
           />
           <BottomNavItem
             icon={Clock}
             label="Wallet"
-            active={nav === "wallet"}
+            active={navActive("wallet")}
             onClick={() => navigate(bottomNavRoutes.wallet)}
           />
           <BottomNavItem
             icon={MapPin}
             label="Settings"
-            active={nav === "settings"}
+            active={navActive("settings")}
             onClick={() => navigate(bottomNavRoutes.settings)}
           />
         </nav>

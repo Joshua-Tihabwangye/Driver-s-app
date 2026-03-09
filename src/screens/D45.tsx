@@ -1,26 +1,26 @@
 import React, { useState } from "react";
 import {
-  Bell,
-  ListFilter,
+    ListFilter,
   Activity,
   MapPin,
   ChevronRight,
   Home,
   Briefcase,
   Wallet,
-  Settings,
+  Settings
 } from "lucide-react";
+import { useNavigate , useLocation } from "react-router-dom";
 
 // EVzone Driver App – D45 Driver – Ride Requests Prompt (v2)
 // Small prompt card encouraging the driver to open the Ride Requests screen (D44).
 // Updated copy to reflect multiple job types and CTA that opens the job list.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
     <button
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-medium transition-colors ${
-        active ? "text-[#03cd8c]" : "text-slate-500 hover:text-slate-700"
+      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
+        active ? "text-white" : "text-white/50 hover:text-white/80"
       }`}
     >
       <span className="flex items-center space-x-1">
@@ -32,8 +32,13 @@ function BottomNavItem({ icon: Icon, label, active }) {
 }
 
 export default function RideRequestsPromptScreen() {
-  const [nav] = useState("home");
-
+  const navigate = useNavigate();
+  const location = useLocation();
+  const navActive = (key) => {
+    const p = location.pathname;
+    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
+    return (routes[key] || []).some(r => p.startsWith(r));
+  };
   const handleViewJobs = () => {
     // In the real app, navigate to the Ride Requests / Job list (D44), e.g.:
     // navigate("/driver/ride-requests");
@@ -41,16 +46,16 @@ export default function RideRequestsPromptScreen() {
   };
 
   return (
-    <div className="min-h-screen flex justify-center bg-[#0f172a] py-4">
+    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
       {/* Local style: hide scrollbars but keep swipe scrolling */}
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <div className="w-[375px] h-[812px] bg-white rounded-[32px] shadow-2xl overflow-hidden flex flex-col">
+      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
         {/* Header */}
-        <header className="flex items-center justify-between px-4 pt-4 pb-2">
+        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
           <div className="flex items-center space-x-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
               <Activity className="h-4 w-4 text-[#03cd8c]" />
@@ -64,13 +69,10 @@ export default function RideRequestsPromptScreen() {
               </h1>
             </div>
           </div>
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700">
-            <Bell className="h-4 w-4" />
-          </button>
         </header>
 
         {/* Content */}
-        <main className="flex-1 px-4 pb-4 space-y-3 overflow-y-auto scrollbar-hide">
+        <main className="app-main flex-1 px-4 pt-3 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
           {/* Prompt card */}
           <section className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 flex items-center justify-between">
             <div className="flex items-start space-x-2">
@@ -109,11 +111,11 @@ export default function RideRequestsPromptScreen() {
         </main>
 
         {/* Bottom navigation – Home active (dashboard context) */}
-        <nav className="border-t border-slate-100 bg-white/95 backdrop-blur flex">
-          <BottomNavItem icon={Home} label="Home" active={nav === "home"} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={nav === "manager"} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={nav === "wallet"} />
-          <BottomNavItem icon={Settings} label="Settings" active={nav === "settings"} />
+        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
+          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate("/driver/dashboard/online")}/>
+          <BottomNavItem icon={Briefcase} label="Manager" active={navActive("manager")} onClick={() => navigate("/driver/jobs/list")}/>
+          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate("/driver/earnings/overview")}/>
+          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate("/driver/preferences")}/>
         </nav>
       </div>
     </div>

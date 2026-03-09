@@ -1,20 +1,36 @@
 import React from "react";
 import {
-  Bell,
-  Power,
+    Power,
   WifiOff,
   AlertCircle,
   Info,
-  ChevronRight,
+  Home,
+  Briefcase,
+  Wallet,
+  Settings
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import PhoneFrame from "../components/PhoneFrame";
-import BottomNav from "../components/BottomNav";
+import { useNavigate , useLocation } from "react-router-dom";
 
 // EVzone Driver App – D27 Driver App – Dashboard (Offline State)
 // Driver dashboard when offline, showing status + any blocking issues.
 
-function IssueRow({ title, text, type, onClick }: { title: string; text: string; type: string; onClick: () => void }) {
+function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
+  return (
+    <button
+      type="button"
+      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
+        active ? "text-white" : "text-white/50 hover:text-white/80"
+      }`}
+      onClick={onClick}
+    >
+      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
+      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
+      <span className="relative z-10">{label}</span>
+    </button>
+  );
+}
+
+function IssueRow({ title, text, type, onClick }) {
   const isBlocking = type === "blocking";
   const Icon = isBlocking ? AlertCircle : Info;
   const color = isBlocking ? "text-red-500" : "text-amber-500";
@@ -43,48 +59,60 @@ function IssueRow({ title, text, type, onClick }: { title: string; text: string;
 
 export default function OfflineDashboardScreen() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const navActive = (key) => {
+    const p = location.pathname;
+    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
+    return (routes[key] || []).some(r => p.startsWith(r));
+  };
+  const bottomNavRoutes = {
+    home: "/driver/dashboard/online",
+    manager: "/driver/jobs/list",
+    wallet: "/driver/earnings/overview",
+    settings: "/driver/preferences"
+};
 
   return (
-    <PhoneFrame>
-      {/* Header */}
-      <header className="flex items-center justify-between px-4 pt-4 pb-2">
-        <div className="flex items-center space-x-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#ffecec]">
-            <Power className="h-4 w-4 text-red-500" />
-          </div>
-          <div className="flex flex-col items-start">
-            <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-              Driver Status
-            </span>
-            <h1 className="text-base font-semibold text-slate-900">
-              Currently Offline
-            </h1>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={() => navigate("/driver/ridesharing/notification")}
-          className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700"
-        >
-          <Bell className="h-4 w-4" />
-        </button>
-      </header>
+    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
+      {/* Local style: hide scrollbars but keep swipe scrolling */}
+      <style>{`
+        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
 
-      {/* Content */}
-      <main className="flex-1 px-4 pb-20 space-y-5 overflow-y-auto no-scrollbar">
-        {/* Offline status card */}
-        <section className="rounded-3xl bg-slate-900 text-white p-6 space-y-5 shadow-xl relative overflow-hidden">
-           <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 rounded-full -mr-16 -mt-16 blur-xl" />
-          <div className="flex items-center justify-between relative">
-            <div className="flex items-center space-x-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-800 border border-slate-700 text-[#fbbf77] shadow-lg">
-                <WifiOff className="h-6 w-6 stroke-[2.5px]" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] tracking-[0.2em] font-bold uppercase text-red-400">
-                  Privacy Mode
-                </span>
-                <p className="text-xs font-bold">Not receiving requests</p>
+      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
+        {/* Header */}
+        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
+          <div className="flex items-center space-x-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#ffecec]">
+              <Power className="h-4 w-4 text-red-500" />
+            </div>
+            <div className="flex flex-col items-start">
+              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
+                Driver
+              </span>
+              <h1 className="text-base font-semibold text-slate-900">
+                You are offline
+              </h1>
+            </div>
+          </div>
+        </header>
+
+        {/* Content */}
+        <main className="app-main flex-1 px-4 pt-3 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
+          {/* Offline status card */}
+          <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/80">
+                  <WifiOff className="h-4 w-4 text-[#fbbf77]" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] tracking-[0.18em] uppercase text-[#a5f3fc]">
+                    Offline mode
+                  </span>
+                  <p className="text-xs font-semibold">You&apos;re not receiving requests</p>
+                </div>
               </div>
             </div>
             <button
@@ -100,22 +128,27 @@ export default function OfflineDashboardScreen() {
           </p>
         </section>
 
-        {/* Issues / requirements */}
-        <section className="space-y-3">
-          <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
-             Action Required
-          </h2>
-          <IssueRow
-            title="Update Documents"
-            text="Your police clearance certificate has expired. Please upload a renewal to resume operations."
-            type="blocking"
-            onClick={() => navigate("/driver/onboarding/profile/documents/upload")}
+        {/* Bottom navigation – Home active (dashboard context) */}
+        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
+          <BottomNavItem
+            icon={Home}
+            label="Home"
+           active={navActive("home")} onClick={() => navigate(bottomNavRoutes.home)}
           />
-          <IssueRow
-            title="Safety Refresher"
-            text="We recommend completing the new 5-minute Safety & SOS training module for enhanced support."
-            type="recommendation"
-            onClick={() => navigate("/driver/training/intro")}
+          <BottomNavItem
+            icon={Briefcase}
+            label="Manager"
+           active={navActive("manager")} onClick={() => navigate(bottomNavRoutes.manager)}
+          />
+          <BottomNavItem
+            icon={Wallet}
+            label="Wallet"
+           active={navActive("wallet")} onClick={() => navigate(bottomNavRoutes.wallet)}
+          />
+          <BottomNavItem
+            icon={Settings}
+            label="Settings"
+           active={navActive("settings")} onClick={() => navigate(bottomNavRoutes.settings)}
           />
         </section>
 
