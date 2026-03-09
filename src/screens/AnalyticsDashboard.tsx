@@ -6,11 +6,8 @@ import {
   DollarSign,
   Car,
   Package,
-  Star,
-  Calendar,
-  ChevronDown,
+  Star
 } from "lucide-react";
-import PhoneFrame from "../components/PhoneFrame";
 import BottomNav from "../components/BottomNav";
 
 // ─── Mock Data ────────────────────────────────────────
@@ -171,134 +168,136 @@ export default function AnalyticsDashboard() {
   const periods: Period[] = ["today", "week", "month"];
 
   return (
-    <PhoneFrame>
-      {/* Header */}
-      <header className="flex items-center justify-between px-4 pt-6 pb-4 bg-white sticky top-0 z-20">
-        <div className="flex items-center">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 mr-4 active:scale-90 transition-transform shadow-sm"
-          >
-            <ArrowLeft className="h-5 w-5 text-slate-700" />
-          </button>
-          <div className="flex flex-col">
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#03cd8c]">
-               Insights
-            </span>
-            <h1 className="text-lg font-bold text-slate-900 tracking-tight">
-               Analytics
-            </h1>
-          </div>
-        </div>
-        {/* Period Selector */}
-        <div className="flex bg-slate-100/50 rounded-xl p-1 border border-slate-100 backdrop-blur-sm">
-          {periods.map((p) => (
-            <button
-              key={p}
-              type="button"
-              onClick={() => setPeriod(p)}
-              className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
-                period === p
-                  ? "bg-[#03cd8c] text-white shadow-lg shadow-[#03cd8c]/20"
-                  : "text-slate-400"
-              }`}
-            >
-              {periodLabels[p]}
-            </button>
-          ))}
-        </div>
-      </header>
-
-      <div className="flex-1 px-4 pt-4 pb-20 space-y-6 overflow-y-auto no-scrollbar">
-        {/* Summary banner */}
-        <section className="rounded-3xl bg-slate-900 text-white p-6 space-y-4 shadow-xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#03cd8c]/20 rounded-full -mr-16 -mt-16 blur-2xl" />
-          <div className="flex items-center justify-between relative">
-            <div className="flex items-center space-x-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#03cd8c] text-white shadow-lg shadow-[#03cd8c]/30">
-                <TrendingUp className="h-6 w-6 stroke-[2.5px]" />
-              </div>
-              <div className="flex flex-col">
-                <p className="text-[10px] tracking-[0.2em] font-bold uppercase text-[#03cd8c]">
-                   Total Income
-                </p>
-                <p className="text-2xl font-black tracking-tight">${data.total.toFixed(2)}</p>
-              </div>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-y-3 pt-2 relative">
-             <div className="flex flex-col">
-                <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Global Trips</span>
-                <span className="text-xs font-bold text-slate-200">{data.rides + data.deliveries} services</span>
-             </div>
-             <div className="flex flex-col">
-                <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Active Hours</span>
-                <span className="text-xs font-bold text-slate-200">{data.hours}h session</span>
-             </div>
-          </div>
-        </section>
-
-        {/* Key Metrics */}
-        <div className="grid grid-cols-2 gap-3 pb-2">
-          <StatCard icon={DollarSign} label="Income" value={`$${data.total.toFixed(2)}`} sub={`$${data.tips.toFixed(2)} tips included`} />
-          <StatCard icon={Car} label="Services" value={String(data.rides + data.deliveries)} sub={`${data.hours}h operation`} color="#0ea5e9" />
-          <StatCard icon={Star} label="Rating" value={data.rating.toFixed(2)} sub="Global aggregate" color="#f59e0b" />
-          <StatCard icon={Package} label="Delivery" value={String(data.deliveries)} sub="Parcels completed" color="#8b5cf6" />
-        </div>
-
-        {/* Earnings Trend */}
-        <section className="rounded-3xl border border-slate-50 bg-white p-5 shadow-sm space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-1">
-               Momentum Trend
-            </h3>
-            <div className="flex items-center space-x-1 bg-emerald-50 px-2 py-0.5 rounded-full">
-              <TrendingUp className="h-3 w-3 text-emerald-600" />
-              <span className="text-[10px] text-emerald-600 font-black">+12%</span>
-            </div>
-          </div>
-          <div className="bg-slate-50 p-2 rounded-2xl border border-slate-100/50">
-             <EarningsTrendChart />
-          </div>
-        </section>
-
-        {/* Service Comparison */}
-        <section className="rounded-3xl border border-slate-50 bg-white p-5 shadow-sm space-y-4">
-          <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-1">
-             Service Volume
-          </h3>
-          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100/50">
-             <RidesDeliveriesChart />
-          </div>
-        </section>
-
-        {/* Ratings Distribution */}
-        <section className="rounded-3xl border border-slate-50 bg-white p-5 shadow-sm space-y-4">
-          <div className="flex items-center justify-between">
-             <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-1">
-                Voice of User
-             </h3>
-             <span className="text-xs font-black text-amber-500">{data.rating.toFixed(2)} ★</span>
-          </div>
-          <RatingsChart />
-        </section>
-
-        {/* Service Breakdown */}
-        <section className="rounded-3xl border border-slate-50 bg-white p-5 shadow-sm space-y-4 pb-6">
-          <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-1">
-             Segment Composition
-          </h3>
-          <ServiceBreakdown />
-        </section>
-      </div>
-
-      <BottomNav active="earnings" />
-
+    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
       <style>{`
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
-    </PhoneFrame>
+      
+      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col relative">
+        {/* Header */}
+        <header className="flex items-center justify-between px-4 pt-6 pb-4 bg-white sticky top-0 z-20">
+          <div className="flex items-center">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 mr-4 active:scale-90 transition-transform shadow-sm"
+            >
+              <ArrowLeft className="h-5 w-5 text-slate-700" />
+            </button>
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#03cd8c]">
+                 Insights
+              </span>
+              <h1 className="text-lg font-bold text-slate-900 tracking-tight">
+                 Analytics
+              </h1>
+            </div>
+          </div>
+          {/* Period Selector */}
+          <div className="flex bg-slate-100/50 rounded-xl p-1 border border-slate-100 backdrop-blur-sm">
+            {periods.map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => setPeriod(p)}
+                className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
+                  period === p
+                    ? "bg-[#03cd8c] text-white shadow-lg shadow-[#03cd8c]/20"
+                    : "text-slate-400"
+                }`}
+              >
+                {periodLabels[p]}
+              </button>
+            ))}
+          </div>
+        </header>
+
+        <div className="flex-1 px-4 pt-4 pb-20 space-y-6 overflow-y-auto no-scrollbar">
+          {/* Summary banner */}
+          <section className="rounded-3xl bg-slate-900 text-white p-6 space-y-4 shadow-xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[#03cd8c]/20 rounded-full -mr-16 -mt-16 blur-2xl" />
+            <div className="flex items-center justify-between relative">
+              <div className="flex items-center space-x-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#03cd8c] text-white shadow-lg shadow-[#03cd8c]/30">
+                  <TrendingUp className="h-6 w-6 stroke-[2.5px]" />
+                </div>
+                <div className="flex flex-col">
+                  <p className="text-[10px] tracking-[0.2em] font-bold uppercase text-[#03cd8c]">
+                     Total Income
+                  </p>
+                  <p className="text-2xl font-black tracking-tight">${data.total.toFixed(2)}</p>
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-y-3 pt-2 relative">
+               <div className="flex flex-col">
+                  <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Global Trips</span>
+                  <span className="text-xs font-bold text-slate-200">{data.rides + data.deliveries} services</span>
+               </div>
+               <div className="flex flex-col">
+                  <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Active Hours</span>
+                  <span className="text-xs font-bold text-slate-200">{data.hours}h session</span>
+               </div>
+            </div>
+          </section>
+
+          {/* Key Metrics */}
+          <div className="grid grid-cols-2 gap-3 pb-2">
+            <StatCard icon={DollarSign} label="Income" value={`$${data.total.toFixed(2)}`} sub={`$${data.tips.toFixed(2)} tips included`} />
+            <StatCard icon={Car} label="Services" value={String(data.rides + data.deliveries)} sub={`${data.hours}h operation`} color="#0ea5e9" />
+            <StatCard icon={Star} label="Rating" value={data.rating.toFixed(2)} sub="Global aggregate" color="#f59e0b" />
+            <StatCard icon={Package} label="Delivery" value={String(data.deliveries)} sub="Parcels completed" color="#8b5cf6" />
+          </div>
+
+          {/* Earnings Trend */}
+          <section className="rounded-3xl border border-slate-50 bg-white p-5 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-1">
+                 Momentum Trend
+              </h3>
+              <div className="flex items-center space-x-1 bg-emerald-50 px-2 py-0.5 rounded-full">
+                <TrendingUp className="h-3 w-3 text-emerald-600" />
+                <span className="text-[10px] text-emerald-600 font-black">+12%</span>
+              </div>
+            </div>
+            <div className="bg-slate-50 p-2 rounded-2xl border border-slate-100/50">
+               <EarningsTrendChart />
+            </div>
+          </section>
+
+          {/* Service Comparison */}
+          <section className="rounded-3xl border border-slate-50 bg-white p-5 shadow-sm space-y-4">
+            <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-1">
+               Service Volume
+            </h3>
+            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100/50">
+               <RidesDeliveriesChart />
+            </div>
+          </section>
+
+          {/* Ratings Distribution */}
+          <section className="rounded-3xl border border-slate-50 bg-white p-5 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+               <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-1">
+                  Voice of User
+               </h3>
+               <span className="text-xs font-black text-amber-500">{data.rating.toFixed(2)} ★</span>
+            </div>
+            <RatingsChart />
+          </section>
+
+          {/* Service Breakdown */}
+          <section className="rounded-3xl border border-slate-50 bg-white p-5 shadow-sm space-y-4 pb-6">
+            <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-1">
+               Segment Composition
+            </h3>
+            <ServiceBreakdown />
+          </section>
+        </div>
+
+        <BottomNav active="earnings" />
+      </div>
+    </div>
   );
 }

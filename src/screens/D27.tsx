@@ -4,31 +4,13 @@ import {
   WifiOff,
   AlertCircle,
   Info,
-  Home,
-  Briefcase,
-  Wallet,
-  Settings
+  ChevronRight
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import BottomNav from "../components/BottomNav";
 
 // EVzone Driver App – D27 Driver App – Dashboard (Offline State)
 // Driver dashboard when offline, showing status + any blocking issues.
-
-function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
-  return (
-    <button
-      type="button"
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
-        active ? "text-white" : "text-white/50 hover:text-white/80"
-      }`}
-      onClick={onClick}
-    >
-      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
-      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
-      <span className="relative z-10">{label}</span>
-    </button>
-  );
-}
 
 function IssueRow({ title, text, type, onClick }) {
   const isBlocking = type === "blocking";
@@ -59,22 +41,9 @@ function IssueRow({ title, text, type, onClick }) {
 
 export default function OfflineDashboardScreen() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
-  const bottomNavRoutes = {
-    home: "/driver/dashboard/online",
-    manager: "/driver/jobs/list",
-    wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences"
-};
 
   return (
     <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
@@ -122,54 +91,39 @@ export default function OfflineDashboardScreen() {
             >
               GO ONLINE
             </button>
-          </div>
-          <p className="text-[11px] text-slate-400 leading-relaxed relative">
-            Connect now to start earning. Ensure your compliance documents are active and your vehicle safety checks are done.
-          </p>
-        </section>
+            <p className="text-[11px] text-slate-400 leading-relaxed mt-3">
+              Connect now to start earning. Ensure your compliance documents are active and your vehicle safety checks are done.
+            </p>
+          </section>
 
-        {/* Bottom navigation – Home active (dashboard context) */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem
-            icon={Home}
-            label="Home"
-           active={navActive("home")} onClick={() => navigate(bottomNavRoutes.home)}
-          />
-          <BottomNavItem
-            icon={Briefcase}
-            label="Manager"
-           active={navActive("manager")} onClick={() => navigate(bottomNavRoutes.manager)}
-          />
-          <BottomNavItem
-            icon={Wallet}
-            label="Wallet"
-           active={navActive("wallet")} onClick={() => navigate(bottomNavRoutes.wallet)}
-          />
-          <BottomNavItem
-            icon={Settings}
-            label="Settings"
-           active={navActive("settings")} onClick={() => navigate(bottomNavRoutes.settings)}
-          />
-        </section>
+          {/* Issues */}
+          <section className="space-y-2">
+            <h2 className="text-sm font-semibold text-slate-900 mb-1 px-1">
+               Attention Required
+            </h2>
+            <IssueRow 
+              title="Identity Verification"
+              text="Your facial recognition check is due in 3 days."
+              type="info"
+              onClick={() => navigate("/driver/verify-identity")}
+            />
+          </section>
 
-        {/* Info */}
-        <section className="pt-2">
-           <div className="rounded-2xl border-2 border-slate-50 bg-slate-50/50 p-5 text-center">
-              <Info className="h-6 w-6 text-slate-300 mx-auto mb-3" />
-              <p className="text-xs font-bold text-slate-900 mb-1">Take a pause</p>
-              <p className="text-[11px] text-slate-500 leading-relaxed">
-                You can toggle offline any time you need a break. Remember to park in a designated safe zone first.
-              </p>
-           </div>
-        </section>
-      </main>
+          {/* Info */}
+          <section className="pt-2">
+             <div className="rounded-2xl border-2 border-slate-50 bg-slate-50/50 p-5 text-center">
+                <Info className="h-6 w-6 text-slate-300 mx-auto mb-3" />
+                <p className="text-xs font-bold text-slate-900 mb-1">Take a pause</p>
+                <p className="text-[11px] text-slate-500 leading-relaxed">
+                  You can toggle offline any time you need a break. Remember to park in a designated safe zone first.
+                </p>
+             </div>
+          </section>
+        </main>
 
-      <BottomNav active="home" />
-
-      <style>{`
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
-    </PhoneFrame>
+        {/* Bottom Navigation */}
+        <BottomNav active="home" />
+      </div>
+    </div>
   );
 }

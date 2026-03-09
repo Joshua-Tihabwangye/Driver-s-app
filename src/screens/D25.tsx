@@ -110,7 +110,6 @@ export default function DeliveryDriverDashboardScreen() {
             <span className="rounded-full bg-slate-800 border border-slate-700 px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
               Offline
             </span>
-          </div>
           <p className="text-[11px] text-slate-400 leading-relaxed relative">
             Go online to start receiving delivery requests nearby. You can
             switch services in the Jobs tab.
@@ -175,11 +174,6 @@ export default function DeliveryDriverDashboardScreen() {
         </section>
       </main>
 
-            <button type="button" onClick={() => navigate("/driver/map/online")} className="w-full rounded-full py-2.5 text-sm font-semibold shadow-sm bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c]">
-              Go online for deliveries
-            </button>
-          </section>
-        </main>
 
         {/* Bottom Navigation – Green */}
         <nav className="app-bottom-nav border-t border-white/20 flex" style={{ background: "#03cd8c" }}>

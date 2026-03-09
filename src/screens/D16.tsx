@@ -12,24 +12,11 @@ import {
   Settings
 } from "lucide-react";
 import { useNavigate , useLocation } from "react-router-dom";
+import BottomNav from "../components/BottomNav";
 
 // EVzone Driver App – D16 Business Vehicles
 // Business-owned / fleet vehicles assigned to the driver.
 
-function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${active ? "text-white" : "text-white/50 hover:text-white/80"
-        }`}
-    >
-      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
-      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
-      <span className="relative z-10">{label}</span>
-    </button>
-  );
-}
 
 function FleetVehicleCard({ icon: Icon, title, subtitle, tag, status, onClick }) {
   const statusTone =
@@ -170,7 +157,6 @@ export default function BusinessVehiclesScreen() {
                 </p>
               </div>
             </div>
-          </div>
 
             <button
               type="button"
@@ -192,28 +178,7 @@ export default function BusinessVehiclesScreen() {
         </main>
 
         {/* Bottom navigation */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem
-            icon={Home}
-            label="Home"
-           active={navActive("home")} onClick={() => navigate(bottomNavRoutes.home)}
-          />
-          <BottomNavItem
-            icon={Briefcase}
-            label="Manager"
-           active={navActive("manager")} onClick={() => navigate(bottomNavRoutes.manager)}
-          />
-          <BottomNavItem
-            icon={Wallet}
-            label="Wallet"
-           active={navActive("wallet")} onClick={() => navigate(bottomNavRoutes.wallet)}
-          />
-          <BottomNavItem
-            icon={Settings}
-            label="Settings"
-           active={navActive("settings")} onClick={() => navigate(bottomNavRoutes.settings)}
-          />
-        </nav>
+        <BottomNav active="jobs" />
       </div>
     </div>
   );

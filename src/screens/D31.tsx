@@ -13,24 +13,10 @@ import {
   Package
 } from "lucide-react";
 import { useNavigate , useLocation } from "react-router-dom";
+import BottomNav from "../components/BottomNav";
 
 // EVzone Driver App – D31 Online Dashboard (Active Mode)
 // Restoration of the original design from Driver-s-app.
-
-function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
-  return (
-    <button
-      type="button"
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${active ? "text-white" : "text-white/50 hover:text-white/80"
-        }`}
-      onClick={onClick}
-    >
-      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
-      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
-      <span className="relative z-10">{label}</span>
-    </button>
-  );
-}
 
 function QuickAction({ icon: Icon, label, sub, onClick }) {
   return (
@@ -118,13 +104,12 @@ export default function OnlineMapDashboardScreen() {
               <span className="font-medium">Online time: 1h 12m</span>
               <span className="text-emerald-300">Today: $24.60 · 3 trips</span>
             </div>
-          </div>
+          </section>
           <p className="text-[11px] text-slate-100 leading-snug">
             Stay in busy areas to increase your chances of getting trip and
             delivery requests. You can view the full map or switch to
             deliveries from here.
           </p>
-        </section>
 
         {/* Mini map preview */}
         <button
@@ -215,30 +200,7 @@ export default function OnlineMapDashboardScreen() {
       {/* Bottom Navigation */}
       <BottomNav active="home" />
 
-        {/* Bottom navigation – Home active (online dashboard context) */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem
-            icon={Home}
-            label="Home"
-           active={navActive("home")} onClick={() => navigate(bottomNavRoutes.home)}
-          />
-          <BottomNavItem
-            icon={Briefcase}
-            label="Manager"
-           active={navActive("manager")} onClick={() => navigate(bottomNavRoutes.manager)}
-          />
-          <BottomNavItem
-            icon={Wallet}
-            label="Wallet"
-           active={navActive("wallet")} onClick={() => navigate(bottomNavRoutes.wallet)}
-          />
-          <BottomNavItem
-            icon={Settings}
-            label="Settings"
-           active={navActive("settings")} onClick={() => navigate(bottomNavRoutes.settings)}
-          />
-        </nav>
-      </div>
     </div>
-  );
+  </div>
+);
 }

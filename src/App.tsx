@@ -148,6 +148,15 @@ import D15Screen from "./screens/D15";
 import D16Screen from "./screens/D16";
 import D17Screen from "./screens/D17";
 
+const SAMPLE_IDS = {
+  vehicle: "v123",
+  trip: "t456",
+  route: "r789",
+  stop: "s012",
+  job: "j345",
+  tour: "tour678",
+};
+
 const SCREENS = [
   // Super app & registration (ROUTING_GUIDE §3.1)
   { id: "D01", label: "Home (Super App)", path: "/app/home", Component: D01Screen },
@@ -801,6 +810,8 @@ const SCREENS = [
   },
 ];
 
+const DEFAULT_SCREEN = SCREENS.find((s) => s.id === "D31") || SCREENS[0];
+
 // ── Dashboards, earnings & map (D25–D41) ────────────────
 import D25Screen from "./screens/D25";
 import D26Screen from "./screens/D26";
@@ -905,65 +916,19 @@ export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
 
-        {/* ═══════════════════════════════════════════════
-            REGISTRATION FLOW
-            ═══════════════════════════════════════════════ */}
-        <Route path="app/home" element={<D01Screen />} />
-        <Route path="app/register-services" element={<D02Screen />} />
-        <Route path="auth/register" element={<D03Screen />} />
-        <Route path="driver/register" element={<D04Screen />} />
+  const handleScreenChange = (event: any) => {
+    const screenId = event.target.value;
+    const screen = SCREENS.find((s) => s.id === screenId);
+    if (screen) {
+      navigate(screen.previewPath || screen.path);
+    }
+  };
 
-        {/* ═══════════════════════════════════════════════
-            ONBOARDING
-            ═══════════════════════════════════════════════ */}
-        <Route path="driver/onboarding/profile" element={<D05Screen />} />
-        <Route path="driver/onboarding/profile/documents/upload" element={<D07Screen />} />
-        <Route path="driver/onboarding/profile/documents/review" element={<D08Screen />} />
-        <Route path="driver/onboarding/profile/documents/rejected" element={<D09Screen />} />
-        <Route path="driver/onboarding/profile/documents/verified" element={<D10Screen />} />
-        <Route path="driver/preferences/identity" element={<D11Screen />} />
-        <Route path="driver/preferences/identity/face-capture" element={<D12Screen />} />
-        <Route path="driver/preferences/identity/upload-image" element={<D13Screen />} />
+  const currentScreen =
+    SCREENS.find((s) =>
+      matchPath({ path: s.path, end: true }, location.pathname)
+    ) || DEFAULT_SCREEN;
 
-        {/* Training */}
-        <Route path="driver/training/intro" element={<D18Screen />} />
-        <Route path="driver/training/info-session" element={<D19Screen />} />
-        <Route path="driver/training/earnings-tutorial" element={<D20Screen />} />
-        <Route path="driver/training/quiz" element={<D21Screen />} />
-        <Route path="driver/training/quiz/answer" element={<D22Screen />} />
-        <Route path="driver/training/quiz/passed" element={<D23Screen />} />
-        <Route path="driver/training/completion" element={<D24Screen />} />
-
-        {/* ═══════════════════════════════════════════════
-            MAIN APP SCREENS (Now self-contained)
-            ═══════════════════════════════════════════════ */}
-
-        {/* ── Dashboards ── */}
-        <Route path="driver/dashboard/online" element={<D31Screen />} />
-        <Route path="driver/dashboard/offline" element={<D27Screen />} />
-        <Route path="driver/dashboard/active" element={<D29Screen />} />
-        <Route path="driver/dashboard/delivery" element={<D25Screen />} />
-        <Route path="driver/dashboard/required-actions" element={<D30Screen />} />
-
-        {/* Map views */}
-        <Route path="driver/map/online" element={<D26Screen />} />
-        <Route path="driver/map/online/variant" element={<D28Screen />} />
-        <Route path="driver/map/searching" element={<D32Screen />} />
-        <Route path="driver/map/settings" element={<D37Screen />} />
-
-        {/* Search */}
-        <Route path="driver/search" element={<D36Screen />} />
-
-        {/* ── Earnings ── */}
-        <Route path="driver/earnings/overview" element={<D33Screen />} />
-        <Route path="driver/earnings/weekly" element={<D34Screen />} />
-        <Route path="driver/earnings/monthly" element={<D35Screen />} />
-        <Route path="driver/earnings/goals" element={<D38Screen />} />
-        <Route path="driver/analytics" element={<AnalyticsDashboard />} />
-
-        {/* Surge */}
-        <Route path="driver/surge/map" element={<D73Screen />} />
-        <Route path="driver/surge/notification" element={<D39Screen />} />
 
   return (
     <Box

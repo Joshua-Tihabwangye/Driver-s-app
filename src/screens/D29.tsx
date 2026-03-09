@@ -8,7 +8,8 @@ import {
   Package,
   Briefcase,
   Bus,
-  Ambulance
+  Ambulance,
+  TrendingUp
 } from "lucide-react";
 import { useNavigate , useLocation } from "react-router-dom";
 
@@ -171,7 +172,6 @@ export default function D29ActiveDashboardScreen() {
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{jobsToday} Tasks</span>
                 <span className="text-sm font-black text-emerald-400 mt-1">{earningsToday}</span>
             </div>
-          </div>
           <p className="text-[11px] text-slate-400 leading-relaxed relative">
             Real-time aggregate of all services. Your current job mix reflects optimized local demand.
           </p>
@@ -262,7 +262,6 @@ export default function D29ActiveDashboardScreen() {
             />
           </div>
         </section>
-      </main>
 
           {/* Job mix breakdown */}
           <section className="space-y-2 pt-1 pb-4">

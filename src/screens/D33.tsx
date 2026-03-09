@@ -1,39 +1,18 @@
-import React, { useState } from "react";
+import React from "react";
 import {
     ChevronLeft,
   ChevronRight,
-  Home,
-  Briefcase,
-  Wallet,
-  Settings,
   Car,
   Wallet as WalletIcon,
-  Search,
   Truck,
-  History,
-  Info
+  History
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import BottomNav from "../components/BottomNav";
 
 // EVzone Driver App – D33 Driver App – Earnings & Stats Dashboard
 // Redesigned to match Screenshot 3.
 // Massive scrolling dashboard with welcome banner, wallet, charts, stats grids, and map station lists.
-
-function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
-        active ? "text-white" : "text-white/50 hover:text-white/80"
-      }`}
-    >
-      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
-      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
-      <span className="relative z-10">{label}</span>
-    </button>
-  );
-}
 
 function StatCard({ label, value, sub = null, icon: Icon = null }: { label: string; value: string; sub?: string | null; icon?: React.ElementType | null }) {
   return (
@@ -74,12 +53,6 @@ function StationRow({ name, value, total, colorClass }) {
 
 export default function EarningsStatsDashboardScreen() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
 
   return (
     <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
@@ -161,7 +134,7 @@ export default function EarningsStatsDashboardScreen() {
               {[12, 18, 25, 14, 30, 10, 16].map((h, i) => (
                 <div key={i} className="flex flex-col items-center space-y-2">
                   <div
-                    className={`w-4 rounded-t-sm ${i === 4 ? 'bg-[#00a3ff]' : 'bg-slate-100'}`}
+                    className={`w-4 rounded-t-sm ${i === 4 ? 'bg-[#00a3ff]' : 'bg-slate-100'} relative`}
                     style={{ height: `${h * 2}px` }}
                   >
                     {i === 4 && <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-[#00a3ff] text-white text-[8px] px-1 py-0.5 rounded shadow">UGX 5,502</div>}
@@ -227,8 +200,7 @@ export default function EarningsStatsDashboardScreen() {
               <StationRow name="Ntinda, Kampala" value="5" total="42" colorClass="bg-orange-400" />
               <StationRow name="Kololo, Kampala" value="4" total="10" colorClass="bg-yellow-400" />
             </div>
-          </div>
-        </section>
+          </section>
 
           {/* Delivery Banner */}
           <section className="rounded-2xl bg-[#00a3ff] p-4 flex items-center justify-between text-white overflow-hidden shadow-lg shadow-blue-500/10">
@@ -258,13 +230,7 @@ export default function EarningsStatsDashboardScreen() {
 
         </main>
 
-        {/* Bottom Navigation – Green */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate("/driver/dashboard/online")} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={navActive("manager")} onClick={() => navigate("/driver/jobs/list")} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate("/driver/earnings/overview")} />
-          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate("/driver/preferences")} />
-        </nav>
+        <BottomNav active="earnings" />
       </div>
     </div>
   );
