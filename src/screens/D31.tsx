@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
     Activity,
   Map,
@@ -13,24 +13,10 @@ import {
   Package
 } from "lucide-react";
 import { useNavigate , useLocation } from "react-router-dom";
+import BottomNav from "../components/BottomNav";
 
 // EVzone Driver App – D31 Online Dashboard (Active Mode)
 // Restoration of the original design from Driver-s-app.
-
-function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
-  return (
-    <button
-      type="button"
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${active ? "text-white" : "text-white/50 hover:text-white/80"
-        }`}
-      onClick={onClick}
-    >
-      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
-      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
-      <span className="relative z-10">{label}</span>
-    </button>
-  );
-}
 
 function QuickAction({ icon: Icon, label, sub, onClick }) {
   return (
@@ -42,10 +28,10 @@ function QuickAction({ icon: Icon, label, sub, onClick }) {
       <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#e6fff7] mb-1">
         <Icon className="h-4 w-4 text-[#03cd8c]" />
       </div>
-      <span className="text-xs font-semibold text-slate-900 mb-0.5 truncate">
+      <span className="text-xs font-semibold text-slate-900 mb-0.5 truncate w-full text-left">
         {label}
       </span>
-      <span className="text-[11px] text-slate-500 truncate">{sub}</span>
+      <span className="text-[11px] text-slate-500 truncate w-full text-left">{sub}</span>
     </button>
   );
 }
@@ -107,128 +93,114 @@ export default function OnlineMapDashboardScreen() {
                   <p className="text-xs font-semibold">Online · Receiving requests</p>
                 </div>
               </div>
-              <div className="flex flex-col items-end text-[10px] text-slate-100">
-                <span className="font-medium">Online time: 1h 12m</span>
-                <span className="text-emerald-300">Today: $24.60 · 3 trips</span>
+              <div className="flex flex-col">
+                <span className="text-[10px] tracking-[0.18em] uppercase text-[#0b1e3a]">
+                  Status
+                </span>
+                <p className="text-xs font-semibold">Online · Receiving requests</p>
               </div>
             </div>
-            <p className="text-[11px] text-slate-100 leading-snug">
-              Stay in busy areas to increase your chances of getting trip and
-              delivery requests. You can view the full map or switch to
-              deliveries from here.
-            </p>
+            <div className="flex flex-col items-end text-[10px] text-slate-100 text-right">
+              <span className="font-medium">Online time: 1h 12m</span>
+              <span className="text-emerald-300">Today: $24.60 · 3 trips</span>
+            </div>
           </section>
+          <p className="text-[11px] text-slate-100 leading-snug">
+            Stay in busy areas to increase your chances of getting trip and
+            delivery requests. You can view the full map or switch to
+            deliveries from here.
+          </p>
 
-          {/* Mini map preview */}
+        {/* Mini map preview */}
+        <button
+          type="button"
+          onClick={() => navigate("/driver/map/online")}
+          className="relative rounded-[24px] overflow-hidden border border-slate-100 bg-slate-200 h-[180px] text-left w-full active:scale-[0.99] transition-transform shadow-sm"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
+
+          {/* Current location marker */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="relative flex items-center justify-center">
+              <div className="h-8 w-8 rounded-full bg-[#03cd8c]/20 animate-ping" />
+              <div className="absolute h-5 w-5 rounded-full bg-[#03cd8c]/40" />
+              <div className="absolute h-2.5 w-2.5 rounded-full bg-[#03cd8c] border-2 border-white" />
+            </div>
+          </div>
+
+          {/* One hotspot */}
+          <div className="absolute left-6 top-10 flex flex-col items-center">
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-900/90 border border-white">
+              <MapPin className="h-3 w-3 text-[#03cd8c]" />
+            </div>
+            <span className="mt-0.5 rounded-full bg-slate-900/80 px-2 py-0.5 text-[8px] text-slate-50 font-bold uppercase tracking-wider">
+              Busy area
+            </span>
+          </div>
+        </button>
+
+        {/* Quick actions */}
+        <section className="space-y-2">
+          <h2 className="text-sm font-bold text-slate-900 px-1">
+            Quick actions
+          </h2>
+          <div className="flex space-x-2">
+            <QuickAction
+              icon={Map}
+              label="Open full map"
+              sub="See surge zones"
+              onClick={() => navigate("/driver/map/online")}
+            />
+            <QuickAction
+              icon={Car}
+              label="Switch to rides"
+              sub="Focus on riders"
+              onClick={() => navigate("/driver/dashboard/active")}
+            />
+          </div>
+          <div className="flex space-x-2">
+            <QuickAction
+              icon={Package}
+              label="Switch to deliveries"
+              sub="Focus on parcels"
+              onClick={() => navigate("/driver/delivery/orders-dashboard")}
+            />
+            <QuickAction
+              icon={ShieldCheck}
+              label="Safety tools"
+              sub="SOS & share"
+              onClick={() => navigate("/driver/safety/hub")}
+            />
+          </div>
+        </section>
+
+        {/* Snapshot stats */}
+        <section className="pt-1">
           <button
             type="button"
-            onClick={() => navigate("/driver/map/online")}
-            className="relative rounded-3xl overflow-hidden border border-slate-100 bg-slate-200 h-[180px] text-left w-full active:scale-[0.99] transition-transform"
+            onClick={() => navigate("/driver/earnings/overview")}
+            className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 flex items-start space-x-3 text-[11px] text-slate-600 w-full text-left active:scale-[0.99] transition-transform group"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
-
-            {/* Current location marker */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="relative flex items-center justify-center">
-                <div className="h-8 w-8 rounded-full bg-[#03cd8c]/20" />
-                <div className="absolute h-5 w-5 rounded-full bg-[#03cd8c]/40" />
-                <div className="absolute h-2.5 w-2.5 rounded-full bg-[#03cd8c] border-2 border-white" />
-              </div>
+            <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-xl bg-white shadow-sm group-hover:text-[#03cd8c] transition-colors">
+              <DollarSign className="h-4 w-4" />
             </div>
-
-            {/* One hotspot */}
-            <div className="absolute left-6 top-10 flex flex-col items-center">
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-900/90 border border-white">
-                <MapPin className="h-3 w-3 text-[#03cd8c]" />
-              </div>
-              <span className="mt-0.5 rounded-full bg-slate-900/80 px-2 py-0.5 text-[8px] text-slate-50">
-                Busy area
-              </span>
+            <div className="flex-1">
+              <p className="font-bold text-xs text-slate-900 mb-0.5">
+                Today&apos;s earnings snapshot
+              </p>
+              <p className="leading-relaxed">
+                $24.60 so far · On pace for $60–$75 if you stay online during
+                the next busy window.
+              </p>
             </div>
           </button>
+        </section>
+      </main>
 
-          {/* Quick actions */}
-          <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-slate-900 mb-1">
-              Quick actions
-            </h2>
-            <div className="flex space-x-2">
-              <QuickAction
-                icon={Map}
-                label="Open full map"
-                sub="See surge zones & hotspots"
-                onClick={() => navigate("/driver/map/online")}
-              />
-              <QuickAction
-                icon={Car}
-                label="Switch to rides"
-                sub="Focus on passengers"
-                onClick={() => navigate("/driver/dashboard/active")}
-              />
-            </div>
-            <div className="flex space-x-2">
-              <QuickAction
-                icon={Package}
-                label="Switch to deliveries"
-                sub="Focus on parcels & food"
-                onClick={() => navigate("/driver/delivery/orders-dashboard")}
-              />
-              <QuickAction
-                icon={ShieldCheck}
-                label="Safety tools"
-                sub="SOS, follow ride, report"
-                onClick={() => navigate("/driver/safety/toolkit")}
-              />
-            </div>
-          </section>
+      {/* Bottom Navigation */}
+      <BottomNav active="home" />
 
-          {/* Snapshot stats */}
-          <section className="space-y-2 pt-1 pb-4">
-            <button
-              type="button"
-              onClick={() => navigate("/driver/earnings/overview")}
-              className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 flex items-start space-x-2 text-[11px] text-slate-600 w-full text-left active:scale-[0.99] transition-transform"
-            >
-              <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white">
-                <DollarSign className="h-4 w-4 text-[#03cd8c]" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-xs text-slate-900 mb-0.5">
-                  Today&apos;s earnings snapshot
-                </p>
-                <p>
-                  $24.60 so far · On pace for $60–$75 if you stay online during
-                  the next busy window.
-                </p>
-              </div>
-            </button>
-          </section>
-        </main>
-
-        {/* Bottom navigation – Home active (online dashboard context) */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem
-            icon={Home}
-            label="Home"
-           active={navActive("home")} onClick={() => navigate(bottomNavRoutes.home)}
-          />
-          <BottomNavItem
-            icon={Briefcase}
-            label="Manager"
-           active={navActive("manager")} onClick={() => navigate(bottomNavRoutes.manager)}
-          />
-          <BottomNavItem
-            icon={Wallet}
-            label="Wallet"
-           active={navActive("wallet")} onClick={() => navigate(bottomNavRoutes.wallet)}
-          />
-          <BottomNavItem
-            icon={Settings}
-            label="Settings"
-           active={navActive("settings")} onClick={() => navigate(bottomNavRoutes.settings)}
-          />
-        </nav>
-      </div>
     </div>
-  );
+  </div>
+);
 }

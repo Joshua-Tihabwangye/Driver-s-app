@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
     History as HistoryIcon,
   MapPin,
-  Clock,
   DollarSign,
   CheckCircle2,
   Home,
@@ -12,12 +11,8 @@ import {
 } from "lucide-react";
 import { useNavigate , useLocation } from "react-router-dom";
 
-// EVzone Driver App – D69 Driver – Ride History (v2)
-// Ride / Job history list with:
-// - Job type chip per row (Ride / Delivery / Rental / Shuttle / Tour / Ambulance)
-// - Job type filter bar at the top (same options as D44)
-// - Proof-of-trip indicators and quick access to details.
-// 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
+// EVzone Driver App – D69 Driver – Ride History
+// Ride / Job history list with job type chips and filters.
 
 const JOB_FILTERS = [
   { key: "all", label: "All" },
@@ -158,50 +153,41 @@ function JobTypeChip({ jobType }) {
     );
   }
   return (
-    <span className={`${base} bg-slate-900/80 border-slate-700 text-slate-50`}>
+    <span className={`${base} bg-slate-900 border-slate-700 text-slate-50`}>
       Ride
     </span>
   );
 }
 
-function TripRow({ from, to, date, time, amount, hasProof, jobType, onClick }) {
+function TripRow({ from, to, date, time, amount, hasProof, jobType, onClick }: any) {
   return (
     <button
       type="button"
       onClick={onClick}
       className="w-full rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform flex items-center justify-between text-[11px] text-slate-600"
     >
-      <div className="flex flex-col items-start max-w-[190px]">
-        <span className="text-xs font-semibold text-slate-900 truncate">
+      <div className="flex flex-col items-start max-w-[200px]">
+        <span className="text-sm font-bold text-slate-900 leading-tight group-hover:text-[#03cd8c] transition-colors">
           {from} → {to}
         </span>
-        <span className="text-[10px] text-slate-500 truncate">
+        <span className="text-[11px] text-slate-500 mt-1">
           {date} · {time}
         </span>
-        <span className="mt-0.5 inline-flex items-center text-[10px] text-slate-500">
-          <MapPin className="h-3 w-3 mr-1" />
-          {hasProof ? "Proof attached" : "No additional proof"}
-        </span>
-      </div>
-      <div className="flex flex-col items-end text-[10px] text-slate-500">
-        <span className="inline-flex items-center text-sm font-semibold text-slate-900">
-          {amount !== "—" && (
-            <>
-              <DollarSign className="h-3 w-3 mr-0.5" />
-              {amount}
-            </>
-          )}
-          {amount === "—" && <span className="text-[11px] text-slate-500">—</span>}
-        </span>
-        <div className="mt-0.5 inline-flex items-center justify-end w-full">
-          <JobTypeChip jobType={jobType} />
+        <div className="mt-2 flex items-center space-x-2">
+            <JobTypeChip jobType={jobType} />
+            {hasProof && (
+                <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-bold text-emerald-700">
+                    <CheckCircle2 className="h-3 w-3 mr-1" />
+                    Proof
+                </span>
+            )}
         </div>
-        {hasProof && (
-          <span className="mt-0.5 inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-medium text-emerald-700">
-            <CheckCircle2 className="h-3 w-3 mr-1" />
-            Proof-of-trip
-          </span>
-        )}
+      </div>
+      <div className="flex flex-col items-end">
+        <span className="text-[15px] font-black text-slate-900">
+          {amount !== "—" ? `$${amount}` : "—"}
+        </span>
+        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Completed</span>
       </div>
     </button>
   );
@@ -267,30 +253,27 @@ export default function RideHistoryScreen() {
               here. You can open any trip to see details, route, job type and
               attached proof.
             </p>
-          </section>
+        </section>
 
-          {/* Job type filter bar */}
-          <section className="space-y-1">
-            <span className="text-[11px] font-semibold text-slate-900">
-              Job type
-            </span>
-            <div className="flex flex-wrap gap-1 text-[10px]">
-              {JOB_FILTERS.map((f) => (
-                <button
-                  key={f.key}
-                  type="button"
-                  onClick={() => setFilter(f.key)}
-                  className={`rounded-full px-2.5 py-0.5 border font-medium ${
-                    filter === f.key
-                      ? "bg-[#03cd8c] border-[#03cd8c] text-slate-900"
-                      : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
-                  }`}
-                >
-                  {f.label}
-                </button>
-              ))}
-            </div>
-          </section>
+        {/* Job type filter bar */}
+        <section className="sticky top-0 bg-white/80 backdrop-blur-md z-10 py-2 -mx-4 px-4 border-b border-slate-50">
+          <div className="flex items-center space-x-2 overflow-x-auto no-scrollbar pb-1">
+            {JOB_FILTERS.map((f) => (
+              <button
+                key={f.key}
+                type="button"
+                onClick={() => setFilter(f.key)}
+                className={`rounded-full px-4 py-1.5 border-2 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap transition-all ${
+                  filter === f.key
+                    ? "bg-[#03cd8c] border-[#03cd8c] text-white shadow-md shadow-[#03cd8c]/20"
+                    : "bg-white border-slate-100 text-slate-400 hover:border-slate-200"
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        </section>
 
           {/* Ride / job list */}
           <section className="space-y-2">
@@ -312,14 +295,14 @@ export default function RideHistoryScreen() {
               );
             })}
 
-            {filteredTrips.length === 0 && (
-              <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 text-[11px] text-slate-600">
-                No trips found for this job type yet. Try another filter or
-                check again later.
-              </div>
-            )}
-          </section>
-        </main>
+          {filteredTrips.length === 0 && (
+            <div className="rounded-2xl border-2 border-dashed border-slate-100 bg-slate-50 px-6 py-12 flex flex-col items-center justify-center text-center">
+              <p className="text-sm font-bold text-slate-900">No records found</p>
+              <p className="text-xs text-slate-500 mt-1">Try selecting a different category.</p>
+            </div>
+          )}
+        </section>
+      </main>
 
         {/* Bottom navigation – Home active (history context) */}
         <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
     Package,
   ShieldCheck,
@@ -12,9 +12,8 @@ import {
 } from "lucide-react";
 import { useNavigate , useLocation } from "react-router-dom";
 
-// EVzone Driver App – D17 Vehicle Accessories (v1)
-// Accessories required / recommended for rides & deliveries (helmet, jackets, delivery box, child seat, etc.).
-// 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
+// EVzone Driver App – D17 Vehicle Accessories
+// Accessories required / recommended for rides & deliveries.
 
 function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
@@ -63,9 +62,9 @@ function AccessoryRow({ icon: Icon, name, detail, status }) {
           <span className="text-xs font-semibold text-slate-900 truncate max-w-[180px]">{name}</span>
           <span className="text-[11px] text-slate-500 truncate max-w-[200px]">{detail}</span>
           <span
-            className={`mt-1 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${tone.chipBg} ${tone.chipText}`}
+            className={`mt-2 inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${tone.chipBg} ${tone.chipText}`}
           >
-            <span className={`mr-1 h-1.5 w-1.5 rounded-full ${tone.chipDot}`} />
+            <span className={`mr-1.5 h-1.5 w-1.5 rounded-full ${tone.chipDot}`} />
             {status}
           </span>
         </div>
@@ -113,13 +112,11 @@ export default function VehicleAccessoriesScreen() {
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
               <Package className="h-4 w-4 text-[#03cd8c]" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                Driver Personal
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] font-bold uppercase text-[#03cd8c]">
+                Compliance Center
               </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Vehicle accessories
-              </h1>
+              <p className="text-sm font-bold tracking-tight">Equipment Checklist</p>
             </div>
           </div>
         </header>
@@ -147,30 +144,7 @@ export default function VehicleAccessoriesScreen() {
             </p>
           </section>
 
-          {/* Accessories list */}
-          <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-slate-900 mb-1">
-              Accessories for your EV
-            </h2>
-            <AccessoryRow
-              icon={ShieldCheck}
-              name="Reflective jacket"
-              detail="Required for night shifts and roadside stops."
-              status="Required"
-            />
-            <AccessoryRow
-              icon={Package}
-              name="Delivery box / carrier"
-              detail="Food and parcel deliveries must use insulated or secure boxes."
-              status="Available"
-            />
-            <AccessoryRow
-              icon={Package}
-              name="Child seat (if applicable)"
-              detail="Required when transporting children under local regulations."
-              status="Missing"
-            />
-          </section>
+      <BottomNav active="more" />
 
           {/* Info + reminder */}
           <section className="space-y-2 pt-1 pb-4">

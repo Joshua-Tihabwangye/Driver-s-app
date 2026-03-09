@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
     Package,
   MapPin,
@@ -12,9 +12,8 @@ import {
 } from "lucide-react";
 import { useNavigate , useLocation } from "react-router-dom";
 
-// EVzone Driver App – D25 Delivery Driver Dashboard (v1)
+// EVzone Driver App – D25 Delivery Driver Dashboard
 // Overview dashboard focused on deliveries (stats + quick actions).
-// 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
 function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
   return (
@@ -37,9 +36,9 @@ function StatChip({ icon: Icon, label, value, accent }: { icon: React.ElementTyp
         <span className="text-[11px] text-slate-500 truncate">{label}</span>
         <Icon className="h-3.5 w-3.5 text-slate-400" />
       </div>
-      <span className="text-sm font-semibold text-slate-900">{value}</span>
+      <span className="text-base font-bold text-slate-900 tracking-tight">{value}</span>
       {accent && (
-        <span className="mt-1 text-[10px] text-emerald-600 flex items-center">
+        <span className="mt-2 text-[9px] font-bold text-emerald-600 flex items-center bg-emerald-50 w-fit px-2 py-0.5 rounded-full">
           <Activity className="h-3 w-3 mr-1" />
           {accent}
         </span>
@@ -107,70 +106,74 @@ export default function DeliveryDriverDashboardScreen() {
                   <p className="text-xs font-semibold">Ready for parcel & food orders</p>
                 </div>
               </div>
-              <span className="rounded-full bg-slate-900/70 px-2 py-0.5 text-[10px] font-medium text-emerald-300">
-                Offline
-              </span>
             </div>
-            <p className="text-[11px] text-slate-100 leading-snug">
-              Go online to start receiving delivery requests nearby. You can
-              switch between EV rides and deliveries from your main dashboard.
-            </p>
-          </section>
+            <span className="rounded-full bg-slate-800 border border-slate-700 px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              Offline
+            </span>
+          <p className="text-[11px] text-slate-400 leading-relaxed relative">
+            Go online to start receiving delivery requests nearby. You can
+            switch services in the Jobs tab.
+          </p>
+        </section>
 
-          {/* Key stats row */}
-          <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-slate-900 mb-1">
-              Today&apos;s delivery stats
-            </h2>
-            <div className="flex space-x-2">
-              <StatChip
-                icon={Package}
-                label="Deliveries completed"
-                value="8"
-                accent="On track for daily goal"
-              />
-              <StatChip
-                icon={DollarSign}
-                label="Earnings today"
-                value="$42.50"
-              />
-            </div>
-            <div className="flex space-x-2">
-              <StatChip
-                icon={Clock}
-                label="Online time"
-                value="3h 20m"
-              />
-              <StatChip
-                icon={MapPin}
-                label="Avg. drop-off distance"
-                value="5.2 km"
-              />
-            </div>
-          </section>
+        {/* Key stats grid */}
+        <section className="space-y-3">
+          <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
+            Performance Snapshot
+          </h2>
+          <div className="flex space-x-3">
+            <StatChip
+              icon={Package}
+              label="Completed"
+              value="8 Drops"
+              accent="On Track"
+            />
+            <StatChip
+              icon={DollarSign}
+              label="Earnings"
+              value="$42.50"
+            />
+          </div>
+          <div className="flex space-x-3">
+            <StatChip
+              icon={Clock}
+              label="Online"
+              value="3h 20m"
+            />
+            <StatChip
+              icon={MapPin}
+              label="Avg Dist"
+              value="5.2 km"
+            />
+          </div>
+        </section>
 
-          {/* Upcoming & suggestions */}
-          <section className="space-y-2 pt-1 pb-4">
-            <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 text-[11px] text-slate-600 flex items-start space-x-2">
-              <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white">
-                <Activity className="h-4 w-4 text-[#03cd8c]" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-xs text-slate-900 mb-0.5">
-                  Next busy window
-                </p>
-                <p>
-                  Expect more delivery requests today between <span className="font-semibold">6:00 pm</span> and
-                  <span className="font-semibold"> 8:30 pm</span> around your usual areas.
-                </p>
-              </div>
+        {/* Upcoming & suggestions */}
+        <section className="pt-2 pb-2">
+          <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4 flex items-start space-x-4 shadow-sm group hover:border-[#03cd8c]/20 transition-all">
+            <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm shrink-0">
+              <Activity className="h-5 w-5 text-[#03cd8c]" />
             </div>
+            <div className="flex-1">
+              <p className="font-bold text-xs text-slate-900 mb-1">
+                Next Busy Window
+              </p>
+              <p className="text-[11px] text-slate-500 leading-relaxed">
+                High demand expected between <span className="text-slate-900 font-bold">6:00 pm</span> and
+                <span className="text-slate-900 font-bold"> 8:30 pm</span> in your area.
+              </p>
+            </div>
+          </div>
 
-            <button type="button" onClick={() => navigate("/driver/map/online")} className="w-full rounded-full py-2.5 text-sm font-semibold shadow-sm bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c]">
-              Go online for deliveries
-            </button>
-          </section>
-        </main>
+          <button 
+            onClick={() => navigate("/driver/dashboard/online")}
+            className="w-full rounded-xl py-4 mt-6 text-sm font-bold shadow-lg shadow-[#03cd8c]/20 bg-[#03cd8c] text-white hover:bg-[#02b77c] active:scale-[0.98] transition-all"
+          >
+            Go Online Now
+          </button>
+        </section>
+      </main>
+
 
         {/* Bottom Navigation – Green */}
         <nav className="app-bottom-nav border-t border-white/20 flex" style={{ background: "#03cd8c" }}>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
     Building2,
   Car,
@@ -12,25 +12,11 @@ import {
   Settings
 } from "lucide-react";
 import { useNavigate , useLocation } from "react-router-dom";
+import BottomNav from "../components/BottomNav";
 
-// EVzone Driver App – D16 Business Vehicles (v1)
-// Business-owned / fleet vehicles assigned to the driver (separate from personal vehicles).
-// 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
+// EVzone Driver App – D16 Business Vehicles
+// Business-owned / fleet vehicles assigned to the driver.
 
-function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${active ? "text-white" : "text-white/50 hover:text-white/80"
-        }`}
-    >
-      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
-      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
-      <span className="relative z-10">{label}</span>
-    </button>
-  );
-}
 
 function FleetVehicleCard({ icon: Icon, title, subtitle, tag, status, onClick }) {
   const statusTone =
@@ -54,14 +40,14 @@ function FleetVehicleCard({ icon: Icon, title, subtitle, tag, status, onClick })
           <span className="text-xs font-semibold text-slate-900">{title}</span>
           <span className="text-[11px] text-slate-500">{subtitle}</span>
           {tag && (
-            <span className="mt-1 inline-flex items-center rounded-full bg-slate-900 px-2 py-0.5 text-[10px] font-medium text-emerald-400">
+            <span className="mt-2 inline-flex items-center rounded-full bg-slate-900 px-2 py-0.5 text-[9px] font-black uppercase text-emerald-400 tracking-wider">
               {tag}
             </span>
           )}
         </div>
       </div>
       <span
-        className={`ml-2 inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium ${statusTone}`}
+        className={`ml-2 inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-tight ${statusTone}`}
       >
         {status}
       </span>
@@ -101,13 +87,11 @@ export default function BusinessVehiclesScreen() {
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
               <Building2 className="h-4 w-4 text-[#03cd8c]" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                Driver Personal
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] font-bold uppercase text-[#03cd8c]">
+                Active Fleet
               </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Business vehicles
-              </h1>
+              <p className="text-sm font-bold tracking-tight">GreenFleet Logistics · Kampala</p>
             </div>
           </div>
         </header>
@@ -194,28 +178,7 @@ export default function BusinessVehiclesScreen() {
         </main>
 
         {/* Bottom navigation */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem
-            icon={Home}
-            label="Home"
-           active={navActive("home")} onClick={() => navigate(bottomNavRoutes.home)}
-          />
-          <BottomNavItem
-            icon={Briefcase}
-            label="Manager"
-           active={navActive("manager")} onClick={() => navigate(bottomNavRoutes.manager)}
-          />
-          <BottomNavItem
-            icon={Wallet}
-            label="Wallet"
-           active={navActive("wallet")} onClick={() => navigate(bottomNavRoutes.wallet)}
-          />
-          <BottomNavItem
-            icon={Settings}
-            label="Settings"
-           active={navActive("settings")} onClick={() => navigate(bottomNavRoutes.settings)}
-          />
-        </nav>
+        <BottomNav active="jobs" />
       </div>
     </div>
   );

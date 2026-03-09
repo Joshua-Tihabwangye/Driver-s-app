@@ -123,35 +123,39 @@ import D101Screen from "./screens/D101.jsx";
 import D102Screen from "./screens/D102.jsx";
 import CashOutScreen from "./screens/CashOut";
 
+// ── Auth & Landing ──────────────────────────────────────
+import LandingPage from "./screens/LandingPage";
+import Login from "./screens/Login";
+
+// ── Super-app & registration (D01–D04) ──────────────────
+import D01Screen from "./screens/D01";
+import D02Screen from "./screens/D02";
+import D03Screen from "./screens/D03";
+import D04Screen from "./screens/D04";
+
+// ── Profile, documents & identity (D05–D17) ─────────────
+import D05Screen from "./screens/D05";
+import D06Screen from "./screens/D06";
+import D07Screen from "./screens/D07";
+import D08Screen from "./screens/D08";
+import D09Screen from "./screens/D09";
+import D10Screen from "./screens/D10";
+import D11Screen from "./screens/D11";
+import D12Screen from "./screens/D12";
+import D13Screen from "./screens/D13";
+import D14Screen from "./screens/D14";
+import D15Screen from "./screens/D15";
+import D16Screen from "./screens/D16";
+import D17Screen from "./screens/D17";
+
 const SAMPLE_IDS = {
-  trip: "demo-trip",
-  vehicle: "demo-vehicle",
-  route: "demo-route",
-  stop: "alpha-stop",
-  job: "demo-job",
-  tour: "demo-tour",
+  vehicle: "v123",
+  trip: "t456",
+  route: "r789",
+  stop: "s012",
+  job: "j345",
+  tour: "tour678",
 };
-
-const BOTTOM_NAV_DESTINATIONS = {
-  home: "/driver/dashboard/online",
-  manager: "/driver/jobs/list",
-  wallet: "/driver/earnings/overview",
-  settings: "/driver/preferences",
-  bookings: "/driver/jobs/list",
-  tasks: "/driver/delivery/orders",
-  delivery: "/driver/delivery/orders",
-  orders: "/driver/delivery/orders",
-  mode: "/driver/dashboard/offline",
-  online: "/driver/dashboard/online",
-  map: "/driver/map/online",
-  jobs: "/driver/jobs/list",
-  programs: "/driver/training/intro",
-  shuttle: "/driver/help/shuttle-link",
-  safety: "/driver/safety/hub",
-  search: "/driver/search",
-};
-
-const BOTTOM_NAV_CLASS_MARKERS = ["border-t", "backdrop-blur"];
 
 const SCREENS = [
   // Super app & registration (ROUTING_GUIDE §3.1)
@@ -806,55 +810,125 @@ const SCREENS = [
   },
 ];
 
-const DEFAULT_SCREEN = SCREENS[0];
+const DEFAULT_SCREEN = SCREENS.find((s) => s.id === "D31") || SCREENS[0];
+
+// ── Dashboards, earnings & map (D25–D41) ────────────────
+import D25Screen from "./screens/D25";
+import D26Screen from "./screens/D26";
+import D27Screen from "./screens/D27";
+import D28Screen from "./screens/D28";
+import D29Screen from "./screens/D29";
+import D30Screen from "./screens/D30";
+import D31Screen from "./screens/D31";
+import D32Screen from "./screens/D32";
+import D33Screen from "./screens/D33";
+import D34Screen from "./screens/D34";
+import D35Screen from "./screens/D35";
+import D36Screen from "./screens/D36";
+import D37Screen from "./screens/D37";
+import D38Screen from "./screens/D38";
+import D39Screen from "./screens/D39";
+import D40Screen from "./screens/D40";
+import D41Screen from "./screens/D41";
+
+// ── Job requests & selection (D42–D46) ──────────────────
+import D42Screen from "./screens/D42";
+import D43Screen from "./screens/D43";
+import D44Screen from "./screens/D44";
+import D45Screen from "./screens/D45";
+import D46Screen from "./screens/D46";
+
+// ── Navigation, trip & cancellation (D47–D58) ───────────
+import D47Screen from "./screens/D47";
+import D48Screen from "./screens/D48";
+import D49Screen from "./screens/D49";
+import D50Screen from "./screens/D50";
+import D51Screen from "./screens/D51";
+import D52Screen from "./screens/D52";
+import D53Screen from "./screens/D53";
+import D54Screen from "./screens/D54";
+import D55Screen from "./screens/D55";
+import D56Screen from "./screens/D56";
+import D57Screen from "./screens/D57";
+import D58Screen from "./screens/D58";
+
+// ── Safety & emergency (D59–D66, D70–D72) ───────────────
+import D59Screen from "./screens/D59";
+import D60Screen from "./screens/D60";
+import D61Screen from "./screens/D61";
+import D62Screen from "./screens/D62";
+import D63Screen from "./screens/D63";
+import D64Screen from "./screens/D64";
+import D65Screen from "./screens/D65";
+import D66Screen from "./screens/D66";
+import D70Screen from "./screens/D70";
+import D71Screen from "./screens/D71";
+import D72Screen from "./screens/D72";
+
+// ── Proof, history, surge (D67–D69, D73) ────────────────
+import D67Screen from "./screens/D67";
+import D68Screen from "./screens/D68";
+import D69Screen from "./screens/D69";
+import D73Screen from "./screens/D73";
+
+// ── Delivery orders, routes & QR (D74–D96) ──────────────
+import D74Screen from "./screens/D74";
+import D75Screen from "./screens/D75";
+import D76Screen from "./screens/D76";
+import D77Screen from "./screens/D77";
+import D78Screen from "./screens/D78";
+import D79Screen from "./screens/D79";
+import D80Screen from "./screens/D80";
+import D81Screen from "./screens/D81";
+import D82Screen from "./screens/D82";
+import D83Screen from "./screens/D83";
+import D84Screen from "./screens/D84";
+import D85Screen from "./screens/D85";
+import D86Screen from "./screens/D86";
+import D87Screen from "./screens/D87";
+import D88Screen from "./screens/D88";
+import D89Screen from "./screens/D89";
+import D90Screen from "./screens/D90";
+import D91Screen from "./screens/D91";
+import D92Screen from "./screens/D92";
+import D93Screen from "./screens/D93";
+import D94Screen from "./screens/D94";
+import D95Screen from "./screens/D95";
+import D96Screen from "./screens/D96";
+
+// ── Special job types (D97–D102) ────────────────────────
+import D97Screen from "./screens/D97";
+import D98Screen from "./screens/D98";
+import D99Screen from "./screens/D99";
+import D100Screen from "./screens/D100";
+import D101Screen from "./screens/D101";
+import D102Screen from "./screens/D102";
+
+// ── New screens ─────────────────────────────────────────
+import MoreMenu from "./screens/MoreMenu";
+import HelpScreen from "./screens/Help";
+import AboutScreen from "./screens/About";
+import ProfileScreen from "./screens/Profile";
+import AnalyticsDashboard from "./screens/AnalyticsDashboard";
 
 export default function App() {
   const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const currentScreen =
-    SCREENS.find((screen) =>
-      matchPath({ path: screen.path, end: true }, location.pathname)
-    ) || DEFAULT_SCREEN;
-
-  const handleScreenChange = (event) => {
-    const next = SCREENS.find((screen) => screen.id === event.target.value);
-    if (next) {
-      navigate(next.previewPath ?? next.path);
+  const handleScreenChange = (event: any) => {
+    const screenId = event.target.value;
+    const screen = SCREENS.find((s) => s.id === screenId);
+    if (screen) {
+      navigate(screen.previewPath || screen.path);
     }
   };
 
-  useEffect(() => {
-    const normalizeLabel = (text) =>
-      text
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "");
+  const currentScreen =
+    SCREENS.find((s) =>
+      matchPath({ path: s.path, end: true }, location.pathname)
+    ) || DEFAULT_SCREEN;
 
-    const handleBottomNavClick = (event) => {
-      const button = event.target.closest("button");
-      if (!button) return;
-      const nav = button.closest("nav");
-      if (!nav) return;
-
-      const looksLikeBottomNav = BOTTOM_NAV_CLASS_MARKERS.every((cls) =>
-        nav.classList.contains(cls)
-      );
-      if (!looksLikeBottomNav) return;
-
-      const normalized = normalizeLabel(button.textContent || "");
-      if (!normalized) return;
-
-      const destination = BOTTOM_NAV_DESTINATIONS[normalized];
-      if (!destination) return;
-
-      navigate(destination);
-    };
-
-    document.addEventListener("click", handleBottomNavClick);
-    return () => document.removeEventListener("click", handleBottomNavClick);
-  }, [navigate]);
 
   return (
     <Box

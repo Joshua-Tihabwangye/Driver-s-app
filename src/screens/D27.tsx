@@ -1,55 +1,39 @@
-import React, { useState } from "react";
+import React from "react";
 import {
     Power,
   WifiOff,
   AlertCircle,
   Info,
-  Home,
-  Briefcase,
-  Wallet,
-  Settings
+  ChevronRight
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import BottomNav from "../components/BottomNav";
 
-// EVzone Driver App – D27 Driver App – Dashboard (Offline State) (v1)
+// EVzone Driver App – D27 Driver App – Dashboard (Offline State)
 // Driver dashboard when offline, showing status + any blocking issues.
-// 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
-
-function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
-  return (
-    <button
-      type="button"
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
-        active ? "text-white" : "text-white/50 hover:text-white/80"
-      }`}
-      onClick={onClick}
-    >
-      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
-      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
-      <span className="relative z-10">{label}</span>
-    </button>
-  );
-}
 
 function IssueRow({ title, text, type, onClick }) {
   const isBlocking = type === "blocking";
   const Icon = isBlocking ? AlertCircle : Info;
-  const color = isBlocking ? "text-red-600" : "text-slate-600";
-  const bg = isBlocking ? "bg-red-50" : "bg-slate-50";
-  const border = isBlocking ? "border-red-100" : "border-slate-100";
+  const color = isBlocking ? "text-red-500" : "text-amber-500";
+  const bg = isBlocking ? "bg-red-50/50" : "bg-amber-50/50";
+  const border = isBlocking ? "border-red-100" : "border-amber-100";
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`flex items-start space-x-2 rounded-2xl border ${border} ${bg} px-3 py-2.5 text-[11px] text-left w-full active:scale-[0.99] transition-transform`}
+      className={`flex items-start space-x-4 rounded-2xl border ${border} ${bg} px-4 py-4 text-left w-full active:scale-[0.98] transition-all group hover:bg-white`}
     >
-      <div className={`mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white ${color}`}>
-        <Icon className="h-4 w-4" />
+      <div className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm ${color}`}>
+        <Icon className="h-5 w-5" />
       </div>
       <div className="flex-1 text-slate-700">
-        <p className="font-semibold text-xs text-slate-900 mb-0.5">{title}</p>
-        <p>{text}</p>
+        <p className="font-bold text-xs text-slate-900 mb-1 flex items-center justify-between">
+          {title}
+          <ChevronRight className="h-3.5 w-3.5 text-slate-300" />
+        </p>
+        <p className="text-[11px] text-slate-500 leading-relaxed">{text}</p>
       </div>
     </button>
   );
@@ -57,22 +41,9 @@ function IssueRow({ title, text, type, onClick }) {
 
 export default function OfflineDashboardScreen() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
-  const bottomNavRoutes = {
-    home: "/driver/dashboard/online",
-    manager: "/driver/jobs/list",
-    wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences"
-};
 
   return (
     <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
@@ -112,74 +83,46 @@ export default function OfflineDashboardScreen() {
                   <p className="text-xs font-semibold">You&apos;re not receiving requests</p>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => navigate("/driver/dashboard/online")}
-                className="rounded-full bg-[#03cd8c] px-3 py-1 text-[11px] font-semibold text-slate-900 hover:bg-[#02b77c]"
-              >
-                Go online
-              </button>
             </div>
-            <p className="text-[11px] text-slate-100 leading-snug">
-              Switch to online when you&apos;re ready to start accepting ride or
-              delivery requests. Make sure any required documents and training
-              are completed first.
+            <button
+              type="button"
+              onClick={() => navigate("/driver/dashboard/online")}
+              className="rounded-xl bg-[#03cd8c] px-4 py-2.5 text-xs font-black text-white hover:bg-[#02b77c] active:scale-95 transition-all shadow-lg shadow-[#03cd8c]/20"
+            >
+              GO ONLINE
+            </button>
+            <p className="text-[11px] text-slate-400 leading-relaxed mt-3">
+              Connect now to start earning. Ensure your compliance documents are active and your vehicle safety checks are done.
             </p>
           </section>
 
-          {/* Issues / requirements */}
+          {/* Issues */}
           <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-slate-900 mb-1">
-              Things to check before going online
+            <h2 className="text-sm font-semibold text-slate-900 mb-1 px-1">
+               Attention Required
             </h2>
-            <IssueRow
-              title="Upload police clearance document"
-              text="Your police clearance is missing or expired. Upload a valid document so we can verify it."
-              type="blocking"
-              onClick={() => navigate("/driver/onboarding/profile/documents/upload")}
-            />
-            <IssueRow
-              title="Complete safety training module"
-              text="We recommend finishing the Safety & SOS module so you know how to respond in an emergency."
-              type="recommendation"
-              onClick={() => navigate("/driver/training/intro")}
+            <IssueRow 
+              title="Identity Verification"
+              text="Your facial recognition check is due in 3 days."
+              type="info"
+              onClick={() => navigate("/driver/verify-identity")}
             />
           </section>
 
           {/* Info */}
-          <section className="space-y-2 pt-1 pb-4">
-            <IssueRow
-              title="Take a break when you need to"
-              text="You can go offline at any time between trips. Just remember to stop in a safe place before changing your status."
-              type="recommendation"
-              onClick={() => navigate("/driver/safety/hub")}
-            />
+          <section className="pt-2">
+             <div className="rounded-2xl border-2 border-slate-50 bg-slate-50/50 p-5 text-center">
+                <Info className="h-6 w-6 text-slate-300 mx-auto mb-3" />
+                <p className="text-xs font-bold text-slate-900 mb-1">Take a pause</p>
+                <p className="text-[11px] text-slate-500 leading-relaxed">
+                  You can toggle offline any time you need a break. Remember to park in a designated safe zone first.
+                </p>
+             </div>
           </section>
         </main>
 
-        {/* Bottom navigation – Home active (dashboard context) */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem
-            icon={Home}
-            label="Home"
-           active={navActive("home")} onClick={() => navigate(bottomNavRoutes.home)}
-          />
-          <BottomNavItem
-            icon={Briefcase}
-            label="Manager"
-           active={navActive("manager")} onClick={() => navigate(bottomNavRoutes.manager)}
-          />
-          <BottomNavItem
-            icon={Wallet}
-            label="Wallet"
-           active={navActive("wallet")} onClick={() => navigate(bottomNavRoutes.wallet)}
-          />
-          <BottomNavItem
-            icon={Settings}
-            label="Settings"
-           active={navActive("settings")} onClick={() => navigate(bottomNavRoutes.settings)}
-          />
-        </nav>
+        {/* Bottom Navigation */}
+        <BottomNav active="home" />
       </div>
     </div>
   );
