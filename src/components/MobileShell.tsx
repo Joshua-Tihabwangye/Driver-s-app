@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
-  ArrowLeft,
   Home,
   Briefcase,
   DollarSign,
@@ -96,15 +95,6 @@ export default function MobileShell({ children }: MobileShellProps) {
     navigate("/landing");
   };
 
-  const handleGoBack = () => {
-    if (window.history.length > 1) {
-      navigate(-1);
-      return;
-    }
-
-    navigate("/driver/dashboard/online");
-  };
-
   return (
     <div className="fixed inset-0 w-full h-full flex items-center justify-center bg-[#020617]"
          style={{ backgroundImage: "radial-gradient(circle at top right, #1E293B 0, #020617 100%)" }}>
@@ -116,27 +106,18 @@ export default function MobileShell({ children }: MobileShellProps) {
                       md:w-[430px] md:h-[calc(100%-60px)] md:max-h-[900px] border-[8px] border-slate-900">
         
         {/* Global Header */}
-        <div className="relative h-16 flex items-center px-4 bg-white border-b border-slate-100 z-[3000]">
-          <button
-            type="button"
-            onClick={handleGoBack}
-            aria-label="Go back"
-            className="h-9 w-9 flex items-center justify-center rounded-full border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </button>
-
-          <div className="absolute left-1/2 -translate-x-1/2 flex items-center space-x-3">
+        <div className="h-14 flex items-center justify-between px-4 bg-white border-b border-slate-100 z-[3000]">
+          <div className="flex items-center space-x-3">
              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#03cd8c] to-emerald-600 flex items-center justify-center text-white text-xs font-black shadow-lg shadow-emerald-200">
                 EV
              </div>
-             <span className="text-sm font-black text-slate-800 tracking-tight">EVzone</span>
+             <span className="text-base font-black text-slate-800 tracking-tight">EVzone</span>
           </div>
 
-          <div className="relative ml-auto">
+          <div className="relative">
             <button 
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="flex items-center space-x-2 bg-slate-50 hover:bg-slate-100 transition-colors py-1.5 pl-1.5 pr-2.5 rounded-full border border-slate-100/50"
+              className="flex items-center space-x-2 bg-slate-50 hover:bg-slate-100 transition-colors py-1 pl-1 pr-2 rounded-full border border-slate-100/50"
             >
               <div className="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-black text-slate-600 border border-white">
                 {user?.initials || "U"}
