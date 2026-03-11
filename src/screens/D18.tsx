@@ -16,21 +16,6 @@ import { useNavigate , useLocation } from "react-router-dom";
 // Full-width light green hero with car illustration, navy blue CTA.
 // + Restored: Bullet module outline, video CTA, estimated time, "I'll do this later"
 
-function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
-        active ? "text-white" : "text-white/50 hover:text-white/80"
-      }`}
-    >
-      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
-      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
-      <span className="relative z-10">{label}</span>
-    </button>
-  );
-}
 
 function Bullet({ children }) {
   return (
@@ -43,131 +28,113 @@ function Bullet({ children }) {
 
 export default function IntroEvzoneRideScreen() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Hide scrollbar */}
-        <style>{`
-          .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-          .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        `}</style>
+    <div className="flex flex-col min-h-full bg-[#f8fafc]">
 
-        {/* Green curved header */}
-        <div className="relative" style={{ minHeight: 80 }}>
-          <div
-            className="absolute inset-0"
-            style={{
-              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)"
-}}
-          />
-          <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm"
-            >
-              <ChevronLeft className="h-5 w-5 text-white" />
-            </button>
-            <h1 className="text-base font-semibold text-white">Preferences</h1>
-          </header>
-        </div>
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-90 transition-transform"
+          >
+            <ChevronLeft className="h-5 w-5 text-white" />
+          </button>
+          <h1 className="text-base font-black text-white tracking-tight">Training</h1>
+          <div className="w-10" /> {/* Spacer */}
+        </header>
+      </div>
 
-        {/* Content */}
-        <main className="app-main flex-1 flex flex-col overflow-y-auto scrollbar-hide">
+      {/* Content */}
+      <main className="flex-1 flex flex-col">
 
-          {/* Hero Section - Light Green with Car Illustration */}
-          <section className="bg-[#def7ee] w-full pt-12 pb-14 flex items-center justify-center px-6">
-            <div className="relative w-full max-w-[280px]">
-              {/* Car Illustration Mockup */}
-              <div className="relative bg-[#03cd8c]/20 rounded-full h-40 w-full flex items-center justify-center">
-                <Car className="h-28 w-28 text-[#1c2b4d]" />
-                {/* Cloud/Stylized elements */}
-                <div className="absolute top-4 right-4 h-4 w-12 bg-white rounded-full opacity-60" />
-                <div className="absolute top-10 left-8 h-4 w-16 bg-white rounded-full opacity-60" />
-                <div className="absolute bottom-4 right-10 h-3 w-10 bg-white rounded-full opacity-40" />
+        {/* Hero Section - Light Green with Car Illustration */}
+        <section className="bg-emerald-50 w-full pt-16 pb-20 flex items-center justify-center px-6 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-[#03cd8c]/5 rounded-full -mr-16 -mt-16 animate-pulse" />
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#03cd8c]/5 rounded-full -ml-12 -mb-12" />
+          <div className="relative w-full max-w-[240px]">
+            {/* Car Illustration Mockup */}
+            <div className="relative bg-white rounded-[3rem] h-48 w-full flex items-center justify-center shadow-2xl shadow-emerald-500/10 border-4 border-emerald-100/20 group">
+              <Car className="h-32 w-32 text-[#1c2b4d] transition-transform group-hover:scale-110 duration-500" />
+              {/* Cloud/Stylized elements */}
+              <div className="absolute top-4 right-6 h-4 w-12 bg-emerald-50 rounded-full" />
+              <div className="absolute top-12 left-10 h-3 w-16 bg-emerald-50 rounded-full" />
+            </div>
+          </div>
+        </section>
+
+        {/* White Card/Content Area */}
+        <section className="flex-1 bg-white -mt-10 rounded-t-[3rem] px-8 pt-10 pb-12 flex flex-col shadow-[0_-20px_50px_rgba(0,0,0,0.02)]">
+          <div className="space-y-4">
+            <h2 className="text-2xl font-black text-slate-900 leading-tight tracking-tight">
+              Mastering the EVRide Experience
+            </h2>
+            <p className="text-[13px] text-slate-500 leading-relaxed font-medium">
+              Join our community of elite drivers. This 5-minute session covers everything from system basics to advanced EV management.
+            </p>
+            <div className="flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-[#03cd8c] bg-emerald-50 w-fit px-3 py-1.5 rounded-full">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              <span>Investment: 5–7 Minutes</span>
+            </div>
+          </div>
+
+          {/* Module outline (restored from original) */}
+          <div className="w-full mt-10 space-y-4">
+            <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Knowledge Modules</h3>
+            <ul className="space-y-3">
+              <Bullet>System proficiency: From going online to handling multi-stop pickups.</Bullet>
+              <Bullet>EV Dynamics: Managing range, locating fast-chargers, and surge optimization.</Bullet>
+              <Bullet>Ecosystem Safety: Conflict resolution, star-ratings, and driver welfare protocols.</Bullet>
+            </ul>
+          </div>
+
+          {/* Video CTA (restored from original) */}
+          <div className="w-full mt-8 rounded-3xl border border-slate-100 bg-slate-50 p-4 flex items-center justify-between group cursor-pointer hover:bg-white hover:shadow-xl transition-all" onClick={() => {}}>
+            <div className="flex items-center space-x-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm shadow-emerald-500/10 group-hover:bg-[#03cd8c] transition-colors">
+                <PlayCircle className="h-6 w-6 text-[#03cd8c] group-hover:text-white" />
+              </div>
+              <div className="flex flex-col items-start">
+                <span className="text-xs font-black uppercase tracking-tight text-slate-900">Watch Masterclass</span>
+                <span className="text-[10px] font-medium text-slate-400">Complete EVzone ride-through</span>
               </div>
             </div>
-          </section>
+            <span className="text-[10px] font-black text-slate-400 mr-2">4:32</span>
+          </div>
 
-          {/* White Card/Content Area */}
-          <section className="flex-1 bg-white -mt-8 rounded-t-[36px] px-8 pt-10 pb-6 flex flex-col items-center">
-            <div className="text-center space-y-4 max-w-[280px]">
-              <h2 className="text-2xl font-bold text-slate-900 leading-tight">
-                Introduction to Driving with EVRide
-              </h2>
-              <p className="text-sm text-slate-500 leading-relaxed font-medium">
-                Please review the following content to help keep EVRide a safe platform for everyone. By following these guidelines, you contribute to a secure and positive experience for both drivers and riders. Your commitment to safety makes all the difference!
-              </p>
-              <div className="flex items-center justify-center space-x-2 text-[10px] text-emerald-600">
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                <span>Estimated time: 5–7 minutes</span>
-              </div>
-            </div>
-
-            {/* Module outline (restored from original) */}
-            <div className="w-full mt-5 space-y-2">
-              <h3 className="text-sm font-semibold text-slate-900">In this introduction you will:</h3>
-              <ul className="space-y-1.5">
-                <Bullet>See how to go online, accept rides and navigate to pickups and drop-offs.</Bullet>
-                <Bullet>Understand how EV driving affects range, charging and surge pricing.</Bullet>
-                <Bullet>Learn basic safety, ratings and support options for drivers and riders.</Bullet>
-              </ul>
-            </div>
-
-            {/* Video CTA (restored from original) */}
-            <div className="w-full mt-4 rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white">
-                  <PlayCircle className="h-4 w-4 text-[#03cd8c]" />
-                </div>
-                <div className="flex flex-col items-start">
-                  <span className="text-xs font-semibold text-slate-900">Watch the intro video</span>
-                  <span className="text-[11px] text-slate-500">Covers the full EVzone Ride flow.</span>
-                </div>
-              </div>
-              <span className="text-[11px] text-slate-500">4:32</span>
-            </div>
-
-            <div className="flex-1" />
-
-            {/* Continue Button - Navy Blue */}
+          {/* Actions */}
+          <div className="mt-12 space-y-3">
             <button
               type="button"
               onClick={() => navigate("/driver/training/info-session")}
-              className="w-full rounded-xl bg-[#1c2b4d] py-4 text-sm font-bold text-white shadow-lg active:scale-[0.98] transition-all mb-2 mt-8"
+              className="w-full rounded-2xl bg-[#1c2b4d] py-5 text-sm font-black text-white shadow-2xl shadow-slate-900/30 active:scale-[0.98] transition-all uppercase tracking-widest"
             >
-              Continue
+              Start Session
             </button>
 
-            {/* "I'll do this later" (restored from original) */}
             <button
               type="button"
               onClick={() => navigate("/driver/preferences")}
-              className="w-full rounded-full py-2.5 text-sm font-semibold border border-slate-200 text-slate-800 bg-white mb-1"
+              className="w-full rounded-2xl py-4 text-xs font-black text-slate-400 bg-white border border-slate-200 shadow-sm hover:bg-slate-50 active:scale-95 transition-all uppercase tracking-widest"
             >
-              I'll do this later
+              Resume later
             </button>
-            <p className="text-[10px] text-slate-500 text-center">
-              You can always come back from Preferences → Training & learning.
+            <p className="text-[10px] font-medium text-slate-400 text-center leading-relaxed">
+              Available anytime in Preferences → Learning Hub.
             </p>
-          </section>
-        </main>
-
-        {/* Bottom Navigation – Green */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate("/driver/dashboard/online")} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={navActive("manager")} onClick={() => navigate("/driver/jobs/list")} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate("/driver/earnings/overview")} />
-          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate("/driver/preferences")} />
-        </nav>
-      </div>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

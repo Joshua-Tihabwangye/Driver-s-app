@@ -14,21 +14,6 @@ import { useNavigate , useLocation } from "react-router-dom";
 // Redesigned to match Screenshot 0.
 // Green header, navy progress card, module list with thumbnails.
 
-function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
-        active ? "text-white" : "text-white/50 hover:text-white/80"
-      }`}
-    >
-      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
-      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
-      <span className="relative z-10">{label}</span>
-    </button>
-  );
-}
 
 function ModuleCard({ title, description, image, completed, onClick }) {
   return (
@@ -100,73 +85,65 @@ export default function InfoSessionListScreen() {
   ];
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col relative">
-        {/* Hide scrollbar */}
-        <style>{`
-          .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-          .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        `}</style>
+    <div className="flex flex-col min-h-full bg-[#f8fafc]">
 
-        {/* Green curved header */}
-        <div className="relative" style={{ minHeight: 80 }}>
-          <div
-            className="absolute inset-0"
-            style={{
-              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)"
-}}
-          />
-          <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm"
-            >
-              <ChevronLeft className="h-5 w-5 text-white" />
-            </button>
-            <h1 className="text-base font-semibold text-white">Driver App</h1>
-          </header>
-        </div>
-
-        {/* Navy Progress Section */}
-        <section className="bg-[#242f4b] px-6 pt-8 pb-10">
-          <h2 className="text-2xl font-bold text-white mb-2">Let's begin Info Session</h2>
-          <p className="text-sm text-slate-300 mb-6">Getting Started Session for Driver-Partners</p>
-
-          <div className="space-y-2">
-            <div className="h-2 w-full bg-white rounded-full overflow-hidden">
-              <div className="h-full bg-[#03cd8c]" style={{ width: '60%' }} />
-            </div>
-            <div className="flex justify-between text-[11px] font-medium text-white/80">
-              <span>You're 60% completing your info session....</span>
-              <span>4/9</span>
-            </div>
-          </div>
-        </section>
-
-        {/* Content */}
-        <main className="app-main flex-1 -mt-6 bg-white rounded-t-[32px] px-5 pt-8 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
-          <div className="space-y-4 pb-10">
-            {modules.map((m, idx) => (
-              <ModuleCard
-                key={idx}
-                title={m.title}
-                description={m.description}
-                image={m.image}
-                completed={m.completed}
-                onClick={() => navigate("/driver/training/earnings-tutorial")}
-              />
-            ))}
-          </div>
-        </main>
-
-        {/* Bottom Navigation – Green */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate("/driver/dashboard/online")} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={navActive("manager")} onClick={() => navigate("/driver/jobs/list")} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate("/driver/earnings/overview")} />
-          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate("/driver/preferences")} />
-        </nav>
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-90 transition-transform"
+          >
+            <ChevronLeft className="h-5 w-5 text-white" />
+          </button>
+          <h1 className="text-base font-black text-white tracking-tight">Learning Hub</h1>
+          <div className="w-10" /> {/* Spacer */}
+        </header>
       </div>
+
+      {/* Navy Progress Section */}
+      <section className="bg-[#1c2b4d] px-8 pt-10 pb-12 shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-[#03cd8c]/5 rounded-full -mr-16 -mt-16" />
+        <h2 className="text-2xl font-black text-white mb-2 tracking-tight">Mastery Path</h2>
+        <p className="text-xs font-medium text-slate-400 mb-6 uppercase tracking-widest">Onboarding Driver-Partners</p>
+
+        <div className="space-y-3">
+          <div className="flex justify-between text-[10px] font-black text-emerald-400 uppercase tracking-widest">
+            <span>Progress: 60%</span>
+            <span>4 / 9 Modules</span>
+          </div>
+          <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+            <div className="h-full bg-gradient-to-r from-[#03cd8c] to-[#a8e6cf] shadow-[0_0_15px_rgba(3,205,140,0.5)] transition-all duration-1000" style={{ width: '60%' }} />
+          </div>
+        </div>
+      </section>
+
+      {/* Content */}
+      <main className="flex-1 -mt-8 bg-white rounded-t-[3rem] px-6 pt-10 pb-12 space-y-6 shadow-[0_-20_50px_rgba(0,0,0,0.02)]">
+        <div className="px-2">
+           <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4">Curriculum</h3>
+           <div className="space-y-4 pb-12">
+             {modules.map((m, idx) => (
+               <ModuleCard
+                 key={idx}
+                 title={m.title}
+                 description={m.description}
+                 image={m.image}
+                 completed={m.completed}
+                 onClick={() => navigate("/driver/training/earnings-tutorial")}
+               />
+             ))}
+           </div>
+        </div>
+      </main>
     </div>
   );
 }

@@ -13,6 +13,7 @@ import {
   ShoppingCart,
   Package,
   Clock,
+  ClipboardCheck,
   Home,
   MessageSquare,
   Wallet,
@@ -25,21 +26,6 @@ import { useNavigate , useLocation } from "react-router-dom";
 // Functionality: all items are clickable and toggle their active state (green ↔ white).
 // Done button navigates. All routing preserved from original.
 
-function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
-        active ? "text-white" : "text-white/50 hover:text-white/80"
-      }`}
-    >
-      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
-      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
-      <span className="relative z-10">{label}</span>
-    </button>
-  );
-}
 
 function AreaCard({ icon: Icon, label, color, active, onClick }) {
   return (
@@ -91,12 +77,6 @@ function RequirementCard({ icon: Icon, label, color, active, onClick }) {
 
 export default function PreferencesScreen() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
 
   // Toggleable state for areas
   const [areas, setAreas] = useState([
@@ -143,104 +123,103 @@ export default function PreferencesScreen() {
   };
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Hide scrollbar */}
-        <style>{`
-          .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-          .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        `}</style>
+    <div className="flex flex-col min-h-full bg-[#f8fafc]">
 
-        {/* Green curved header */}
-        <div className="relative" style={{ minHeight: 80 }}>
-          <div
-            className="absolute inset-0"
-            style={{
-              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)"
-}}
-          />
-          <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm"
-            >
-              <ChevronLeft className="h-5 w-5 text-white" />
-            </button>
-            <h1 className="text-base font-semibold text-white">Preferences</h1>
-          </header>
-        </div>
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-90 transition-transform"
+          >
+            <ChevronLeft className="h-5 w-5 text-white" />
+          </button>
+          <h1 className="text-base font-black text-white tracking-tight">Preferences</h1>
+          <div className="w-10" /> {/* Spacer */}
+        </header>
+      </div>
 
-        {/* Content */}
-        <main className="app-main flex-1 px-5 pt-4 pb-4 space-y-5 overflow-y-auto scrollbar-hide">
+      {/* Content */}
+      <main className="flex-1 px-6 pt-6 pb-24 space-y-8">
 
-          {/* Areas section */}
-          <section className="space-y-2">
-            <div className="flex items-center gap-1.5">
-              <MapPin className="h-4 w-4 text-slate-500" />
-              <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Areas</h2>
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              {areas.slice(0, 6).map((area, i) => (
-                <AreaCard key={i} {...area} onClick={() => toggleArea(i)} />
-              ))}
-            </div>
-            {areas.length > 6 && (
-              <div className="grid grid-cols-3 gap-3">
-                {areas.slice(6).map((area, i) => (
-                  <AreaCard key={i + 6} {...area} onClick={() => toggleArea(i + 6)} />
-                ))}
+        {/* Areas section */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 bg-emerald-50 rounded-lg">
+                <MapPin className="h-4 w-4 text-[#03cd8c]" />
               </div>
-            )}
+              <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Target Areas</h2>
+            </div>
             <button
               type="button"
-              className="text-[11px] font-medium text-[#03cd8c]"
+              className="text-[11px] font-black text-[#03cd8c] uppercase tracking-widest"
               onClick={() => navigate("/driver/map/settings")}
             >
-              View more
+              Manage
             </button>
-          </section>
+          </div>
+          
+          <div className="grid grid-cols-3 gap-3">
+            {areas.map((area, i) => (
+              <AreaCard key={i} {...area} onClick={() => toggleArea(i)} />
+            ))}
+          </div>
+        </section>
 
-          {/* Services section */}
-          <section className="space-y-2">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Services</h2>
-            <div className="flex flex-wrap gap-2">
-              {services.map((s, i) => (
-                <ServiceChip key={i} {...s} onClick={() => toggleService(i)} />
-              ))}
-            </div>
-          </section>
+        {/* Services section */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 px-1">
+             <div className="p-1.5 bg-blue-50 rounded-lg">
+                <Truck className="h-4 w-4 text-blue-600" />
+             </div>
+             <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Available Services</h2>
+          </div>
+          <div className="flex flex-wrap gap-2.5">
+            {services.map((s, i) => (
+              <ServiceChip key={i} {...s} onClick={() => toggleService(i)} />
+            ))}
+          </div>
+        </section>
 
-          {/* Requirements section */}
-          <section className="space-y-2">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Requirements</h2>
-            <div className="space-y-2">
-              {requirements.map((r, i) => (
-                <RequirementCard key={i} {...r} onClick={() => toggleRequirement(i)} />
-              ))}
-            </div>
-          </section>
+        {/* Requirements section */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 px-1">
+             <div className="p-1.5 bg-amber-50 rounded-lg">
+                <ClipboardCheck className="h-4 w-4 text-amber-600" />
+             </div>
+             <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Working Requirements</h2>
+          </div>
+          <div className="grid grid-cols-1 gap-3">
+            {requirements.map((r, i) => (
+              <RequirementCard key={i} {...r} onClick={() => toggleRequirement(i)} />
+            ))}
+          </div>
+        </section>
 
-          {/* Done button */}
-          <section className="pb-4">
-            <button
-              type="button"
-              onClick={() => navigate("/driver/dashboard/online")}
-              className="w-full rounded-full bg-[#03cd8c] py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#02b77c] transition-colors"
-            >
-              Done
-            </button>
-          </section>
-        </main>
-
-        {/* Bottom navigation – green */}
-        <nav className="app-bottom-nav border-t border-white/20 flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate("/driver/dashboard/online")} />
-          <BottomNavItem icon={MessageSquare} label="Messages" onClick={() => navigate("/driver/ridesharing/notification")} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate("/driver/earnings/overview")} />
-          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate("/driver/preferences")} />
-        </nav>
-      </div>
+        {/* Done button */}
+        <section className="pt-4 pb-12">
+          <button
+            type="button"
+            onClick={() => navigate("/driver/dashboard/online")}
+            className="w-full rounded-2xl bg-[#03cd8c] py-4 text-sm font-black text-white shadow-xl shadow-emerald-500/20 hover:bg-[#02b77c] active:scale-[0.98] transition-all uppercase tracking-widest"
+          >
+            Save Preferences
+          </button>
+          <p className="mt-3 text-center text-[10px] text-slate-400 font-medium">
+            You can modify these settings anytime in your profile.
+          </p>
+        </section>
+      </main>
     </div>
   );
 }

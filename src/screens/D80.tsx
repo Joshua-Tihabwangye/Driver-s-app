@@ -11,7 +11,7 @@ import {
   Wallet,
   Settings
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D80 Active Delivery Route Screen (v1)
 // Active delivery route view combining map + next stop card + quick contact.
@@ -35,168 +35,131 @@ function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }
 
 export default function ActiveDeliveryRouteScreen() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
-  const bottomNavRoutes = {
-    home: "/driver/dashboard/online",
-    manager: "/driver/jobs/list",
-    wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences"
-};
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
-
-      {/* Phone frame */}
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-              <Map className="h-4 w-4 text-[#03cd8c]" />
+    <div className="flex flex-col h-full bg-[#f8fafc]">
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md shadow-inner">
+              <Map className="h-6 w-6 text-white" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
+            <div className="flex flex-col text-left">
+              <span className="text-[10px] uppercase tracking-[0.2em] font-black text-white/70">
                 Driver · Deliveries
               </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Active delivery route
+              <h1 className="text-xl font-black text-white leading-tight">
+                Active Route
               </h1>
             </div>
           </div>
         </header>
+      </div>
 
-        {/* Content */}
-        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
-          {/* Map container */}
-          <button
-            type="button"
-            onClick={() => navigate("/driver/delivery/route/demo-route/map")}
-            className="relative rounded-3xl overflow-hidden border border-slate-100 bg-slate-200 h-[260px] w-full text-left active:scale-[0.99] transition-transform"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
+      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-6">
+        {/* Map container */}
+        <button
+          type="button"
+          onClick={() => navigate("/driver/delivery/route/demo-route/map")}
+          className="relative rounded-[2.5rem] overflow-hidden border border-slate-200 bg-slate-200 h-[280px] w-full text-left active:scale-[0.99] transition-transform shadow-xl"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
 
-            {/* Route polyline */}
-            <div className="absolute inset-0">
-              <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                <path
-                  d="M14 82 C 28 70, 40 64, 52 52 S 72 34, 86 20"
-                  fill="none"
-                  stroke="#03cd8c"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeDasharray="5 3"
-                />
-              </svg>
+          {/* Route polyline (simplified SVG) */}
+          <div className="absolute inset-0">
+            <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <path
+                d="M14 82 C 28 70, 40 64, 52 52 S 72 34, 86 20"
+                fill="none"
+                stroke="#03cd8c"
+                strokeWidth="4"
+                strokeLinecap="round"
+                strokeDasharray="8 5"
+              />
+            </svg>
+          </div>
+
+          {/* Driver marker */}
+          <div className="absolute left-14 bottom-14 flex flex-col items-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900 border-2 border-white shadow-2xl">
+              <Navigation className="h-6 w-6 text-[#03cd8c]" />
             </div>
+          </div>
 
-            {/* Driver marker */}
-            <div className="absolute left-14 bottom-14 flex flex-col items-center">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900/90 border border-white">
-                <Navigation className="h-4 w-4 text-[#03cd8c]" />
-              </div>
+          {/* Next stop marker */}
+          <div className="absolute right-12 top-16 flex flex-col items-center">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white border-2 border-[#03cd8c] shadow-xl">
+              <Package className="h-5 w-5 text-[#03cd8c]" />
             </div>
+            <span className="mt-2 rounded-full bg-slate-900 px-3 py-1 text-[9px] font-black text-white uppercase tracking-widest border border-white/20">
+              Next Stop
+            </span>
+          </div>
+        </button>
 
-            {/* Next stop marker */}
-            <div className="absolute right-10 top-16 flex flex-col items-center">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/90 border border-white">
-                <Package className="h-3.5 w-3.5 text-[#03cd8c]" />
-              </div>
-              <span className="mt-0.5 rounded-full bg-slate-900/80 px-2 py-0.5 text-[9px] text-slate-50">
-                Next stop
+        {/* Next stop info */}
+        <section className="space-y-4">
+          <div className="rounded-[2.5rem] border border-slate-100 bg-white p-6 shadow-xl shadow-slate-200/50 flex items-center justify-between text-[11px] text-slate-600 active:scale-[0.98] transition-transform">
+            <div className="flex flex-col items-start px-2">
+              <span className="text-sm font-black text-slate-900">
+                Naguru (Block B)
+              </span>
+              <span className="text-[10px] font-medium text-slate-500 mt-1 uppercase tracking-widest">
+                Order #3235 · Groceries
               </span>
             </div>
-          </button>
-
-          {/* Next stop info */}
-          <section className="space-y-3">
-            <div className="rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 flex items-center justify-between text-[11px] text-slate-600">
-              <div className="flex flex-col items-start max-w-[200px]">
-                <span className="text-xs font-semibold text-slate-900">
-                  Next stop · Naguru (Block B)
-                </span>
-                <span className="text-[10px] text-slate-500">
-                  Deliver order #3235 · FreshMart groceries
-                </span>
-              </div>
-              <div className="flex flex-col items-end text-[10px] text-slate-500">
-                <span className="inline-flex items-center mb-0.5">
-                  <Clock className="h-3 w-3 mr-1" />
-                  Deliver by 18:40
-                </span>
-                <span>2.3 km · 8 min</span>
-              </div>
+            <div className="flex flex-col items-end text-[10px] text-slate-500 font-bold uppercase tracking-widest text-right">
+              <span className="inline-flex items-center mb-1 text-[#03cd8c]">
+                <Clock className="h-4 w-4 mr-1.5" />
+                18:40
+              </span>
+              <span>2.3 km · 8 min</span>
             </div>
+          </div>
 
-            <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 flex items-center justify-between text-[11px] text-slate-600">
-              <div className="flex flex-col items-start max-w-[220px]">
-                <span className="text-xs font-semibold text-slate-900 mb-0.5">
-                  Grouped route
-                </span>
-                <span>
-                  You have 2 more stops on this route after Naguru. Follow the
-                  suggested order to reduce backtracking.
-                </span>
-              </div>
+          <div className="rounded-[2.5rem] border border-slate-100 bg-slate-900 text-white p-6 shadow-2xl flex items-center justify-between">
+            <div className="flex flex-col items-start px-2">
+              <span className="text-xs font-black uppercase tracking-[0.1em] text-[#03cd8c] mb-1">
+                Grouped Route
+              </span>
+              <p className="text-[11px] text-slate-400 font-medium leading-relaxed">
+                You have 2 more stops after this. Follow the suggested order to
+                minimise backtracking.
+              </p>
             </div>
-          </section>
+          </div>
+        </section>
 
-          {/* Contact / actions */}
-          <section className="space-y-3 pb-4">
-            <div className="rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 flex items-center justify-between text-[11px] text-slate-600">
-              <div className="flex flex-col items-start">
-                <span className="text-xs font-semibold text-slate-900">
-                  Need to contact recipient?
-                </span>
-                <span>
-                  Only call or message when stopped in a safe place.
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => navigate("/driver/delivery/route/demo-route/stop/alpha-stop/contact")}
-                className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-[10px] font-medium text-slate-700"
-              >
-                <Phone className="h-3 w-3 mr-1" />
-                Call
-              </button>
+        {/* Contact / actions */}
+        <section className="space-y-4 pb-12">
+          <div className="rounded-[2.5rem] border border-slate-100 bg-white p-6 shadow-xl shadow-slate-200/50 flex items-center justify-between">
+            <div className="flex flex-col items-start px-2">
+              <span className="text-sm font-black text-slate-900">
+                Contact Recipient?
+              </span>
+              <span className="text-[10px] font-medium text-slate-500 mt-0.5">
+                Only call when stopped in a safe place.
+              </span>
             </div>
-          </section>
-        </main>
-
-        {/* Bottom navigation – Home active (active route context) */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem
-            icon={Home}
-            label="Home"
-           active={navActive("home")} onClick={() => navigate(bottomNavRoutes.home)}
-          />
-          <BottomNavItem
-            icon={Briefcase}
-            label="Manager"
-           active={navActive("manager")} onClick={() => navigate(bottomNavRoutes.manager)}
-          />
-          <BottomNavItem
-            icon={Wallet}
-            label="Wallet"
-           active={navActive("wallet")} onClick={() => navigate(bottomNavRoutes.wallet)}
-          />
-          <BottomNavItem
-            icon={Settings}
-            label="Settings"
-           active={navActive("settings")} onClick={() => navigate(bottomNavRoutes.settings)}
-          />
-        </nav>
-      </div>
+            <button
+              type="button"
+              onClick={() => navigate("/driver/delivery/route/demo-route/stop/alpha-stop/contact")}
+              className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 border border-emerald-100 shadow-lg shadow-emerald-200/50 text-white active:scale-90 transition-transform"
+            >
+              <Phone className="h-6 w-6" />
+            </button>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

@@ -95,7 +95,7 @@ export default function RideRequestsListScreen() {
   };
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
+    <div className="flex flex-col h-full bg-[#f8fafc]">
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
@@ -103,95 +103,104 @@ export default function RideRequestsListScreen() {
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col relative">
-        {/* Header */}
-        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-              <ListFilter className="h-4 w-4 text-[#03cd8c]" />
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+              <ListFilter className="h-5 w-5 text-white" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                Driver
-              </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Ride requests
-              </h1>
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Console</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">Requests</p>
             </div>
           </div>
-          <button type="button" className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700 active:scale-95 transition-transform">
-            <Bell className="h-4 w-4" />
+          <button type="button" className="relative inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 text-white shadow-lg active:scale-95 transition-transform">
+            <Bell className="h-5 w-5" />
           </button>
         </header>
+      </div>
 
-        {/* Filters Sticky Bar */}
-        <section className="bg-white/80 backdrop-blur-md z-10 py-2 border-b border-slate-50 px-4">
-          <div className="flex items-center space-x-2 overflow-x-auto no-scrollbar">
-            {JOB_FILTERS.map((f) => (
-              <button
-                key={f.key}
-                type="button"
-                onClick={() => setFilter(f.key)}
-                className={`rounded-full px-4 py-1.5 border-2 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap transition-all ${
-                  filter === f.key
-                    ? "bg-[#03cd8c] border-[#03cd8c] text-white shadow-md shadow-[#03cd8c]/20"
-                    : "bg-white border-slate-100 text-slate-400 hover:border-slate-200"
-                }`}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
+      {/* Filters Sticky Bar */}
+      <section className="bg-white/80 backdrop-blur-md z-10 py-4 border-b border-slate-50 px-6">
+        <div className="flex items-center space-x-3 overflow-x-auto no-scrollbar">
+          {JOB_FILTERS.map((f) => (
+            <button
+              key={f.key}
+              type="button"
+              onClick={() => setFilter(f.key)}
+              className={`rounded-full px-5 py-2 border-2 text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${
+                filter === f.key
+                  ? "bg-[#03cd8c] border-[#03cd8c] text-white shadow-xl shadow-[#03cd8c]/20"
+                  : "bg-white border-slate-100 text-slate-400 hover:border-slate-200"
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* Content */}
+      <main className="flex-1 px-6 pt-6 pb-24 space-y-6 overflow-y-auto scrollbar-hide">
+        {/* Requests list */}
+        <section className="space-y-4">
+          {filteredJobs.map((job) => (
+            <RequestCard key={job.id} job={job} onClick={handleCardClick} />
+          ))}
+
+          {filteredJobs.length === 0 && (
+            <div className="rounded-[2.5rem] border-2 border-dashed border-slate-100 bg-slate-50 px-6 py-16 flex flex-col items-center justify-center text-center">
+              <div className="w-16 h-16 rounded-3xl bg-white flex items-center justify-center mb-6 shadow-sm">
+                 <ListFilter className="h-8 w-8 text-slate-200" />
+              </div>
+              <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Zero Intercepts</p>
+              <p className="text-[11px] text-slate-500 mt-2 font-bold uppercase tracking-tight leading-relaxed max-w-[200px]">
+                No mission parameters match current sector filters. Synchronize and await signal.
+              </p>
+            </div>
+          )}
         </section>
 
-        {/* Content */}
-        <main className="app-main flex-1 px-4 pt-3 pb-20 space-y-4 overflow-y-auto scrollbar-hide">
-          {/* Requests list */}
-          <section className="space-y-3">
-            {filteredJobs.map((job) => (
-              <RequestCard key={job.id} job={job} onClick={handleCardClick} />
-            ))}
-
-            {filteredJobs.length === 0 && (
-              <div className="rounded-2xl border-2 border-dashed border-slate-100 bg-slate-50 px-6 py-12 flex flex-col items-center justify-center text-center">
-                <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center mb-4 shadow-sm">
-                   <ListFilter className="h-6 w-6 text-slate-300" />
+        {/* Shuttle help hint */}
+        {hasShuttleJob && (
+          <section className="pt-2">
+            <div className="rounded-[2.5rem] border border-violet-100 bg-violet-50 p-6 flex flex-col items-start space-y-4 shadow-inner">
+              <div className="flex items-center space-x-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm shrink-0">
+                  <HelpCircle className="h-6 w-6 text-violet-500" />
                 </div>
-                <p className="text-sm font-bold text-slate-900">No requests found</p>
-                <p className="text-xs text-slate-500 mt-1">Try selecting a different category or check back soon.</p>
+                <div className="flex flex-col">
+                  <p className="font-black text-sm text-violet-900 uppercase tracking-tight">
+                    Shuttle Protocol
+                  </p>
+                  <p className="text-[11px] text-violet-800/80 font-bold uppercase tracking-tight">
+                    Secondary Neural Link Required
+                  </p>
+                </div>
               </div>
-            )}
+              <p className="text-[11px] text-violet-800/80 leading-relaxed font-bold uppercase tracking-tight">
+                Shuttle operations require the dedicated School Shuttle environment. Establish link to proceed.
+              </p>
+              <button
+                type="button"
+                onClick={() => navigate("/driver/help/shuttle-link")}
+                className="w-full rounded-full bg-violet-600 text-white py-4 text-[11px] font-black uppercase tracking-widest active:scale-95 transition-all shadow-xl shadow-violet-600/20"
+              >
+                Establish Link
+              </button>
+            </div>
           </section>
-
-          {/* Shuttle help hint */}
-          {hasShuttleJob && (
-            <section className="pt-2">
-              <div className="rounded-2xl border border-violet-100 bg-violet-50 px-4 py-4 flex items-start space-x-3 shadow-sm group">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm shrink-0">
-                  <HelpCircle className="h-5 w-5 text-violet-500" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-bold text-xs text-violet-900 mb-0.5">
-                    Shuttle Runs
-                  </p>
-                  <p className="text-[11px] text-violet-800/80 leading-relaxed mb-3">
-                    Requires the School Shuttle App. Click a job or the link below to learn more.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => navigate("/driver/help/shuttle-link")}
-                    className="w-full rounded-lg bg-violet-600 text-white py-2 text-[10px] font-bold uppercase tracking-wider active:scale-[0.98] transition-all"
-                  >
-                    Learn More
-                  </button>
-                </div>
-              </div>
-            </section>
-          )}
-        </main>
-
-        <BottomNav active="manager" />
-      </div>
+        )}
+      </main>
     </div>
   );
 }

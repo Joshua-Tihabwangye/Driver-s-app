@@ -56,133 +56,108 @@ export default function DeliveryDriverDashboardScreen() {
     return (routes[key] || []).some(r => p.startsWith(r));
   };
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
+    <div className="flex flex-col h-full bg-[#f8fafc]">
+      {/* Hide scrollbar */}
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col relative">
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+              <Package className="h-5 w-5 text-white" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Terminal</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">Delivery Ops</p>
+            </div>
+          </div>
+          <div className="w-10" /> {/* Spacer */}
+        </header>
+      </div>
 
-        {/* Green curved header */}
-        <div className="relative" style={{ minHeight: 80 }}>
-          <div
-            className="absolute inset-0"
-            style={{
-              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)"
-}}
-          />
-          <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
-            <div className="flex items-center space-x-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
-                <Package className="h-4 w-4 text-white" />
+      {/* Content */}
+      <main className="flex-1 px-6 pt-6 pb-24 space-y-6 overflow-y-auto scrollbar-hide">
+        {/* Status card */}
+        <section className="rounded-[2.5rem] bg-[#0b1e3a] text-white p-6 space-y-4 shadow-xl relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#03cd8c] text-white">
+                <Package className="h-5 w-5" />
               </div>
-              <div className="flex flex-col items-start">
-                <span className="text-[10px] uppercase tracking-wide text-white/80">
-                  Deliveries
-                </span>
-                <span className="text-sm font-semibold text-white">
-                  Delivery dashboard
-                </span>
+              <div className="flex flex-col">
+                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-400">STATUS: OFFLINE</span>
+                <p className="text-sm font-black tracking-tight mt-0.5">Logistics & Courier Mode</p>
               </div>
             </div>
-          </header>
-        </div>
-
-        {/* Content */}
-        <main className="app-main flex-1 px-4 pt-3 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
-          {/* Status card */}
-          <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#03cd8c] text-slate-900">
-                  <Package className="h-4 w-4" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] tracking-[0.18em] uppercase text-[#a5f3fc]">
-                    Delivery driver mode
-                  </span>
-                  <p className="text-xs font-semibold">Ready for parcel & food orders</p>
-                </div>
-              </div>
-            </div>
-            <span className="rounded-full bg-slate-800 border border-slate-700 px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-              Offline
-            </span>
-          <p className="text-[11px] text-slate-400 leading-relaxed relative">
-            Go online to start receiving delivery requests nearby. You can
-            switch services in the Jobs tab.
+          </div>
+          <p className="text-[11px] text-slate-400 font-medium leading-relaxed">
+            Switch to online mode to intercept high-priority parcel and food delivery requests in your immediate vicinity.
           </p>
         </section>
 
         {/* Key stats grid */}
-        <section className="space-y-3">
-          <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
-            Performance Snapshot
-          </h2>
-          <div className="flex space-x-3">
-            <StatChip
-              icon={Package}
-              label="Completed"
-              value="8 Drops"
-              accent="On Track"
-            />
-            <StatChip
-              icon={DollarSign}
-              label="Earnings"
-              value="$42.50"
-            />
-          </div>
-          <div className="flex space-x-3">
-            <StatChip
-              icon={Clock}
-              label="Online"
-              value="3h 20m"
-            />
-            <StatChip
-              icon={MapPin}
-              label="Avg Dist"
-              value="5.2 km"
-            />
-          </div>
+        <section className="space-y-4">
+           <div className="px-1">
+              <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Performance Snapshot</h2>
+           </div>
+           <div className="grid grid-cols-2 gap-3">
+             <StatChip
+               icon={Package}
+               label="Completed"
+               value="8 Drops"
+               accent="On Track"
+             />
+             <StatChip
+               icon={DollarSign}
+               label="Earnings"
+               value="$42.50"
+             />
+             <StatChip
+               icon={Clock}
+               label="Online"
+               value="3h 20m"
+             />
+             <StatChip
+               icon={MapPin}
+               label="Avg Dist"
+               value="5.2 km"
+             />
+           </div>
         </section>
 
         {/* Upcoming & suggestions */}
-        <section className="pt-2 pb-2">
-          <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4 flex items-start space-x-4 shadow-sm group hover:border-[#03cd8c]/20 transition-all">
-            <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm shrink-0">
-              <Activity className="h-5 w-5 text-[#03cd8c]" />
+        <section className="space-y-4 pt-1 pb-12">
+          <div className="rounded-3xl border border-blue-50 bg-blue-50/30 p-5 flex items-start space-x-3">
+            <div className="mt-0.5 bg-blue-100 p-1.5 rounded-xl">
+              <Activity className="h-4 w-4 text-blue-600" />
             </div>
-            <div className="flex-1">
-              <p className="font-bold text-xs text-slate-900 mb-1">
-                Next Busy Window
-              </p>
-              <p className="text-[11px] text-slate-500 leading-relaxed">
-                High demand expected between <span className="text-slate-900 font-bold">6:00 pm</span> and
-                <span className="text-slate-900 font-bold"> 8:30 pm</span> in your area.
-              </p>
+            <div className="shrink text-[11px] text-blue-900/70 space-y-1.5 leading-relaxed">
+              <p className="font-black text-xs text-blue-900 uppercase tracking-tight">Demand Forecast</p>
+              <p className="font-medium">High volume predicted for <span className="text-blue-900 font-black">6:00 pm - 8:30 pm</span> within your sector. Strategize recharge cycles accordingly.</p>
             </div>
           </div>
 
-          <button 
+          <button
             onClick={() => navigate("/driver/dashboard/online")}
-            className="w-full rounded-xl py-4 mt-6 text-sm font-bold shadow-lg shadow-[#03cd8c]/20 bg-[#03cd8c] text-white hover:bg-[#02b77c] active:scale-[0.98] transition-all"
+            className="w-full rounded-2xl bg-[#03cd8c] py-4 text-sm font-black text-white shadow-xl shadow-emerald-500/20 hover:bg-[#02b77c] active:scale-[0.98] transition-all uppercase tracking-widest"
           >
-            Go Online Now
+            Initiate Shift
           </button>
         </section>
       </main>
-
-
-        {/* Bottom Navigation – Green */}
-        <nav className="app-bottom-nav border-t border-white/20 flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate("/driver/dashboard/online")}/>
-          <BottomNavItem icon={Briefcase} label="Manager" active={navActive("manager")} onClick={() => navigate("/driver/jobs/list")}/>
-          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate("/driver/earnings/overview")}/>
-          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate("/driver/preferences")}/>
-        </nav>
-      </div>
     </div>
   );
 }

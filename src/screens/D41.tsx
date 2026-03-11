@@ -41,110 +41,121 @@ export default function LastTripSummaryPopupScreen() {
     return (routes[key] || []).some(r => p.startsWith(r));
   };
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
+    <div className="flex flex-col h-full bg-[#f8fafc]">
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-              <Map className="h-4 w-4 text-[#03cd8c]" />
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+              <Map className="h-5 w-5 text-white" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                Driver
-              </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Map view
-              </h1>
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Console</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">Session Recap</p>
             </div>
           </div>
+          <div className="w-10" /> {/* Spacer */}
         </header>
+      </div>
 
-        {/* Content */}
-        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide">
-          {/* Map container */}
-          <section className="relative rounded-3xl overflow-hidden border border-slate-100 bg-slate-200 h-[360px]">
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
+      {/* Content */}
+      <main className="flex-1 px-6 pt-6 pb-24 space-y-6 overflow-y-auto scrollbar-hide">
+        {/* Map container */}
+        <section className="relative rounded-[2.5rem] overflow-hidden border border-slate-100 bg-slate-200 h-[460px] shadow-2xl">
+          <div className="absolute inset-0 bg-slate-200" style={{ backgroundImage: 'radial-gradient(#94a3b8 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
 
-            {/* Last trip route suggestion (simple line) */}
-            <div className="absolute inset-0">
-              <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                <path
-                  d="M20 80 C 40 60, 60 40, 80 20"
-                  fill="none"
-                  stroke="#03cd8c"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeDasharray="4 2"
-                />
-              </svg>
+          {/* Last trip route suggestion */}
+          <div className="absolute inset-0">
+            <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <path
+                d="M20 80 C 40 60, 60 40, 80 20"
+                fill="none"
+                stroke="#03cd8c"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeDasharray="4 2"
+                className="opacity-60"
+              />
+            </svg>
+          </div>
+
+          {/* Start and end markers */}
+          <div className="absolute left-10 bottom-12 flex flex-col items-center">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 border border-white/20 shadow-xl">
+              <Car className="h-5 w-5 text-[#03cd8c]" />
             </div>
+            <span className="mt-2 rounded-full bg-slate-900 px-3 py-1 text-[10px] font-black text-white uppercase tracking-widest shadow-xl">
+              Origin
+            </span>
+          </div>
 
-            {/* Start and end markers */}
-            <div className="absolute left-7 bottom-8 flex flex-col items-center">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/90 border border-white">
-                <Car className="h-3.5 w-3.5 text-[#03cd8c]" />
-              </div>
-              <span className="mt-0.5 rounded-full bg-slate-900/80 px-2 py-0.5 text-[9px] text-slate-50">
-                Start
-              </span>
+          <div className="absolute right-12 top-12 flex flex-col items-center">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 border border-white/20 shadow-xl">
+              <DollarSign className="h-5 w-5 text-[#03cd8c]" />
             </div>
+            <span className="mt-2 rounded-full bg-slate-900 px-3 py-1 text-[10px] font-black text-white uppercase tracking-widest shadow-xl">
+              Intercept
+            </span>
+          </div>
 
-            <div className="absolute right-8 top-8 flex flex-col items-center">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/90 border border-white">
-                <DollarSign className="h-3.5 w-3.5 text-[#03cd8c]" />
-              </div>
-              <span className="mt-0.5 rounded-full bg-slate-900/80 px-2 py-0.5 text-[9px] text-slate-50">
-                Drop-off
-              </span>
-            </div>
-
-            {/* Last trip summary popup */}
-            <div className="absolute inset-x-4 bottom-4">
-              <div className="rounded-2xl bg-white/95 shadow-xl border border-slate-100 px-3 py-3 space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex flex-col items-start">
-                    <span className="text-xs font-semibold text-slate-900">
-                      Last trip summary
-                    </span>
-                    <span className="text-[11px] text-slate-500">
-                      City Centre → Ntinda · 8.4 km
-                    </span>
-                  </div>
-                  <span className="text-sm font-semibold text-slate-900">
+          {/* Last trip summary popup */}
+          <div className="absolute inset-x-6 bottom-6">
+            <div className="rounded-[2.5rem] bg-white/90 backdrop-blur-xl shadow-2xl border border-slate-100 p-6 space-y-5">
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col items-start">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">
+                    MISSION RECAP
+                  </span>
+                  <span className="text-sm font-black text-slate-900 uppercase tracking-tight">
+                    City Centre → Ntinda
+                  </span>
+                  <span className="text-[11px] text-[#03cd8c] font-bold uppercase tracking-tight">
+                    8.4 km Total Traversal
+                  </span>
+                </div>
+                <div className="flex flex-col items-end">
+                  <span className="text-xl font-black text-slate-900 tracking-tighter">
                     $6.80
                   </span>
+                  <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mt-0.5">YIELD</span>
                 </div>
-                <div className="flex items-center justify-between text-[10px] text-slate-500">
-                  <span className="inline-flex items-center">
-                    <Clock className="h-3 w-3 mr-1" /> 17 min
-                  </span>
-                  <span className="inline-flex items-center">
-                    <Star className="h-3 w-3 mr-1 text-amber-400" /> 5.0 rating
-                  </span>
-                </div>
-                <button type="button" onClick={() => navigate("/driver/history/rides")} className="mt-1 w-full rounded-full py-1.5 text-[11px] font-semibold border border-slate-200 text-slate-800 bg-white">
-                  View trip details
-                </button>
               </div>
-            </div>
-          </section>
-        </main>
 
-        {/* Bottom navigation – Home active (map context) */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate("/driver/dashboard/online")}/>
-          <BottomNavItem icon={Briefcase} label="Manager" active={navActive("manager")} onClick={() => navigate("/driver/jobs/list")}/>
-          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate("/driver/earnings/overview")}/>
-          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate("/driver/preferences")}/>
-        </nav>
-      </div>
+              <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                <div className="flex items-center space-x-4">
+                  <span className="inline-flex items-center text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                    <Clock className="h-4 w-4 mr-2 text-slate-400" /> 17m Cycle
+                  </span>
+                  <span className="inline-flex items-center text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                    <Star className="h-4 w-4 mr-2 text-amber-400" /> 5.0 Rating
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => navigate("/driver/history/rides")}
+                className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest border border-slate-200 text-slate-900 bg-white hover:bg-slate-50 active:scale-95 transition-all shadow-sm flex items-center justify-center"
+              >
+                Logistics Data
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

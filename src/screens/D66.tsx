@@ -34,21 +34,6 @@ function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }
 
 export default function ShareMyRideScreen() {
   const [copied, setCopied] = useState(false);
-  const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
-
-  const bottomNavRoutes = {
-    home: "/driver/dashboard/online",
-    manager: "/driver/jobs/list",
-    wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences"
-};
-
   const shareUrl = "https://evzone.app/follow/ABC123";
 
   const handleCopy = () => {
@@ -57,143 +42,130 @@ export default function ShareMyRideScreen() {
   };
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
-
-      {/* Phone frame */}
-      <div className="w-[375px] h-[812px] bg-white rounded-[32px] shadow-2xl overflow-hidden flex flex-col relative text-left">
-        {/* Header */}
-        <header className="flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-              <Share2 className="h-4 w-4 text-[#03cd8c]" />
+    <div className="flex flex-col h-full bg-[#f8fafc]">
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md shadow-inner">
+              <Share2 className="h-6 w-6 text-white" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
+            <div className="flex flex-col text-left">
+              <span className="text-[10px] uppercase tracking-[0.2em] font-black text-white/70">
                 Driver · Safety
               </span>
-              <h1 className="text-base font-semibold text-slate-900">
+              <h1 className="text-xl font-black text-white leading-tight">
                 Share my ride
               </h1>
             </div>
           </div>
         </header>
+      </div>
 
-        {/* Content */}
-        <main className="flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
-          {/* Link preview */}
-          <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-3">
-            <div className="flex items-center space-x-3 text-left">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#03cd8c] text-white">
-                <Link2 className="h-5 w-5" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] tracking-[0.18em] uppercase text-[#a5f3fc]">
-                  Follow-ride link
-                </span>
-                <p className="text-sm font-semibold">
-                  Share this link for this trip only.
-                </p>
-              </div>
+      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-6">
+        {/* Intro card */}
+        <section className="rounded-[2.5rem] bg-slate-900 border border-slate-800 text-white p-6 space-y-4 shadow-2xl">
+          <div className="flex items-center space-x-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/20 backdrop-blur-md">
+              <Link2 className="h-6 w-6 text-[#03cd8c]" />
             </div>
-            <p className="text-[11px] text-slate-100 leading-snug">
-              Anyone with this link can see your location and trip status until
-              the ride ends, then the link stops working.
-            </p>
-          </section>
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] uppercase font-black text-[#03cd8c]">
+                Follow-ride link
+              </span>
+              <p className="text-sm font-bold">
+                Share this link for this trip only.
+              </p>
+            </div>
+          </div>
+          <p className="text-[11px] text-slate-400 font-medium leading-relaxed">
+            Anyone with this link can see your location and trip status until
+            the ride ends, then the link stops working.
+          </p>
+        </section>
 
-          {/* URL + copy */}
-          <section className="space-y-2">
-            <div className="rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 flex items-center justify-between text-[11px] text-slate-600">
-              <div className="flex flex-col items-start max-w-[220px]">
-                <span className="text-xs font-semibold text-slate-900 mb-0.5">
-                  Link
-                </span>
-                <span className="truncate text-[11px] text-slate-600">
-                  {shareUrl}
-                </span>
+        {/* URL + copy */}
+        <section className="space-y-3">
+          <div className="rounded-[2rem] border border-slate-100 bg-white shadow-sm p-4 flex items-center justify-between">
+            <div className="flex flex-col items-start max-w-[180px]">
+              <span className="text-[10px] font-black uppercase tracking-widest text-[#03cd8c] mb-1">
+                Shareable URL
+              </span>
+              <span className="truncate text-[11px] font-bold text-slate-900">
+                {shareUrl}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={handleCopy}
+              className={`inline-flex items-center rounded-2xl px-5 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-sm ${copied ? "bg-emerald-500 text-white" : "bg-slate-900 text-white"}`}
+            >
+              <Copy className="h-3.5 w-3.5 mr-2" />
+              {copied ? "Copied" : "Copy"}
+            </button>
+          </div>
+        </section>
+
+        {/* Share options */}
+        <section className="space-y-4">
+          <h2 className="text-xs font-black uppercase tracking-widest text-slate-400 px-2">
+            Share via
+          </h2>
+          <div className="grid grid-cols-3 gap-4">
+            <button
+              type="button"
+              className="group flex flex-col items-center justify-center rounded-[2rem] border border-slate-100 bg-white p-5 active:scale-95 transition-all shadow-sm hover:border-[#03cd8c]/30"
+            >
+              <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center mb-3 group-hover:bg-[#03cd8c] transition-colors">
+                <MessageCircle className="h-5 w-5 text-[#03cd8c] group-hover:text-white" />
               </div>
-              <button
-                type="button"
-                onClick={handleCopy}
-                className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-medium text-slate-700 active:scale-[0.97] transition-all"
-              >
-                <Copy className="h-3 w-3 mr-1" />
-                {copied ? "Copied" : "Copy"}
-              </button>
-            </div>
-          </section>
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-900">SMS / Chat</span>
+            </button>
 
-          {/* Share options */}
-          <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-slate-900 mb-1">
-              Share via
-            </h2>
-            <div className="grid grid-cols-3 gap-3 text-[11px] text-slate-700">
-              <button
-                type="button"
-                className="flex flex-col items-center rounded-2xl border border-slate-100 bg-white shadow-sm px-2 py-3 active:scale-[0.97] transition-all"
-              >
-                <MessageCircle className="h-4 w-4 mb-1 text-[#03cd8c]" />
-                <span className="text-[10px]">SMS / chat</span>
-              </button>
-              <button
-                type="button"
-                className="flex flex-col items-center rounded-2xl border border-slate-100 bg-white shadow-sm px-2 py-3 active:scale-[0.97] transition-all"
-              >
-                <Mail className="h-4 w-4 mb-1 text-[#03cd8c]" />
-                <span className="text-[10px]">Email</span>
-              </button>
-              <button
-                type="button"
-                className="flex flex-col items-center rounded-2xl border border-slate-100 bg-white shadow-sm px-2 py-3 active:scale-[0.97] transition-all"
-              >
-                <QrCode className="h-4 w-4 mb-1 text-[#03cd8c]" />
-                <span className="text-[10px]">QR code</span>
-              </button>
-            </div>
+            <button
+              type="button"
+              className="group flex flex-col items-center justify-center rounded-[2rem] border border-slate-100 bg-white p-5 active:scale-95 transition-all shadow-sm hover:border-[#03cd8c]/30"
+            >
+              <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center mb-3 group-hover:bg-[#03cd8c] transition-colors">
+                <Mail className="h-5 w-5 text-[#03cd8c] group-hover:text-white" />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-900">Email</span>
+            </button>
 
-            <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 text-[11px] text-slate-600 text-left">
-              <p className="font-semibold text-xs text-slate-900 mb-0.5">
+            <button
+              type="button"
+              className="group flex flex-col items-center justify-center rounded-[2rem] border border-slate-100 bg-white p-5 active:scale-95 transition-all shadow-sm hover:border-[#03cd8c]/30"
+            >
+              <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center mb-3 group-hover:bg-[#03cd8c] transition-colors">
+                <QrCode className="h-5 w-5 text-[#03cd8c] group-hover:text-white" />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-900">QR Code</span>
+            </button>
+          </div>
+
+          <div className="rounded-[2.5rem] border border-slate-200 bg-slate-50 p-6">
+            <div className="flex items-center space-x-3 mb-2">
+              <div className="h-1.5 w-1.5 rounded-full bg-[#03cd8c]" />
+              <p className="font-black text-[10px] uppercase tracking-widest text-slate-900">
                 Privacy note
               </p>
-              <p>
-                The link only shows this trip and stops working when the ride
-                ends. Your contacts cannot see your other trips or account
-                details.
-              </p>
             </div>
-          </section>
-        </main>
-
-        {/* Bottom navigation */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem
-            icon={Home}
-            label="Home"
-           active={navActive("home")} onClick={() => navigate(bottomNavRoutes.home)}
-          />
-          <BottomNavItem
-            icon={Briefcase}
-            label="Manager"
-           active={navActive("manager")} onClick={() => navigate(bottomNavRoutes.manager)}
-          />
-          <BottomNavItem
-            icon={Wallet}
-            label="Wallet"
-           active={navActive("wallet")} onClick={() => navigate(bottomNavRoutes.wallet)}
-          />
-          <BottomNavItem
-            icon={Settings}
-            label="Settings"
-           active={navActive("settings")} onClick={() => navigate(bottomNavRoutes.settings)}
-          />
-        </nav>
-      </div>
+            <p className="text-[11px] font-medium text-slate-500 leading-relaxed">
+              The link only shows this trip and stops working when the ride
+              ends. Your contacts cannot see your other trips or account
+              details.
+            </p>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

@@ -119,95 +119,100 @@ export default function D29ActiveDashboardScreen() {
   const totalJobs = jobMix.ride + jobMix.delivery + jobMix.rental + jobMix.tour + jobMix.ambulance;
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
+    <div className="flex flex-col h-full bg-[#f8fafc]">
+      {/* Hide scrollbar */}
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* Phone frame */}
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
-            <div className="flex items-center space-x-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-                <Activity className="h-4 w-4 text-[#03cd8c]" />
-              </div>
-              <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                Driver · Online
-              </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Active dashboard
-              </h1>
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+              <Activity className="h-5 w-5 text-white" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Performance</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">Sector Activity</p>
             </div>
           </div>
+          <div className="w-10" /> {/* Spacer */}
         </header>
+      </div>
 
-        {/* Content */}
-        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
-          {/* Today overview */}
-          <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#03cd8c] text-slate-900">
-                  <Clock className="h-4 w-4" />
-                </div>
-                <div className="flex flex-col items-start">
-                  <span className="text-[10px] tracking-[0.18em] uppercase text-[#a5f3fc]">
-                    Online now
-                  </span>
-                  <p className="text-sm font-semibold">{onlineTime} online</p>
-                </div>
+      {/* Content */}
+      <main className="flex-1 px-6 pt-6 pb-24 space-y-6 overflow-y-auto scrollbar-hide">
+        {/* Today overview */}
+        <section className="rounded-[2.5rem] bg-slate-900 text-white p-6 space-y-6 shadow-2xl shadow-slate-200 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-[#03cd8c]/10 rounded-full -mr-20 -mt-20 transition-transform group-hover:scale-110" />
+          
+          <div className="flex items-center justify-between relative z-10">
+            <div className="flex items-center space-x-4">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#03cd8c] text-white shadow-xl shadow-emerald-500/20">
+                <Clock className="h-7 w-7" />
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] tracking-[0.2em] font-bold uppercase text-[#03cd8c]">
-                  Active Session
+                <span className="text-[10px] tracking-[0.3em] font-black uppercase text-slate-500">
+                  Uptime
                 </span>
-                <p className="text-lg font-black tracking-tight">{onlineTime} online</p>
+                <p className="text-2xl font-black text-white tracking-tight">{onlineTime}</p>
               </div>
             </div>
-            <div className="flex flex-col items-end text-right">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{jobsToday} Tasks</span>
-                <span className="text-sm font-black text-emerald-400 mt-1">{earningsToday}</span>
+          </div>
+          
+          <div className="pt-6 border-t border-slate-800 grid grid-cols-2 gap-4 relative z-10">
+            <div className="flex flex-col space-y-1">
+               <span className="text-[10px] uppercase font-black text-slate-600 tracking-widest">Intercepts</span>
+               <span className="text-lg font-black text-white tracking-tight">{jobsToday}</span>
             </div>
-          <p className="text-[11px] text-slate-400 leading-relaxed relative">
-            Real-time aggregate of all services. Your current job mix reflects optimized local demand.
-          </p>
+            <div className="flex flex-col space-y-1 text-right">
+               <span className="text-[10px] uppercase font-black text-slate-600 tracking-widest">Gains Today</span>
+               <span className="text-lg font-black text-emerald-400 tracking-tight">{earningsToday}</span>
+            </div>
+          </div>
         </section>
 
         {/* Key stats */}
-        <section className="space-y-3">
-          <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
-             Performance Metrics
-          </h2>
+        <section className="space-y-4">
+          <div className="px-1">
+            <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Telemetry Metrics</h2>
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <MetricCard
-              label="Session Time"
+              label="Session"
               value={onlineTime}
-              sub="Total duration today"
+              sub="Total Shift Time"
               icon={Clock}
               onClick={() => navigate("/driver/map/online")}
             />
             <MetricCard
-              label="Task Count"
+              label="Tasks"
               value={`${jobsToday}`}
-              sub="Completed segments"
+              sub="Verified Logs"
               icon={Activity}
               onClick={() => navigate("/driver/history/rides")}
             />
-             <MetricCard
-              label="Est. Revenue"
+            <MetricCard
+              label="Revenue"
               value={earningsToday}
-              sub="Net before fees"
+              sub="Gross Yield"
               icon={DollarSign}
               onClick={() => navigate("/driver/earnings/overview")}
             />
             <MetricCard
-              label="Service Range"
-              value="Multi-Modal"
-              sub="Rides + Deliv + Rent"
+              label="Coverage"
+              value="Multi-Mode"
+              sub="Fleet Range"
               icon={Map}
               onClick={() => navigate("/driver/map/online/variant")}
             />
@@ -215,138 +220,60 @@ export default function D29ActiveDashboardScreen() {
         </section>
 
         {/* Job mix breakdown */}
-        <section className="space-y-3 pt-2 pb-4">
+        <section className="space-y-4 pb-8">
           <div className="flex items-center justify-between px-1">
-            <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-              Segment Analysis
-            </h2>
-            <div className="flex items-center bg-slate-50 px-2.5 py-1 rounded-full border border-slate-100">
-               <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tight">{totalJobs} Total Jobs</span>
+            <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Service Vectors</h2>
+            <div className="bg-slate-100 px-3 py-1 rounded-lg">
+               <span className="text-[10px] font-black text-slate-600 uppercase">{totalJobs} UNITS</span>
             </div>
           </div>
+          
           <div className="grid grid-cols-2 gap-3">
             <JobMixPill
               icon={Car}
-              label="EV Rides"
+              label="Rides"
               value={`${jobMix.ride}`}
-              colorClass="border-emerald-50 bg-emerald-50/30"
+              colorClass="border-emerald-50 bg-white"
               onClick={() => navigate("/driver/jobs/list")}
             />
             <JobMixPill
               icon={Package}
-              label="Deliveries"
+              label="Cargo"
               value={`${jobMix.delivery}`}
-              colorClass="border-blue-50 bg-blue-50/30"
+              colorClass="border-blue-50 bg-white"
               onClick={() => navigate("/driver/delivery/orders")}
             />
             <JobMixPill
               icon={Briefcase}
               label="Rentals"
               value={`${jobMix.rental}`}
-              colorClass="border-teal-50 bg-teal-50/30"
+              colorClass="border-teal-50 bg-white"
               onClick={() => navigate("/driver/rental/job/demo-job")}
             />
             <JobMixPill
               icon={Map}
-              label="Touring"
+              label="Tours"
               value={`${jobMix.tour}`}
-              colorClass="border-orange-50 bg-orange-50/30"
+              colorClass="border-orange-50 bg-white"
               onClick={() => navigate("/driver/tour/demo-tour/today")}
             />
-            <JobMixPill
-              icon={Ambulance}
-              label="Med-Urgent"
-              value={`${jobMix.ambulance}`}
-              colorClass="border-red-50 bg-red-50/30 col-span-2"
-              onClick={() => navigate("/driver/ambulance/job/demo-job/status")}
-            />
+          </div>
+          
+          <JobMixPill
+            icon={Ambulance}
+            label="Emergency"
+            value={`${jobMix.ambulance}`}
+            colorClass="border-red-50 bg-white"
+            onClick={() => navigate("/driver/ambulance/job/demo-job/status")}
+          />
+
+          <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100 shadow-inner">
+             <p className="text-[10px] text-slate-400 leading-relaxed font-bold uppercase tracking-tight">
+                CERTIFICATION NOTICE: Specialized vectors (Emergency/VIP) are restricted to high-trust command profiles. Maintain 4.9+ rating for continued access.
+             </p>
           </div>
         </section>
-
-          {/* Job mix breakdown */}
-          <section className="space-y-2 pt-1 pb-4">
-            <div className="flex items-center justify-between mb-1">
-              <h2 className="text-sm font-semibold text-slate-900">
-                Job mix (today)
-              </h2>
-              <span className="inline-flex items-center text-[10px] text-slate-500">
-                <Activity className="h-3 w-3 mr-1" />
-                {totalJobs} job{totalJobs === 1 ? "" : "s"} total
-              </span>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <JobMixPill
-                icon={Car}
-                label="Ride jobs"
-                value={`${jobMix.ride}`}
-                colorClass="border-emerald-100 bg-emerald-50"
-                onClick={() => navigate(jobMixRoutes.ride)}
-              />
-              <JobMixPill
-                icon={Package}
-                label="Delivery jobs"
-                value={`${jobMix.delivery}`}
-                colorClass="border-blue-100 bg-blue-50"
-                onClick={() => navigate(jobMixRoutes.delivery)}
-              />
-              <JobMixPill
-                icon={Briefcase}
-                label="Rental jobs"
-                value={`${jobMix.rental}`}
-                colorClass="border-teal-100 bg-teal-50"
-                onClick={() => navigate(jobMixRoutes.rental)}
-              />
-              <JobMixPill
-                icon={Map}
-                label="Tour segments"
-                value={`${jobMix.tour}`}
-                colorClass="border-orange-100 bg-orange-50"
-                onClick={() => navigate(jobMixRoutes.tour)}
-              />
-              <JobMixPill
-                icon={Ambulance}
-                label="Ambulance runs"
-                value={`${jobMix.ambulance}`}
-                colorClass="border-red-100 bg-red-50 col-span-2"
-                onClick={() => navigate(jobMixRoutes.ambulance)}
-              />
-            </div>
-            <p className="text-[10px] text-slate-500">
-              Job mix is informational only and does not change how you go
-              online. Specialised work (tours, rentals, ambulance runs) is
-              assigned based on your agreements and training.
-            </p>
-          </section>
-        </main>
-
-        {/* Bottom navigation – Home/Online active (dashboard context) */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem
-            icon={Activity}
-            label="Online"
-            active={navActive("home")}
-            onClick={() => navigate(bottomNavRoutes.home)}
-          />
-          <BottomNavItem
-            icon={Car}
-            label="Jobs"
-            active={navActive("manager")}
-            onClick={() => navigate(bottomNavRoutes.manager)}
-          />
-          <BottomNavItem
-            icon={DollarSign}
-            label="Wallet"
-            active={navActive("wallet")}
-            onClick={() => navigate(bottomNavRoutes.wallet)}
-          />
-          <BottomNavItem
-            icon={Map}
-            label="Map"
-            active={navActive("settings")}
-            onClick={() => navigate(bottomNavRoutes.settings)}
-          />
-        </nav>
-      </div>
+      </main>
     </div>
   );
 }

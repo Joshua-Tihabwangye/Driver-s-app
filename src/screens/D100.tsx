@@ -14,7 +14,7 @@ import {
   Ambulance,
   Hospital
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D100 Ambulance Job Status Screen (v2)
 // In-progress view tailored for Ambulance runs.
@@ -65,18 +65,6 @@ export default function AmbulanceJobStatusScreen() {
   const [onSceneSeconds, setOnSceneSeconds] = useState(0);
   const [transportSeconds, setTransportSeconds] = useState(0);
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
-  const bottomNavRoutes = {
-    home: "/driver/dashboard/online",
-    manager: "/driver/jobs/list",
-    wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences"
-};
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -98,9 +86,9 @@ export default function AmbulanceJobStatusScreen() {
   const transportTime = formatTime(transportSeconds);
 
   let primaryCta = "Mark as On scene";
-  if (stage === "onScene") primaryCta = "Start transport to hospital";
-  if (stage === "enRouteToHospital") primaryCta = "Mark handover complete";
-  if (stage === "atHospital") primaryCta = "Run completed";
+  if (stage === "onScene") primaryCta = "Start Transport";
+  if (stage === "enRouteToHospital") primaryCta = "Mark Handover Complete";
+  if (stage === "atHospital") primaryCta = "Run Completed";
 
   const isFinalStage = stage === "atHospital";
 
@@ -123,224 +111,116 @@ export default function AmbulanceJobStatusScreen() {
   };
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
-
-      {/* Phone frame */}
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-start space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-50 border border-red-100 mt-0.5">
-              <Ambulance className="h-4 w-4 text-red-500" />
+    <div className="flex flex-col min-h-full bg-[#fcf8f8]">
+      {/* Red urgency header */}
+      <div className="relative shrink-0" style={{ minHeight: 110 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #fca5a5 0%, #ef4444 50%, #dc2626 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md shadow-inner">
+              <Ambulance className="h-6 w-6 text-white" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                Driver · Ambulance
+            <div className="flex flex-col text-left">
+              <span className="text-[10px] uppercase tracking-[0.2em] font-black text-white/70">
+                Active Mission
               </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Ambulance job status
+              <h1 className="text-xl font-black text-white leading-tight">
+                Ambulance Status
               </h1>
-              <span className="mt-0.5 inline-flex items-center rounded-full bg-red-50 border border-red-200 px-2 py-0.5 text-[10px] font-medium text-red-700">
-                Ambulance
-              </span>
             </div>
           </div>
+          <div className="flex items-center rounded-2xl bg-white/20 px-4 py-1.5 backdrop-blur-md border border-white/20">
+             <span className="text-[10px] font-black text-white uppercase tracking-widest">
+               Live Run
+             </span>
+          </div>
         </header>
+      </div>
 
-        {/* Content */}
-        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
-          {/* Map container */}
-          <section className="relative rounded-3xl overflow-hidden border border-slate-100 bg-slate-200 h-[220px]">
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
-
-            {/* Route polyline */}
-            <div className="absolute inset-0">
-              <svg
-                className="w-full h-full"
-                viewBox="0 0 100 100"
-                preserveAspectRatio="none"
-              >
-                <path
-                  d="M18 80 C 32 70, 48 60, 60 50 S 78 35, 86 22"
-                  fill="none"
-                  stroke="#03cd8c"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeDasharray="5 3"
-                />
-              </svg>
-            </div>
-
-            {/* Ambulance marker (driver) */}
-            <div className="absolute left-14 bottom-10 flex flex-col items-center">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900/90 border border-white">
-                <Ambulance className="h-4 w-4 text-[#03cd8c]" />
-              </div>
-              <span className="mt-0.5 rounded-full bg-slate-900/80 px-2 py-0.5 text-[9px] text-slate-50">
-                You
-              </span>
-            </div>
-
-            {/* Patient location marker */}
-            <div className="absolute left-10 top-14 flex flex-col items-center">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/90 border border-white">
-                <MapPin className="h-3.5 w-3.5 text-[#03cd8c]" />
-              </div>
-              <span className="mt-0.5 rounded-full bg-slate-900/80 px-2 py-0.5 text-[9px] text-slate-50">
-                Patient
-              </span>
-            </div>
-
-            {/* Hospital destination marker */}
-            <div className="absolute right-8 top-8 flex flex-col items-center">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/90 border border-white">
-                <Hospital className="h-3.5 w-3.5 text-[#03cd8c]" />
-              </div>
-              <span className="mt-0.5 rounded-full bg-slate-900/80 px-2 py-0.5 text-[9px] text-slate-50">
-                Hospital
-              </span>
-            </div>
-          </section>
-
-          {/* Status chips & timers */}
-          <section className="space-y-3">
-            {/* Status chips */}
-            <div className="rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 text-[11px] text-slate-600">
-              <span className="text-[10px] uppercase tracking-[0.18em] text-slate-500">
-                Status
-              </span>
-              <div className="mt-1 flex flex-wrap gap-1">
-                {STAGES.map((s) => (
-                  <button
-                    key={s.key}
-                    onClick={() => setStage(s.key)}
-                    className={`rounded-full px-2.5 py-0.5 text-[10px] font-medium border active:scale-[0.97] transition-transform ${
-                      stage === s.key
-                        ? "bg-red-500/90 border-red-500 text-slate-50"
-                        : "bg-slate-50 border-slate-200 text-slate-600 hover:border-slate-300"
-                    }`}
-                  >
-                    {s.label}
-                  </button>
-                ))}
-              </div>
-              <p className="mt-2 text-[10px] text-slate-500">
-                Current: <span className="font-semibold">{STAGES.find((s) => s.key === stage)?.label}</span>
-              </p>
-            </div>
-
-            {/* Timers */}
-            <div className="flex space-x-2">
-              <div className="flex-1 rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 flex flex-col text-[11px] text-slate-600">
-                <span className="text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-0.5">
-                  Time since dispatch
-                </span>
-                <span className="inline-flex items-center text-sm font-semibold text-slate-900">
-                  <Clock className="h-3.5 w-3.5 mr-1" />
-                  {dispatchTime}
-                </span>
-              </div>
-              <div className="flex-1 rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 flex flex-col text-[11px] text-slate-600">
-                <span className="text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-0.5">
-                  On-scene time
-                </span>
-                <span className="inline-flex items-center text-sm font-semibold text-slate-900">
-                  <Clock className="h-3.5 w-3.5 mr-1" />
-                  {onSceneTime}
-                </span>
-              </div>
-            </div>
-            <div className="flex space-x-2">
-            <div className="flex-1 rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 flex flex-col text-[11px] text-slate-600">
-              <span className="text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-0.5">
-                Transport time
-              </span>
-              <span className="inline-flex items-center text-sm font-semibold text-slate-900">
-                <Clock className="h-3.5 w-3.5 mr-1" />
-                {transportTime}
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={() => navigate("/driver/safety/toolkit")}
-              className="flex-1 rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 flex flex-col text-[11px] text-slate-600 text-left active:scale-[0.98] transition-transform"
-            >
-              <span className="text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-0.5">
-                Status hint
-              </span>
-              <span>
-                {stage === "enRouteToPatient" && "Drive safely to the patient location."}
-                {stage === "onScene" && "Provide assistance and prepare for transport."}
-                {stage === "enRouteToHospital" && "Drive steadily to the hospital and follow route guidance."}
-                {stage === "atHospital" && "Handover complete – follow operator instructions."}
-              </span>
-            </button>
+      <main className="flex-1 px-6 pt-6 pb-24 space-y-6">
+        {/* Map area */}
+        <section className="relative rounded-[2.5rem] overflow-hidden border border-slate-100 bg-slate-200 h-[220px] shadow-xl shadow-slate-200/50">
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
+          <div className="absolute inset-0">
+             <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <path d="M18 80 C 32 70, 48 60, 60 50 S 78 35, 86 22" fill="none" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="6 4" />
+             </svg>
+          </div>
+          {/* Markers */}
+          <div className="absolute left-14 bottom-10 flex flex-col items-center">
+             <div className="h-8 w-8 rounded-full bg-slate-900 border-2 border-white flex items-center justify-center shadow-lg">
+                <Ambulance className="h-4 w-4 text-white" />
+             </div>
+          </div>
+          <div className="absolute right-8 top-8 flex flex-col items-center">
+             <div className="h-8 w-8 rounded-full bg-slate-900 border-2 border-white flex items-center justify-center shadow-lg text-white">
+                <Hospital className="h-4 w-4" />
+             </div>
           </div>
         </section>
 
-          {/* Safety & actions */}
-          <section className="space-y-3 pt-1 pb-4">
-            {/* Safety/SOS */}
-            <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 flex items-start space-x-2 text-[11px] text-slate-600">
-              <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white">
-                <ShieldCheck className="h-4 w-4 text-[#03cd8c]" />
+        {/* Timers & Status */}
+        <section className="space-y-4">
+           <div className="rounded-[2rem] bg-slate-900 p-6 shadow-2xl space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                 <div className="space-y-1">
+                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Dispatch Time</span>
+                    <p className="text-lg font-black text-white font-mono">{dispatchTime}</p>
+                 </div>
+                 <div className="space-y-1">
+                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">On-Scene Time</span>
+                    <p className="text-lg font-black text-white font-mono">{onSceneTime}</p>
+                 </div>
               </div>
-              <div className="flex-1">
-                <p className="font-semibold text-xs text-slate-900 mb-0.5">
-                  Safety & SOS
-                </p>
-                <p>
-                  You can open the Safety toolkit or trigger SOS at any time if
-                  you personally feel unsafe while responding to this ambulance
-                  job.
-                </p>
+           </div>
+
+           <div className="rounded-[2.5rem] bg-white border border-slate-100 p-6 shadow-xl shadow-slate-200/50 space-y-4">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Mission Progress</span>
+              <div className="flex flex-wrap gap-2">
+                 {STAGES.map((s) => (
+                   <button
+                     key={s.key}
+                     onClick={() => setStage(s.key)}
+                     className={`rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-widest border transition-all ${
+                       stage === s.key
+                         ? "bg-red-600 border-red-600 text-white shadow-lg shadow-red-100"
+                         : "bg-slate-50 border-slate-100 text-slate-400"
+                     }`}
+                   >
+                     {s.label}
+                   </button>
+                 ))}
               </div>
-            </div>
+           </div>
+        </section>
 
-            {/* Primary CTA */}
-            <button
-              type="button"
-              onClick={handlePrimaryClick}
-              className={`w-full rounded-full py-2.5 text-sm font-semibold flex items-center justify-center shadow-sm ${
-                isFinalStage
-                  ? "bg-slate-900 text-slate-50 hover:bg-slate-800"
-                  : "bg-red-600 text-slate-50 hover:bg-red-700"
-              }`}
-            >
-              {primaryCta}
-            </button>
-          </section>
-        </main>
+        {/* CTA */}
+        <section className="space-y-4 pb-8">
+           <div className="rounded-[2rem] bg-red-50 p-6 border border-red-100 flex items-start space-x-4">
+              <ShieldCheck className="h-6 w-6 text-red-600 shrink-0" />
+              <p className="text-[11px] font-medium text-red-900 leading-relaxed italic">
+                Safety Toolkit and SOS are always active during emergency runs. 
+                Focus on the mission – tools are ready if needed.
+              </p>
+           </div>
 
-        {/* Bottom navigation – Home active (ambulance context) */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem
-            icon={Home}
-            label="Home"
-           active={navActive("home")} onClick={() => navigate(bottomNavRoutes.home)}
-          />
-          <BottomNavItem
-            icon={Briefcase}
-            label="Manager"
-           active={navActive("manager")} onClick={() => navigate(bottomNavRoutes.manager)}
-          />
-          <BottomNavItem
-            icon={Wallet}
-            label="Wallet"
-           active={navActive("wallet")} onClick={() => navigate(bottomNavRoutes.wallet)}
-          />
-          <BottomNavItem
-            icon={Settings}
-            label="Settings"
-           active={navActive("settings")} onClick={() => navigate(bottomNavRoutes.settings)}
-          />
-        </nav>
-      </div>
+           <button
+             onClick={handlePrimaryClick}
+             className={`w-full rounded-[2rem] px-6 py-5 text-[11px] font-black uppercase tracking-widest text-white shadow-xl transition-all active:scale-[0.98] ${
+               isFinalStage ? "bg-slate-900 shadow-slate-200" : "bg-red-600 shadow-red-200"
+             }`}
+           >
+             {primaryCta}
+           </button>
+        </section>
+      </main>
     </div>
   );
 }

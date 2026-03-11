@@ -52,155 +52,162 @@ export default function OnlineMapDashboardScreen() {
 };
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
+    <div className="flex flex-col h-full bg-[#f8fafc]">
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-              <Activity className="h-4 w-4 text-[#03cd8c]" />
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+              <Activity className="h-5 w-5 text-white" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                Driver
-              </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Online dashboard
-              </h1>
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Console</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">Link Established</p>
             </div>
           </div>
+          <div className="w-10" /> {/* Spacer */}
         </header>
+      </div>
 
-        {/* Content */}
-        <main className="flex-1 px-4 pt-3 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
-          {/* Status + mini summary */}
-          <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-400 text-slate-900">
-                  <Activity className="h-4 w-4" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] tracking-[0.18em] uppercase text-[#0b1e3a]">
-                    Status
-                  </span>
-                  <p className="text-xs font-semibold">Online · Receiving requests</p>
-                </div>
+      {/* Content */}
+      <main className="flex-1 px-6 pt-6 pb-24 space-y-6 overflow-y-auto scrollbar-hide">
+        {/* Status + mini summary */}
+        <section className="rounded-[2.5rem] bg-slate-900 text-white p-6 space-y-6 shadow-2xl shadow-slate-200/50 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#03cd8c]/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110" />
+          
+          <div className="flex items-center justify-between relative z-10">
+            <div className="flex items-center space-x-4">
+              <div className="h-12 w-12 flex items-center justify-center rounded-2xl bg-[#03cd8c] text-white shadow-xl shadow-emerald-500/20">
+                <Activity className="h-6 w-6" />
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] tracking-[0.18em] uppercase text-[#0b1e3a]">
-                  Status
+                <span className="text-[10px] tracking-[0.3em] font-black uppercase text-slate-500 tracking-widest">
+                  CONNECTION
                 </span>
-                <p className="text-xs font-semibold">Online · Receiving requests</p>
+                <p className="text-sm font-black text-white uppercase tracking-tight">Intercept Protocol Active</p>
               </div>
             </div>
-            <div className="flex flex-col items-end text-[10px] text-slate-100 text-right">
-              <span className="font-medium">Online time: 1h 12m</span>
-              <span className="text-emerald-300">Today: $24.60 · 3 trips</span>
+            <div className="text-right">
+               <span className="block text-[10px] uppercase font-black text-slate-500 tracking-widest">UPTIME</span>
+               <span className="text-xs font-black text-emerald-400">1h 12m</span>
             </div>
-          </section>
-          <p className="text-[11px] text-slate-100 leading-snug">
-            Stay in busy areas to increase your chances of getting trip and
-            delivery requests. You can view the full map or switch to
-            deliveries from here.
-          </p>
+          </div>
+          
+          <div className="pt-6 border-t border-slate-800 grid grid-cols-2 gap-4 relative z-10">
+            <div className="flex flex-col space-y-1">
+               <span className="text-[10px] uppercase font-black text-slate-600 tracking-widest">CREDITS</span>
+               <span className="text-lg font-black text-white tracking-tight">$24.60</span>
+            </div>
+            <div className="flex flex-col space-y-1 text-right">
+               <span className="text-[10px] uppercase font-black text-slate-600 tracking-widest">TASKS</span>
+               <span className="text-lg font-black text-white tracking-tight">3</span>
+            </div>
+          </div>
+        </section>
+
+        <p className="text-[11px] text-slate-400 leading-relaxed font-bold uppercase tracking-tight bg-slate-50 p-4 rounded-3xl border border-slate-100 shadow-inner">
+          ADVISORY: Maintain patrol velocity in high-density sectors. Monitor tactical intercept feed for incoming fleet assignments.
+        </p>
 
         {/* Mini map preview */}
         <button
           type="button"
           onClick={() => navigate("/driver/map/online")}
-          className="relative rounded-[24px] overflow-hidden border border-slate-100 bg-slate-200 h-[180px] text-left w-full active:scale-[0.99] transition-transform shadow-sm"
+          className="relative rounded-[2.5rem] overflow-hidden border border-slate-100 bg-slate-200 h-[220px] text-left w-full active:scale-[0.98] transition-all shadow-xl shadow-slate-200/40 group mb-2"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-100 via-slate-200 to-slate-100" />
+          <div className="absolute inset-0 opacity-40 group-hover:opacity-60 transition-opacity" 
+               style={{ backgroundImage: 'radial-gradient(#03cd8c 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
 
           {/* Current location marker */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="relative flex items-center justify-center">
-              <div className="h-8 w-8 rounded-full bg-[#03cd8c]/20 animate-ping" />
-              <div className="absolute h-5 w-5 rounded-full bg-[#03cd8c]/40" />
-              <div className="absolute h-2.5 w-2.5 rounded-full bg-[#03cd8c] border-2 border-white" />
+              <div className="h-20 w-20 rounded-full bg-[#03cd8c]/10 animate-ping" />
+              <div className="absolute h-12 w-12 rounded-full bg-[#03cd8c]/20" />
+              <div className="absolute h-4 w-4 rounded-full bg-[#03cd8c] border-4 border-white shadow-xl" />
             </div>
           </div>
 
-          {/* One hotspot */}
-          <div className="absolute left-6 top-10 flex flex-col items-center">
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-900/90 border border-white">
-              <MapPin className="h-3 w-3 text-[#03cd8c]" />
-            </div>
-            <span className="mt-0.5 rounded-full bg-slate-900/80 px-2 py-0.5 text-[8px] text-slate-50 font-bold uppercase tracking-wider">
-              Busy area
+          {/* Busy Hotspot */}
+          <div className="absolute left-6 top-6 flex items-center space-x-2 bg-slate-900/90 backdrop-blur-sm px-4 py-2 rounded-2xl border border-white/10 shadow-xl">
+            <MapPin className="h-3.5 w-3.5 text-[#03cd8c]" />
+            <span className="text-[9px] text-white font-black uppercase tracking-widest">
+              SURGE SECTOR
             </span>
+          </div>
+          
+          <div className="absolute bottom-6 right-6 bg-[#03cd8c] text-white p-3 rounded-2xl shadow-xl shadow-emerald-500/20">
+             <Map className="h-6 w-6" />
           </div>
         </button>
 
         {/* Quick actions */}
-        <section className="space-y-2">
-          <h2 className="text-sm font-bold text-slate-900 px-1">
-            Quick actions
-          </h2>
-          <div className="flex space-x-2">
+        <section className="space-y-4">
+          <div className="px-1">
+            <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Primary Vectors</h2>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
             <QuickAction
               icon={Map}
-              label="Open full map"
-              sub="See surge zones"
+              label="Tactical Overlay"
+              sub="Precision Navigation"
               onClick={() => navigate("/driver/map/online")}
             />
             <QuickAction
               icon={Car}
-              label="Switch to rides"
-              sub="Focus on riders"
+              label="Fleet Interface"
+              sub="Ride Intercepts"
               onClick={() => navigate("/driver/dashboard/active")}
             />
-          </div>
-          <div className="flex space-x-2">
             <QuickAction
               icon={Package}
-              label="Switch to deliveries"
-              sub="Focus on parcels"
+              label="Cargo Link"
+              sub="Logistics Feed"
               onClick={() => navigate("/driver/delivery/orders-dashboard")}
             />
             <QuickAction
               icon={ShieldCheck}
-              label="Safety tools"
-              sub="SOS & share"
+              label="Defense Tier"
+              sub="Safety Protocols"
               onClick={() => navigate("/driver/safety/hub")}
             />
           </div>
         </section>
 
         {/* Snapshot stats */}
-        <section className="pt-1">
+        <section className="pt-2 pb-8">
           <button
             type="button"
             onClick={() => navigate("/driver/earnings/overview")}
-            className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 flex items-start space-x-3 text-[11px] text-slate-600 w-full text-left active:scale-[0.99] transition-transform group"
+            className="rounded-[2.5rem] border border-slate-100 bg-white p-6 flex items-start space-x-5 w-full text-left active:scale-[0.98] transition-all group shadow-xl hover:shadow-2xl shadow-slate-200/50"
           >
-            <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-xl bg-white shadow-sm group-hover:text-[#03cd8c] transition-colors">
-              <DollarSign className="h-4 w-4" />
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.25rem] bg-slate-50 text-slate-400 group-hover:text-[#03cd8c] group-hover:bg-[#e6fff7] transition-all duration-300 border border-slate-100">
+              <DollarSign className="h-7 w-7" />
             </div>
-            <div className="flex-1">
-              <p className="font-bold text-xs text-slate-900 mb-0.5">
-                Today&apos;s earnings snapshot
+            <div className="flex-1 space-y-1">
+              <p className="font-black text-sm text-slate-900 uppercase tracking-tight leading-none">
+                Yield Projection
               </p>
-              <p className="leading-relaxed">
-                $24.60 so far · On pace for $60–$75 if you stay online during
-                the next busy window.
+              <p className="text-[11px] text-slate-400 leading-relaxed font-bold uppercase tracking-tight">
+                Current trajectory estimates <span className="text-[#03cd8c]">$60.00–$75.00</span> daily yield based on historical sector density.
               </p>
             </div>
           </button>
         </section>
       </main>
-
-      {/* Bottom Navigation */}
-      <BottomNav active="home" />
-
     </div>
-  </div>
-);
+  );
 }

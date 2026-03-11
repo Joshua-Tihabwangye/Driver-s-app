@@ -5,12 +5,13 @@ import {
   MapPin,
   Phone,
   ShieldCheck,
+  Clock,
   Home,
   Briefcase,
   Wallet,
   Settings
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D99 Ambulance Job Incoming Screen (v1)
 // Specialized incoming view for Ambulance jobs.
@@ -44,18 +45,6 @@ export default function AmbulanceJobIncomingScreen() {
   const [code, setCode] = useState("Code 1");
   const [timeLeft, setTimeLeft] = useState(20);
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
-  const bottomNavRoutes = {
-    home: "/driver/dashboard/online",
-    manager: "/driver/jobs/list",
-    wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences"
-};
 
   useEffect(() => {
     if (timeLeft <= 0) return;
@@ -64,174 +53,134 @@ export default function AmbulanceJobIncomingScreen() {
   }, [timeLeft]);
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
-
-      {/* Phone frame */}
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-start space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-50 border border-red-100 mt-0.5">
-              <AlertTriangle className="h-4 w-4 text-red-500" />
+    <div className="flex flex-col min-h-full bg-[#fcf8f8]">
+      {/* Urgency header (Red/Orange gradient for ambulance) */}
+      <div className="relative shrink-0" style={{ minHeight: 110 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #fca5a5 0%, #ef4444 50%, #dc2626 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md shadow-inner">
+              <AlertTriangle className="h-6 w-6 text-white animate-pulse" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                Driver · Ambulance
+            <div className="flex flex-col text-left">
+              <span className="text-[10px] uppercase tracking-[0.2em] font-black text-white/70">
+                Emergency Dispatch
               </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Ambulance job incoming
+              <h1 className="text-xl font-black text-white leading-tight">
+                Ambulance Incoming
               </h1>
-              {/* Job type pill */}
-              <span className="mt-0.5 inline-flex items-center rounded-full bg-red-50 border border-red-200 px-2 py-0.5 text-[10px] font-medium text-red-700">
-                Ambulance
-              </span>
             </div>
           </div>
+          <div className="flex items-center rounded-2xl bg-white/20 px-4 py-1.5 backdrop-blur-md border border-white/20">
+             <span className="text-[10px] font-black text-white uppercase tracking-widest">
+               Critical
+             </span>
+          </div>
         </header>
-
-        {/* Content */}
-        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
-          {/* Code + context card */}
-          <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex flex-col items-start">
-                <span className="text-[10px] tracking-[0.18em] uppercase text-[#ffedd5]">
-                  Priority
-                </span>
-                <div className="mt-1 flex items-center space-x-2">
-                  <span className="inline-flex items-center rounded-full bg-red-500/10 border border-red-400 px-2 py-0.5 text-[11px] font-semibold text-red-200">
-                    {code}
-                  </span>
-                  <span className="text-[11px] text-slate-100">
-                    Minimal info: Adult · M · Chest pain
-                  </span>
-                </div>
-              </div>
-              <div className="flex flex-col items-end text-[10px] text-slate-100">
-                <span>To patient location:</span>
-                <span className="font-semibold">Near Acacia Road, Kampala</span>
-              </div>
-            </div>
-            <p className="text-[11px] text-slate-100 leading-snug">
-              Confirm this dispatch if you&apos;re ready to respond with your
-              ambulance. Detailed patient data is handled by your operator or
-              hospital systems – only minimal context is shown here.
-            </p>
-
-            <div className="space-y-1 text-[10px] text-slate-200">
-              <span className="uppercase tracking-[0.18em] text-[#ffedd5]">
-                Code level (preview only)
-              </span>
-              <div className="flex flex-wrap gap-1">
-                {CODES.map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => setCode(c)}
-                    className={`rounded-full px-2.5 py-0.5 border text-[10px] font-medium ${
-                      code === c
-                        ? "bg-red-500/90 border-red-300 text-slate-50"
-                        : "bg-transparent border-red-300/40 text-red-200"
-                    }`}
-                  >
-                    {c}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          {/* Approximate location & ETA */}
-          <section className="space-y-2">
-            <div className="rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 flex items-center justify-between text-[11px] text-slate-600">
-              <div className="flex items-center space-x-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-50">
-                  <MapPin className="h-4 w-4 text-[#03cd8c]" />
-                </div>
-                <div className="flex flex-col items-start">
-                  <span className="text-xs font-semibold text-slate-900">
-                    Approx. distance & ETA
-                  </span>
-                  <span>1.6 km · 5–7 min (current traffic)</span>
-                  <span className="text-[10px] text-slate-500">Use sirens according to local rules.</span>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Safety / SOS quick access */}
-          <section className="space-y-2">
-            <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 text-[11px] text-slate-600 flex items-start space-x-2">
-              <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white">
-                <ShieldCheck className="h-4 w-4 text-[#03cd8c]" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-xs text-slate-900 mb-0.5">
-                  Safety & SOS
-                </p>
-                <p>
-                  You can still open the Safety toolkit or trigger SOS if you
-                  personally feel unsafe while responding. These tools work the
-                  same for ambulance runs and other jobs.
-                </p>
-              </div>
-            </div>
-          </section>
-
-          {/* Timer + CTAs */}
-          <section className="space-y-3 pt-1 pb-4">
-            <div className="flex items-center justify-center space-x-2 text-[11px] text-slate-500">
-              <span>Auto-declining in</span>
-              <span className="font-semibold text-slate-900">{timeLeft}s</span>
-              <span>if you don&apos;t respond</span>
-            </div>
-            <div className="flex space-x-2">
-              <button
-                type="button"
-                onClick={() => navigate("/driver/dashboard/offline")}
-                className="flex-1 rounded-full py-2.5 text-sm font-semibold border border-red-200 text-red-600 bg-white"
-              >
-                Decline
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate("/driver/ambulance/job/demo-job/status")}
-                className="flex-1 rounded-full py-2.5 text-sm font-semibold bg-red-600 text-slate-50 hover:bg-red-700"
-              >
-                Accept dispatch
-              </button>
-            </div>
-          </section>
-        </main>
-
-        {/* Bottom navigation – Home active (ambulance context) */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem
-            icon={Home}
-            label="Home"
-           active={navActive("home")} onClick={() => navigate(bottomNavRoutes.home)}
-          />
-          <BottomNavItem
-            icon={Briefcase}
-            label="Manager"
-           active={navActive("manager")} onClick={() => navigate(bottomNavRoutes.manager)}
-          />
-          <BottomNavItem
-            icon={Wallet}
-            label="Wallet"
-           active={navActive("wallet")} onClick={() => navigate(bottomNavRoutes.wallet)}
-          />
-          <BottomNavItem
-            icon={Settings}
-            label="Settings"
-           active={navActive("settings")} onClick={() => navigate(bottomNavRoutes.settings)}
-          />
-        </nav>
       </div>
+
+      <main className="flex-1 px-6 pt-6 pb-24 space-y-6">
+        {/* Priority card */}
+        <section className="relative rounded-[2.5rem] bg-slate-900 overflow-hidden p-8 shadow-2xl space-y-6">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 rounded-full -mr-16 -mt-16 blur-3xl" />
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col items-start">
+              <span className="text-[10px] font-black text-red-400 uppercase tracking-[0.2em] mb-1">
+                Priority Level
+              </span>
+              <div className="flex items-center space-x-3">
+                <span className="bg-red-500 text-white text-[11px] font-black px-3 py-1 rounded-full uppercase">
+                  {code}
+                </span>
+                <p className="text-sm font-bold text-white uppercase tracking-tight">
+                  Adult · M · Chest Pain
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4 pt-4 border-t border-white/10">
+             <div className="flex items-start space-x-4 text-white/70">
+                <MapPin className="h-5 w-5 text-red-400 shrink-0" />
+                <div className="flex-1">
+                   <p className="text-[10px] font-black text-white/50 uppercase tracking-widest mb-1">
+                     Patient Location
+                   </p>
+                   <p className="text-sm font-black text-white uppercase leading-relaxed">
+                     Near Acacia Road, Kampala
+                   </p>
+                </div>
+             </div>
+          </div>
+        </section>
+
+        {/* Dispatch details */}
+        <section className="space-y-4">
+          <div className="rounded-[2.5rem] bg-white border border-slate-100 p-6 shadow-xl shadow-slate-200/50 space-y-6">
+             <div className="flex items-start space-x-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-slate-400">
+                  <Clock className="h-5 w-5" />
+                </div>
+                <div className="flex-1">
+                   <p className="text-sm font-black text-slate-900 uppercase">
+                     Approx. Distance & ETA
+                   </p>
+                   <p className="text-[11px] font-medium text-slate-500 mt-1 leading-relaxed">
+                     1.6 km · 5–7 min · Use sirens accordingly
+                   </p>
+                </div>
+             </div>
+
+             <div className="flex items-start space-x-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-slate-400">
+                  <ShieldCheck className="h-5 w-5" />
+                </div>
+                <div className="flex-1">
+                   <p className="text-sm font-black text-slate-900 uppercase">
+                     Safety & SOS
+                   </p>
+                   <p className="text-[11px] font-medium text-slate-500 mt-1 leading-relaxed">
+                     Standard safety tools remain available throughout this run.
+                   </p>
+                </div>
+             </div>
+          </div>
+        </section>
+
+        {/* Timer & CTAs */}
+        <section className="space-y-4 pb-8">
+          <div className="flex flex-col items-center space-y-2">
+             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+               Auto-declining in
+             </span>
+             <p className="text-2xl font-black text-slate-900">
+               {timeLeft}s
+             </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => navigate("/driver/dashboard/offline")}
+              className="rounded-[2rem] border-2 border-slate-200 bg-white px-6 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400 active:scale-[0.98] transition-all"
+            >
+              Decline
+            </button>
+            <button
+              onClick={() => navigate("/driver/ambulance/job/demo-job/status")}
+              className="rounded-[2rem] bg-red-600 px-6 py-5 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-red-200 active:scale-[0.98] transition-all"
+            >
+              Accept
+            </button>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

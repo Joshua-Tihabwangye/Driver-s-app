@@ -110,110 +110,104 @@ function SegmentRow({ segment, onClick }) {
 
 export default function TourTodayScheduleScreen() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
+
   const completedCount = SEGMENTS.filter((s) => s.status === "completed").length;
   const totalCount = SEGMENTS.length;
-
   const progressPercent = Math.round((completedCount / totalCount) * 100);
 
   const handleSegmentClick = (segment) => {
-    // In the real app, this would navigate to D47 / D55 for the selected segment
-    // e.g. navigate(`/driver/tour/segment/${segment.id}`)
-    // Here we leave it as a no-op in the preview.
+    // In the real app, this would navigate to D47 / D55
   };
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
-
-      {/* Phone frame */}
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-start space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7] mt-0.5">
-              <Map className="h-4 w-4 text-[#03cd8c]" />
+    <div className="flex flex-col min-h-full bg-[#f8fafc]">
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 110 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md shadow-inner">
+              <Map className="h-6 w-6 text-white" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
+            <div className="flex flex-col text-left">
+              <span className="text-[10px] uppercase tracking-[0.2em] font-black text-white/70">
                 Driver · Tour
               </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Tour · Day 2 of 5
+              <h1 className="text-xl font-black text-white leading-tight">
+                Today's Schedule
               </h1>
-              <span className="mt-0.5 inline-flex items-center rounded-full bg-sky-50 border border-sky-200 px-2 py-0.5 text-[10px] font-medium text-sky-700">
-                Tour
-              </span>
             </div>
           </div>
+          <div className="flex items-center rounded-2xl bg-white/20 px-4 py-1.5 backdrop-blur-md border border-white/20">
+             <span className="text-[10px] font-black text-white uppercase tracking-widest">
+               Day 2 of 5
+             </span>
+          </div>
         </header>
-
-        {/* Content */}
-        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
-          {/* Summary card */}
-          <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#03cd8c] text-slate-900">
-                  <CalendarDays className="h-4 w-4" />
-                </div>
-                <div className="flex flex-col items-start">
-                  <span className="text-[10px] tracking-[0.18em] uppercase text-[#a5f3fc]">
-                    Today&apos;s schedule
-                  </span>
-                  <p className="text-sm font-semibold">City Highlights & Airport Day</p>
-                </div>
-              </div>
-              <div className="flex flex-col items-end text-[10px] text-slate-100">
-                <span>Tuesday · 17 March</span>
-                <span>{completedCount} of {totalCount} segments completed</span>
-              </div>
-            </div>
-            <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden mt-1">
-              <div
-                className="h-full bg-[#03cd8c] transition-all"
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
-            <p className="text-[11px] text-slate-100 leading-snug">
-              Follow today&apos;s segments in order to keep guests on time and
-              maintain the tour schedule. You can tap any segment to open
-              navigation for that part of the day.
-            </p>
-          </section>
-
-          {/* Segments list */}
-          <section className="space-y-2 pt-1 pb-4">
-            <h2 className="text-sm font-semibold text-slate-900 mb-1">
-              Today&apos;s segments
-            </h2>
-            {SEGMENTS.map((segment) => (
-              <SegmentRow
-                key={segment.id}
-                segment={segment}
-                onClick={handleSegmentClick}
-              />
-            ))}
-          </section>
-        </main>
-
-        {/* Bottom navigation – Home active (tour context) */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate("/driver/dashboard/online")}/>
-          <BottomNavItem icon={Briefcase} label="Manager" active={navActive("manager")} onClick={() => navigate("/driver/jobs/list")}/>
-          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate("/driver/earnings/overview")}/>
-          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate("/driver/preferences")}/>
-        </nav>
       </div>
+
+      <main className="flex-1 px-6 pt-6 pb-24 space-y-6">
+        {/* Summary card */}
+        <section className="relative rounded-[2.5rem] bg-slate-900 overflow-hidden p-8 shadow-2xl space-y-6">
+          <div className="flex items-center space-x-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#03cd8c] text-slate-900">
+              <CalendarDays className="h-6 w-6" />
+            </div>
+            <div className="flex-1">
+               <span className="text-[10px] font-black text-[#03cd8c] uppercase tracking-[0.2em]">
+                 Tour Highlights
+               </span>
+               <p className="text-lg font-black text-white">
+                 City Highlights Day
+               </p>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+             <div className="flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                <span>Progress Overview</span>
+                <span>{progressPercent}% Complete</span>
+             </div>
+             <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-[#03cd8c] transition-all duration-500"
+                  style={{ width: `${progressPercent}%` }}
+                />
+             </div>
+          </div>
+        </section>
+
+        {/* Segments list */}
+        <section className="space-y-4">
+           <h2 className="text-xs font-black text-slate-900 uppercase tracking-widest px-2">
+             Today's Segments
+           </h2>
+           <div className="space-y-3">
+              {SEGMENTS.map((segment) => (
+                <SegmentRow
+                  key={segment.id}
+                  segment={segment}
+                  onClick={handleSegmentClick}
+                />
+              ))}
+           </div>
+        </section>
+
+        {/* Info box */}
+        <section className="rounded-[2rem] bg-emerald-50/50 border border-emerald-100/50 p-6">
+           <p className="text-[11px] font-medium text-emerald-800 leading-relaxed text-center">
+             Follow today's segments in order to keep guests on time. Tapping a 
+             segment will open specific navigation.
+           </p>
+        </section>
+      </main>
     </div>
   );
 }

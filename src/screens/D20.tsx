@@ -14,117 +14,93 @@ import { useNavigate , useLocation } from "react-router-dom";
 // Redesigned to match Screenshot 1.
 // Green header, full-width video hero, content area with pagination dots and nav arrows.
 
-function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
-        active ? "text-white" : "text-white/50 hover:text-white/80"
-      }`}
-    >
-      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
-      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
-      <span className="relative z-10">{label}</span>
-    </button>
-  );
-}
 
 export default function DriverLessonDetailScreen() {
   const [page, setPage] = useState(2); // Mocking active dot position
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col relative">
+    <div className="flex flex-col min-h-full bg-[#f8fafc]">
 
-        {/* Green curved header */}
-        <div className="relative" style={{ minHeight: 80 }}>
-          <div
-            className="absolute inset-0"
-            style={{
-              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)"
-}}
-          />
-          <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm"
-            >
-              <ChevronLeft className="h-5 w-5 text-white" />
-            </button>
-            <h1 className="text-base font-semibold text-white">Preferences</h1>
-          </header>
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-90 transition-transform"
+          >
+            <ChevronLeft className="h-5 w-5 text-white" />
+          </button>
+          <h1 className="text-base font-black text-white tracking-tight">Session</h1>
+          <div className="w-10" /> {/* Spacer */}
+        </header>
+      </div>
+
+      {/* Video Hero Section */}
+      <section className="relative w-full h-[260px] bg-slate-900 group cursor-pointer overflow-hidden">
+        <img
+          src="https://images.unsplash.com/photo-1549194382-346a188f6159?w=800&h=600&fit=crop"
+          alt="Video Thumbnail"
+          className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700"
+        />
+        {/* Center Play Button Overlay */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/90 shadow-2xl backdrop-blur-md group-hover:scale-110 group-active:scale-95 transition-all">
+            <Play className="h-8 w-8 fill-[#03cd8c] text-[#03cd8c] ml-1" />
+          </div>
+        </div>
+        <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between">
+           <span className="text-[10px] font-black uppercase tracking-widest text-white/60 bg-black/20 backdrop-blur-md px-3 py-1.5 rounded-full">Lesson 04</span>
+           <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 backdrop-blur-md px-3 py-1.5 rounded-full border border-emerald-500/20">HD Ready</span>
+        </div>
+      </section>
+
+      {/* Content Area */}
+      <main className="flex-1 bg-white -mt-8 rounded-t-[3rem] px-8 pt-10 pb-12 flex flex-col shadow-[0_-20px_50px_rgba(0,0,0,0.02)] relative z-10">
+        <div className="flex-1 space-y-4">
+          <h2 className="text-2xl font-black text-slate-900 leading-tight tracking-tight">
+             Optimizing EV Earnings Strategies
+          </h2>
+          <p className="text-[13px] text-slate-500 leading-relaxed font-medium">
+            Discover the high-yield zones within Kampala and how to leverage EV-only lanes during peak traffic hours. Master the art of surge-charge balancing for maximum hourly revenue.
+          </p>
         </div>
 
-        {/* Video Hero Section */}
-        <section className="relative w-full h-[280px] bg-slate-900 overflow-hidden">
-          <img
-            src="https://images.unsplash.com/photo-1549194382-346a188f6159?w=600&h=450&fit=crop"
-            alt="Video Thumbnail"
-            className="w-full h-full object-cover opacity-80"
-          />
-          {/* Center Play Button Overlay */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/90 shadow-lg backdrop-blur-sm">
-              <Play className="h-7 w-7 fill-[#03cd8c] text-[#03cd8c] ml-1" />
-            </div>
-          </div>
-        </section>
+        {/* Navigation Controls */}
+        <div className="mt-12 flex items-center justify-between">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#1c2b4d] text-white shadow-xl shadow-slate-900/20 active:scale-90 transition-all"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </button>
 
-        {/* Content Area */}
-        <main className="app-main flex-1 px-5 pt-8 pb-4 flex flex-col">
-          <div className="flex-1 space-y-4">
-            <h2 className="text-lg font-bold text-slate-900 leading-tight">
-              Top Tips for New Uber Drivers: Boost Your Earnings!
-            </h2>
-            <p className="text-sm text-slate-500 leading-relaxed font-medium">
-              Learn how to use the Uber app with this simple, step-by-step guide. From creating an account to booking your first ride, we'll walk you through each feature for a smooth experience. Perfect for beginners looking to navigate Uber with confidence!
-            </p>
+          {/* Pagination Dots */}
+          <div className="flex space-x-2.5">
+            {[1, 2, 3, 4, 5].map((d) => (
+              <div
+                key={d}
+                className={`h-2 w-2 rounded-full transition-all duration-300 ${d === page ? 'bg-[#03cd8c] w-6 shadow-[0_0_10px_rgba(3,205,140,0.5)]' : 'bg-slate-200'}`}
+              />
+            ))}
           </div>
 
-          {/* Navigation Controls */}
-          <div className="flex items-center justify-between mt-auto mb-10 px-2">
-            <button
-              onClick={() => navigate(-1)}
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-[#1c2b4d] text-white shadow-md active:scale-90 transition-all"
-            >
-              <ChevronLeft className="h-6 w-6" />
-            </button>
-
-            {/* Pagination Dots */}
-            <div className="flex space-x-2">
-              {[1, 2, 3, 4, 5].map((d) => (
-                <div
-                  key={d}
-                  className={`h-2.5 w-2.5 rounded-full transition-all ${d === page ? 'bg-[#007bff]' : 'bg-slate-300'}`}
-                />
-              ))}
-            </div>
-
-            <button
-              onClick={() => navigate("/driver/training/quiz")}
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-[#1c2b4d] text-white shadow-md active:scale-90 transition-all"
-            >
-              <ChevronRight className="h-6 w-6" />
-            </button>
-          </div>
-        </main>
-
-        {/* Bottom Navigation – Green */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate("/driver/dashboard/online")} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={navActive("manager")} onClick={() => navigate("/driver/jobs/list")} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate("/driver/earnings/overview")} />
-          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate("/driver/preferences")} />
-        </nav>
-      </div>
+          <button
+            onClick={() => navigate("/driver/training/quiz")}
+            className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#03cd8c] text-white shadow-xl shadow-emerald-500/20 active:scale-90 transition-all"
+          >
+            <ChevronRight className="h-6 w-6" />
+          </button>
+        </div>
+      </main>
     </div>
   );
 }

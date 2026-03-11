@@ -17,21 +17,6 @@ import { useNavigate , useLocation } from "react-router-dom";
 // Green header, video hero, pill options, disabled submit.
 // + Restored: correct/incorrect feedback, try again / next question buttons
 
-function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
-        active ? "text-white" : "text-white/50 hover:text-white/80"
-      }`}
-    >
-      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
-      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
-      <span className="relative z-10">{label}</span>
-    </button>
-  );
-}
 
 const quizQuestion = {
   question: "Why is it important to keep your contact information up to date in the Uber app?",
@@ -74,12 +59,6 @@ export default function DriverQuizInitialScreen() {
   const [selected, setSelected] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
 
   const isCorrect = submitted && selected === quizQuestion.correctIndex;
 
@@ -94,145 +73,144 @@ export default function DriverQuizInitialScreen() {
   };
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col relative">
-        {/* Hide scrollbar */}
-        <style>{`
-          .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-          .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        `}</style>
+    <div className="flex flex-col h-full bg-[#f8fafc]">
+      {/* Hide scrollbar */}
+      <style>{`
+        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
 
-        {/* Green curved header */}
-        <div className="relative" style={{ minHeight: 80 }}>
-          <div
-            className="absolute inset-0"
-            style={{
-              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)"
-}}
-          />
-          <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm"
-            >
-              <ChevronLeft className="h-5 w-5 text-white" />
-            </button>
-            <h1 className="text-base font-semibold text-white">Driver App</h1>
-          </header>
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-90 transition-transform"
+          >
+            <ChevronLeft className="h-5 w-5 text-white" />
+          </button>
+          <h1 className="text-base font-black text-white tracking-tight">Quiz</h1>
+          <div className="w-10" /> {/* Spacer */}
+        </header>
+      </div>
+
+      {/* Video Hero Section */}
+      <section className="relative w-full h-[220px] bg-slate-900 border-b border-slate-100 group cursor-pointer overflow-hidden">
+        <img
+          src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&h=600&fit=crop"
+          alt="Quiz Lesson Reference"
+          className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700"
+        />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/90 backdrop-blur-md group-hover:scale-110 shadow-2xl transition-all">
+            <Play className="h-7 w-7 fill-[#03cd8c] text-[#03cd8c] ml-1" />
+          </div>
+        </div>
+      </section>
+
+      {/* Quiz Content */}
+      <main className="flex-1 px-6 pt-8 pb-12 flex flex-col overflow-y-auto scrollbar-hide">
+        <div className="space-y-6">
+          <div className="px-2">
+            <div className="flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-[#03cd8c] mb-2">
+               <span className="bg-emerald-50 px-2 py-1 rounded-md">Step 01 / 03</span>
+            </div>
+            <h2 className="text-xl font-black text-slate-900 leading-tight tracking-tight">
+              {quizQuestion.question}
+            </h2>
+          </div>
+
+          <div className="space-y-4">
+            {quizQuestion.options.map((opt, idx) => (
+              <QuizOption
+                key={idx}
+                index={idx}
+                label={opt}
+                selected={selected === idx}
+                showResult={submitted}
+                onClick={() => { if (!submitted) setSelected(idx); }}
+              />
+            ))}
+          </div>
         </div>
 
-        {/* Video Hero Section */}
-        <section className="relative w-full h-[220px] bg-slate-900 border-b border-slate-100">
-          <img
-            src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600&h=400&fit=crop"
-            alt="Quiz Lesson Reference"
-            className="w-full h-full object-cover opacity-80"
-          />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 backdrop-blur-sm">
-              <Play className="h-6 w-6 fill-slate-900 text-slate-900 ml-0.5" />
+        {/* Feedback card */}
+        {submitted && (
+          <div
+            className={`mt-6 rounded-3xl border p-5 text-[11px] flex items-start space-x-3 shadow-sm ${isCorrect
+              ? "border-emerald-100 bg-emerald-50 text-emerald-900"
+              : "border-amber-100 bg-amber-50 text-amber-900"
+              }`}
+          >
+            <div className={`mt-0.5 p-1.5 rounded-xl ${isCorrect ? 'bg-emerald-100' : 'bg-amber-100'}`}>
+               {isCorrect ? (
+                 <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+               ) : (
+                 <Info className="h-4 w-4 text-amber-600" />
+               )}
+            </div>
+            <div className="flex-1 space-y-1">
+              <p className="font-black text-xs uppercase tracking-tight">
+                {isCorrect ? "Perfectly Correct" : "Keep Learning"}
+              </p>
+              <p className="font-medium leading-relaxed">
+                {isCorrect
+                  ? "Your understanding of platform dynamics ensures a superior experience for both you and your riders."
+                  : "Both reasons are vital. Keeping info updated ensures seamless communication and policy compliance."}
+              </p>
             </div>
           </div>
-        </section>
+        )}
 
-        {/* Quiz Content */}
-        <main className="app-main flex-1 px-5 pt-6 pb-4 flex flex-col overflow-y-auto scrollbar-hide">
-          <div className="space-y-6">
-            <div>
-              <p className="text-[11px] font-medium text-slate-500 mb-1">Question 1 of 3</p>
-              <h2 className="text-[17px] font-bold text-slate-900 leading-tight">
-                {quizQuestion.question}
-              </h2>
+        {/* Quiz Actions */}
+        <div className="mt-12 flex items-center justify-between pb-12">
+          {!submitted ? (
+            <div className="flex items-center justify-between w-full">
+              <button
+                onClick={() => navigate(-1)}
+                className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#1c2b4d] text-white shadow-xl shadow-slate-900/20 active:scale-95 transition-all"
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </button>
+
+              <button
+                disabled={selected === null}
+                onClick={handleSubmit}
+                className={`flex-1 ml-4 py-4 rounded-2xl text-sm font-black uppercase tracking-widest shadow-xl transition-all active:scale-95 ${selected !== null
+                  ? "bg-[#03cd8c] text-white shadow-emerald-500/20"
+                  : "bg-slate-100 text-slate-300 cursor-not-allowed"
+                  }`}
+              >
+                Confirm Answer
+              </button>
             </div>
-
-            <div className="space-y-3">
-              {quizQuestion.options.map((opt, idx) => (
-                <QuizOption
-                  key={idx}
-                  index={idx}
-                  label={opt}
-                  selected={selected === idx}
-                  showResult={submitted}
-                  onClick={() => { if (!submitted) setSelected(idx); }}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Feedback card (restored from original) */}
-          {submitted && (
-            <div
-              className={`mt-4 rounded-2xl border px-3 py-3 text-[11px] flex items-start space-x-2 ${isCorrect
-                ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-                : "border-amber-200 bg-amber-50 text-amber-800"
-                }`}
-            >
-              {isCorrect ? (
-                <CheckCircle2 className="h-4 w-4 mt-0.5" />
-              ) : (
-                <Info className="h-4 w-4 mt-0.5" />
-              )}
-              <div className="flex-1">
-                <p className="font-semibold text-xs mb-0.5">
-                  {isCorrect
-                    ? "Correct – keeping contact info updated helps both riders and the platform."
-                    : "Not quite – both reasons are important for a smooth experience."}
-                </p>
-                <p>Your contact info ensures riders can reach you and you stay informed about policy updates.</p>
-              </div>
+          ) : (
+            <div className="flex space-x-3 w-full">
+              <button
+                onClick={handleTryAgain}
+                className="flex-1 rounded-2xl py-4 text-xs font-black uppercase tracking-widest border border-slate-200 text-slate-500 bg-white hover:bg-slate-50 transition-all"
+              >
+                Retake
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate("/driver/training/quiz/answer")}
+                className="flex-1 rounded-2xl py-4 text-xs font-black uppercase tracking-widest shadow-xl bg-[#03cd8c] text-white shadow-emerald-500/20 hover:bg-[#02b77c] transition-all"
+              >
+                Next Step
+              </button>
             </div>
           )}
-
-          {/* Quiz Actions */}
-          <div className="mt-auto flex items-center justify-between mb-8 px-1">
-            {!submitted ? (
-              <>
-                <button
-                  onClick={() => navigate(-1)}
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1c2b4d] text-white shadow active:scale-95 transition-all"
-                >
-                  <ChevronLeft className="h-5 w-5" />
-                </button>
-
-                <button
-                  disabled={selected === null}
-                  onClick={handleSubmit}
-                  className={`flex-1 max-w-[140px] py-2.5 rounded-full text-sm font-bold shadow-md transition-all active:scale-95 ${selected !== null
-                    ? "bg-[#007bff] text-white"
-                    : "bg-[#f0f0f0] text-[#cfcfcf] cursor-not-allowed"
-                    }`}
-                >
-                  Submit
-                </button>
-              </>
-            ) : (
-              <div className="flex space-x-2 w-full">
-                <button
-                  onClick={handleTryAgain}
-                  className="flex-1 rounded-full py-2.5 text-sm font-semibold border border-slate-200 text-slate-800 bg-white"
-                >
-                  Try again
-                </button>
-                <button
-                  type="button"
-                  onClick={() => navigate("/driver/training/quiz/answer")}
-                  className="flex-1 rounded-full py-2.5 text-sm font-semibold shadow-sm bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c]"
-                >
-                  Next question
-                </button>
-              </div>
-            )}
-          </div>
-        </main>
-
-        {/* Bottom Navigation – Green */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate("/driver/dashboard/online")} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={navActive("manager")} onClick={() => navigate("/driver/jobs/list")} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate("/driver/earnings/overview")} />
-          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate("/driver/preferences")} />
-        </nav>
-      </div>
+        </div>
+      </main>
     </div>
   );
 }

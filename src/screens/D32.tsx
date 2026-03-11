@@ -41,88 +41,86 @@ export default function SearchingForRideScreen() {
     return (routes[key] || []).some(r => p.startsWith(r));
   };
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
+    <div className="flex flex-col h-full bg-[#f8fafc]">
+      {/* Hide scrollbar */}
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-              <Map className="h-4 w-4 text-[#03cd8c]" />
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+              <Map className="h-5 w-5 text-white" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                Driver
-              </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Searching for ride
-              </h1>
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Intercept</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">Quantum Match</p>
             </div>
           </div>
+          <div className="w-10" /> {/* Spacer */}
         </header>
-
-        {/* Content */}
-        <main className="app-main flex-1 px-4 pt-3 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
-          {/* Map container with loader */}
-          <section className="relative rounded-3xl overflow-hidden border border-slate-100 bg-slate-200 h-[360px]">
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
-
-            {/* Center marker */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="relative flex items-center justify-center">
-                <div className="h-10 w-10 rounded-full bg-[#03cd8c]/20" />
-                <div className="absolute h-6 w-6 rounded-full bg-[#03cd8c]/40" />
-                <div className="absolute h-3 w-3 rounded-full bg-[#03cd8c] border-2 border-white" />
-              </div>
-            </div>
-
-            {/* Animated loader */}
-            <div className="absolute inset-x-0 bottom-6 flex items-center justify-center">
-              <div className="inline-flex items-center rounded-full bg-slate-900/80 px-3 py-1.5 text-[11px] text-slate-50">
-                <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                Searching for nearby requests…
-              </div>
-            </div>
-          </section>
-
-          {/* Info & timer */}
-          <section className="space-y-2 pt-1 pb-4">
-            <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 flex items-start space-x-2 text-[11px] text-slate-600">
-              <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white">
-                <Clock className="h-4 w-4 text-slate-600" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-xs text-slate-900 mb-0.5">
-                  Waiting for a match
-                </p>
-                <p>
-                  We&apos;re looking for trips close to your current location.
-                  If no match is found after a short time, you can move towards
-                  busier areas.
-                </p>
-              </div>
-            </div>
-
-            <button className="w-full rounded-full py-2.5 text-sm font-semibold shadow-sm bg-white text-red-600 border border-red-200 flex items-center justify-center">
-              <XCircle className="h-4 w-4 mr-2" />
-              Cancel search
-            </button>
-          </section>
-        </main>
-
-        {/* Bottom navigation – Home active (live driving context) */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate("/driver/dashboard/online")}/>
-          <BottomNavItem icon={Briefcase} label="Manager" active={navActive("manager")} onClick={() => navigate("/driver/jobs/list")}/>
-          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate("/driver/earnings/overview")}/>
-          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate("/driver/preferences")}/>
-        </nav>
       </div>
+
+      {/* Content */}
+      <main className="flex-1 px-6 pt-6 pb-24 space-y-6 overflow-y-auto scrollbar-hide">
+        {/* Map container with loader */}
+        <section className="relative rounded-[2.5rem] overflow-hidden border border-slate-100 bg-slate-200 h-[380px] shadow-2xl shadow-slate-200">
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
+
+          {/* Center marker */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="relative flex items-center justify-center">
+              <div className="h-20 w-20 rounded-full bg-[#03cd8c]/10 animate-ping" />
+              <div className="absolute h-12 w-12 rounded-full bg-[#03cd8c]/20" />
+              <div className="absolute h-4 w-4 rounded-full bg-[#03cd8c] border-4 border-white shadow-xl" />
+            </div>
+          </div>
+
+          {/* Animated loader */}
+          <div className="absolute inset-x-6 bottom-6 flex items-center justify-center">
+            <div className="w-full inline-flex items-center justify-center rounded-2xl bg-[#0b1e3a]/90 backdrop-blur-md px-4 py-4 text-[11px] font-black uppercase tracking-widest text-emerald-400 border border-white/10 shadow-2xl">
+              <Loader2 className="mr-3 h-5 w-5 animate-spin" />
+              Scanning for adjacent vectors…
+            </div>
+          </div>
+        </section>
+
+        {/* Info & timer */}
+        <section className="space-y-4 pt-1 pb-12">
+          <div className="rounded-3xl border border-slate-100 bg-white p-6 flex items-start space-x-5 shadow-xl shadow-slate-200/50">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-50 border border-slate-100 text-slate-400">
+              <Clock className="h-6 w-6" />
+            </div>
+            <div className="flex-1 space-y-1">
+              <p className="font-black text-sm text-slate-900 uppercase tracking-tight">
+                Queuing Lifecycle
+              </p>
+              <p className="text-[11px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed">
+                Currently iterating through local sector assignments. High-probability matches are anticipated within 60-180 seconds.
+              </p>
+            </div>
+          </div>
+
+          <button 
+            type="button"
+            className="w-full rounded-2xl py-5 text-xs font-black uppercase tracking-[0.2em] shadow-xl bg-white text-red-500 border border-red-50 active:scale-95 transition-all flex items-center justify-center"
+          >
+            <XCircle className="h-5 w-5 mr-3" />
+            Abort Intercept
+          </button>
+        </section>
+      </main>
     </div>
   );
 }

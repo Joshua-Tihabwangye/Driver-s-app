@@ -78,126 +78,121 @@ export default function SafetyToolkitScreen() {
 };
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
+    <div className="flex flex-col h-full bg-[#f8fafc]">
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <div className="w-[375px] h-[812px] bg-white rounded-[32px] shadow-2xl overflow-hidden flex flex-col relative">
-        {/* Header */}
-        <header className="flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2 text-left">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-              <ShieldCheck className="h-4 w-4 text-[#03cd8c]" />
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+              <ShieldCheck className="h-5 w-5 text-white" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                Driver
-              </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Safety toolkit
-              </h1>
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Protocol</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">Safety toolkit</p>
             </div>
           </div>
+          <div className="w-10" />
         </header>
+      </div>
 
-        {/* Content */}
-        <main className="flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
-          {/* Intro card */}
-          <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-3">
-            <div className="flex items-center space-x-3 text-left">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#03cd8c] text-white">
-                <ShieldCheck className="h-5 w-5" />
+      {/* Content */}
+      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-6">
+        {/* Intro card */}
+        <section className="rounded-[2.5rem] bg-slate-900 border border-slate-800 text-white p-6 space-y-4 shadow-2xl">
+          <div className="flex items-center space-x-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#03cd8c] text-white shadow-lg shadow-emerald-500/20">
+              <ShieldCheck className="h-6 w-6" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Safety first</span>
+              <p className="text-sm font-black uppercase tracking-tight leading-tight">Emergency protocol enabled</p>
+            </div>
+          </div>
+          <p className="text-[11px] text-slate-300 font-bold uppercase tracking-tight leading-relaxed">
+            The Safety toolkit is available whether you&apos;re on a mission, an ambulance run, or offline. Use SOS or report an issue whenever you personally need support.
+          </p>
+        </section>
+
+        {/* Primary safety tools */}
+        <section className="space-y-4">
+          <div className="px-1">
+             <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">Quick actions</span>
+          </div>
+          <div className="grid grid-cols-1 gap-3">
+            <button
+              type="button"
+              onClick={() => navigate("/driver/safety/emergency/map")}
+              className="flex items-start space-x-4 rounded-[1.5rem] border border-red-100 bg-red-50 px-6 py-5 shadow-sm active:scale-[0.98] transition-all text-left group"
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white group-hover:scale-110 transition-transform">
+                <AlertTriangle className="h-6 w-6 text-red-500" />
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] tracking-[0.18em] uppercase text-[#a5f3fc]">
-                  Safety first
-                </span>
-                <p className="text-sm font-semibold">
-                  Use these tools any time you feel unsafe or need help.
-                </p>
+                <span className="text-xs font-black text-slate-900 uppercase tracking-tight leading-tight mb-1">SOS / emergency</span>
+                <span className="text-[10px] text-red-700 font-bold uppercase tracking-tight leading-relaxed">Contact local services and share live vector.</span>
               </div>
-            </div>
-            <p className="text-[11px] text-slate-100 leading-snug text-left">
-              The Safety toolkit is available whether you&apos;re on a trip, an
-              ambulance run, or offline. Don&apos;t hesitate to use SOS or report an
-              issue whenever you personally need support.
-            </p>
-          </section>
+            </button>
 
-          {/* Primary safety tools */}
-          <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-slate-900 mb-1 text-left">
-              Quick actions
-            </h2>
-            <SafetyTile
-              icon={AlertTriangle}
-              title="SOS / emergency"
-              subtitle="Contact local emergency services and share your live location with support, no matter what job you're on."
-              tone="danger"
-              onClick={() => navigate("/driver/safety/emergency/map")}
-            />
-            <SafetyTile
-              icon={MapPin}
-              title="Share my ride"
-              subtitle="Send a live tracking link to a trusted contact until this trip or job ends."
-              tone="important"
-              onClick={() => navigate("/driver/safety/share-my-ride")}
-            />
-          </section>
+            <button
+               type="button"
+               onClick={() => navigate("/driver/safety/share-my-ride")}
+               className="flex items-start space-x-4 rounded-[1.5rem] border border-amber-100 bg-amber-50 px-6 py-5 shadow-sm active:scale-[0.98] transition-all text-left group"
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white group-hover:scale-110 transition-transform">
+                <MapPin className="h-6 w-6 text-amber-500" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-black text-slate-900 uppercase tracking-tight leading-tight mb-1">Share Mission</span>
+                <span className="text-[10px] text-amber-700 font-bold uppercase tracking-tight leading-relaxed">Send live tracking link to trusted contact.</span>
+              </div>
+            </button>
+          </div>
+        </section>
 
-          {/* Secondary tools */}
-          <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-slate-900 mb-1 text-left">
-              Report & support
-            </h2>
-            <SafetyTile
-              icon={LifeBuoy}
-              title="Report an incident"
-              subtitle="Tell us about safety concerns, harassment or dangerous behaviour during any job."
-              onClick={() => navigate("/driver/safety/emergency/details")}
-            />
-            <SafetyTile
-              icon={Phone}
-              title="Call EVzone support"
-              subtitle="Speak to an EVzone agent for urgent help that is not life-threatening."
-              onClick={() => navigate("/driver/safety/emergency/call")}
-            />
-            <SafetyTile
-              icon={MessageCircle}
-              title="Message support"
-              subtitle="Start a chat with support about account, payments or safety topics."
-              onClick={() => navigate("/driver/help/shuttle-link")}
-            />
-          </section>
-        </main>
-
-        {/* Bottom navigation */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem
-            icon={Home}
-            label="Home"
-           active={navActive("home")} onClick={() => navigate(bottomNavRoutes.home)}
-          />
-          <BottomNavItem
-            icon={Briefcase}
-            label="Manager"
-           active={navActive("manager")} onClick={() => navigate(bottomNavRoutes.manager)}
-          />
-          <BottomNavItem
-            icon={Wallet}
-            label="Wallet"
-           active={navActive("wallet")} onClick={() => navigate(bottomNavRoutes.wallet)}
-          />
-          <BottomNavItem
-            icon={Settings}
-            label="Settings"
-           active={navActive("settings")} onClick={() => navigate(bottomNavRoutes.settings)}
-          />
-        </nav>
-      </div>
+        {/* Report & support */}
+        <section className="space-y-4">
+          <div className="px-1">
+             <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">Report & support</span>
+          </div>
+          <div className="space-y-3">
+             {[
+               { icon: LifeBuoy, title: "Report an incident", sub: "Safety concerns or dangerous behaviour.", route: "/driver/safety/emergency/details" },
+               { icon: Phone, title: "Call EVzone support", sub: "Speak to agent for urgent help.", route: "/driver/safety/emergency/call" },
+               { icon: MessageCircle, title: "Message support", sub: "Start chat about account or payments.", route: "/driver/help/shuttle-link" }
+             ].map((tool, idx) => (
+               <button
+                 key={idx}
+                 type="button"
+                 onClick={() => navigate(tool.route)}
+                 className="w-full flex items-center justify-between rounded-[1.5rem] border border-slate-100 bg-white px-6 py-5 shadow-sm active:scale-[0.98] transition-all group"
+               >
+                 <div className="flex items-center space-x-4">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-50 group-hover:bg-[#03cd8c]/10 transition-colors">
+                       <tool.icon className="h-5 w-5 text-slate-700 group-hover:text-[#03cd8c] transition-colors" />
+                    </div>
+                    <div className="flex flex-col text-left">
+                       <span className="text-xs font-black text-slate-900 uppercase tracking-tight leading-tight">{tool.title}</span>
+                       <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">{tool.sub}</span>
+                    </div>
+                 </div>
+               </button>
+             ))}
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

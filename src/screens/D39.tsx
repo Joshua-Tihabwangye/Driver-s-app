@@ -34,111 +34,96 @@ function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }
 
 export default function SurgeNotificationPopupScreen() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
-  return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
 
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-              <Map className="h-4 w-4 text-[#03cd8c]" />
+  return (
+    <div className="flex flex-col min-h-full bg-[#f8fafc]">
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+              <Map className="h-5 w-5 text-white" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                Driver
-              </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Map view
-              </h1>
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Console</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">Spatial Scan</p>
             </div>
           </div>
+          <div className="w-10" /> {/* Spacer */}
         </header>
+      </div>
 
-        {/* Content */}
-        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide">
-          {/* Map container */}
-          <section className="relative rounded-3xl overflow-hidden border border-slate-100 bg-slate-200 h-[360px]">
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
+      {/* Content */}
+      <main className="flex-1 px-6 pt-6 pb-24 space-y-6">
+        {/* Map container */}
+        <section className="relative rounded-[2.5rem] overflow-hidden border border-slate-100 bg-slate-200 h-[460px] shadow-2xl">
+          <div className="absolute inset-0 bg-slate-200" style={{ backgroundImage: 'radial-gradient(#94a3b8 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
 
-            {/* Current location marker */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="relative flex items-center justify-center">
-                <div className="h-10 w-10 rounded-full bg-[#03cd8c]/20" />
-                <div className="absolute h-6 w-6 rounded-full bg-[#03cd8c]/40" />
-                <div className="absolute h-3 w-3 rounded-full bg-[#03cd8c] border-2 border-white" />
-              </div>
+          {/* Current location marker */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="relative flex items-center justify-center">
+              <div className="h-16 w-16 rounded-full bg-[#03cd8c]/20 animate-ping" />
+              <div className="absolute h-8 w-8 rounded-full bg-[#03cd8c]/40" />
+              <div className="absolute h-4 w-4 rounded-full bg-[#03cd8c] border-2 border-white shadow-lg" />
             </div>
+          </div>
 
-            {/* Surge hotspot marker */}
-            <div className="absolute left-8 top-14 flex flex-col items-center">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/90 border border-white">
-                <MapPin className="h-3.5 w-3.5 text-[#03cd8c]" />
-              </div>
-              <span className="mt-0.5 rounded-full bg-slate-900/80 px-2 py-0.5 text-[9px] text-slate-50">
-                Surge x2.0
-              </span>
+          {/* Surge hotspot marker */}
+          <div className="absolute left-12 top-20 flex flex-col items-center">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 border border-white/20 shadow-xl">
+              <MapPin className="h-5 w-5 text-[#03cd8c]" />
             </div>
+            <span className="mt-2 rounded-full bg-slate-900 px-3 py-1 text-[10px] font-black text-white uppercase tracking-widest shadow-xl">
+              Yield x2.0
+            </span>
+          </div>
 
-            {/* Surge notification popup */}
-            <div className="absolute inset-x-6 top-1/2 -translate-y-1/2">
-              <div className="rounded-2xl bg-white/95 shadow-xl border border-orange-100 px-3 py-3 space-y-2">
-                <div className="flex items-start space-x-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-orange-50">
-                    <AlertTriangle className="h-4 w-4 text-[#f97316]" />
-                  </div>
-                  <div className="flex-1 flex flex-col items-start">
-                    <span className="text-xs font-semibold text-slate-900">
-                      Surge in your area (x2.0)
-                    </span>
-                    <span className="text-[11px] text-slate-600">
-                      More riders are requesting trips nearby. Moving towards
-                      this area now could significantly increase your earnings.
-                    </span>
-                  </div>
-                  <button className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-50 text-slate-400">
-                    <X className="h-3 w-3" />
+          {/* Surge notification popup */}
+          <div className="absolute inset-x-6 bottom-6">
+            <div className="rounded-[2rem] bg-white/90 backdrop-blur-xl shadow-2xl border border-orange-100 p-6 space-y-4">
+              <div className="flex items-start space-x-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-orange-50 text-[#f97316] shadow-sm">
+                  <AlertTriangle className="h-6 w-6" />
+                </div>
+                <div className="flex-1 space-y-1">
+                  <p className="text-sm font-black text-slate-900 uppercase tracking-tight">
+                    Sector Surge (x2.0)
+                  </p>
+                  <p className="text-[11px] text-slate-600 font-bold uppercase tracking-tight leading-relaxed">
+                    High demand detected in current vector. Positioning for intercept now optimizes yield potential by 100%.
+                  </p>
+                </div>
+                <button className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-400 active:scale-90 transition-all">
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="space-y-4 pt-2">
+                <div className="flex items-center text-[10px] font-black text-emerald-500 uppercase tracking-widest">
+                  <Activity className="h-3.5 w-3.5 mr-2" />
+                  <span>Est. x1.8 Delta · 45m Horizon</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <button type="button" onClick={() => navigate("/driver/map/online")} className="flex-1 rounded-full border border-slate-200 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 active:scale-95 transition-all">
+                    Dismiss
+                  </button>
+                  <button type="button" onClick={() => navigate("/driver/surge/map")} className="flex-1 rounded-full bg-[#f97316] py-3 text-[10px] font-black uppercase tracking-widest text-white shadow-xl shadow-orange-500/20 active:scale-95 transition-all">
+                    View Vector
                   </button>
                 </div>
-
-                <div className="flex items-center justify-between pt-1">
-                  <div className="flex items-center text-[10px] text-slate-500">
-                    <Activity className="h-3 w-3 mr-1 text-emerald-500" />
-                    <span>Estimated x1.8–2.1 fares for 30–45 min</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <button type="button" onClick={() => navigate("/driver/map/online")} className="rounded-full border border-slate-200 px-3 py-1 text-[11px] font-medium text-slate-700">
-                      Maybe later
-                    </button>
-                    <button type="button" onClick={() => navigate("/driver/surge/map")} className="rounded-full bg-[#f97316] px-3 py-1 text-[11px] font-semibold text-white">
-                      View on map
-                    </button>
-                  </div>
-                </div>
               </div>
             </div>
-          </section>
-        </main>
-
-        {/* Bottom navigation – Home active (map context) */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate("/driver/dashboard/online")}/>
-          <BottomNavItem icon={Briefcase} label="Manager" active={navActive("manager")} onClick={() => navigate("/driver/jobs/list")}/>
-          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate("/driver/earnings/overview")}/>
-          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate("/driver/preferences")}/>
-        </nav>
-      </div>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

@@ -46,115 +46,112 @@ export default function CancelRideExtraCommentScreen() {
   const canSubmit = notes.trim().length > 0;
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
+    <div className="flex flex-col h-full bg-[#f8fafc]">
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#ffecec]">
-              <AlertTriangle className="h-4 w-4 text-red-500" />
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #f87171 0%, #ef4444 50%, #dc2626 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+              <AlertTriangle className="h-5 w-5 text-white" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                Driver
-              </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Cancel ride – add details
-              </h1>
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-red-100/70">Driver</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">Abort Details</p>
             </div>
           </div>
+          <div className="w-10" />
         </header>
+      </div>
 
-        {/* Content */}
-        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
-          {/* Reason summary card */}
-          <section className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 flex items-start space-x-2 text-[11px] text-slate-600">
-            <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white">
-              <Info className="h-4 w-4 text-slate-600" />
+      {/* Content */}
+      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-6">
+        {/* Reason summary card */}
+        <section className="rounded-[2.5rem] border border-slate-100 bg-slate-50/50 p-6 flex flex-col space-y-4">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm">
+               <Info className="h-5 w-5 text-slate-400" />
             </div>
-            <div className="flex-1">
-              <p className="font-semibold text-xs text-slate-900 mb-0.5">
-                Selected reason
-              </p>
-              <p className="mb-1 text-slate-800">{SELECTED_REASON}</p>
-              <p>
-                Please add a short comment to explain what happened. This helps
-                support if the rider contacts us about this cancellation.
-              </p>
+            <div className="flex flex-col">
+               <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">Context Signal</span>
+               <p className="text-sm font-black text-slate-900 uppercase tracking-tight leading-tight">{SELECTED_REASON}</p>
             </div>
-          </section>
+          </div>
+          <p className="text-[11px] text-slate-500 font-bold uppercase tracking-tight leading-relaxed">
+            Please add a short comment to explain what happened. This helps support if the rider contacts us about this cancellation.
+          </p>
+        </section>
 
-          {/* Additional comment */}
-          <section className="space-y-2">
-            <label className="flex flex-col space-y-1 text-[11px] text-slate-600">
-              <span className="font-semibold text-slate-900">
-                Additional comment (required for this reason)
-              </span>
-              <textarea
-                rows={4}
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Describe the issue in a few words (e.g. the pin was inside a gated estate and rider asked you to cancel)."
-                className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-[11px] text-slate-900 placeholder:text-slate-400 focus:border-[#03cd8c] focus:outline-none focus:ring-1 focus:ring-[#03cd8c]"
-              />
-            </label>
-          </section>
+        {/* Additional comment */}
+        <section className="space-y-3">
+          <div className="px-1">
+             <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">Mission logs (Required)</span>
+          </div>
+          <textarea
+            rows={4}
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Describe the issue..."
+            className="w-full rounded-[2rem] border-2 border-slate-50 bg-white px-6 py-5 text-[11px] font-bold text-slate-900 placeholder:text-slate-300 focus:border-[#03cd8c] focus:outline-none transition-all shadow-sm"
+          />
+        </section>
 
-          {/* Guidance */}
-          <section className="space-y-2">
-            <div className="rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 text-[11px] text-slate-600 flex items-start space-x-2">
-              <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-[#e6fff7]">
-                <AlertTriangle className="h-4 w-4 text-[#f97316]" />
+        {/* Guidance */}
+        <section className="space-y-4">
+          <div className="rounded-[2.5rem] border border-amber-100 bg-amber-50 p-6 flex flex-col space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm">
+                <AlertTriangle className="h-5 w-5 text-amber-500" />
               </div>
-              <div className="flex-1">
-                <p className="font-semibold text-xs text-slate-900 mb-0.5">
-                  Be specific but brief
-                </p>
-                <p>
-                  Focus on the main reason for cancellation. Avoid sharing
-                  personal details – your comment may be reviewed by support.
-                </p>
+              <div className="flex flex-col">
+                 <span className="text-[10px] tracking-[0.2em] font-black uppercase text-amber-400">Protocol Tip</span>
+                 <p className="text-sm font-black text-amber-900 uppercase tracking-tight">Be specific but brief</p>
               </div>
             </div>
-          </section>
+            <p className="text-[11px] text-amber-700 font-bold uppercase tracking-tight leading-relaxed">
+              Focus on the main reason for cancellation. Avoid sharing personal details – your comment may be reviewed by support.
+            </p>
+          </div>
 
           {/* Actions */}
-          <section className="pt-1 pb-4 flex flex-col space-y-2">
-            <button
-              disabled={!canSubmit}
-              className={`w-full rounded-full py-2.5 text-sm font-semibold flex items-center justify-center shadow-sm ${
-                canSubmit
-                  ? "bg-red-600 text-slate-50 hover:bg-red-700"
-                  : "bg-slate-100 text-slate-400 cursor-not-allowed"
-              }`}
-            >
-              <XCircle className="h-4 w-4 mr-1" />
-              Confirm cancel ride
-            </button>
-            <button type="button" onClick={() => navigate("/driver/trip/demo-trip/cancel/reason")} className="w-full rounded-full py-2.5 text-sm font-semibold border border-slate-200 text-slate-800 bg-white">
-              Go back
-            </button>
-            <p className="text-[10px] text-slate-500 text-center max-w-[260px] mx-auto">
-              Cancelling too many trips may affect your account health and
-              incentives. Use this only when necessary.
-            </p>
-          </section>
-        </main>
-
-        {/* Bottom navigation – Home active (cancellation context) */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate("/driver/dashboard/online")}/>
-          <BottomNavItem icon={Briefcase} label="Manager" active={navActive("manager")} onClick={() => navigate("/driver/jobs/list")}/>
-          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate("/driver/earnings/overview")}/>
-          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate("/driver/preferences")}/>
-        </nav>
-      </div>
+          <div className="flex flex-col space-y-3">
+             <button
+               disabled={!canSubmit}
+               className={`w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest transition-all ${
+                 canSubmit
+                   ? "bg-red-600 text-white shadow-xl shadow-red-900/20 hover:bg-red-700"
+                   : "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-50"
+               }`}
+             >
+               Confirm cancel ride
+             </button>
+             <button
+               type="button"
+               onClick={() => navigate("/driver/trip/demo-trip/cancel/reason")}
+               className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest border border-slate-100 text-slate-400 hover:bg-slate-100 transition-all"
+             >
+               Go back
+             </button>
+          </div>
+          <div className="bg-slate-100/30 rounded-3xl p-4 text-center">
+             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed max-w-[280px] mx-auto">
+               Cancelling too many trips may affect your account health and incentives. Use this only when necessary.
+             </p>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

@@ -48,154 +48,106 @@ function StatCard({ label, value, sub }) {
 
 export default function DrivingHoursScreen() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
-  const bottomNavRoutes = {
-    home: "/driver/dashboard/online",
-    manager: "/driver/jobs/list",
-    wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences"
-};
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
-
-      {/* Phone frame */}
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-              <Clock className="h-4 w-4 text-[#03cd8c]" />
+    <div className="flex flex-col h-full bg-[#f8fafc]">
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 110 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md shadow-inner">
+              <Clock className="h-6 w-6 text-white" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
+            <div className="flex flex-col text-left">
+              <span className="text-[10px] uppercase tracking-[0.2em] font-black text-white/70">
                 Driver · Safety
               </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Driving hours
+              <h1 className="text-xl font-black text-white leading-tight">
+                Driving Hours
               </h1>
             </div>
           </div>
         </header>
+      </div>
 
-        {/* Content */}
-        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
-          {/* Summary card */}
-          <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#03cd8c] text-slate-900">
-                  <Activity className="h-4 w-4" />
-                </div>
-                <div className="flex flex-col items-start">
-                  <span className="text-[10px] tracking-[0.18em] uppercase text-[#a5f3fc]">
-                    Today&apos;s activity
-                  </span>
-                  <p className="text-sm font-semibold">6h 10m driving time</p>
-                </div>
+      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-6">
+        {/* Summary card */}
+        <section className="rounded-[2.5rem] bg-slate-900 border border-slate-800 text-white p-6 space-y-4 shadow-2xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/20 backdrop-blur-md text-[#03cd8c]">
+                <Activity className="h-6 w-6" />
               </div>
-              <div className="flex flex-col items-end text-[10px] text-slate-100">
-                <span>Weekly total: 24h 35m</span>
-                <span className="text-amber-300">Close to daily limit</span>
+              <div className="flex flex-col">
+                <span className="text-[10px] tracking-[0.2em] uppercase font-black text-[#03cd8c]">
+                  Today&apos;s Activity
+                </span>
+                <p className="text-sm font-bold">6h 10m driving time</p>
               </div>
             </div>
-            <p className="text-[11px] text-slate-100 leading-snug">
-              All of your driving – rides, deliveries, rentals, tours and
-              ambulance runs – counts towards your daily and weekly limits.
-              Driving hours help protect you and others on the road. Take regular
-              breaks and respect local rules on maximum driving hours per day and
-              per week.
-            </p>
-          </section>
-
-          {/* Stats */}
-          <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-slate-900 mb-1">
-              Hours overview
-            </h2>
-            <div className="flex space-x-2">
-              <StatCard label="Today" value="6h 10m" sub="including breaks" />
-              <StatCard label="This week" value="24h 35m" sub="Mon–Sun" />
+            <div className="flex flex-col items-end text-[10px] text-slate-400 font-bold uppercase tracking-widest text-right">
+              <span>Weekly: 24h 35m</span>
+              <span className="text-amber-400">Near Limit</span>
             </div>
-            <div className="flex space-x-2">
-              <StatCard
-                label="Daily limit"
-                value="8h 00m"
-                sub="Based on local rules (all driving)"
-              />
-              <StatCard
-                label="Weekly limit"
-                value="40h 00m"
-                sub="Based on local rules (all driving)"
-              />
-            </div>
-          </section>
+          </div>
+          <p className="text-[11px] text-slate-400 font-medium leading-relaxed">
+            All of your driving – rides, deliveries, rentals, tours and
+            ambulance runs – counts towards your daily and weekly limits.
+            Taking breaks helps protect you and others on the road.
+          </p>
+        </section>
 
-          {/* Rest guidance */}
-          <section className="space-y-2 pt-1 pb-4">
-            <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 text-[11px] text-slate-600 flex items-start space-x-2">
-              <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white">
-                <AlertTriangle className="h-4 w-4 text-[#f97316]" />
+        {/* Stats */}
+        <section className="space-y-4">
+          <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-2">
+            Hours Overview
+          </h2>
+          <div className="grid grid-cols-2 gap-3">
+            <StatCard label="Today" value="6h 10m" sub="Inc. breaks" />
+            <StatCard label="This Week" value="24h 35m" sub="Mon – Sun" />
+            <StatCard label="Daily Limit" value="8h 00m" sub="Local Rules" />
+            <StatCard label="Weekly Limit" value="40h 00m" sub="Local Rules" />
+          </div>
+        </section>
+
+        {/* Rest guidance */}
+        <section className="space-y-4 pb-12">
+          <div className="rounded-[2.5rem] border border-slate-100 bg-white p-6 shadow-xl shadow-slate-200/50 space-y-4">
+            <div className="flex items-center space-x-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50">
+                <AlertTriangle className="h-5 w-5 text-amber-500" />
               </div>
               <div className="flex-1">
-                <p className="font-semibold text-xs text-slate-900 mb-0.5">
+                <p className="font-black text-[11px] uppercase tracking-widest text-slate-900">
                   Take a break soon
                 </p>
-                <p>
-                  You&apos;re approaching the recommended daily driving limit. Find
-                  a safe place to stop and rest before continuing – this applies
-                  across all your EVzone jobs.
+                <p className="text-[10px] text-slate-500 font-medium mt-0.5">
+                  You&apos;re close to the daily limit. Find a safe place to rest.
                 </p>
               </div>
             </div>
+          </div>
 
-            <div className="flex items-center justify-between text-[11px] text-slate-600">
-              <div className="inline-flex items-center space-x-1">
-                <SunMedium className="h-3.5 w-3.5 text-amber-500" />
-                <span>Day driving</span>
-              </div>
-              <div className="inline-flex items-center space-x-1">
-                <Moon className="h-3.5 w-3.5 text-slate-600" />
-                <span>Night driving tracked separately</span>
-              </div>
+          <div className="flex items-center justify-between px-2">
+            <div className="inline-flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+              <SunMedium className="h-3.5 w-3.5 text-amber-400" />
+              <span>Day driving</span>
             </div>
-          </section>
-        </main>
-
-        {/* Bottom navigation – Home active (driving hours context) */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem
-            icon={Home}
-            label="Home"
-           active={navActive("home")} onClick={() => navigate(bottomNavRoutes.home)}
-          />
-          <BottomNavItem
-            icon={Briefcase}
-            label="Manager"
-           active={navActive("manager")} onClick={() => navigate(bottomNavRoutes.manager)}
-          />
-          <BottomNavItem
-            icon={Wallet}
-            label="Wallet"
-           active={navActive("wallet")} onClick={() => navigate(bottomNavRoutes.wallet)}
-          />
-          <BottomNavItem
-            icon={Settings}
-            label="Settings"
-           active={navActive("settings")} onClick={() => navigate(bottomNavRoutes.settings)}
-          />
-        </nav>
-      </div>
+            <div className="inline-flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+              <Moon className="h-3.5 w-3.5" />
+              <span>Night tracking</span>
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }
