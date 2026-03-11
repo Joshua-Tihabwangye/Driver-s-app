@@ -265,9 +265,23 @@ export default function App() {
   const { isDark, toggleTheme } = useTheme();
   const { isLoggedIn } = useAuth();
   const location = useLocation();
+  const rootNavRoutes = new Set([
+    "/driver/dashboard/online",
+    "/driver/jobs/list",
+    "/driver/earnings/overview",
+    "/driver/safety/hub",
+    "/driver/more",
+  ]);
+  const normalizedPath =
+    location.pathname.length > 1
+      ? location.pathname.replace(/\/+$/, "")
+      : location.pathname;
+  const isRootNavRoute = rootNavRoutes.has(normalizedPath);
 
   return (
-    <div className={`app-root ${isDark ? "dark" : ""}`}>
+    <div
+      className={`app-root ${isDark ? "dark" : ""} ${isRootNavRoute ? "root-nav-route" : ""}`}
+    >
       {/* Global Theme Toggle */}
       <button
         type="button"

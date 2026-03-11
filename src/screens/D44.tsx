@@ -9,7 +9,6 @@ import {
   Bell
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import BottomNav from "../components/BottomNav";
 
 // EVzone Driver App – D44 Ride Requests
 // List of available job requests with a job-type filter bar and job type pill per card.
@@ -79,10 +78,21 @@ function RequestCard({ job, onClick }: { job: any, onClick: (j: any) => void }) 
 
 export default function RideRequestsListScreen() {
   const [filter, setFilter] = useState("all");
+  const [period, setPeriod] = useState("day");
+  const [selectedYear, setSelectedYear] = useState(String(new Date().getFullYear()));
+  const [selectedQuarter, setSelectedQuarter] = useState("Q1");
   const navigate = useNavigate();
+  const yearOptions = Array.from({ length: 7 }, (_, i) => String(new Date().getFullYear() - i));
 
   const filteredJobs = filter === "all" ? JOBS : JOBS.filter((job) => job.jobType === filter);
   const hasShuttleJob = filteredJobs.some((j) => j.jobType === "shuttle");
+  const periodLabel = {
+    day: "Today",
+    week: "This Week",
+    month: "This Month",
+    quarter: `${selectedQuarter} ${selectedYear}`,
+    year: selectedYear,
+  }[period];
 
   const handleCardClick = (job: any) => {
     const routes: Record<string, string> = {
@@ -136,28 +146,97 @@ export default function RideRequestsListScreen() {
         </header>
       </div>
 
-      {/* Filters Sticky Bar */}
-      <section className="bg-white/80 backdrop-blur-md z-10 py-4 border-b border-slate-50 px-6">
-        <div className="flex items-center space-x-3 overflow-x-auto no-scrollbar">
-          {JOB_FILTERS.map((f) => (
-            <button
-              key={f.key}
-              type="button"
-              onClick={() => setFilter(f.key)}
-              className={`rounded-full px-5 py-2 border-2 text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${
-                filter === f.key
-                  ? "bg-[#03cd8c] border-[#03cd8c] text-white shadow-xl shadow-[#03cd8c]/20"
-                  : "bg-white border-slate-100 text-slate-400 hover:border-slate-200"
-              }`}
-            >
-              {f.label}
-            </button>
-          ))}
+      {/* Filters Panel */}
+      <section className="z-10 mt-4 px-6">
+        <div className="rounded-[1.5rem] border border-slate-100 bg-white p-4 shadow-sm">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block">
+                Category
+              </label>
+              <select
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-2.5 text-[11px] font-black uppercase tracking-wide text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#03cd8c]/30"
+              >
+                {JOB_FILTERS.map((f) => (
+                  <option key={f.key} value={f.key}>
+                    {f.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block">
+                Period
+              </label>
+              <select
+                value={period}
+                onChange={(e) => setPeriod(e.target.value)}
+                className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-2.5 text-[11px] font-black uppercase tracking-wide text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#03cd8c]/30"
+              >
+                <option value="day">Day</option>
+                <option value="week">Week</option>
+                <option value="month">Month</option>
+                <option value="quarter">Quarter</option>
+                <option value="year">Year</option>
+              </select>
+            </div>
+          </div>
+
+          {(period === "quarter" || period === "year") && (
+            <div className={`grid gap-3 mt-3 ${period === "quarter" ? "grid-cols-2" : "grid-cols-1"}`}>
+              <div className="space-y-1">
+                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block">
+                  Year
+                </label>
+                <select
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(e.target.value)}
+                  className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-2.5 text-[11px] font-black uppercase tracking-wide text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#03cd8c]/30"
+                >
+                  {yearOptions.map((y) => (
+                    <option key={y} value={y}>
+                      {y}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {period === "quarter" && (
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block">
+                    Quarter
+                  </label>
+                  <select
+                    value={selectedQuarter}
+                    onChange={(e) => setSelectedQuarter(e.target.value)}
+                    className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-2.5 text-[11px] font-black uppercase tracking-wide text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#03cd8c]/30"
+                  >
+                    <option value="Q1">Q1</option>
+                    <option value="Q2">Q2</option>
+                    <option value="Q3">Q3</option>
+                    <option value="Q4">Q4</option>
+                  </select>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </section>
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-24 space-y-6 overflow-y-auto scrollbar-hide">
+        <div className="rounded-2xl border border-slate-100 bg-white px-4 py-3 shadow-sm flex items-center justify-between">
+          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+            Monitoring Window
+          </span>
+          <span className="text-[11px] font-black uppercase tracking-widest text-[#03cd8c]">
+            {periodLabel}
+          </span>
+        </div>
+
         {/* Requests list */}
         <section className="space-y-4">
           {filteredJobs.map((job) => (
@@ -182,12 +261,6 @@ export default function RideRequestsListScreen() {
           <section className="pt-2">
             <div className="rounded-[2.5rem] border border-violet-100 bg-violet-50 p-6 flex flex-col items-start space-y-4 shadow-inner">
               <div className="flex items-center space-x-4">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-white" />
-            </button>
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm shrink-0">
                   <HelpCircle className="h-6 w-6 text-violet-500" />
                 </div>
