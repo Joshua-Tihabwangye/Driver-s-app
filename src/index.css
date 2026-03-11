@@ -75,7 +75,7 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.app-root header[class*="justify-between"][class*="px-6"][class*="pt-8"][class*="pb-6"] > .flex.items-center.space-x-3 {
+.app-root header[class*="justify-between"][class*="px-6"][class*="pt-8"][class*="pb-6"] > :is(.flex.items-center.space-x-3, .flex.items-center.space-x-4) {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
