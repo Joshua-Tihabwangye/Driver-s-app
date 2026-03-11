@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
+  ChevronLeft,
     Map,
   AlertTriangle,
   MapPin,
@@ -55,7 +56,7 @@ export default function AmbulanceJobIncomingScreen() {
   return (
     <div className="flex flex-col min-h-full bg-[#fcf8f8]">
       {/* Urgency header (Red/Orange gradient for ambulance) */}
-      <div className="relative shrink-0" style={{ minHeight: 110 }}>
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
         <div
           className="absolute inset-0"
           style={{
@@ -66,6 +67,12 @@ export default function AmbulanceJobIncomingScreen() {
         />
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
           <div className="flex items-center space-x-4">
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
+            >
+              <ChevronLeft className="h-5 w-5 text-white" />
+            </button>
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md shadow-inner">
               <AlertTriangle className="h-6 w-6 text-white animate-pulse" />
             </div>
@@ -96,6 +103,12 @@ export default function AmbulanceJobIncomingScreen() {
                 Priority Level
               </span>
               <div className="flex items-center space-x-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
+            >
+              <ChevronLeft className="h-5 w-5 text-white" />
+            </button>
                 <span className="bg-red-500 text-white text-[11px] font-black px-3 py-1 rounded-full uppercase">
                   {code}
                 </span>

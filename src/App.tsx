@@ -115,6 +115,10 @@ import D100Screen from "./screens/D100.jsx";
 import D101Screen from "./screens/D101.jsx";
 import D102Screen from "./screens/D102.jsx";
 import CashOutScreen from "./screens/CashOut";
+import MoreMenuScreen from "./screens/MoreMenu";
+import ProfileScreen from "./screens/Profile";
+import HelpScreen from "./screens/Help";
+import AboutScreen from "./screens/About";
 
 // ── Auth & Landing ──────────────────────────────────────
 import LandingPage from "./screens/LandingPage";
@@ -245,6 +249,11 @@ const SCREENS = [
   { id: "D100", label: "Ambulance Job Status Screen", path: "/driver/ambulance/job/:jobId/status", previewPath: `/driver/ambulance/job/${SAMPLE_IDS.job}/status`, Component: D100Screen },
   { id: "D101", label: "Job Types & Icons Legend", path: "/driver/settings/job-types-legend", Component: D101Screen },
   { id: "D102", label: "Shuttle Link Info Screen", path: "/driver/help/shuttle-link", Component: D102Screen },
+  { id: "MoreMenu", label: "More Menu", path: "/driver/more", Component: MoreMenuScreen },
+  { id: "Profile", label: "Profile", path: "/driver/profile", Component: ProfileScreen },
+  { id: "ProfileMore", label: "Profile (More)", path: "/driver/more/profile", Component: ProfileScreen },
+  { id: "Help", label: "Help & Support", path: "/driver/help", Component: HelpScreen },
+  { id: "About", label: "About EVzone", path: "/driver/about", Component: AboutScreen },
   { id: "CashOut", label: "Cash Out – Payment Gateway", path: "/driver/earnings/cashout", Component: CashOutScreen },
 ];
 

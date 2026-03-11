@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import {
+  ChevronLeft,
     Map,
   Car,
   Star,
@@ -59,6 +60,12 @@ export default function LastTripSummaryPopupScreen() {
         />
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
           <div className="flex items-center space-x-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
+            >
+              <ChevronLeft className="h-5 w-5 text-white" />
+            </button>
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
               <Map className="h-5 w-5 text-white" />
             </div>
@@ -136,6 +143,12 @@ export default function LastTripSummaryPopupScreen() {
 
               <div className="flex items-center justify-between pt-2 border-t border-slate-100">
                 <div className="flex items-center space-x-4">
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
+            >
+              <ChevronLeft className="h-5 w-5 text-white" />
+            </button>
                   <span className="inline-flex items-center text-[10px] font-black text-slate-500 uppercase tracking-widest">
                     <Clock className="h-4 w-4 mr-2 text-slate-400" /> 17m Cycle
                   </span>
