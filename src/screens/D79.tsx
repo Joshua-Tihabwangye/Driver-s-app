@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import {
+  ChevronLeft,
     Map,
   Navigation,
   MapPin,
@@ -79,7 +80,7 @@ export default function RouteDetailsScreenV2() {
   return (
     <div className="flex flex-col h-full bg-[#f8fafc]">
       {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 110 }}>
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
         <div
           className="absolute inset-0"
           style={{
@@ -90,6 +91,12 @@ export default function RouteDetailsScreenV2() {
         />
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
           <div className="flex items-center space-x-4">
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
+            >
+              <ChevronLeft className="h-5 w-5 text-white" />
+            </button>
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md shadow-inner">
               <Map className="h-6 w-6 text-white" />
             </div>

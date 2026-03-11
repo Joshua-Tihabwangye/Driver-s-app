@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  X,
+  ChevronLeft,
   ChevronRight,
   MicOff,
   Volume2,
@@ -64,10 +64,10 @@ export default function EmergencyCallingScreen() {
         />
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
           <button
-            onClick={() => navigate('/driver/safety/toolkit')}
+            onClick={() => navigate(-1)}
             className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg"
           >
-            <X className="h-5 w-5 text-white" />
+            <ChevronLeft className="h-5 w-5 text-white" />
           </button>
           <div className="flex flex-col items-center">
              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Protocol</span>

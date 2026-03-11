@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import {
+  ChevronLeft,
     Map,
   Settings as SettingsIcon,
   SunMedium,
@@ -42,6 +43,12 @@ function ToggleRow({ icon: Icon, title, subtitle, checked, onChange }) {
       className="flex items-center justify-between rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform"
     >
       <div className="flex items-center space-x-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
+            >
+              <ChevronLeft className="h-5 w-5 text-white" />
+            </button>
         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-50">
           <Icon className="h-4 w-4 text-slate-700" />
         </div>

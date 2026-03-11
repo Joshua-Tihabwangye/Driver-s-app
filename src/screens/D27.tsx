@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  ChevronLeft,
     Power,
   WifiOff,
   AlertCircle,
@@ -61,6 +62,12 @@ export default function OfflineDashboardScreen() {
         />
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
           <div className="flex items-center space-x-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
+            >
+              <ChevronLeft className="h-5 w-5 text-white" />
+            </button>
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
               <Power className="h-5 w-5 text-white" />
             </div>
@@ -80,6 +87,12 @@ export default function OfflineDashboardScreen() {
           <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110" />
           
           <div className="flex items-center space-x-4">
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
+            >
+              <ChevronLeft className="h-5 w-5 text-white" />
+            </button>
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500/20 backdrop-blur-md border border-amber-500/30">
               <WifiOff className="h-6 w-6 text-amber-500" />
             </div>

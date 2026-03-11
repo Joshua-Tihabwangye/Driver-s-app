@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import {
+  ChevronLeft,
     DollarSign,
   Calendar,
   LineChart,
@@ -71,6 +72,12 @@ export default function MonthlyEarningsSummaryScreen() {
         />
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
           <div className="flex items-center space-x-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
+            >
+              <ChevronLeft className="h-5 w-5 text-white" />
+            </button>
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
               <DollarSign className="h-5 w-5 text-white" />
             </div>

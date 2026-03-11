@@ -175,7 +175,7 @@ export default function CashOutScreen() {
     return (
       <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
         <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-          <div className="relative" style={{ minHeight: 80 }}>
+          <div className="relative" style={{ minHeight: 90 }}>
             <div
               className="absolute inset-0"
               style={{
@@ -265,7 +265,7 @@ export default function CashOutScreen() {
       <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
 
         {/* Green curved header */}
-        <div className="relative" style={{ minHeight: 80 }}>
+        <div className="relative" style={{ minHeight: 90 }}>
           <div
             className="absolute inset-0"
             style={{

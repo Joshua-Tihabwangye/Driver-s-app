@@ -108,24 +108,32 @@ export default function DriverHomeScreen() {
           }}
         />
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <button
-            type="button"
-            className="flex items-center space-x-3 text-left"
-            onClick={() => navigate("/driver/profile/edit")}
-          >
-            <span className="relative inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
-              <User className="h-5 w-5 text-white" />
-              <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-emerald-400 border-2 border-white animate-pulse" />
-            </span>
-            <div className="flex flex-col">
-              <span className="text-[10px] uppercase font-black tracking-[0.1em] text-white/70">
-                Super App
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
+            >
+              <ChevronLeft className="h-5 w-5 text-white" />
+            </button>
+            <button
+              type="button"
+              className="flex items-center space-x-3 text-left"
+              onClick={() => navigate("/driver/profile/edit")}
+            >
+              <span className="relative inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+                <User className="h-5 w-5 text-white" />
+                <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-emerald-400 border-2 border-white animate-pulse" />
               </span>
-              <span className="text-base font-black text-white tracking-tight">
-                EVzone Dashboard
-              </span>
-            </div>
-          </button>
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase font-black tracking-[0.1em] text-white/70">
+                  Super App
+                </span>
+                <span className="text-base font-black text-white tracking-tight">
+                  EVzone Dashboard
+                </span>
+              </div>
+            </button>
+          </div>
         </header>
       </div>
 

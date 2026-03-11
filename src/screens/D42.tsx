@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
+  ChevronLeft,
     Map,
   User,
   MapPin,
@@ -215,6 +216,12 @@ export default function RideRequestIncomingScreen() {
         />
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
           <div className="flex items-center space-x-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
+            >
+              <ChevronLeft className="h-5 w-5 text-white" />
+            </button>
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
               <Map className="h-5 w-5 text-white" />
             </div>
@@ -255,6 +262,12 @@ export default function RideRequestIncomingScreen() {
           
           <div className="flex items-start justify-between relative z-10">
             <div className="flex items-center space-x-4">
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
+            >
+              <ChevronLeft className="h-5 w-5 text-white" />
+            </button>
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#03cd8c] text-slate-900 shadow-xl shadow-emerald-500/20">
                 <User className="h-6 w-6" />
               </div>

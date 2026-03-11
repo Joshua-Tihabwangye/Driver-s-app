@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  ChevronLeft,
     Activity,
   Clock,
   DollarSign,
@@ -138,6 +139,12 @@ export default function D29ActiveDashboardScreen() {
         />
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
           <div className="flex items-center space-x-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
+            >
+              <ChevronLeft className="h-5 w-5 text-white" />
+            </button>
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
               <Activity className="h-5 w-5 text-white" />
             </div>
@@ -158,6 +165,12 @@ export default function D29ActiveDashboardScreen() {
           
           <div className="flex items-center justify-between relative z-10">
             <div className="flex items-center space-x-4">
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
+            >
+              <ChevronLeft className="h-5 w-5 text-white" />
+            </button>
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#03cd8c] text-white shadow-xl shadow-emerald-500/20">
                 <Clock className="h-7 w-7" />
               </div>
