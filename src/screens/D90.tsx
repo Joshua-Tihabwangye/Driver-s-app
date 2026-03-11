@@ -8,7 +8,7 @@ import {
   Wallet,
   Settings
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D90 Scan QR Code – Instruction Popup (v1)
 // Early instruction popup explaining how to scan the QR code, shown over the scanner view.
@@ -32,96 +32,94 @@ function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }
 
 export default function QrScanInstructionPopupScreen() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
-  return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
 
-      {/* Phone frame */}
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-              <QrCode className="h-4 w-4 text-[#03cd8c]" />
+  return (
+    <div className="flex flex-col h-full bg-[#f8fafc]">
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 110 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md shadow-inner">
+              <QrCode className="h-6 w-6 text-white" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
+            <div className="flex flex-col text-left">
+              <span className="text-[10px] uppercase tracking-[0.2em] font-black text-white/70">
                 Driver · Deliveries
               </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Scan QR code
+              <h1 className="text-xl font-black text-white leading-tight">
+                Scan QR Code
               </h1>
             </div>
           </div>
         </header>
-
-        {/* Content */}
-        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide">
-          {/* Camera / scanner view */}
-          <section className="relative rounded-3xl overflow-hidden border border-slate-100 bg-black h-[260px] mb-4">
-            <div className="absolute inset-0 bg-slate-900/80" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="relative flex h-40 w-40 items-center justify-center">
-                <div className="absolute inset-0 border-2 border-[#03cd8c] rounded-xl" />
-              </div>
-            </div>
-
-            {/* Instruction popup */}
-            <div className="absolute inset-x-6 top-1/2 -translate-y-1/2">
-              <div className="rounded-2xl bg-white/95 shadow-xl border border-slate-100 px-3 py-3 space-y-2 text-[11px] text-slate-600">
-                <div className="flex items-start space-x-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-50">
-                    <Info className="h-4 w-4 text-slate-600" />
-                  </div>
-                  <div className="flex-1 flex flex-col items-start">
-                    <span className="text-xs font-semibold text-slate-900">
-                      How to scan the code
-                    </span>
-                    <span>
-                      Hold your phone so that the QR code fits inside the
-                      square. Avoid glare and keep the camera steady.
-                    </span>
-                  </div>
-                </div>
-
-                <ul className="list-disc list-inside text-[10px] text-slate-500 space-y-0.5">
-                  <li>Stand close enough so the code is clearly visible.</li>
-                  <li>Make sure the code is not folded or covered.</li>
-                  <li>You&apos;ll feel a vibration when the scan succeeds.</li>
-                </ul>
-
-                <div className="pt-1 flex items-center justify-between text-[10px] text-slate-500">
-                  <span className="inline-flex items-center">
-                    <MapPin className="h-3 w-3 mr-1" />
-                    Pickup: Burger Hub, Acacia Mall
-                  </span>
-                  <button type="button" onClick={() => navigate("/driver/qr/scanner")} className="inline-flex items-center rounded-full bg-[#03cd8c] px-2.5 py-0.5 text-[10px] font-semibold text-slate-900">
-                    Got it
-                  </button>
-                </div>
-              </div>
-            </div>
-          </section>
-        </main>
-
-        {/* Bottom navigation – Home active (scanner context) */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate("/driver/dashboard/online")}/>
-          <BottomNavItem icon={Briefcase} label="Manager" active={navActive("manager")} onClick={() => navigate("/driver/jobs/list")}/>
-          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate("/driver/earnings/overview")}/>
-          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate("/driver/preferences")}/>
-        </nav>
       </div>
+
+      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide">
+        {/* Camera / scanner view */}
+        <section className="relative rounded-[3rem] overflow-hidden border border-slate-100 bg-black h-[320px] mb-6 shadow-2xl">
+          <div className="absolute inset-0 bg-slate-900/90" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="relative flex h-56 w-56 items-center justify-center">
+              <div className="absolute inset-0 border-2 border-emerald-500/20 rounded-2xl" />
+            </div>
+          </div>
+
+          {/* Instruction popup */}
+          <div className="absolute inset-x-4 top-1/2 -translate-y-1/2">
+            <div className="rounded-[2rem] bg-white/95 backdrop-blur-md shadow-[0_32px_80px_rgba(0,0,0,0.4)] border border-white p-6 space-y-4">
+              <div className="flex items-start space-x-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 shadow-inner">
+                  <Info className="h-6 w-6" />
+                </div>
+                <div className="flex-1 space-y-1">
+                  <span className="text-xs font-black text-slate-900 uppercase tracking-widest">
+                    How to Scan
+                  </span>
+                  <p className="text-[11px] font-medium text-slate-500 leading-relaxed">
+                    Fit the QR code inside the square. Avoid glare and hold
+                    the camera steady.
+                  </p>
+                </div>
+              </div>
+
+              <ul className="list-none space-y-2">
+                {[
+                  "Stand close for a clear focus",
+                  "Ensure code is not folded",
+                  "Vibration signals success"
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center space-x-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="pt-2 flex items-center justify-between border-t border-slate-100">
+                <div className="inline-flex items-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  <MapPin className="h-3.5 w-3.5 mr-1.5 text-emerald-500" />
+                  Acacia Mall
+                </div>
+                <button 
+                  type="button" 
+                  onClick={() => navigate("/driver/qr/scanner")} 
+                  className="rounded-full bg-slate-900 px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.1em] text-white active:scale-95 transition-all shadow-lg"
+                >
+                  Got It
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

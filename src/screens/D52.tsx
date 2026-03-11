@@ -44,132 +44,134 @@ export default function CancelRideNoShowAlertScreen() {
     return (routes[key] || []).some(r => p.startsWith(r));
   };
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
+    <div className="flex flex-col h-full bg-[#f8fafc]">
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#ffecec]">
-              <AlertTriangle className="h-4 w-4 text-red-500" />
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #f87171 0%, #ef4444 50%, #dc2626 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+              <AlertTriangle className="h-5 w-5 text-white" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                Driver
-              </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Cancel ride as no-show?
-              </h1>
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-red-100/70">Driver</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">Confirm Abort</p>
             </div>
           </div>
+          <div className="w-10" />
         </header>
-
-        {/* Content */}
-        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide">
-          {/* Map + pickup context */}
-          <section className="relative rounded-3xl overflow-hidden border border-slate-100 bg-slate-200 h-[220px] mb-3">
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="relative flex flex-col items-center">
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/90 border border-white">
-                  <MapPin className="h-3.5 w-3.5 text-[#03cd8c]" />
-                </div>
-                <span className="mt-0.5 rounded-full bg-slate-900/80 px-2 py-0.5 text-[9px] text-slate-50">
-                  Pickup · Acacia Mall
-                </span>
-              </div>
-            </div>
-          </section>
-
-          {/* Alert card */}
-          <section className="space-y-3">
-            <div className="rounded-2xl border border-red-100 bg-red-50 px-3 py-3 flex items-start space-x-2 text-[11px] text-red-700">
-              <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white">
-                <AlertTriangle className="h-4 w-4" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-xs mb-0.5">
-                  Passenger no-show?
-                </p>
-                <p>
-                  Only mark this trip as a no-show if you&apos;ve waited at the
-                  correct pickup point, checked the pin, and tried to contact
-                  the rider.
-                </p>
-              </div>
-            </div>
-
-            {/* Waiting + attempts */}
-            <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 text-[11px] text-slate-600 flex flex-col space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="inline-flex items-center">
-                  <Clock className="h-3.5 w-3.5 mr-1" />
-                  Waiting time: 06:12
-                </span>
-                <span className="inline-flex items-center">
-                  <Map className="h-3.5 w-3.5 mr-1" />
-                  Pin confirmed
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="inline-flex items-center">
-                  <MessageCircle className="h-3.5 w-3.5 mr-1" />
-                  Messages sent: 1
-                </span>
-                <span className="inline-flex items-center">
-                  <Phone className="h-3.5 w-3.5 mr-1" />
-                  Calls made: 1
-                </span>
-              </div>
-            </div>
-
-            {/* Where will this appear? */}
-            <div className="rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 flex items-start space-x-2 text-[11px] text-slate-600">
-              <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-[#e6fff7]">
-                <CheckCircle2 className="h-4 w-4 text-[#03cd8c]" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-xs text-slate-900 mb-0.5">
-                  What happens next
-                </p>
-                <p>
-                  The trip will be cancelled as a passenger no-show. Depending
-                  on local policy, you may receive a partial no-show fee.
-                </p>
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex space-x-2 pt-1">
-              <button type="button" onClick={() => navigate("/driver/trip/demo-trip/waiting")} className="flex-1 rounded-full py-2.5 text-sm font-semibold border border-slate-200 text-slate-700 bg-white flex items-center justify-center">
-                Keep waiting
-              </button>
-              <button className="flex-1 rounded-full py-2.5 text-sm font-semibold bg-red-600 text-slate-50 hover:bg-red-700 flex items-center justify-center">
-                <XCircle className="h-4 w-4 mr-1" />
-                Confirm no-show
-              </button>
-            </div>
-
-            <p className="text-[10px] text-slate-500 text-center max-w-[260px] mx-auto">
-              Use this only when you&apos;re sure the passenger won&apos;t arrive.
-              Misusing no-show may affect your account health.
-            </p>
-          </section>
-        </main>
-
-        {/* Bottom navigation – Home active (no-show context) */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate("/driver/dashboard/online")}/>
-          <BottomNavItem icon={Briefcase} label="Manager" active={navActive("manager")} onClick={() => navigate("/driver/jobs/list")}/>
-          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate("/driver/earnings/overview")}/>
-          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate("/driver/preferences")}/>
-        </nav>
       </div>
+
+      {/* Content */}
+      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-6">
+        {/* Map + pickup context */}
+        <section className="relative rounded-[2.5rem] overflow-hidden border border-slate-100 bg-slate-200 h-[220px] shadow-2xl">
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="relative flex flex-col items-center">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 shadow-xl border-2 border-white">
+                <MapPin className="h-4 w-4 text-[#ef4444]" />
+              </div>
+              <span className="mt-3 rounded-full bg-slate-900/80 px-3 py-1 text-[9px] font-black text-white uppercase tracking-widest backdrop-blur-sm border border-white/10">
+                Acacia Mall
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* Alert card */}
+        <section className="space-y-4">
+          <div className="rounded-[2.5rem] border border-red-100 bg-red-50 p-6 space-y-4 shadow-xl shadow-red-500/5">
+            <div className="flex items-center space-x-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm">
+                <AlertTriangle className="h-5 w-5 text-red-500" />
+              </div>
+              <div className="flex flex-col">
+                 <span className="text-[10px] tracking-[0.2em] font-black uppercase text-red-400">ABORT PROTOCOL</span>
+                 <p className="text-sm font-black text-red-900 uppercase tracking-tight">Passenger no-show?</p>
+              </div>
+            </div>
+            <p className="text-[11px] text-red-700 font-bold uppercase tracking-tight leading-relaxed">
+              Only mark this trip as a no-show if you&apos;ve waited at the correct pickup point, checked the pin, and tried to contact the rider.
+            </p>
+          </div>
+
+          {/* Waiting + attempts */}
+          <div className="rounded-[2.5rem] border border-slate-100 bg-slate-50/50 p-6 flex flex-col space-y-4">
+            <div className="flex items-center justify-between">
+               <div className="flex items-center space-x-2 text-[10px] text-slate-400 font-black uppercase tracking-tight">
+                  <Clock className="h-4 w-4" />
+                  <span>Waiting: 06:12</span>
+               </div>
+               <div className="flex items-center space-x-2 text-[10px] text-slate-400 font-black uppercase tracking-tight">
+                  <Map className="h-4 w-4" />
+                  <span>Pin Verified</span>
+               </div>
+            </div>
+            <div className="flex items-center justify-between border-t border-slate-100 pt-4">
+               <div className="flex items-center space-x-2 text-[10px] text-slate-400 font-black uppercase tracking-tight">
+                  <MessageCircle className="h-4 w-4" />
+                  <span>Signals: 1</span>
+               </div>
+               <div className="flex items-center space-x-2 text-[10px] text-slate-400 font-black uppercase tracking-tight">
+                  <Phone className="h-4 w-4" />
+                  <span>VoIP: 1</span>
+               </div>
+            </div>
+          </div>
+
+          {/* Next steps info */}
+          <div className="rounded-[2.5rem] border border-slate-100 bg-white p-6 flex flex-col space-y-4 shadow-xl shadow-slate-200/50">
+            <div className="flex items-center space-x-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50">
+                <CheckCircle2 className="h-5 w-5 text-[#03cd8c]" />
+              </div>
+              <div className="flex flex-col">
+                 <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">CONSEQUENCE</span>
+                 <p className="text-sm font-black text-slate-900 uppercase tracking-tight">What happens next</p>
+              </div>
+            </div>
+            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-tight leading-relaxed">
+              The trip will be cancelled as a passenger no-show. Depending on local policy, you may receive a partial compensation fee.
+            </p>
+          </div>
+
+          {/* Actions */}
+          <div className="flex space-x-3 pt-2">
+            <button
+              type="button"
+              onClick={() => navigate("/driver/trip/demo-trip/waiting")}
+              className="flex-1 rounded-full py-4 text-[11px] font-black uppercase tracking-widest border border-slate-100 text-slate-400 hover:bg-slate-100 transition-all"
+            >
+              Wait
+            </button>
+            <button
+              type="button"
+              className="flex-[2] rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-red-600 text-white shadow-xl shadow-red-900/20 hover:bg-red-700 transition-all flex items-center justify-center"
+            >
+               Confirm Abort
+            </button>
+          </div>
+
+          <div className="bg-slate-100/30 rounded-3xl p-4 text-center">
+             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed max-w-[240px] mx-auto">
+               Use this only when you&apos;re sure the passenger won&apos;t arrive. Misusing no-show may affect your account health.
+             </p>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

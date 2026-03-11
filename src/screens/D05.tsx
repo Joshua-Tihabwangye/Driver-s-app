@@ -93,296 +93,280 @@ function SectionLink({ label, color, onClick }) {
 export default function DriverPersonalScreen() {
   const [canGoOnline] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
-
-  const bottomNavRoutes = {
-    home: "/driver/dashboard/online",
-    messages: "/driver/ridesharing/notification",
-    wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences"
-};
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Hide scrollbar */}
-        <style>{`
-          .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-          .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        `}</style>
+    <div className="flex flex-col min-h-full bg-[#f8fafc]">
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-90 transition-transform"
+          >
+            <ChevronLeft className="h-5 w-5 text-white" />
+          </button>
+          <h1 className="text-base font-black text-white tracking-tight">Driver Personnel</h1>
+          <div className="w-10" /> {/* Spacer */}
+        </header>
+      </div>
 
-        {/* Green curved header */}
-        <div className="relative" style={{ minHeight: 80 }}>
-          <div
-            className="absolute inset-0"
-            style={{
-              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)"
-}}
-          />
-          <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm"
-            >
-              <ChevronLeft className="h-5 w-5 text-white" />
+      {/* Content */}
+      <main className="flex-1 px-6 pt-6 pb-24 space-y-6">
+
+        {/* Top profile card */}
+        <section className="rounded-[2.5rem] bg-white border border-slate-100 p-5 flex items-center space-x-4 shadow-sm hover:shadow-md transition-shadow">
+          <div className="relative">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#f0faf7] border-2 border-[#03cd8c]">
+              <User className="h-7 w-7 text-[#03cd8c]" />
+            </div>
+            <span className="absolute -bottom-1 -right-1 inline-flex items-center rounded-lg bg-[#03cd8c] px-1.5 py-0.5 text-[8px] font-black text-white shadow-lg uppercase tracking-tighter">
+              EV Zone
+            </span>
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center justify-between mb-0.5">
+              <span className="text-sm font-black text-slate-900 tracking-tight">John Doe</span>
+              <div className="flex items-center text-[11px] font-black text-slate-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100">
+                <Star className="mr-1 h-3 w-3 text-amber-500 fill-amber-500" />
+                <span>4.92</span>
+              </div>
+            </div>
+            <span className="text-[10px] uppercase font-black text-slate-400 tracking-widest">Kampala · Since 2025</span>
+            <div className="mt-2.5 flex items-center gap-1.5">
+              <div className="flex items-center gap-1 rounded-lg bg-emerald-50 px-2 py-1 border border-emerald-100/50">
+                <ShieldCheck className="h-3 w-3 text-emerald-600" />
+                <span className="text-[9px] font-black text-emerald-700 uppercase">Verified</span>
+              </div>
+              <div className="flex items-center gap-1 rounded-lg bg-slate-900 px-2 py-1">
+                <Car className="h-3 w-3 text-emerald-400" />
+                <span className="text-[9px] font-black text-white uppercase tracking-tighter">EV PRO</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Take Selfie section */}
+        <section className="bg-white rounded-[2.5rem] border border-slate-100 p-8 text-center space-y-4 shadow-sm group">
+          <div className="space-y-1">
+            <h3 className="text-sm font-black text-slate-900 tracking-tight">Identity Check</h3>
+            <p className="text-[11px] text-slate-500 font-medium">
+               Verify your presence before starting your shift
+            </p>
+          </div>
+          
+          <div className="flex justify-center">
+            <button className="h-20 w-20 rounded-[2rem] bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center group-hover:bg-[#03cd8c]/5 group-hover:border-[#03cd8c]/30 transition-all active:scale-95">
+              <Camera className="h-8 w-8 text-slate-300 group-hover:text-[#03cd8c]" />
             </button>
-            <h1 className="text-base font-semibold text-white">Driver Personnel</h1>
-          </header>
+          </div>
+          
+          <div className="flex flex-col items-center gap-2">
+             <span className="text-xs font-black text-slate-800 uppercase tracking-widest">Take Selfie</span>
+             <StatusChip label="Approved" tone="approved" />
+          </div>
+        </section>
+
+        {/* Variables section */}
+        <section className="rounded-3xl border border-slate-100 bg-white p-6 text-center space-y-4 shadow-sm">
+          <div className="flex justify-center">
+            <div className="h-12 w-12 rounded-2xl bg-amber-50 flex items-center justify-center border border-amber-100">
+              <Link2 className="h-6 w-6 text-amber-600" />
+            </div>
+          </div>
+          <div>
+             <h4 className="text-xs font-black text-slate-900 tracking-tight uppercase mb-1">Social Variables</h4>
+             <p className="text-[11px] text-slate-400 font-medium leading-relaxed px-4">
+               Link your social media to enhance your driver profile visibility.
+             </p>
+          </div>
+          <p className="text-[11px] font-black text-[#03cd8c] tracking-tight">vehicles.evzone@driver.com</p>
+        </section>
+
+        {/* Go to verification link */}
+        <div className="text-center px-4 pt-2">
+          <button 
+            onClick={() => navigate("/driver/preferences/identity")}
+            className="text-xs font-black text-[#03cd8c] uppercase tracking-widest border-b-2 border-[#03cd8c]/20 pb-1"
+          >
+            Go to Verification Page
+          </button>
         </div>
 
-        {/* Content */}
-        <main className="app-main flex-1 px-5 pt-4 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
+        {/* Status alert */}
+        <section className="rounded-3xl bg-amber-50/50 border border-amber-100/50 p-5 flex items-start space-x-3">
+          <div className="mt-0.5 bg-amber-100 p-1.5 rounded-xl">
+            <AlertCircle className="h-4 w-4 text-amber-600" />
+          </div>
+          <div className="shrink text-[11px] text-amber-900">
+            <p className="font-black text-xs mb-1 uppercase tracking-tight">Setup Incomplete</p>
+            <p className="font-medium opacity-70">Upload all required documents and finish the training quiz to unlock shifts.</p>
+          </div>
+        </section>
 
-          {/* Top profile card */}
-          <section className="rounded-2xl bg-[#f0faf7] border border-[#d6ebe6] px-3 py-3 flex items-center space-x-3">
-            <div className="relative">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white border-2 border-[#03cd8c]">
-                <User className="h-6 w-6 text-[#03cd8c]" />
-              </div>
-              <span className="absolute -bottom-0.5 -right-0.5 inline-flex items-center rounded-full bg-white px-1 py-[1px] text-[9px] font-semibold text-[#03cd8c] shadow">
-                EV
-              </span>
-            </div>
-            <div className="flex-1 flex flex-col items-start">
-              <div className="flex w-full items-center justify-between">
-                <span className="text-sm font-semibold text-slate-900">John Doe</span>
-                <div className="flex items-center text-[11px] text-slate-600">
-                  <Star className="mr-1 h-3.5 w-3.5 text-amber-400" />
-                  <span>4.92</span>
-                </div>
-              </div>
-              <span className="text-[11px] text-slate-500">EV Driver · Kampala · Since 2025</span>
-              <div className="mt-2 flex items-center space-x-2">
-                <div className="flex items-center space-x-1 rounded-full bg-emerald-50 px-2 py-0.5">
-                  <ShieldCheck className="h-3 w-3 text-emerald-600" />
-                  <span className="text-[10px] font-medium text-emerald-700">Identity Verified</span>
-                </div>
-                <div className="flex items-center space-x-1 rounded-full bg-slate-900 px-2 py-0.5">
-                  <Car className="h-3 w-3 text-emerald-400" />
-                  <span className="text-[10px] font-medium text-slate-50">EV Only</span>
-                </div>
-              </div>
-            </div>
-          </section>
+        {/* KYC Verification */}
+        <section className="rounded-[2.5rem] bg-[#03cd8c] p-8 space-y-6 text-white text-center shadow-xl shadow-emerald-500/20 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16" />
+          <p className="text-xs font-black leading-relaxed opacity-90 relative z-10 px-2 tracking-tight">
+            Complete your KYC verification to unlock income transfers and premium features.
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate("/driver/preferences/identity")}
+            className="relative z-10 w-full rounded-2xl bg-white px-6 py-4 text-xs font-black text-[#03cd8c] shadow-lg hover:shadow-xl active:scale-95 transition-all uppercase tracking-widest"
+          >
+            Update Your KYC
+          </button>
+        </section>
 
-          {/* Take Selfie section */}
-          <section className="text-center space-y-2">
-            <p className="text-[11px] text-slate-500">
-              Take a selfie with your front camera to verify that it's you
+        {/* Documents & checks */}
+        <section className="space-y-5">
+          <div className="text-center space-y-1">
+            <div className="flex justify-center mb-3">
+              <div className="h-14 w-14 rounded-2xl bg-blue-50 flex items-center justify-center border border-blue-100">
+                <FileText className="h-7 w-7 text-blue-600" />
+              </div>
+            </div>
+            <h3 className="text-base font-black text-slate-900 tracking-tight uppercase">Personal Documents</h3>
+            <p className="text-[11px] text-slate-400 font-medium px-8 leading-relaxed">
+              Upload National IDs, Passport, or Driving Permits for verification.
             </p>
-            <div className="flex justify-center">
-              <div className="h-14 w-14 rounded-full bg-slate-100 flex items-center justify-center">
-                <Camera className="h-6 w-6 text-slate-400" />
-              </div>
-            </div>
-            <p className="text-xs font-semibold text-slate-900">Take Selfie</p>
-            <StatusChip label="Approved" tone="approved" />
-          </section>
-
-          {/* Variables section */}
-          <section className="rounded-2xl border border-slate-100 bg-white p-4 text-center space-y-2">
-            <div className="flex justify-center">
-              <div className="h-12 w-12 rounded-xl bg-[#f77f0015] flex items-center justify-center">
-                <Link2 className="h-6 w-6 text-[#f77f00]" />
-              </div>
-            </div>
-            <h4 className="text-xs font-semibold text-slate-900">Variables</h4>
-            <p className="text-[11px] text-slate-500 leading-relaxed">
-              If you have some Personal website, please add the link to personal social media
-            </p>
-            <p className="text-[11px] text-slate-400">vehicles.evzone@driver.com</p>
-          </section>
-
-          {/* Go to verification link */}
-          <div className="text-center">
-            <SectionLink label="Go to Verification Page" color="#03cd8c" onClick={() => navigate("/driver/preferences/identity")} />
           </div>
 
-          {/* Status alert */}
-          <section className="rounded-2xl border border-amber-100 bg-amber-50 px-3 py-2.5 flex items-start space-x-2">
-            <div className="mt-0.5">
-              <AlertCircle className="h-4 w-4 text-amber-500" />
-            </div>
-            <div className="flex-1 text-[11px] text-amber-800">
-              <p className="font-semibold text-xs mb-0.5">Complete your setup before going online</p>
-              <p>Upload all required documents and finish the training quiz to unlock the Go Online button.</p>
-            </div>
-          </section>
-
-          {/* KYC Verification */}
-          <section className="rounded-2xl border border-slate-100 bg-[#f0faf7] p-4 space-y-2">
-            <p className="text-[11px] text-slate-600 leading-relaxed">
-              Complete your KYC verification to unlock income to your bank account and access more features.
-            </p>
-            <div className="flex justify-center">
-              <button
-                type="button"
-                onClick={() => navigate("/driver/preferences/identity")}
-                className="rounded-full bg-[#03cd8c] px-6 py-2 text-xs font-semibold text-white shadow-sm hover:bg-[#02b77c] transition-colors"
-              >
-                Update Your KYC
-              </button>
-            </div>
-          </section>
-
-          {/* Documents & checks */}
-          <section className="space-y-2">
-            <div className="flex justify-center mb-2">
-              <div className="h-12 w-12 rounded-xl bg-[#2196F315] flex items-center justify-center">
-                <FileText className="h-6 w-6 text-[#2196F3]" />
-              </div>
-            </div>
-            <h3 className="text-sm font-bold text-slate-900 text-center">Personal Documents</h3>
-            <p className="text-[11px] text-slate-500 text-center leading-relaxed mb-2">
-              If you have any documents like national IDs, passport, driving permit, upload them here
-            </p>
-
+          <div className="space-y-3 pt-2">
             <DocRow
               icon={IdCard}
               title="Driving Permit"
-              description="Must be valid and not expired."
+              description="Valid primary document"
               statusTone="pending"
-              statusLabel="Under review"
+              statusLabel="Review"
               color="#f77f00"
               onClick={() => navigate("/driver/onboarding/profile/documents/upload")}
             />
             <DocRow
               icon={CreditCard}
               title="National ID"
-              description="Used to verify your identity."
+              description="Identity verification"
               statusTone="approved"
-              statusLabel="Approved"
+              statusLabel="Verified"
               color="#03cd8c"
               onClick={() => navigate("/driver/preferences/identity")}
             />
             <DocRow
               icon={FileBadge2}
-              title="Annual Certificate of GoodConduct"
-              description="Required by local regulations."
+              title="Conduct Cert"
+              description="Good conduct clearance"
               statusTone="pending"
               statusLabel="Pending"
               color="#f77f00"
               onClick={() => navigate("/driver/onboarding/profile/documents/upload")}
             />
-            <DocRow
-              icon={ClipboardCheck}
-              title="ID Card"
-              description="Uploaded"
-              statusTone="approved"
-              statusLabel="Approved"
-              color="#2196F3"
-              onClick={() => navigate("/driver/preferences/identity")}
-            />
-          </section>
-
-          {/* Upload Signed Documents */}
-          <div className="text-center">
-            <SectionLink label="Upload Signed Documents" color="#f77f00" onClick={() => navigate("/driver/onboarding/profile/documents/upload")} />
           </div>
+        </section>
 
-          {/* Training progress */}
-          <section className="rounded-2xl border border-slate-100 bg-[#f0faf7] px-3 py-3 flex items-center justify-between">
-            <div className="flex flex-col items-start">
-              <span className="text-xs font-semibold text-slate-900 mb-0.5">Training progress</span>
-              <span className="text-[11px] text-slate-500 mb-1">2 of 4 modules completed</span>
-              <button
-                type="button"
-                onClick={() => navigate("/driver/training/intro")}
-                className="inline-flex items-center rounded-full bg-[#03cd8c] px-3 py-1 text-[11px] font-semibold text-white shadow-sm hover:bg-[#02b77c]"
-              >
-                Continue training
-              </button>
-            </div>
-            <div className="relative h-16 w-16">
-              <svg className="h-16 w-16 -rotate-90" viewBox="0 0 36 36">
-                <path
-                  className="text-slate-200"
-                  stroke="currentColor"
-                  strokeWidth="3.5"
-                  fill="none"
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                />
-                <path
-                  className="text-[#03cd8c]"
-                  stroke="currentColor"
-                  strokeWidth="3.5"
-                  strokeLinecap="round"
-                  fill="none"
-                  strokeDasharray="50, 100"
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-[11px] font-semibold text-slate-900">50%</span>
-              </div>
-            </div>
-          </section>
+        {/* Upload Signed Documents */}
+        <div className="text-center px-4 pt-2 pb-2">
+          <button 
+            onClick={() => navigate("/driver/onboarding/profile/documents/upload")}
+            className="text-xs font-black text-amber-600 uppercase tracking-widest border-b-2 border-amber-600/20 pb-1"
+          >
+            Upload Signed Papers
+          </button>
+        </div>
 
-          {/* Preferences link */}
-          <section className="rounded-2xl border border-slate-100 bg-white p-4 space-y-2">
-            <div className="flex items-center gap-3 mb-1">
-              <div className="h-10 w-10 rounded-xl bg-[#03cd8c15] flex items-center justify-center">
-                <SettingsIcon className="h-5 w-5 text-[#03cd8c]" />
-              </div>
-              <div>
-                <h4 className="text-xs font-semibold text-slate-900">Preferences</h4>
-                <p className="text-[11px] text-slate-500">Configure your driving preferences and settings</p>
-              </div>
+        {/* Training progress */}
+        <section className="rounded-[2.5rem] bg-slate-900 p-6 flex items-center justify-between text-white shadow-2xl">
+          <div className="space-y-3">
+            <div>
+              <span className="text-[10px] font-black uppercase text-[#03cd8c] tracking-[0.2em]">Training Hub</span>
+              <h4 className="text-base font-black tracking-tight mt-1">2 of 4 Completed</h4>
             </div>
-            <div className="text-center">
-              <SectionLink label="Go to Preferences Page" color="#03cd8c" onClick={() => navigate("/driver/preferences")} />
-            </div>
-          </section>
-
-          {/* Info Breakdowns link */}
-          <section className="rounded-2xl border border-slate-100 bg-white p-4 space-y-2">
-            <div className="flex items-center gap-3 mb-1">
-              <div className="h-10 w-10 rounded-xl bg-[#2196F315] flex items-center justify-center">
-                <MapPin className="h-5 w-5 text-[#2196F3]" />
-              </div>
-              <div>
-                <h4 className="text-xs font-semibold text-slate-900">Info Breakdowns</h4>
-                <p className="text-[11px] text-slate-500">Any info necessary to get the account's setup process</p>
-              </div>
-            </div>
-            <div className="text-center">
-              <SectionLink label="Go to Info Breakdowns Page" color="#03cd8c" onClick={() => navigate("/driver/onboarding/profile")} />
-            </div>
-          </section>
-
-          {/* Go Online button */}
-          <section className="pt-1 pb-4">
             <button
               type="button"
-              onClick={() => navigate("/driver/dashboard/online")}
-              disabled={!canGoOnline}
-              className={`w-full rounded-full py-3 text-sm font-semibold shadow-sm transition-colors ${canGoOnline
-                  ? "bg-[#03cd8c] text-white hover:bg-[#02b77c]"
-                  : "bg-slate-200 text-slate-400 cursor-not-allowed"
-                }`}
+              onClick={() => navigate("/driver/training/intro")}
+              className="inline-flex items-center rounded-xl bg-[#03cd8c] px-4 py-2.5 text-[11px] font-black text-white hover:bg-[#02b77c] transition-colors uppercase tracking-widest"
             >
-              Go Online
+              Resume Track
             </button>
-            <p className="mt-1 text-center text-[10px] text-slate-500">
-              You'll be able to go online once all required documents are approved and training is complete.
-            </p>
-          </section>
-        </main>
+          </div>
+          <div className="relative h-20 w-20">
+            <svg className="h-20 w-20 -rotate-90" viewBox="0 0 36 36">
+              <circle
+                className="text-white/10"
+                stroke="currentColor"
+                strokeWidth="4"
+                fill="none"
+                cx="18"
+                cy="18"
+                r="16"
+              />
+              <circle
+                className="text-[#03cd8c]"
+                stroke="currentColor"
+                strokeWidth="4"
+                strokeLinecap="round"
+                fill="none"
+                strokeDasharray="50, 100"
+                cx="18"
+                cy="18"
+                r="16"
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-xs font-black">50%</span>
+            </div>
+          </div>
+        </section>
 
-        {/* Bottom navigation – green */}
-        <nav className="app-bottom-nav border-t border-white/20 flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate(bottomNavRoutes.home)} />
-          <BottomNavItem icon={MessageSquare} label="Messages" onClick={() => navigate(bottomNavRoutes.messages)} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate(bottomNavRoutes.wallet)} />
-          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate(bottomNavRoutes.settings)} />
-        </nav>
-      </div>
+        {/* Navigation Blocks */}
+        <section className="grid grid-cols-1 gap-3">
+          <button onClick={() => navigate("/driver/preferences")} className="flex items-center gap-4 bg-white p-5 rounded-3xl border border-slate-100 shadow-sm text-left group active:scale-95 transition-all">
+             <div className="h-12 w-12 rounded-2xl bg-emerald-50 flex items-center justify-center border border-emerald-100">
+                <SettingsIcon className="h-6 w-6 text-[#03cd8c]" />
+             </div>
+             <div>
+                <span className="block text-sm font-black text-slate-900 tracking-tight">Preferences</span>
+                <span className="text-[11px] text-slate-400 font-medium">Configure your driving profile</span>
+             </div>
+          </button>
+
+          <button onClick={() => navigate("/driver/onboarding/profile")} className="flex items-center gap-4 bg-white p-5 rounded-3xl border border-slate-100 shadow-sm text-left group active:scale-95 transition-all">
+             <div className="h-12 w-12 rounded-2xl bg-blue-50 flex items-center justify-center border border-blue-100">
+                <MapPin className="h-6 w-6 text-blue-600" />
+             </div>
+             <div>
+                <span className="block text-sm font-black text-slate-900 tracking-tight">Info Breakdowns</span>
+                <span className="text-[11px] text-slate-400 font-medium">Account setup details</span>
+             </div>
+          </button>
+        </section>
+
+        {/* Go Online button */}
+        <section className="pt-4 pb-12">
+          <button
+            type="button"
+            onClick={() => navigate("/driver/dashboard/online")}
+            disabled={!canGoOnline}
+            className={`w-full rounded-2xl py-4 text-sm font-black shadow-lg transition-all active:scale-[0.98] uppercase tracking-widest ${canGoOnline
+                ? "bg-[#03cd8c] text-white shadow-emerald-500/20 hover:bg-[#02b77c]"
+                : "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
+              }`}
+          >
+            Go Online
+          </button>
+          <p className="mt-2 text-center text-[10px] text-slate-400 font-medium">
+            Requirements pending approval for live tracking.
+          </p>
+        </section>
+      </main>
     </div>
   );
 }

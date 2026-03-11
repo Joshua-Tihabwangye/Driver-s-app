@@ -93,12 +93,6 @@ function HeadImage({ step }) {
 export default function FaceCaptureScreen() {
   const [step, setStep] = useState(1); // 1: front, 2: left, 3: right
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
 
   const stepTitle =
     step === 1 ? "Look straight" : step === 2 ? "Turn your head left" : "Turn your head right";
@@ -132,128 +126,119 @@ export default function FaceCaptureScreen() {
   };
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
+    <div className="flex flex-col min-h-full bg-[#f8fafc]">
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-90 transition-transform"
+          >
+            <ChevronLeft className="h-5 w-5 text-white" />
+          </button>
+          <h1 className="text-base font-black text-white tracking-tight">Identity</h1>
+          <div className="w-10" /> {/* Spacer */}
+        </header>
+      </div>
 
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
+      {/* Content */}
+      <main className="flex-1 px-6 pt-6 pb-24 space-y-6">
 
-        {/* Green curved header */}
-        <div className="relative" style={{ minHeight: 80 }}>
-          <div
-            className="absolute inset-0"
-            style={{
-              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)"
-}}
-          />
-          <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm"
+        {/* Step indicator */}
+        <section className="space-y-3">
+          <div className="flex items-center justify-between px-1">
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Step {step} of 3</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-[#03cd8c]">{stepTitle}</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <StepPill index={1} label="Front" active={step === 1} />
+            <StepPill index={2} label="Left" active={step === 2} />
+            <StepPill index={3} label="Right" active={step === 3} />
+          </div>
+        </section>
+
+        {/* Camera preview with head illustration + direction icon */}
+        <section className="flex flex-col items-center py-4 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#03cd8c]/5 rounded-full -mr-16 -mt-16" />
+          <div className="relative flex h-48 w-48 items-center justify-center rounded-full bg-slate-900 border-[6px] border-[#03cd8c]/20 shadow-2xl">
+            <div
+              className={`flex h-32 w-32 items-center justify-center rounded-full bg-slate-800 transform transition-transform duration-500 ease-out pointer-events-none ${faceOffsetClass}`}
             >
-              <ChevronLeft className="h-5 w-5 text-white" />
-            </button>
-            <h1 className="text-base font-semibold text-white">Preferences</h1>
-          </header>
-        </div>
-
-        {/* Content */}
-        <main className="app-main flex-1 px-5 pt-4 pb-4 flex flex-col overflow-y-auto scrollbar-hide space-y-4">
-
-          {/* Step indicator */}
-          <section className="pt-1 space-y-2">
-            <div className="flex items-center justify-between text-[11px] text-slate-500 mb-1">
-              <span>Step {step} of 3</span>
-              <span className="text-[#03cd8c] font-medium">{stepTitle}</span>
+              <HeadImage step={step} />
             </div>
-            <div className="flex items-center space-x-1">
-              <StepPill index={1} label="Look straight" active={step === 1} />
-              <StepPill index={2} label="Turn left" active={step === 2} />
-              <StepPill index={3} label="Turn right" active={step === 3} />
+
+            {/* Direction icon */}
+            <div className="absolute top-3 right-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 border border-[#03cd8c] shadow-lg">
+              <DirectionIcon step={step} />
             </div>
-          </section>
 
-          {/* Camera preview with head illustration + direction icon */}
-          <section className="flex flex-col items-center pt-1 pb-1">
-            <div className="relative flex h-40 w-40 items-center justify-center rounded-full bg-slate-900/95 border-4 border-[#03cd8c] shadow-inner">
-              <div
-                className={`flex h-24 w-24 items-center justify-center rounded-full bg-slate-800/80 transform transition-transform duration-300 ${faceOffsetClass}`}
-              >
-                <HeadImage step={step} />
-              </div>
-
-              {/* Directional icon */}
-              <div className="absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-slate-900/80 border border-[#03cd8c]">
-                <DirectionIcon step={step} />
-              </div>
-
-              <div className="absolute inset-x-8 bottom-3 flex items-center justify-center rounded-full bg-slate-900/80 px-3 py-1">
-                <span className="text-[10px] font-medium text-slate-100 text-center">
-                  {overlayText}
-                </span>
-              </div>
+            <div className="absolute inset-x-6 bottom-4 flex items-center justify-center rounded-2xl bg-slate-900/90 backdrop-blur-md px-3 py-2 border border-white/10">
+              <span className="text-[10px] font-black text-white text-center uppercase tracking-tight">
+                {overlayText}
+              </span>
             </div>
-            <p className="mt-3 text-[11px] text-slate-500 text-center max-w-[260px]">
-              {subtitleText}
-            </p>
-          </section>
+          </div>
+          <p className="mt-6 text-[11px] font-medium text-slate-400 text-center max-w-[220px] leading-relaxed">
+            {subtitleText}
+          </p>
+        </section>
 
-          {/* Tips */}
-          <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-slate-900 mb-1">
-              For the best result
-            </h2>
+        {/* Tips */}
+        <section className="space-y-4">
+          <div className="px-1">
+             <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
+                Capture Tips
+             </h2>
+          </div>
+          <div className="space-y-3">
             <Tip
               icon={SunMedium}
-              title="Use good lighting"
-              text="Stand facing a window or a light source. Avoid strong backlight or dark rooms."
+              title="Optimal Lighting"
+              text="Stand facing a window or soft light source."
             />
             <Tip
               icon={Eye}
-              title="Show your full face"
-              text="Remove sunglasses, masks and big hats. Keep your eyes open and look straight at the camera."
+              title="Clear Vision"
+              text="Remove masks, sunglasses, or heavy hats."
             />
             <Tip
-              icon={SunMedium}
-              title="Hold still briefly"
-              text="Keep the phone at eye level and hold it steady while we capture each step of your selfie."
+              icon={SunMedium} // Replaced icon to be more appropriate
+              title="Hold Steady"
+              text="Keep phone at eye level for best results."
             />
-          </section>
+          </div>
+        </section>
 
-          {/* CTAs */}
-          <section className="pt-1 pb-4 flex flex-col space-y-2">
-            <button
-              type="button"
-              onClick={handleCapture}
-              className="w-full rounded-xl bg-[#1c2b4d] py-4 text-sm font-bold text-white shadow-lg active:scale-[0.98] transition-all"
-            >
-              {ctaText}
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate("/driver/preferences/identity/upload-image")}
-              className="w-full rounded-full py-2.5 text-sm font-semibold border border-slate-200 text-slate-800 bg-white"
-            >
-              I'll do this later
-            </button>
-            <p className="text-[10px] text-slate-500 text-center">
-              You'll need to complete face verification before going online for
-              the first time.
-            </p>
-          </section>
-        </main>
-
-        {/* Bottom Navigation – Green */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate("/driver/dashboard/online")} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={navActive("manager")} onClick={() => navigate("/driver/jobs/list")} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate("/driver/earnings/overview")} />
-          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate("/driver/preferences")} />
-        </nav>
-      </div>
+        {/* CTAs */}
+        <section className="pt-4 pb-12 flex flex-col gap-3">
+          <button
+            type="button"
+            onClick={handleCapture}
+            className="w-full rounded-2xl bg-[#1c2b4d] py-4 text-sm font-black text-white shadow-xl shadow-slate-900/20 active:scale-[0.98] transition-all uppercase tracking-widest"
+          >
+            {ctaText}
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate("/driver/preferences/identity/upload-image")}
+            className="w-full rounded-2xl py-4 text-xs font-black text-slate-400 bg-white border border-slate-200 shadow-sm hover:bg-slate-50 active:scale-95 transition-all uppercase tracking-widest"
+          >
+            Skip for now
+          </button>
+          <p className="px-6 text-[10px] font-medium text-slate-400 text-center leading-relaxed">
+            Identity verification is mandatory before your first active trip.
+          </p>
+        </section>
+      </main>
     </div>
   );
 }

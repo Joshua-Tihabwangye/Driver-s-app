@@ -116,184 +116,175 @@ export default function TripCompletionScreen({ initialJobType = "ride" }) {
     : "Status: Completed";
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
+    <div className="flex flex-col h-full bg-[#f8fafc]">
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-              <CheckCircle2 className="h-4 w-4 text-[#03cd8c]" />
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+              <CheckCircle2 className="h-5 w-5 text-white" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                Driver
-              </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Trip completed
-              </h1>
-              <span className="mt-0.5 text-[11px] font-semibold text-[#03cd8c]">
-                Job type: {jobTypeLabelMap[jobType]}
-              </span>
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Driver</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">Trip completed</p>
             </div>
           </div>
+          <div className="w-10" />
         </header>
+      </div>
 
-        {/* Job type selector for preview */}
-        <section className="px-4 pt-1 pb-2 space-y-1">
-          <span className="text-[11px] text-slate-500 font-medium">
-            Preview job type
-          </span>
-          <div className="flex flex-wrap gap-1">
+      {/* Job type switcher for preview purposes */}
+      <section className="px-6 pt-4 pb-2">
+        <div className="bg-white rounded-3xl p-3 border border-slate-100 shadow-sm space-y-2">
+          <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Simulation Context</span>
+          <div className="flex flex-wrap gap-2">
             {JOB_TYPES.map((type) => (
               <button
                 key={type}
+                type="button"
                 onClick={() => setJobType(type)}
-                className={`rounded-full px-3 py-0.5 text-[11px] font-medium border transition-colors ${
+                className={`rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-widest border transition-all ${
                   jobType === type
-                    ? "bg-[#03cd8c] text-slate-900 border-[#03cd8c]"
-                    : "bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300"
+                    ? "bg-[#03cd8c] text-white border-[#03cd8c] shadow-lg shadow-emerald-500/20"
+                    : "bg-slate-50 text-slate-400 border-slate-100 hover:border-slate-200"
                 }`}
               >
                 {jobTypeLabelMap[type]}
               </button>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Content */}
+      <main className="flex-1 px-6 pt-4 pb-24 overflow-y-auto scrollbar-hide space-y-6">
+        <div className="px-1">
+           <span className="text-[11px] font-black text-[#03cd8c] uppercase tracking-widest">
+             Job type: {jobTypeLabelMap[jobType]}
+           </span>
+        </div>
+
+        {/* Trip summary card */}
+        <section className="rounded-[2.5rem] bg-slate-900 border border-slate-800 text-white p-6 space-y-6 shadow-2xl">
+          <div className="flex items-start justify-between">
+            <div className="flex flex-col space-y-1">
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">{summaryLabel}</span>
+              <p className="text-sm font-black uppercase tracking-tight">{routeLine}</p>
+            </div>
+            <div className="flex flex-col items-end space-y-1">
+               {!isAmbulance && (
+                <span className="text-base font-black text-emerald-400 uppercase tracking-tight">
+                  ${rightTop}
+                </span>
+               )}
+               {isAmbulance && (
+                <span className="text-sm font-black text-emerald-400 uppercase tracking-tight">
+                  {rightTop}
+                </span>
+               )}
+               <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">{rightBottom}</span>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between border-t border-slate-800 pt-6">
+            <div className="flex items-center space-x-2 text-[10px] text-slate-400 font-black uppercase tracking-tight">
+               <Clock className="h-4 w-4" />
+               <span>{timeRange}</span>
+            </div>
+            <div className="flex items-center space-x-2 text-[10px] text-slate-400 font-black uppercase tracking-tight">
+               <MapPin className="h-4 w-4" />
+               <span>{locationLine}</span>
+            </div>
+          </div>
+
+          {noteLine && (
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed border-t border-slate-800 pt-4">
+              {noteLine}
+            </p>
+          )}
         </section>
 
-        {/* Content */}
-        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
-          {/* Trip summary card */}
-          <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-3">
+        {/* Payment & rating info */}
+        <section className="space-y-4">
+          <div className="rounded-[2.5rem] border border-slate-100 bg-white p-6 space-y-6 shadow-xl shadow-slate-200/50">
             <div className="flex items-center justify-between">
-              <div className="flex flex-col items-start">
-                <span className="text-[10px] tracking-[0.18em] uppercase text-[#a5f3fc]">
-                  {summaryLabel}
-                </span>
-                <span className="text-sm font-semibold">{routeLine}</span>
-              </div>
-              <div className="flex flex-col items-end text-[10px] text-slate-100">
-                {!isAmbulance && (
-                  <span className="inline-flex items-center text-sm font-semibold text-emerald-300">
-                    <DollarSign className="h-3 w-3 mr-0.5" />
-                    {rightTop}
-                  </span>
-                )}
-                {isAmbulance && (
-                  <span className="inline-flex items-center text-sm font-semibold text-emerald-300">
-                    {rightTop}
-                  </span>
-                )}
-                <span>{rightBottom}</span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between text-[11px] text-slate-200">
-              <span className="inline-flex items-center">
-                <Clock className="h-3 w-3 mr-1" />
-                {timeRange}
-              </span>
-              <span className="inline-flex items-center">
-                <MapPin className="h-3 w-3 mr-1" />
-                {locationLine}
-              </span>
-            </div>
-            {noteLine && (
-              <p className="text-[10px] text-slate-200 pt-1">{noteLine}</p>
-            )}
-          </section>
-
-          {/* Payment & rating info */}
-          <section className="space-y-3">
-            <div className="rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 flex items-center justify-between">
-              <div className="flex flex-col items-start text-[11px] text-slate-600">
-                <span className="text-xs font-semibold text-slate-900 mb-0.5">
-                  {paymentTitle}
-                </span>
-                <span>{paymentLine1}</span>
-                <span>{paymentLine2}</span>
+              <div className="flex flex-col space-y-1">
+                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">{paymentTitle}</span>
+                <p className="text-xs font-black text-slate-900 uppercase tracking-tight leading-tight">{paymentLine1}</p>
+                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight">{paymentLine2}</p>
               </div>
               {!isAmbulance && (
-                <div className="flex flex-col items-end text-[11px] text-slate-500">
-                  <span className="text-xs font-semibold text-slate-900 mb-0.5">
-                    Rider rating
-                  </span>
-                  <span className="inline-flex items-center">
-                    <Star className="h-3.5 w-3.5 mr-1 text-amber-400" />
-                    5.0 (auto or later)
-                  </span>
+                <div className="flex flex-col items-end space-y-1">
+                  <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">Rider Rating</span>
+                  <div className="flex items-center space-x-1">
+                    <Star className="h-4 w-4 text-amber-400 fill-amber-400" />
+                    <span className="text-sm font-black text-slate-900">5.0</span>
+                  </div>
                 </div>
               )}
             </div>
+          </div>
 
-            <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 text-[11px] text-slate-600">
-              <p className="font-semibold text-xs text-slate-900 mb-0.5">
-                Anything unusual?
-              </p>
-              <p>
-                If there was a safety issue, lost item or dispute, you can
-                report it from the Help & Safety section after this screen.
-              </p>
+          <div className="rounded-[2.5rem] border border-slate-100 bg-slate-50/50 p-6 flex flex-col space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm">
+                 <Star className="h-5 w-5 text-[#03cd8c]" />
+              </div>
+              <div className="flex flex-col">
+                 <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">Feedback tunnel</span>
+                 <p className="text-xs font-black text-slate-900 uppercase tracking-tight">Anything unusual?</p>
+              </div>
             </div>
-          </section>
-
-          {/* Actions */}
-          <section className="pt-1 pb-4 flex flex-col space-y-2">
-            <button
-              type="button"
-              onClick={() => navigate("/driver/dashboard/online")}
-              className="w-full rounded-full py-2.5 text-sm font-semibold shadow-sm bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c]"
-            >
-              Go back online
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate("/driver/history/rides")}
-              className="w-full rounded-full py-2.5 text-sm font-semibold border border-slate-200 text-slate-800 bg-white"
-            >
-              View trip details
-            </button>
-            <p className="text-[10px] text-slate-500 text-center max-w-[260px] mx-auto">
-              {isTour
-                ? "This segment is complete. Tour-related jobs will still appear in your Tour schedule for upcoming days."
-                : isRental
-                ? "This rental is complete. You can view it later in your History along with earnings and route details."
-                : isAmbulance
-                ? "This ambulance run is complete. Check with your operator if you need to follow up on documentation or billing."
-                : "You can find this trip later in your Ride History along with payment and route details."}
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed">
+              If there was a safety issue, lost item or dispute, you can report it from the Help & Safety section after this screen.
             </p>
-          </section>
-        </main>
+          </div>
+        </section>
 
-        {/* Bottom navigation – Home active (post-trip context) */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem
-            icon={Home}
-            label="Home"
-           active={navActive("home")} onClick={() => navigate(bottomNavRoutes.home)}
-          />
-          <BottomNavItem
-            icon={Briefcase}
-            label="Manager"
-           active={navActive("manager")} onClick={() => navigate(bottomNavRoutes.manager)}
-          />
-          <BottomNavItem
-            icon={Wallet}
-            label="Wallet"
-           active={navActive("wallet")} onClick={() => navigate(bottomNavRoutes.wallet)}
-          />
-          <BottomNavItem
-            icon={Settings}
-            label="Settings"
-           active={navActive("settings")} onClick={() => navigate(bottomNavRoutes.settings)}
-          />
-        </nav>
-      </div>
+        {/* Actions */}
+        <section className="space-y-4">
+          <div className="flex flex-col space-y-3">
+             <button
+               type="button"
+               onClick={() => navigate("/driver/dashboard/online")}
+               className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-[#03cd8c] text-white shadow-xl shadow-emerald-500/20 hover:bg-[#02b77c] transition-all"
+             >
+               Go back online
+             </button>
+             <button
+               type="button"
+               onClick={() => navigate("/driver/history/rides")}
+               className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest border border-slate-100 text-slate-400 hover:bg-slate-100 transition-all"
+             >
+               View trip details
+             </button>
+          </div>
+          <div className="bg-slate-100/30 rounded-3xl p-4 text-center">
+             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed max-w-[280px] mx-auto">
+               {isTour
+                 ? "This segment is complete. Tour-related jobs will still appear in your Tour schedule for upcoming days."
+                 : isRental
+                 ? "This rental is complete. You can view it later in your History along with earnings and route details."
+                 : isAmbulance
+                 ? "This ambulance run is complete. Check with your operator if you need to follow up on documentation or billing."
+                 : "You can find this trip later in your Ride History along with payment and route details."}
+             </p>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

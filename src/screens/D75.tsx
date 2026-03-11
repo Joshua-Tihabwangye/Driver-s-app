@@ -10,7 +10,7 @@ import {
   Wallet,
   Settings
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D75 List of Orders (v1)
 // List-style view of delivery orders with filters and quick info.
@@ -77,137 +77,103 @@ function OrderCard({
 
 export default function ListOfOrdersScreen() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
-  const bottomNavRoutes = {
-    home: "/driver/dashboard/online",
-    manager: "/driver/jobs/list",
-    wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences"
-};
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
-
-      {/* Phone frame */}
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-              <ListFilter className="h-4 w-4 text-[#03cd8c]" />
+    <div className="flex flex-col h-full bg-[#f8fafc]">
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md shadow-inner">
+              <ListFilter className="h-6 w-6 text-white" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
+            <div className="flex flex-col text-left">
+              <span className="text-[10px] uppercase tracking-[0.2em] font-black text-white/70">
                 Driver · Deliveries
               </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                List of orders
+              <h1 className="text-xl font-black text-white leading-tight">
+                List of Orders
               </h1>
             </div>
           </div>
         </header>
+      </div>
 
-        {/* Content */}
-        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
-          {/* Filter row */}
-          <section className="rounded-2xl bg-slate-50 px-3 py-2 border border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
-            <div className="flex items-center space-x-2">
-              <span className="font-semibold text-slate-900">Showing</span>
-              <span>Today · Nearby · All types</span>
+      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-6">
+        {/* Filter row */}
+        <section className="sticky top-0 bg-[#f8fafc]/80 backdrop-blur-md z-10 py-2 -mx-6 px-6">
+          <div className="rounded-[2rem] border border-slate-100 bg-white p-4 flex items-center justify-between shadow-sm">
+            <div className="flex flex-col items-start px-2">
+              <span className="text-[10px] font-black uppercase tracking-widest text-[#03cd8c]">Active Filters</span>
+              <span className="text-[11px] font-medium text-slate-500">Today · Nearby · All Types</span>
             </div>
             <button
               type="button"
               onClick={() => navigate("/driver/delivery/orders/filter")}
-              className="inline-flex items-center rounded-full border border-slate-200 px-2 py-0.5 text-[11px] text-slate-700"
+              className="rounded-2xl bg-slate-900 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white active:scale-95 transition-all shadow-md flex items-center"
             >
-              <ListFilter className="h-3 w-3 mr-1" />
+              <ListFilter className="h-3.5 w-3.5 mr-2" />
               Filters
             </button>
-          </section>
+          </div>
+        </section>
 
-          {/* Orders list */}
-          <section className="space-y-2">
-            <OrderCard
-              id="3241"
-              type="Food"
-              pickup="Burger Hub, Acacia Mall"
-              dropoff="Kira Road"
-              distance="3.2 km"
-              eta="15–20 min"
-              amount="3.80"
-              status="Ready for pickup"
-              onClick={() => navigate("/driver/delivery/orders/picked-up")}
-            />
-            <OrderCard
-              id="3242"
-              type="Pharmacy"
-              pickup="PharmaPlus, City Centre"
-              dropoff="Ntinda"
-              distance="5.4 km"
-              eta="20–25 min"
-              amount="4.50"
-              status="Assigned to you"
-              onClick={() => navigate("/driver/delivery/route/demo-route/active")}
-            />
-            <OrderCard
-              id="3243"
-              type="Parcel"
-              pickup="Logistics Hub, Industrial Area"
-              dropoff="Bugolobi"
-              distance="4.1 km"
-              eta="25–30 min"
-              amount="5.20"
-              status="Nearby"
-              onClick={() => navigate("/driver/delivery/route/demo-route/details")}
-            />
-            <OrderCard
-              id="3244"
-              type="Grocery"
-              pickup="FreshMart, Lugogo"
-              dropoff="Naguru"
-              distance="2.7 km"
-              eta="10–15 min"
-              amount="3.40"
-              status="Nearby"
-              onClick={() => navigate("/driver/delivery/route/demo-route/stop/alpha-stop/details")}
-            />
-          </section>
-        </main>
-
-        {/* Bottom navigation – Home active (orders context) */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem
-            icon={Home}
-            label="Home"
-           active={navActive("home")} onClick={() => navigate(bottomNavRoutes.home)}
+        {/* Orders list */}
+        <section className="space-y-4 pb-12">
+          <OrderCard
+            id="3241"
+            type="Food"
+            pickup="Burger Hub, Acacia Mall"
+            dropoff="Kira Road"
+            distance="3.2 km"
+            eta="15–20 min"
+            amount="3.80"
+            status="Ready for pickup"
+            onClick={() => navigate("/driver/delivery/orders/picked-up")}
           />
-          <BottomNavItem
-            icon={Briefcase}
-            label="Manager"
-           active={navActive("manager")} onClick={() => navigate(bottomNavRoutes.manager)}
+          <OrderCard
+            id="3242"
+            type="Pharmacy"
+            pickup="PharmaPlus, City Centre"
+            dropoff="Ntinda"
+            distance="5.4 km"
+            eta="20–25 min"
+            amount="4.50"
+            status="Assigned to you"
+            onClick={() => navigate("/driver/delivery/route/demo-route/active")}
           />
-          <BottomNavItem
-            icon={Wallet}
-            label="Wallet"
-           active={navActive("wallet")} onClick={() => navigate(bottomNavRoutes.wallet)}
+          <OrderCard
+            id="3243"
+            type="Parcel"
+            pickup="Logistics Hub, Industrial Area"
+            dropoff="Bugolobi"
+            distance="4.1 km"
+            eta="25–30 min"
+            amount="5.20"
+            status="Nearby"
+            onClick={() => navigate("/driver/delivery/route/demo-route/details")}
           />
-          <BottomNavItem
-            icon={Settings}
-            label="Settings"
-           active={navActive("settings")} onClick={() => navigate(bottomNavRoutes.settings)}
+          <OrderCard
+            id="3244"
+            type="Grocery"
+            pickup="FreshMart, Lugogo"
+            dropoff="Naguru"
+            distance="2.7 km"
+            eta="10–15 min"
+            amount="3.40"
+            status="Nearby"
+            onClick={() => navigate("/driver/delivery/route/demo-route/stop/alpha-stop/details")}
           />
-        </nav>
-      </div>
+        </section>
+      </main>
     </div>
   );
 }

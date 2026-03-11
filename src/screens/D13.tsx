@@ -23,21 +23,6 @@ import { useNavigate , useLocation } from "react-router-dom";
 // - Dual action buttons (Upload from gallery / Take a photo) with conditional text
 // - "Done, back to Driver Personal" button
 
-function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
-        active ? "text-white" : "text-white/50 hover:text-white/80"
-      }`}
-    >
-      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
-      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
-      <span className="relative z-10">{label}</span>
-    </button>
-  );
-}
 
 function TipRow({ icon: Icon, title, text }) {
   return (
@@ -56,12 +41,6 @@ function TipRow({ icon: Icon, title, text }) {
 export default function UploadImagePreferencesScreen() {
   const [hasImage, setHasImage] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
 
   const handleUpload = () => {
     // In the real app, open file picker or camera.
@@ -69,124 +48,122 @@ export default function UploadImagePreferencesScreen() {
   };
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
+    <div className="flex flex-col min-h-full bg-[#f8fafc]">
 
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-90 transition-transform"
+          >
+            <ChevronLeft className="h-5 w-5 text-white" />
+          </button>
+          <h1 className="text-base font-black text-white tracking-tight">Identity</h1>
+          <div className="w-10" /> {/* Spacer */}
+        </header>
+      </div>
 
-        {/* Green curved header */}
-        <div className="relative" style={{ minHeight: 80 }}>
-          <div
-            className="absolute inset-0"
-            style={{
-              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)"
-}}
-          />
-          <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm"
-            >
-              <ChevronLeft className="h-5 w-5 text-white" />
-            </button>
-            <h1 className="text-base font-semibold text-white">Preferences</h1>
-          </header>
-        </div>
+      {/* Content */}
+      <main className="flex-1 px-6 pt-6 pb-24 space-y-6">
 
-        {/* Content */}
-        <main className="app-main flex-1 px-5 pt-4 pb-4 flex flex-col overflow-y-auto scrollbar-hide space-y-4">
+        {/* Image preview */}
+        <section className="flex flex-col items-center py-6 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#03cd8c]/5 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110" />
+          <div className="relative flex h-48 w-48 items-center justify-center rounded-full bg-slate-900 border-[6px] border-[#03cd8c]/20 shadow-2xl transition-transform active:scale-95 cursor-pointer overflow-hidden" onClick={handleUpload}>
+            {hasImage ? (
+              <div className="flex h-full w-full items-center justify-center bg-slate-800">
+                <ImageIcon className="h-20 w-20 text-[#03cd8c]" />
+              </div>
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-slate-800">
+                <Camera className="h-12 w-12 text-slate-500" />
+              </div>
+            )}
 
-          {/* Image preview */}
-          <section className="flex flex-col items-center pt-2 pb-1">
-            <div className="relative flex h-40 w-40 items-center justify-center rounded-full bg-slate-900/95 border-4 border-[#03cd8c] shadow-inner">
-              {hasImage ? (
-                <div className="flex h-32 w-32 items-center justify-center rounded-full bg-slate-800/80">
-                  <ImageIcon className="h-16 w-16 text-[#03cd8c]" />
-                </div>
-              ) : (
-                <div className="flex h-32 w-32 items-center justify-center rounded-full bg-slate-800/80">
-                  <Camera className="h-10 w-10 text-slate-400" />
-                </div>
-              )}
+            {hasImage && (
+              <div className="absolute bottom-4 inset-x-6 flex items-center justify-center rounded-2xl bg-slate-900/90 backdrop-blur-md px-3 py-2 border border-white/10 shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <span className="flex items-center text-[10px] font-black text-emerald-400 uppercase tracking-tight">
+                  <CheckCircle2 className="mr-2 h-3 w-3" /> Ready to Use
+                </span>
+              </div>
+            )}
+            
+            {/* Visual overlay on hover */}
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+          </div>
+          <p className="mt-6 text-[11px] font-medium text-slate-400 text-center max-w-[240px] leading-relaxed">
+            Your profile photo helps riders and partners identify you quickly and ensures a safe, personable experience.
+          </p>
+        </section>
 
-              {hasImage && (
-                <div className="absolute bottom-3 inset-x-8 flex items-center justify-center rounded-full bg-slate-900/80 px-3 py-1">
-                  <span className="flex items-center text-[10px] font-medium text-emerald-400">
-                    <CheckCircle2 className="mr-1 h-3 w-3" /> Looks clear and ready to use
-                  </span>
-                </div>
-              )}
-            </div>
-            <p className="mt-3 text-[11px] text-slate-500 text-center max-w-[260px]">
-              This photo will appear on your driver profile and on trips, so
-              riders and partners can recognize you quickly and safely.
-            </p>
-          </section>
-
-          {/* Tips */}
-          <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-slate-900 mb-1">
-              Make sure your photo is:
-            </h2>
+        {/* Tips */}
+        <section className="space-y-4">
+          <div className="px-1">
+             <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
+                Photo Requirements
+             </h2>
+          </div>
+          <div className="space-y-3">
             <TipRow
               icon={SunMedium}
-              title="Well lit"
-              text="Use natural light and avoid strong shadows or backlight."
+              title="Perfect Lighting"
+              text="Natural light ensures you're easily recognizable."
             />
             <TipRow
               icon={Eye}
-              title="Easy to recognize"
-              text="Face the camera, no sunglasses or masks, and keep your face centered."
+              title="Clear View"
+              text="Remove masks, sunglasses, and keep face centered."
             />
             <TipRow
               icon={Info}
-              title="Recent"
-              text="Use a recent photo that looks like you do today."
+              title="Recent Profile"
+              text="Please use a photo taken within the last 6 months."
             />
-          </section>
+          </div>
+        </section>
 
-          {/* Actions */}
-          <section className="pt-1 pb-4 flex flex-col space-y-2">
-            <button
-              onClick={handleUpload}
-              className="w-full rounded-full py-2.5 text-sm font-semibold shadow-sm bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c] flex items-center justify-center"
-            >
-              <UploadCloud className="h-4 w-4 mr-2" />
-              {hasImage ? "Upload a different photo" : "Upload from gallery"}
-            </button>
-            <button
-              onClick={handleUpload}
-              className="w-full rounded-full py-2.5 text-sm font-semibold border border-slate-200 text-slate-800 bg-white flex items-center justify-center"
-            >
-              <Camera className="h-4 w-4 mr-2" />
-              {hasImage ? "Retake photo" : "Take a photo"}
-            </button>
-            <p className="text-[10px] text-slate-500 text-center">
-              You can update this image later from Preferences if your appearance
-              changes. Once you're happy, continue to Driver Personal.
-            </p>
+        {/* Actions */}
+        <section className="pt-4 pb-12 flex flex-col gap-3">
+          <button
+            onClick={handleUpload}
+            className="w-full rounded-2xl py-4 text-xs font-black bg-[#03cd8c] text-white shadow-xl shadow-emerald-500/20 hover:bg-[#02b77c] active:scale-[0.98] transition-all flex items-center justify-center uppercase tracking-widest"
+          >
+            <UploadCloud className="h-4 w-4 mr-2" />
+            {hasImage ? "Change Photo" : "Upload Gallery"}
+          </button>
+          <button
+            onClick={handleUpload}
+            className="w-full rounded-2xl py-4 text-xs font-black text-slate-400 bg-white border border-slate-200 shadow-sm hover:bg-slate-50 active:scale-95 transition-all flex items-center justify-center uppercase tracking-widest"
+          >
+            <Camera className="h-4 w-4 mr-2" />
+            {hasImage ? "Retake Photo" : "Take Photo"}
+          </button>
+          
+          <div className="mt-4 pt-4 border-t border-slate-100">
             <button
               type="button"
               onClick={() => navigate("/driver/onboarding/profile")}
-              className="w-full rounded-xl bg-[#1c2b4d] py-4 text-sm font-bold text-white shadow-lg active:scale-[0.98] transition-all"
+              className="w-full rounded-2xl bg-[#1c2b4d] py-4 text-sm font-black text-white shadow-xl shadow-slate-900/20 active:scale-[0.98] transition-all uppercase tracking-widest"
             >
-              Done, back to Driver Personal
+              Confirm & Continue
             </button>
-          </section>
-        </main>
-
-        {/* Bottom Navigation – Green */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate("/driver/dashboard/online")} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={navActive("manager")} onClick={() => navigate("/driver/jobs/list")} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate("/driver/earnings/overview")} />
-          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate("/driver/preferences")} />
-        </nav>
-      </div>
+          </div>
+          
+          <p className="px-6 mt-2 text-[10px] font-medium text-slate-400 text-center leading-relaxed">
+            By continuing, you agree that this photo represents you and meets our community guidelines.
+          </p>
+        </section>
+      </main>
     </div>
   );
 }

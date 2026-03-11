@@ -64,19 +64,7 @@ export default function ProofOfTripMainScreen() {
   const [photoCount, setPhotoCount] = useState(0);
   const [noteText, setNoteText] = useState("");
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
   const fileInputRef = useRef(null);
-  const bottomNavRoutes = {
-    home: "/driver/dashboard/online",
-    manager: "/driver/jobs/list",
-    wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences"
-};
 
   const jobTypeLabelMap = {
     ride: "Ride",
@@ -84,13 +72,13 @@ export default function ProofOfTripMainScreen() {
     rental: "Rental",
     tour: "Tour",
     ambulance: "Ambulance"
-};
+  };
 
   const isAmbulance = jobType === "ambulance";
   const isTour = jobType === "tour";
 
   const baseIntro =
-    "Use proof-of-trip when something unusual happens – for example if the rider doesn’t show up, requests a different destination, or you need evidence of location and time.";
+    "Use proof-of-trip when something unusual happens – for example if the rider doesn't show up, requests a different destination, or you need evidence of location and time.";
 
   const ambulanceIntro =
     "Use proof-of-trip to capture location and time when your operator or dispatch requests it. Do not capture patient faces, IDs, or other sensitive medical details.";
@@ -105,18 +93,18 @@ export default function ProofOfTripMainScreen() {
       : baseIntro;
 
   const photosText = isAmbulance
-    ? "Capture the surroundings, street signs, entrances or vehicle position – avoid taking photos of the patient or any ID documents."
+    ? "Capture surroundings, street signs, entrances or vehicle position – avoid patient faces or ID documents."
     : "Show where you were and what you saw.";
 
   const notesText = isAmbulance
-    ? "Write a short, non-identifying description of what happened (no patient names, IDs or medical records)."
+    ? "Write a short, non-identifying description (no patient names, IDs or medical records)."
     : "Describe what happened in a few words.";
 
   const footerText = isTour
-    ? "Submitted proof is stored with this segment/day of your tour in Ride History and can be reviewed by support if needed."
+    ? "Submitted proof is stored with this segment/day of your tour in Ride History."
     : isAmbulance
-      ? "Submitted proof is stored with this ambulance run for operational review. Avoid attaching sensitive medical details."
-      : "Submitted proof is stored with this trip in Ride History and can be reviewed by support if needed.";
+      ? "Submitted proof is stored with this ambulance run for operational review."
+      : "Submitted proof is stored with this trip in Ride History and can be reviewed by support.";
 
   const handleSubmitProof = () => {
     setStatus("submitting");
@@ -132,71 +120,66 @@ export default function ProofOfTripMainScreen() {
     setNoteText("");
   };
 
-  const handleAddPhoto = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
+  const handleAddPhoto = () => fileInputRef.current?.click();
 
   const handlePhotoChange = (e) => {
     const files = Array.from(e.target.files || []);
-    if (files.length > 0) {
-      setPhotoCount(files.length);
-    }
+    if (files.length > 0) setPhotoCount(files.length);
   };
 
   const handleAddNote = () => {
     const next = window.prompt("Add a short note", noteText);
-    if (next !== null) {
-      setNoteText(next.trim());
-    }
+    if (next !== null) setNoteText(next.trim());
   };
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
-
-      {/* Phone frame */}
-      <div className="w-[375px] h-[812px] bg-white rounded-[32px] shadow-2xl overflow-hidden flex flex-col relative text-left">
-        {/* Header */}
-        <header className="flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-              <ShieldCheck className="h-4 w-4 text-[#03cd8c]" />
+    <div className="flex flex-col h-full bg-[#f8fafc]">
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 110 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md shadow-inner">
+              <ShieldCheck className="h-6 w-6 text-white" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
+            <div className="flex flex-col text-left">
+              <span className="text-[10px] uppercase tracking-[0.2em] font-black text-white/70">
                 Driver · Safety
               </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Proof of trip status
+              <h1 className="text-xl font-black text-white leading-tight">
+                Proof of trip
               </h1>
-              <span className="mt-0.5 text-[11px] font-semibold text-[#03cd8c]">
-                Proof of trip status · {jobTypeLabelMap[jobType]}
-              </span>
+              <div className="mt-1 inline-flex items-center bg-white/20 backdrop-blur-md rounded-full px-3 py-0.5 border border-white/20">
+                <div className="h-1.5 w-1.5 rounded-full bg-white mr-2" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-white">
+                  {jobTypeLabelMap[jobType]}
+                </span>
+              </div>
             </div>
           </div>
         </header>
+      </div>
 
-        {/* Job type selector for preview */}
-        <section className="px-4 pt-1 pb-2 space-y-1">
-          <span className="text-[11px] text-slate-500 font-medium">
-            Preview job type
-          </span>
-          <div className="flex flex-wrap gap-1">
+      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-6">
+        {/* Job type preview switcher */}
+        <section className="space-y-3">
+          <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-2">
+            Preview Job Type
+          </h2>
+          <div className="flex flex-wrap gap-2">
             {JOB_TYPES.map((type) => (
               <button
                 key={type}
                 type="button"
                 onClick={() => setJobType(type)}
-                className={`rounded-full px-3 py-0.5 text-[11px] font-medium border transition-colors ${jobType === type
-                    ? "bg-[#03cd8c] text-slate-900 border-[#03cd8c]"
-                    : "bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300"
-                  }`}
+                className={`rounded-full px-5 py-2 text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 border-2 shadow-sm ${jobType === type ? "bg-[#03cd8c] border-[#03cd8c] text-white" : "bg-white border-slate-100 text-slate-400"}`}
               >
                 {jobTypeLabelMap[type]}
               </button>
@@ -204,174 +187,156 @@ export default function ProofOfTripMainScreen() {
           </div>
         </section>
 
-        {/* Content */}
-        <main className="flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
-          {/* Intro / status card */}
-          <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3 text-left">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#03cd8c] text-white">
-                  <ShieldCheck className="h-5 w-5" />
+        {/* Intro / Status card */}
+        <section className="rounded-[2.5rem] bg-slate-900 border border-slate-800 text-white p-6 space-y-6 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-6">
+             <StatusBadge status={status} />
+          </div>
+          <div className="flex items-center space-x-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/20 backdrop-blur-md">
+              <ShieldCheck className="h-6 w-6 text-[#03cd8c]" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] uppercase font-black text-[#03cd8c]">
+                Trip Proof
+              </span>
+              <p className="text-sm font-bold">
+                Capture documentation
+              </p>
+            </div>
+          </div>
+          <p className="text-[11px] text-slate-400 font-medium leading-relaxed">
+            {introText}
+          </p>
+        </section>
+
+        {/* Capture items */}
+        <section className="space-y-4">
+          <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-2">
+            Capture Items
+          </h2>
+          <div className="space-y-3">
+            <button
+              type="button"
+              onClick={handleAddPhoto}
+              className="w-full flex items-center justify-between rounded-[2rem] border border-slate-100 bg-white p-5 active:scale-[0.98] transition-all shadow-sm group hover:border-[#03cd8c]/30"
+            >
+              <div className="flex items-center space-x-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 group-hover:bg-emerald-50 transition-colors">
+                  <Camera className="h-5 w-5 text-slate-600 group-hover:text-[#03cd8c]" />
                 </div>
                 <div className="flex flex-col items-start">
-                  <span className="text-[10px] tracking-[0.18em] uppercase text-[#a5f3fc]">
-                    Trip proof
+                  <span className="text-[11px] font-black uppercase tracking-widest text-slate-900">
+                    Photos
                   </span>
-                  <p className="text-sm font-semibold">
-                    Capture proof for this trip when needed.
-                  </p>
+                  <span className="text-[10px] font-medium text-slate-400 text-left line-clamp-1">{photosText}</span>
                 </div>
               </div>
-              <StatusBadge status={status} />
-            </div>
-            <p className="text-[11px] text-slate-100 leading-snug">
-              {introText}
-            </p>
-          </section>
-
-          {/* Capture items */}
-          <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-slate-900 mb-1">
-              What you can capture
-            </h2>
-            <div className="space-y-2">
-              <button
-                type="button"
-                onClick={handleAddPhoto}
-                className="w-full flex items-center justify-between rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-2.5 text-[11px] text-slate-600 text-left active:scale-[0.99] transition-transform"
-              >
-                <div className="flex items-center space-x-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50">
-                    <Camera className="h-4 w-4 text-[#03cd8c]" />
-                  </div>
-                  <div className="flex flex-col items-start">
-                    <span className="text-xs font-semibold text-slate-900">
-                      Photos of pickup / drop-off
-                    </span>
-                    <span className="text-[10px]">{photosText}</span>
-                  </div>
-                </div>
-                <span className="text-[10px] text-slate-400">
-                  {photoCount > 0 ? `${photoCount} added` : "0 added"}
+              <div className="h-8 min-w-[32px] rounded-full bg-slate-50 flex items-center justify-center px-3 border border-slate-100 group-hover:bg-emerald-500 group-hover:border-emerald-500 transition-all">
+                <span className="text-[10px] font-black text-slate-400 group-hover:text-white uppercase">
+                  {photoCount > 0 ? photoCount : "Add"}
                 </span>
-              </button>
+              </div>
+            </button>
 
-              <button
-                type="button"
-                onClick={handleAddNote}
-                className="w-full flex items-center justify-between rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-2.5 text-[11px] text-slate-600 text-left active:scale-[0.99] transition-transform"
-              >
-                <div className="flex items-center space-x-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50">
-                    <FileText className="h-4 w-4 text-[#03cd8c]" />
-                  </div>
-                  <div className="flex flex-col items-start">
-                    <span className="text-xs font-semibold text-slate-900">
-                      Short notes
-                    </span>
-                    <span className="text-[10px] truncate max-w-[160px]">{noteText || "Describe what happened"}</span>
-                  </div>
+            <button
+              type="button"
+              onClick={handleAddNote}
+              className="w-full flex items-center justify-between rounded-[2rem] border border-slate-100 bg-white p-5 active:scale-[0.98] transition-all shadow-sm group hover:border-[#03cd8c]/30"
+            >
+              <div className="flex items-center space-x-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 group-hover:bg-emerald-50 transition-colors">
+                  <FileText className="h-5 w-5 text-slate-600 group-hover:text-[#03cd8c]" />
                 </div>
-                <span className="text-[10px] text-slate-400">
-                  {noteText ? "1 note" : "0 notes"}
+                <div className="flex flex-col items-start">
+                  <span className="text-[11px] font-black uppercase tracking-widest text-slate-900">
+                    Notes
+                  </span>
+                  <span className="text-[10px] font-medium text-slate-400 text-left line-clamp-1">{noteText || notesText}</span>
+                </div>
+              </div>
+              <div className="h-8 min-w-[32px] rounded-full bg-slate-50 flex items-center justify-center px-3 border border-slate-100 group-hover:bg-emerald-500 group-hover:border-emerald-500 transition-all">
+                <span className="text-[10px] font-black text-slate-400 group-hover:text-white uppercase">
+                   {noteText ? "1" : "Add"}
                 </span>
-              </button>
+              </div>
+            </button>
 
-              <button
-                type="button"
-                onClick={() => navigate("/driver/map/online")}
-                className="w-full flex items-center justify-between rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-2.5 text-[11px] text-slate-600 text-left active:scale-[0.99] transition-transform"
-              >
-                <div className="flex items-center space-x-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50">
-                    <MapPin className="h-4 w-4 text-[#03cd8c]" />
-                  </div>
-                  <div className="flex flex-col items-start">
-                    <span className="text-xs font-semibold text-slate-900">
-                      Time & location snapshot
-                    </span>
-                    <span className="text-[10px]">Open map to confirm capture location.</span>
-                  </div>
+            <button
+              type="button"
+              onClick={() => navigate("/driver/map/online")}
+              className="w-full flex items-center justify-between rounded-[2rem] border border-slate-100 bg-white p-5 active:scale-[0.98] transition-all shadow-sm group hover:border-[#03cd8c]/30"
+            >
+              <div className="flex items-center space-x-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 group-hover:bg-emerald-50 transition-colors">
+                  <MapPin className="h-5 w-5 text-slate-600 group-hover:text-[#03cd8c]" />
                 </div>
-                <span className="text-[10px] text-slate-400">Auto</span>
-              </button>
-            </div>
-          </section>
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            className="hidden"
-            onChange={handlePhotoChange}
-          />
-
-          {/* Actions / variants */}
-          <section className="space-y-2 pt-1 pb-4">
-            <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 text-[11px] text-slate-600 flex items-start space-x-2 text-left">
-              <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white flex-shrink-0">
-                <AlertCircle className="h-4 w-4 text-slate-600" />
+                <div className="flex flex-col items-start">
+                  <span className="text-[11px] font-black uppercase tracking-widest text-slate-900">
+                    Snapshot
+                  </span>
+                  <span className="text-[10px] font-medium text-slate-400 text-left line-clamp-1">Auto-capture location & time</span>
+                </div>
               </div>
-              <div className="flex-1">
-                <p className="font-semibold text-xs text-slate-900 mb-0.5">
-                  When should I use this?
-                </p>
-                <p className="leading-snug">
-                  {isAmbulance
-                    ? "Use proof-of-trip for Ambulance runs only when needed by your operator – for example, to show where and when you arrived or waited. Avoid capturing sensitive medical details."
-                    : isTour
-                      ? "Use proof-of-trip on this tour segment/day if there is a dispute about stops, timing or route. Normal, smooth segments don’t require extra proof."
-                      : "Use proof-of-trip only when needed – e.g. disputes, no-show, safety issues or incorrect addresses. Normal trips don’t require extra proof."}
-                </p>
+              <div className="h-8 min-w-[32px] rounded-full bg-emerald-50 flex items-center justify-center px-3 border border-emerald-100 group-hover:bg-emerald-500 group-hover:border-emerald-500 transition-all">
+                <span className="text-[10px] font-black text-[#03cd8c] group-hover:text-white uppercase">
+                   AUTO
+                </span>
               </div>
-            </div>
+            </button>
+          </div>
+        </section>
 
-            <div className="flex space-x-2">
-              <button
-                type="button"
-                onClick={handleSubmitProof}
-                className="flex-1 rounded-full py-2.5 text-sm font-semibold shadow-sm bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c] transition-all active:scale-[0.98] transition-transform"
-              >
-                Submit proof
-              </button>
-              <button
-                type="button"
-                onClick={handleReset}
-                className="flex-1 rounded-full py-2.5 text-sm font-semibold border border-slate-200 text-slate-800 bg-white transition-all active:scale-[0.98] transition-transform"
-              >
-                Reset
-              </button>
-            </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          className="hidden"
+          onChange={handlePhotoChange}
+        />
 
-            <p className="text-[10px] text-slate-500 text-center max-w-[260px] mx-auto leading-tight pt-2">
-              {footerText}
+        {/* Guidance and Actions */}
+        <section className="space-y-6 pb-4">
+          <div className="rounded-[2.5rem] border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/50">
+            <div className="flex items-center space-x-4 mb-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900">
+                <AlertCircle className="h-5 w-5 text-white" />
+              </div>
+              <p className="font-black text-[11px] uppercase tracking-widest text-slate-900">
+                 When to use this?
+              </p>
+            </div>
+            <p className="text-[11px] font-medium text-slate-500 leading-relaxed">
+              {isAmbulance
+                ? "Use for operational review only when requested. Avoid patient faces or medical records."
+                : isTour
+                  ? "Use if there is a dispute about stops or route. Normal segments don't require proof."
+                  : "Use for disputes, no-shows or safety issues. Normal trips don't require proof."}
             </p>
-          </section>
-        </main>
+          </div>
 
-        {/* Bottom navigation */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem
-            icon={Home}
-            label="Home"
-           active={navActive("home")} onClick={() => navigate(bottomNavRoutes.home)}
-          />
-          <BottomNavItem
-            icon={Briefcase}
-            label="Manager"
-           active={navActive("manager")} onClick={() => navigate(bottomNavRoutes.manager)}
-          />
-          <BottomNavItem
-            icon={Wallet}
-            label="Wallet"
-           active={navActive("wallet")} onClick={() => navigate(bottomNavRoutes.wallet)}
-          />
-          <BottomNavItem
-            icon={Settings}
-            label="Settings"
-           active={navActive("settings")} onClick={() => navigate(bottomNavRoutes.settings)}
-          />
-        </nav>
-      </div>
+          <div className="flex flex-col space-y-3">
+            <button
+              type="button"
+              onClick={handleSubmitProof}
+              className="w-full rounded-[2rem] bg-[#03cd8c] py-5 text-[11px] font-black uppercase tracking-[0.2em] text-slate-900 shadow-lg shadow-emerald-500/20 active:scale-95 transition-all"
+            >
+              Submit Proof
+            </button>
+            <button
+              type="button"
+              onClick={handleReset}
+              className="w-full rounded-[2rem] border-2 border-slate-100 bg-white py-5 text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 active:scale-95 transition-all"
+            >
+              Reset
+            </button>
+          </div>
+
+          <p className="text-[10px] font-bold text-slate-300 text-center uppercase tracking-widest leading-loose">
+            {footerText}
+          </p>
+        </section>
+      </main>
     </div>
   );
 }

@@ -102,211 +102,187 @@ export default function StartDriveScreen() {
   // Pickup / drop-off copy can stay mostly ride-like for now; this can be expanded later
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
+    <div className="flex flex-col h-full bg-[#f8fafc]">
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-start space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7] mt-0.5">
-              <Map className="h-4 w-4 text-[#03cd8c]" />
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+              <Map className="h-5 w-5 text-white" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                Driver
-              </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                {headerTitle}
-              </h1>
-              <span className="mt-0.5 text-[11px] font-semibold text-[#03cd8c]">
-                Job type: {jobTypeLabelMap[jobType]}
-              </span>
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Driver</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">{headerTitle}</p>
             </div>
           </div>
+          <div className="w-10" />
         </header>
+      </div>
 
-        {/* Job type selector for preview */}
-        <section className="px-4 pt-1 pb-2 space-y-1">
-          <span className="text-[11px] text-slate-500 font-medium">
-            Preview job type
-          </span>
-          <div className="flex flex-wrap gap-1">
+      {/* Job type switcher for preview purposes */}
+      <section className="px-6 pt-4 pb-2">
+        <div className="bg-white rounded-3xl p-3 border border-slate-100 shadow-sm space-y-2">
+          <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Simulation Context</span>
+          <div className="flex flex-wrap gap-2">
             {JOB_TYPES.map((type) => (
               <button
                 key={type}
+                type="button"
                 onClick={() => setJobType(type)}
-                className={`rounded-full px-3 py-0.5 text-[11px] font-medium border transition-colors ${
+                className={`rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-widest border transition-all ${
                   jobType === type
-                    ? "bg-[#03cd8c] text-slate-900 border-[#03cd8c]"
-                    : "bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300"
+                    ? "bg-[#03cd8c] text-white border-[#03cd8c] shadow-lg shadow-emerald-500/20"
+                    : "bg-slate-50 text-slate-400 border-slate-100 hover:border-slate-200"
                 }`}
               >
                 {jobTypeLabelMap[type]}
               </button>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Content */}
+      <main className="flex-1 px-6 pt-4 pb-24 overflow-y-auto scrollbar-hide space-y-6">
+        <div className="px-1">
+           <span className="text-[11px] font-black text-[#03cd8c] uppercase tracking-widest">
+             Job type: {jobTypeLabelMap[jobType]}
+           </span>
+        </div>
+
+        {/* Trip & rider summary */}
+        <section className="rounded-[2.5rem] bg-slate-900 border border-slate-800 text-white p-6 space-y-6 shadow-2xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#03cd8c] text-slate-900 shadow-lg shadow-emerald-500/20">
+                <User className="h-6 w-6" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Entity Profile</span>
+                <p className="text-sm font-black uppercase tracking-tight">
+                  {isAmbulance ? "Emergency Case" : "John K · 4.92 ★"}
+                </p>
+                <p className="text-[11px] text-slate-400 font-bold uppercase tracking-tight">
+                  {isAmbulance ? "Code 1 dispatch" : "120 Missions · 98% Rel."}
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col items-end">
+               {!isAmbulance && (
+                <span className="text-base font-black text-emerald-400 uppercase tracking-tight">
+                  ${rightTop}
+                </span>
+               )}
+               {isAmbulance && (
+                <span className="text-sm font-black text-emerald-400 uppercase tracking-tight">
+                  {rightTop}
+                </span>
+               )}
+               <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">{rightBottom}</span>
+            </div>
+          </div>
+
+          <div className="space-y-4 border-t border-slate-800 pt-6">
+            <div className="flex items-start space-x-3">
+              <div className="mt-1 w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]" />
+              <div className="flex flex-col">
+                <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Origin</span>
+                <p className="text-xs font-black uppercase tracking-tight">
+                  {isAmbulance
+                    ? "Acacia Road Sector"
+                    : jobType === "delivery"
+                    ? "Burger Hub Terminal"
+                    : "Acacia Mall Point"}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start space-x-3">
+              <div className="mt-1 w-2 h-2 rounded-full bg-slate-600" />
+              <div className="flex flex-col">
+                <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Destination</span>
+                <p className="text-xs font-black uppercase tracking-tight">
+                  {isAmbulance ? "City General Hospital" : "Bugolobi Sector"}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between border-t border-slate-800 pt-6">
+            <div className="flex items-center space-x-2 text-[10px] text-slate-400 font-black uppercase tracking-tight">
+               <Clock className="h-4 w-4" />
+               <span>ETA: 21 min</span>
+            </div>
+            <div className="flex items-center space-x-2 text-[10px] text-emerald-400 font-black uppercase tracking-tight">
+               <ShieldCheck className="h-4 w-4" />
+               <span>Protocol Verified</span>
+            </div>
+          </div>
         </section>
 
-        {/* Content */}
-        <main className="app-main flex-1 px-4 pt-3 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
-          {/* Trip & rider summary */}
-          <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#03cd8c] text-slate-900">
-                  <User className="h-4 w-4" />
-                </div>
-                <div className="flex flex-col items-start">
-                  <span className="text-xs font-semibold">
-                    {isAmbulance
-                      ? "Ambulance case"
-                      : "John K · 4.92 ★"}
-                  </span>
-                  <span className="text-[11px] text-slate-100">
-                    {isAmbulance
-                      ? "Ambulance · Code 1 – patient confirmed"
-                      : "120 trips · 98% completion"}
-                  </span>
-                </div>
-              </div>
-              <div className="flex flex-col items-end text-[10px] text-slate-100">
-                {!isAmbulance && (
-                  <span className="inline-flex items-center text-sm font-semibold text-emerald-300">
-                    <DollarSign className="h-3 w-3 mr-0.5" />
-                    {rightTop}
-                  </span>
-                )}
-                {isAmbulance && (
-                  <span className="inline-flex items-center text-sm font-semibold text-emerald-300">
-                    {rightTop}
-                  </span>
-                )}
-                <span>{rightBottom}</span>
-              </div>
+        {/* Navigation preview */}
+        <section className="relative rounded-[2.5rem] overflow-hidden border border-slate-100 bg-slate-200 h-[200px] shadow-2xl">
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
+          <div className="absolute inset-0">
+            <svg
+              className="w-full h-full"
+              viewBox="0 0 100 100"
+              preserveAspectRatio="none"
+            >
+              <path
+                d="M20 80 C 35 70, 45 60, 60 45 S 80 30, 88 22"
+                fill="none"
+                stroke="#03cd8c"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeDasharray="5 3"
+              />
+            </svg>
+          </div>
+          <div className="absolute left-8 bottom-10">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 border border-white shadow-lg">
+              <Navigation className="h-4 w-4 text-[#03cd8c]" />
             </div>
+          </div>
+          <div className="absolute right-8 top-8">
+             <div className="bg-slate-900/40 backdrop-blur-md rounded-full px-3 py-1 flex items-center space-x-2 border border-white/10">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#03cd8c] animate-pulse" />
+                <span className="text-[9px] font-black text-white uppercase tracking-widest">Vector Locked</span>
+             </div>
+          </div>
+        </section>
 
-            <div className="space-y-1 text-[11px]">
-              <div className="flex items-start space-x-2">
-                <MapPin className="mt-0.5 h-3.5 w-3.5 text-emerald-300" />
-                <div className="flex flex-col items-start">
-                  <span className="font-semibold">
-                    {isAmbulance
-                      ? "Patient location · Near Acacia Road"
-                      : jobType === "delivery"
-                      ? "Pickup · Burger Hub, Acacia Mall"
-                      : isRental
-                      ? "Pickup · City Hotel"
-                      : isTour
-                      ? "Pickup · Airport"
-                      : "Pickup · Acacia Mall"}
-                  </span>
-                  <span className="text-slate-200">
-                    {isAmbulance
-                      ? "You&apos;re at the patient location"
-                      : "You&apos;re at the pickup point"}
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-start space-x-2">
-                <MapPin className="mt-0.5 h-3.5 w-3.5 text-slate-200" />
-                <div className="flex flex-col items-start">
-                  <span className="font-semibold">
-                    {isAmbulance
-                      ? "Destination · City Hospital"
-                      : isTour
-                      ? "Drop-off · Bugolobi / lodge"
-                      : "Drop-off · Bugolobi"}
-                  </span>
-                  <span className="text-slate-200">
-                    {isTour
-                      ? "Today’s segment: Airport pickup"
-                      : isAmbulance
-                      ? "Emergency department / agreed hospital"
-                      : "Residential · usual demand"}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between pt-1 text-[11px] text-slate-200">
-              <span className="inline-flex items-center">
-                <Clock className="h-3 w-3 mr-1" />
-                {isAmbulance ? "ETA on route: 21 min" : "ETA on route: 21 min"}
-              </span>
-              <span className="inline-flex items-center">
-                <ShieldCheck className="h-3 w-3 mr-1 text-emerald-300" />
-                Code verified
-              </span>
-            </div>
-          </section>
-
-          {/* Navigation preview */}
-          <section className="relative rounded-3xl overflow-hidden border border-slate-100 bg-slate-200 h-[200px]">
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
-            <div className="absolute inset-0">
-              <svg
-                className="w-full h-full"
-                viewBox="0 0 100 100"
-                preserveAspectRatio="none"
-              >
-                <path
-                  d="M20 80 C 35 70, 45 60, 60 45 S 80 30, 88 22"
-                  fill="none"
-                  stroke="#03cd8c"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeDasharray="5 3"
-                />
-              </svg>
-            </div>
-            <div className="absolute left-8 bottom-10 flex flex-col items-center">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/90 border border-white">
-                <Navigation className="h-3.5 w-3.5 text-[#03cd8c]" />
-              </div>
-            </div>
-            <div className="absolute right-8 top-8 flex flex-col items-center">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/90 border border-white">
-                <MapPin className="h-3.5 w-3.5 text-[#03cd8c]" />
-              </div>
-              <span className="mt-0.5 rounded-full bg-slate-900/80 px-2 py-0.5 text-[9px] text-slate-50">
-                Drop-off
-              </span>
-            </div>
-          </section>
-
-          {/* CTA */}
-          <section className="pt-2 pb-4 flex flex-col space-y-2">
-            <button className="w-full rounded-full py-2.5 text-sm font-semibold shadow-sm bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c] flex items-center justify-center">
-              {primaryCtaText}
-            </button>
-            <button type="button" onClick={() => navigate("/driver/trip/demo-trip/verify-rider")} className="w-full rounded-full py-2.5 text-sm font-semibold border border-slate-200 text-slate-800 bg-white">
-              Back to verification
-            </button>
-            <p className="text-[10px] text-slate-500 text-center max-w-[260px] mx-auto">
-              {isAmbulance
-                ? "Only start the patient transport when the patient is safely in the vehicle and you have clear instructions on the destination."
-                : isRental
-                ? "Only start the rental once the correct client is in your vehicle and you&apos;re ready to drive."
-                : isTour
-                ? "Only start today&apos;s segment once the tour guests are in your vehicle and you&apos;re ready to drive."
-                : "Only start the trip once the correct rider is in your vehicle and you&apos;re ready to drive."}
-            </p>
-          </section>
-        </main>
-
-        {/* Bottom navigation – Home active (start-trip context) */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate("/driver/dashboard/online")}/>
-          <BottomNavItem icon={Briefcase} label="Manager" active={navActive("manager")} onClick={() => navigate("/driver/jobs/list")}/>
-          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate("/driver/earnings/overview")}/>
-          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate("/driver/preferences")}/>
-        </nav>
-      </div>
+        {/* CTA */}
+        <section className="space-y-4">
+          <div className="flex flex-col space-y-3">
+             <button className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-[#03cd8c] text-white shadow-xl shadow-emerald-500/20 hover:bg-[#02b77c] transition-all">
+                {primaryCtaText}
+             </button>
+             <button type="button" onClick={() => navigate("/driver/trip/demo-trip/verify-rider")} className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest border border-slate-100 text-slate-400 hover:bg-slate-100 transition-all">
+                Back to handshake
+             </button>
+          </div>
+          <div className="bg-slate-100/30 rounded-3xl p-4 text-center">
+             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed max-w-[280px] mx-auto">
+               {isAmbulance
+                 ? "Authorize patient transport only when entity is secured and destination protocols are established."
+                 : "Finalize authorization once the correct client entity is secured and vector is clear."}
+             </p>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

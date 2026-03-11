@@ -64,12 +64,6 @@ function ServiceTile({ icon: Icon, label, color, onClick }) {
 
 export default function RegisterServicesScreen() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
 
   const serviceRoutes = {
     school: "/driver/safety/hub",
@@ -81,103 +75,79 @@ export default function RegisterServicesScreen() {
 };
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Hide scrollbar */}
-        <style>{`
-          .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-          .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        `}</style>
+    <div className="flex flex-col min-h-full bg-[#f8fafc]">
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-90 transition-transform"
+          >
+            <ChevronLeft className="h-5 w-5 text-white" />
+          </button>
+          <h1 className="text-base font-black text-white tracking-tight">Register Services</h1>
+          <div className="w-10" /> {/* Spacer */}
+        </header>
+      </div>
 
-        {/* Green curved header */}
-        <div className="relative" style={{ minHeight: 80 }}>
-          <div
-            className="absolute inset-0"
-            style={{
-              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)"
-}}
-          />
-          <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm"
-            >
-              <ChevronLeft className="h-5 w-5 text-white" />
-            </button>
-            <h1 className="text-base font-semibold text-white">Register Services</h1>
-          </header>
+      {/* Content */}
+      <main className="flex-1 px-6 pt-6 pb-24 space-y-6">
+        {/* Services grid – 3 columns */}
+        <div className="grid grid-cols-3 gap-4">
+          {services.map((service) => (
+            <ServiceTile
+              key={service.key}
+              icon={service.icon}
+              label={service.label}
+              color={service.color}
+              onClick={() =>
+                navigate(serviceRoutes[service.key] || "/app/register-services")
+              }
+            />
+          ))}
         </div>
 
-        {/* Content */}
-        <main className="app-main flex-1 px-5 pt-5 pb-4 space-y-5 overflow-y-auto scrollbar-hide">
-          {/* Services grid – 3 columns */}
-          <div className="grid grid-cols-3 gap-3">
-            {services.map((service) => (
-              <ServiceTile
-                key={service.key}
-                icon={service.icon}
-                label={service.label}
-                color={service.color}
-                onClick={() =>
-                  navigate(serviceRoutes[service.key] || "/app/register-services")
-                }
-              />
-            ))}
+        {/* Business Partner card */}
+        <section className="rounded-[2.5rem] bg-[#f0faf7] border border-[#d6ebe6] p-8 text-center space-y-4 shadow-sm relative overflow-hidden group">
+          <div className="absolute -top-6 -right-6 w-24 h-24 bg-[#03cd8c]/10 rounded-full group-hover:scale-110 transition-transform duration-500" />
+          
+          <div className="flex justify-center relative z-10">
+            <div className="h-16 w-16 rounded-[1.5rem] bg-white flex items-center justify-center shadow-lg border border-emerald-50">
+              <Handshake className="h-8 w-8 text-[#03cd8c]" />
+            </div>
+          </div>
+          
+          <div className="relative z-10">
+            <h2 className="text-lg font-black text-slate-900 tracking-tight">Business Partner</h2>
+            <p className="text-sm font-black text-[#f77f00] leading-tight mt-1">
+              Empower Your Business: Register for EVzone Wallet Payment
+            </p>
           </div>
 
-          {/* Business Partner card */}
-          <section className="rounded-2xl bg-[#f0faf7] border border-[#d6ebe6] p-5 text-center space-y-3">
-            <div className="flex justify-center">
-              <div className="h-14 w-14 rounded-full bg-white flex items-center justify-center shadow-sm">
-                <Handshake className="h-7 w-7 text-[#03cd8c]" />
-              </div>
-            </div>
-            <h2 className="text-base font-bold text-slate-900">Business Partner</h2>
-            <p className="text-sm font-semibold text-[#f77f00] leading-snug">
-              Empower Your Business: Register{"\n"}for EVzone Wallet Payment
-            </p>
-            <button
-              type="button"
-              onClick={() => navigate("/driver/delivery/orders-dashboard")}
-              className="inline-flex items-center justify-center rounded-full bg-[#03cd8c] px-8 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#02b77c] transition-colors"
-            >
-              Register
-            </button>
-            <p className="text-[11px] text-slate-500 leading-relaxed px-2">
-              Unlock the full potential of your business by registering with us to
-              become a partner and start receiving payments through EVzone
-              Wallet. Seamlessly integrate with our platform to offer convenient
-              payment options to your customers. Join our network today and take
-              the first step toward streamlined financial transactions.
-            </p>
-          </section>
-        </main>
-
-        {/* Bottom navigation – green */}
-        <nav className="app-bottom-nav border-t border-white/20 flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem
-            icon={Home}
-            label="Home"
-           active={navActive("home")} onClick={() => navigate("/driver/dashboard/online")}
-          />
-          <BottomNavItem
-            icon={MessageSquare}
-            label="Messages"
-            onClick={() => navigate("/driver/ridesharing/notification")}
-          />
-          <BottomNavItem
-            icon={Wallet}
-            label="Wallet"
-            active={navActive("wallet")} onClick={() => navigate("/driver/earnings/overview")}
-          />
-          <BottomNavItem
-            icon={Settings}
-            label="Settings"
-            active={navActive("settings")} onClick={() => navigate("/driver/preferences")}
-          />
-        </nav>
-      </div>
+          <button
+            type="button"
+            onClick={() => navigate("/driver/delivery/orders-dashboard")}
+            className="relative z-10 w-full rounded-2xl bg-[#03cd8c] py-4 text-sm font-black text-white shadow-lg shadow-emerald-500/20 hover:bg-[#02b77c] active:scale-[0.98] transition-all"
+          >
+            Register Now
+          </button>
+          
+          <p className="relative z-10 text-[11px] text-slate-500 leading-relaxed font-medium px-2">
+            Unlock the full potential of your business by registering with us to
+            become a partner and start receiving payments through EVzone
+            Wallet. Seamlessly integrate with our platform.
+          </p>
+        </section>
+      </main>
     </div>
   );
 }

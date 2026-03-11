@@ -89,109 +89,116 @@ export default function MapSettingsScreen() {
   };
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
+    <div className="flex flex-col h-full bg-[#f8fafc]">
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-              <Map className="h-4 w-4 text-[#03cd8c]" />
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+              <Map className="h-5 w-5 text-white" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                Driver
-              </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Map settings & issues
-              </h1>
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Console</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">Spatial Config</p>
             </div>
           </div>
+          <div className="w-10" /> {/* Spacer */}
         </header>
+      </div>
 
-        {/* Content */}
-        <main className="app-main flex-1 px-4 pt-3 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
-          {/* Map display settings */}
-          <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-3">
-            <div className="flex items-center space-x-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#03cd8c] text-slate-900">
-                <SettingsIcon className="h-5 w-5" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] tracking-[0.18em] uppercase text-[#a5f3fc]">
-                  Map display
-                </span>
-                <p className="text-sm font-semibold">
-                  Control how your map looks and behaves.
-                </p>
-              </div>
+      {/* Content */}
+      <main className="flex-1 px-6 pt-6 pb-24 space-y-6 overflow-y-auto scrollbar-hide">
+        {/* Map display settings */}
+        <section className="rounded-[2.5rem] bg-slate-900 text-white p-6 space-y-4 shadow-2xl relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#03cd8c]/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110" />
+          <div className="flex items-center space-x-4 relative z-10">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#03cd8c] text-slate-900 shadow-xl shadow-emerald-500/20">
+              <SettingsIcon className="h-6 w-6" />
             </div>
-            <p className="text-[11px] text-slate-100 leading-snug">
-              Adjust these settings to make it easier to read the map in
-              daylight, at night and while driving.
-            </p>
-          </section>
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-500">
+                PROJECTION OPS
+              </span>
+              <p className="text-base font-black text-white leading-tight mt-0.5">
+                Cartographic Controls
+              </p>
+            </div>
+          </div>
+          <p className="text-[11px] text-slate-400 leading-relaxed font-bold uppercase tracking-tight relative z-10">
+            Optimize orbital visualization and tactical overlay behavior for high-velocity traversal.
+          </p>
+        </section>
 
-          <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-slate-900 mb-1">
-              Map preferences
-            </h2>
+        <section className="space-y-4">
+          <div className="px-1">
+            <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Interface Nodes</h2>
+          </div>
+          <div className="space-y-3">
             <ToggleRow
               icon={nightMode ? Moon : SunMedium}
-              title={nightMode ? "Night mode" : "Day mode"}
+              title={nightMode ? "Chrono: Night" : "Chrono: Day"}
               subtitle={
                 nightMode
-                  ? "Darker map for driving at night."
-                  : "Brighter map for daylight driving."
+                  ? "Dark-spectrum projection for low-light ops."
+                  : "High-visibility projection for standard cycles."
               }
               checked={nightMode}
               onChange={() => setNightMode((v) => !v)}
             />
             <ToggleRow
               icon={Eye}
-              title="Show traffic & incidents"
-              subtitle="Color-coded traffic and incident markers on the map."
+              title="Tactical Overlay"
+              subtitle="Real-time flow metrics and sectoral incidents."
               checked={showTraffic}
               onChange={() => setShowTraffic((v) => !v)}
             />
             <ToggleRow
               icon={SettingsIcon}
-              title="Show compass & heading"
-              subtitle="Display your driving direction on the map."
+              title="Spatial Orientation"
+              subtitle="Active compass and vector heading lock."
               checked={showCompass}
               onChange={() => setShowCompass((v) => !v)}
             />
-          </section>
+          </div>
+        </section>
 
-          {/* Report map issues */}
-          <section className="space-y-2 pt-1 pb-4">
-            <h2 className="text-sm font-semibold text-slate-900 mb-1">
-              Report a map issue
-            </h2>
-            <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 text-[11px] text-slate-600 flex items-start space-x-2">
-              <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white">
-                <AlertCircle className="h-4 w-4 text-red-500" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-xs text-slate-900 mb-0.5">
-                  Wrong address or pin?
-                </p>
-                <p>
-                  If a pickup, drop-off or street looks wrong on the map, send
-                  us a report so we can correct it.
-                </p>
-              </div>
+        {/* Report map issues */}
+        <section className="space-y-4 pt-2 pb-12">
+          <div className="px-1">
+            <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Signal Feedback</h2>
+          </div>
+          <div className="rounded-3xl border border-slate-100 bg-red-50 p-6 flex items-start space-x-5 shadow-inner">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-red-500 shadow-sm">
+              <AlertCircle className="h-6 w-6" />
             </div>
+            <div className="flex-1 space-y-1">
+              <p className="font-black text-sm text-slate-900 uppercase tracking-tight">
+                Data Anomaly?
+              </p>
+              <p className="text-[11px] text-slate-500 font-bold uppercase tracking-tight leading-relaxed">
+                If sectoral markers or traversal paths exhibit discrepancies, transmit a diagnostic packet for correction.
+              </p>
+            </div>
+          </div>
 
+          <div className="space-y-4">
             <textarea
-              rows={3}
-              placeholder="Describe the issue (e.g. wrong street name, pin is in the wrong place)"
-              className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-[11px] text-slate-900 placeholder:text-slate-400 focus:border-[#03cd8c] focus:outline-none focus:ring-1 focus:ring-[#03cd8c]"
+              rows={4}
+              placeholder="TRANSIT DIAGNOSTIC DATA (e.g. incorrect vector, missing sector terminal)"
+              className="w-full rounded-[2rem] border border-slate-200 bg-white px-6 py-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#03cd8c] focus:outline-none focus:ring-4 focus:ring-emerald-500/10 font-bold"
               value={issueText}
               onChange={(e) => setIssueText(e.target.value)}
             />
@@ -199,38 +206,14 @@ export default function MapSettingsScreen() {
             <button
               type="button"
               onClick={handleSubmitIssue}
-              className="w-full rounded-full py-2.5 text-sm font-semibold shadow-sm bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c] flex items-center justify-center"
+              className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest shadow-xl bg-slate-900 text-white hover:bg-slate-800 flex items-center justify-center active:scale-95 transition-all"
             >
-              <Send className="h-4 w-4 mr-2" />
-              Send map issue report
+              <Send className="h-4 w-4 mr-3" />
+              Transmit Report
             </button>
-          </section>
-        </main>
-
-        {/* Bottom navigation – Home active (map settings context) */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem
-            icon={Home}
-            label="Home"
-           active={navActive("home")} onClick={() => navigate(bottomNavRoutes.home)}
-          />
-          <BottomNavItem
-            icon={Briefcase}
-            label="Manager"
-           active={navActive("manager")} onClick={() => navigate(bottomNavRoutes.manager)}
-          />
-          <BottomNavItem
-            icon={Wallet}
-            label="Wallet"
-           active={navActive("wallet")} onClick={() => navigate(bottomNavRoutes.wallet)}
-          />
-          <BottomNavItem
-            icon={Settings}
-            label="Settings"
-           active={navActive("settings")} onClick={() => navigate(bottomNavRoutes.settings)}
-          />
-        </nav>
-      </div>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

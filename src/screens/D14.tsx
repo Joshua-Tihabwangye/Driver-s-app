@@ -16,21 +16,6 @@ import { useNavigate , useLocation } from "react-router-dom";
 // Redesigned with green curved header and vehicle image cards.
 // + Restored: EV-only banner, badge indicators, Info card from original
 
-function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
-        active ? "text-white" : "text-white/50 hover:text-white/80"
-      }`}
-    >
-      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
-      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
-      <span className="relative z-10">{label}</span>
-    </button>
-  );
-}
 
 function VehicleCard({ image, brand, model, badge, primary, onClick }) {
   return (
@@ -65,12 +50,6 @@ function VehicleCard({ image, brand, model, badge, primary, onClick }) {
 
 export default function MyVehiclesScreen() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
 
   const vehicles = [
     {
@@ -104,100 +83,96 @@ export default function MyVehiclesScreen() {
   ];
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
+    <div className="flex flex-col min-h-full bg-[#f8fafc]">
 
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-90 transition-transform"
+          >
+            <ChevronLeft className="h-5 w-5 text-white" />
+          </button>
+          <h1 className="text-base font-black text-white tracking-tight">Garage</h1>
+          <div className="w-10" /> {/* Spacer */}
+        </header>
+      </div>
 
-        {/* Green curved header */}
-        <div className="relative" style={{ minHeight: 80 }}>
-          <div
-            className="absolute inset-0"
-            style={{
-              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)"
-}}
-          />
-          <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm"
-            >
-              <ChevronLeft className="h-5 w-5 text-white" />
-            </button>
-            <h1 className="text-base font-semibold text-white">My vehicles</h1>
-          </header>
-        </div>
+      {/* Content */}
+      <main className="flex-1 px-6 pt-6 pb-24 space-y-6">
 
-        {/* Content */}
-        <main className="app-main flex-1 px-5 pt-4 pb-2 space-y-4 overflow-y-auto scrollbar-hide">
-
-          {/* EV-only banner (restored from original) */}
-          <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-2">
-            <div className="flex items-center space-x-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#03cd8c] text-slate-900">
-                <Zap className="h-4 w-4" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] tracking-[0.18em] uppercase text-[#a5f3fc]">EV-only platform</span>
-                <p className="text-xs font-semibold">Only electric vehicles are allowed on EVzone.</p>
-              </div>
+        {/* EV-only banner (restored from original) */}
+        <section className="rounded-[2.5rem] bg-[#0b1e3a] text-white p-6 space-y-4 shadow-xl relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#03cd8c] text-white shadow-lg shadow-emerald-500/20">
+              <Zap className="h-5 w-5" />
             </div>
-            <p className="text-[11px] text-slate-100 leading-snug">
-              Add your primary EV and any additional EVs you use for driving or deliveries.
-            </p>
-          </section>
-
-          {/* Vehicle list */}
-          <div className="space-y-3 pb-2">
-            {vehicles.map((v, idx) => (
-              <VehicleCard
-                key={idx}
-                brand={v.brand}
-                model={v.model}
-                image={v.image}
-                badge={v.badge}
-                primary={v.primary}
-                onClick={() => navigate("/driver/vehicles/demo-vehicle")}
-              />
-            ))}
-          </div>
-
-          {/* Info card (restored from original) */}
-          <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 flex items-start space-x-2">
-            <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white">
-              <Info className="h-4 w-4 text-slate-600" />
-            </div>
-            <div className="flex-1 text-[11px] text-slate-600">
-              <p className="font-semibold text-xs text-slate-900 mb-0.5">Keep your EV details up to date</p>
-              <p>If you change vehicles, update your information here so your insurance, safety checks and range estimates stay accurate.</p>
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-400">EV-ONLY PLATFORM</span>
+              <p className="text-sm font-black tracking-tight mt-0.5">Strictly Electric Fleet</p>
             </div>
           </div>
-        </main>
+          <p className="text-[11px] text-slate-300 font-medium leading-relaxed">
+            Only 100% electric vehicles are allowed. Add your primary EV and any backups you utilize.
+          </p>
+        </section>
 
-        {/* Floating Add Vehicle Button */}
-        <div className="px-5 pb-6 pt-2 bg-white/80 backdrop-blur-sm">
+        {/* Vehicle list */}
+        <section className="space-y-4">
+           <div className="px-1 flex items-center justify-between">
+              <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
+                Registered Vehicles
+              </h2>
+           </div>
+           <div className="space-y-3">
+             {vehicles.map((v, idx) => (
+               <VehicleCard
+                 key={idx}
+                 brand={v.brand}
+                 model={v.model}
+                 image={v.image}
+                 badge={v.badge}
+                 primary={v.primary}
+                 onClick={() => navigate("/driver/vehicles/demo-vehicle")}
+               />
+             ))}
+           </div>
+        </section>
+
+        {/* Info card (restored from original) */}
+        <section className="rounded-3xl border border-blue-50 bg-blue-50/30 p-5 flex items-start space-x-3">
+          <div className="mt-0.5 bg-blue-100 p-1.5 rounded-xl">
+            <Info className="h-4 w-4 text-blue-600" />
+          </div>
+          <div className="shrink text-[11px] text-blue-900/70 space-y-1.5 leading-relaxed">
+            <p className="font-black text-xs text-blue-900 uppercase tracking-tight">Compliance Reminder</p>
+            <p className="font-medium">Keep your EV details updated for accurate range estimates, insurance validity, and safety checks.</p>
+          </div>
+        </section>
+
+        {/* Floating Add Vehicle Button (Inline for shell consistency) */}
+        <section className="pt-2 pb-12">
           <button
             type="button"
             onClick={() => navigate("/driver/vehicles/demo-vehicle")}
-            className="w-full rounded-xl bg-[#F77F00] py-3.5 text-sm font-bold text-white shadow-lg active:scale-[0.98] transition-all flex items-center justify-center"
+            className="w-full rounded-2xl bg-[#F77F00] py-4 text-sm font-black text-white shadow-xl shadow-orange-500/20 active:scale-[0.98] transition-all flex items-center justify-center uppercase tracking-widest"
           >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Vehicle
+            <Plus className="h-5 w-5 mr-2" />
+            Add New Vehicle
           </button>
-        </div>
-
-        {/* Bottom Navigation – Green */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate("/driver/dashboard/online")} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={navActive("manager")} onClick={() => navigate("/driver/jobs/list")} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate("/driver/earnings/overview")} />
-          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate("/driver/preferences")} />
-        </nav>
-      </div>
+        </section>
+      </main>
     </div>
   );
 }

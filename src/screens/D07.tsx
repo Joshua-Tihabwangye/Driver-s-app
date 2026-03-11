@@ -90,18 +90,7 @@ function DocItem({
 
 export default function DocumentVerificationScreen() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
-  const bottomNavRoutes = {
-    home: "/driver/dashboard/online",
-    messages: "/driver/ridesharing/notification",
-    wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences"
-};
+  
   const [docs, setDocs] = useState({
     id: { status: "Uploaded", emphasise: false, fileName: "national-id.pdf" },
     license: { status: "Missing", emphasise: true, fileName: "" },
@@ -123,59 +112,64 @@ export default function DocumentVerificationScreen() {
   };
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Hide scrollbar */}
-        <style>{`
-          .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-          .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        `}</style>
+    <div className="flex flex-col min-h-full bg-[#f8fafc]">
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-90 transition-transform"
+          >
+            <ChevronLeft className="h-5 w-5 text-white" />
+          </button>
+          <h1 className="text-base font-black text-white tracking-tight">Personal Verification</h1>
+          <div className="w-10" /> {/* Spacer */}
+        </header>
+      </div>
 
-        {/* Green curved header */}
-        <div className="relative" style={{ minHeight: 80 }}>
-          <div
-            className="absolute inset-0"
-            style={{
-              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)"
-}}
-          />
-          <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm"
-            >
-              <ChevronLeft className="h-5 w-5 text-white" />
-            </button>
-            <h1 className="text-base font-semibold text-white">Driver Personal</h1>
-          </header>
-        </div>
+      {/* Content */}
+      <main className="flex-1 px-6 pt-6 pb-24 space-y-6">
+        {/* Intro banner */}
+        <section className="rounded-[2.5rem] bg-white border border-slate-100 p-6 space-y-3 shadow-sm relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-[#03cd8c]/5 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
+          <div className="flex items-center gap-2">
+            <div className="p-1 bg-emerald-50 rounded-lg">
+                <ShieldCheck className="h-4 w-4 text-[#03cd8c]" />
+            </div>
+            <p className="text-[10px] tracking-[0.2em] uppercase text-[#03cd8c] font-black">
+              Verify Account
+            </p>
+          </div>
+          <p className="text-sm font-black text-slate-900 tracking-tight leading-snug">
+            Upload clear photos of your documents to start driving.
+          </p>
+          <p className="text-[11px] text-slate-400 font-medium leading-relaxed">
+            Ensure your name, photo and expiry dates are visible. Blurry or
+            cropped images can cause delays in your activation.
+          </p>
+        </section>
 
-        {/* Content */}
-        <main className="app-main flex-1 px-4 pt-3 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
-          {/* Intro banner */}
-          <section className="rounded-2xl bg-[#f0faf7] border border-[#d6ebe6] p-4 space-y-2">
-            <p className="text-[10px] tracking-[0.18em] uppercase text-[#03cd8c] font-semibold">
-              Verify your account
-            </p>
-            <p className="text-xs font-semibold text-slate-900">
-              Upload clear photos of your documents to start driving.
-            </p>
-            <p className="text-[11px] text-slate-600 leading-snug">
-              Make sure your name, photo and expiry dates are visible. Blurry or
-              cropped images can cause delays.
-            </p>
-          </section>
-
-          {/* Document list */}
-          <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-slate-900 mb-1">
-              Required documents
+        {/* Document list */}
+        <section className="space-y-4">
+          <div className="px-1">
+            <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
+              Required Documents
             </h2>
+          </div>
+          <div className="space-y-3">
             <DocItem
               icon={IdCard}
               title="National ID"
-              subtitle="Front and back, all corners visible."
+              subtitle="Front and back, all corners"
               status={docs.id.status}
               emphasise={docs.id.emphasise}
               fileName={docs.id.fileName}
@@ -183,8 +177,8 @@ export default function DocumentVerificationScreen() {
             />
             <DocItem
               icon={FileBadge2}
-              title="Driver's license"
-              subtitle="Valid and not expired."
+              title="Driver's License"
+              subtitle="Valid and not expired"
               status={docs.license.status}
               emphasise={docs.license.emphasise}
               fileName={docs.license.fileName}
@@ -192,76 +186,68 @@ export default function DocumentVerificationScreen() {
             />
             <DocItem
               icon={ClipboardCheck}
-              title="Police clearance"
-              subtitle="Issued within the last 6–12 months."
+              title="Conduct Clearance"
+              subtitle="Issued within 6 months"
               status={docs.police.status}
               emphasise={docs.police.emphasise}
               fileName={docs.police.fileName}
               onClick={() => triggerFilePick("police")}
             />
-          </section>
-
-          {/* Hidden file pickers */}
-          <div className="hidden">
-            <input
-              id="doc-upload-id"
-              type="file"
-              accept="image/*,.pdf"
-              onChange={(e) => handleFileSelected("id", e)}
-            />
-            <input
-              id="doc-upload-license"
-              type="file"
-              accept="image/*,.pdf"
-              onChange={(e) => handleFileSelected("license", e)}
-            />
-            <input
-              id="doc-upload-police"
-              type="file"
-              accept="image/*,.pdf"
-              onChange={(e) => handleFileSelected("police", e)}
-            />
           </div>
+        </section>
 
-          {/* Helper text */}
-          <section className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 flex items-start space-x-2">
-            <div className="mt-0.5">
-              <Info className="h-4 w-4 text-[#03cd8c]" />
+        {/* Hidden file pickers */}
+        <div className="hidden">
+          <input
+            id="doc-upload-id"
+            type="file"
+            accept="image/*,.pdf"
+            onChange={(e) => handleFileSelected("id", e)}
+          />
+          <input
+            id="doc-upload-license"
+            type="file"
+            accept="image/*,.pdf"
+            onChange={(e) => handleFileSelected("license", e)}
+          />
+          <input
+            id="doc-upload-police"
+            type="file"
+            accept="image/*,.pdf"
+            onChange={(e) => handleFileSelected("police", e)}
+          />
+        </div>
+
+        {/* Helper text */}
+        <section className="rounded-3xl border border-blue-50 bg-blue-50/30 p-5 flex items-start space-x-3">
+          <div className="mt-0.5 bg-blue-100 p-1.5 rounded-xl">
+            <Info className="h-4 w-4 text-blue-600" />
+          </div>
+          <div className="flex-1 text-[11px] text-blue-900/70 space-y-1.5">
+            <p className="font-black text-xs text-blue-900 uppercase tracking-tight">
+              Speed Up Approval
+            </p>
+            <div className="font-medium space-y-1">
+              <p>• Use natural light, avoid strong glare.</p>
+              <p>• Place the document on a dark flat surface.</p>
+              <p>• Ensure all 4 corners are clearly visible.</p>
             </div>
-            <div className="flex-1 text-[11px] text-slate-600 space-y-1">
-              <p className="font-semibold text-xs text-slate-900">
-                Tips for faster approval
-              </p>
-              <p>
-                • Use natural light and avoid strong shadows.
-                <br />• Place the document on a flat surface.
-                <br />• Check that all edges are inside the frame.
-              </p>
-            </div>
-          </section>
+          </div>
+        </section>
 
-          {/* Continue button */}
-          <section className="pt-1 pb-4">
-            <button
-              type="button"
-              onClick={() =>
-                navigate("/driver/onboarding/profile/documents/review")
-              }
-              className="w-full rounded-full py-2.5 text-sm font-semibold shadow-sm bg-[#03cd8c] text-white hover:bg-[#02b77c]"
-            >
-              Submit documents for review
-            </button>
-          </section>
-        </main>
-
-        {/* Bottom navigation – green */}
-        <nav className="app-bottom-nav border-t border-white/20 flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate(bottomNavRoutes.home)} />
-          <BottomNavItem icon={MessageSquare} label="Messages" onClick={() => navigate(bottomNavRoutes.messages)} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate(bottomNavRoutes.wallet)} />
-          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate(bottomNavRoutes.settings)} />
-        </nav>
-      </div>
+        {/* Continue button */}
+        <section className="pt-4 pb-12">
+          <button
+            type="button"
+            onClick={() =>
+              navigate("/driver/onboarding/profile/documents/review")
+            }
+            className="w-full rounded-2xl bg-[#03cd8c] py-4 text-sm font-black text-white shadow-xl shadow-emerald-500/20 hover:bg-[#02b77c] active:scale-[0.98] transition-all uppercase tracking-widest"
+          >
+            Submit for Review
+          </button>
+        </section>
+      </main>
     </div>
   );
 }

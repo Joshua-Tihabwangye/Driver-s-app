@@ -107,12 +107,6 @@ export default function RegistrationScreen() {
     phone.trim().length > 0;
 
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
 
   const handleNext = () => {
     if (!isValid) return;
@@ -126,87 +120,84 @@ export default function RegistrationScreen() {
   };
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Hide scrollbar */}
-        <style>{`
-          .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-          .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        `}</style>
+    <div className="flex flex-col min-h-full bg-[#f8fafc]">
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-90 transition-transform"
+          >
+            <ChevronLeft className="h-5 w-5 text-white" />
+          </button>
+          <h1 className="text-base font-black text-white tracking-tight">Registration</h1>
+          <div className="w-10" /> {/* Spacer */}
+        </header>
+      </div>
 
-        {/* Green curved header */}
-        <div className="relative" style={{ minHeight: 80 }}>
-          <div
-            className="absolute inset-0"
-            style={{
-              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)"
-}}
-          />
-          <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
+      {/* Content */}
+      <main className="flex-1 px-6 pt-6 pb-24 space-y-6">
+        {/* Profile photo + name */}
+        <section className="flex flex-col items-center">
+          <div className="relative mb-3 group">
+            <div className="h-24 w-24 rounded-[2rem] bg-slate-100 border-[4px] border-[#03cd8c] flex items-center justify-center overflow-hidden shadow-xl shadow-emerald-100 group-hover:scale-105 transition-transform duration-300">
+              <User className="h-12 w-12 text-slate-400" />
+            </div>
             <button
               type="button"
-              onClick={() => navigate(-1)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm"
+              onClick={() => navigate("/driver/preferences/identity/upload-image")}
+              className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 border-2 border-white shadow-lg active:scale-90 transition-all"
             >
-              <ChevronLeft className="h-5 w-5 text-white" />
+              <Pencil className="h-3.5 w-3.5 text-white" />
             </button>
-            <h1 className="text-base font-semibold text-white">Registration</h1>
-          </header>
-        </div>
+          </div>
+          <h2 className="text-lg font-black text-slate-900 tracking-tight flex items-center">
+            {fullName || "John Doe"} <span className="ml-1.5 opacity-40">✏️</span>
+          </h2>
+        </section>
 
-        {/* Content */}
-        <main className="app-main flex-1 px-5 pt-4 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
-          {/* Profile photo + name */}
-          <section className="flex flex-col items-center">
-            <div className="relative mb-2">
-              <div className="h-20 w-20 rounded-full bg-slate-100 border-[3px] border-[#03cd8c] flex items-center justify-center overflow-hidden">
-                <User className="h-10 w-10 text-slate-400" />
-              </div>
-              <button
-                type="button"
-                onClick={() => navigate("/driver/preferences/identity/upload-image")}
-                className="absolute bottom-0 right-0 flex h-6 w-6 items-center justify-center rounded-full bg-[#03cd8c] border-2 border-white shadow-sm"
-              >
-                <Pencil className="h-3 w-3 text-white" />
-              </button>
-            </div>
-            <h2 className="text-base font-bold text-slate-900">
-              {fullName || "John Doe"} ✏️
-            </h2>
-          </section>
+        {/* Info display rows (read-only summary) */}
+        <section className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-1">
+          <div className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
+            <span className="text-[11px] uppercase font-black text-slate-400 tracking-widest">Country</span>
+            <span className="text-xs font-black text-slate-800 tracking-tight">{country || "Uganda"}</span>
+          </div>
+          <div className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
+            <span className="text-[11px] uppercase font-black text-slate-400 tracking-widest">Birth</span>
+            <span className="text-xs font-black text-slate-800 tracking-tight">{dob || "19.05.1989"}</span>
+          </div>
+          <div className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
+            <span className="text-[11px] uppercase font-black text-slate-400 tracking-widest">Email</span>
+            <span className="text-xs font-black text-slate-800 tracking-tight">{email || "johndoe45@gmail.com"}</span>
+          </div>
+          <div className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
+            <span className="text-[11px] uppercase font-black text-slate-400 tracking-widest">Mobile</span>
+            <span className="text-xs font-black text-slate-800 tracking-tight">{phone || "+256 8868564885"}</span>
+          </div>
+        </section>
 
-          {/* Info display rows (read-only summary) */}
-          <section>
-            <div className="flex items-center justify-between py-2.5 border-b border-slate-100">
-              <span className="text-xs text-slate-500">Country</span>
-              <span className="text-xs font-medium text-slate-900">{country || "Uganda"}</span>
-            </div>
-            <div className="flex items-center justify-between py-2.5 border-b border-slate-100">
-              <span className="text-xs text-slate-500">Date of Birth</span>
-              <span className="text-xs font-medium text-slate-900">{dob || "19.05.1989"}</span>
-            </div>
-            <div className="flex items-center justify-between py-2.5 border-b border-slate-100">
-              <span className="text-xs text-slate-500">Email</span>
-              <span className="text-xs font-medium text-slate-900">{email || "johndoe45@gmail.com"}</span>
-            </div>
-            <div className="flex items-center justify-between py-2.5">
-              <span className="text-xs text-slate-500">Mobile</span>
-              <span className="text-xs font-medium text-slate-900">{phone || "+258 8868564885"}</span>
-            </div>
-          </section>
+        {/* Divider */}
+        <div className="h-1 w-12 bg-[#03cd8c]/20 mx-auto rounded-full" />
 
-          {/* Divider */}
-          <div className="h-px bg-[#03cd8c]/20" />
+        {/* Personal Info heading + form fields */}
+        <section className="space-y-4">
+          <div className="px-1">
+            <h3 className="text-sm font-black text-[#03cd8c] uppercase tracking-widest">Personal Info</h3>
+            <p className="text-[11px] text-slate-400 font-medium leading-relaxed mt-0.5">
+              Let's get started by setting up your profile
+            </p>
+          </div>
 
-          {/* Personal Info heading + form fields */}
-          <section className="space-y-3">
-            <div>
-              <h3 className="text-sm font-bold text-[#03cd8c] mb-1">Personal Info</h3>
-              <p className="text-[11px] text-slate-500">
-                Let's get started by setting up your profile
-              </p>
-            </div>
-
+          <div className="space-y-3">
             <Input
               label="Full Name"
               value={fullName}
@@ -220,12 +211,12 @@ export default function RegistrationScreen() {
               placeholder="e.g. Uganda"
             />
             <label className="flex flex-col space-y-1">
-              <span className="text-[11px] font-medium text-slate-600">Date of Birth</span>
+              <span className="text-[11px] font-black uppercase text-slate-400 tracking-widest mb-1 ml-1">Date of Birth</span>
               <input
                 type="date"
                 value={dob}
                 onChange={(e) => setDob(e.target.value)}
-                className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-[13px] text-slate-900 placeholder:text-slate-400 focus:border-[#03cd8c] focus:outline-none focus:ring-1 focus:ring-[#03cd8c]"
+                className="h-12 rounded-2xl border border-slate-100 bg-white px-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#03cd8c] focus:outline-none focus:ring-4 focus:ring-[#03cd8c]/5 transition-all"
               />
             </label>
             <Input
@@ -241,56 +232,51 @@ export default function RegistrationScreen() {
               onChange={setPhone}
               placeholder="e.g. +256 700 000000"
             />
-          </section>
+          </div>
+        </section>
 
-          {/* Expandable sections */}
-          <section className="space-y-3">
-            <AccordionCard
-              icon={Shield}
-              title="General ID"
-              description="Adding your identification Documents helps us ensure the security of our platform and verify your identity."
-              cta="Upload or update an official ID document so we can verify your identity and protect your account."
-              iconColor="#03cd8c"
-              borderColor="#d6ebe6"
-              path="/driver/preferences/identity"
-              onNavigate={handleAccordionNavigate}
-            />
-            <AccordionCard
-              icon={MapPin}
-              title="Addresses"
-              description="Your address is important for personalizing your experience and ensuring that you receive relevant information and opportunities tailored to your location."
-              cta="Add at least one valid address so we can personalize your experience and show you the right cities and services."
-              iconColor="#f77f00"
-              borderColor="#ffe0b2"
-              path="/driver/onboarding/profile"
-              onNavigate={handleAccordionNavigate}
-            />
-          </section>
+        {/* Expandable sections */}
+        <section className="space-y-4">
+          <div className="px-1">
+             <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">Verification</h3>
+          </div>
+          <AccordionCard
+            icon={Shield}
+            title="General ID"
+            description="Adding your identification Documents helps us ensure the security of our platform and verify your identity."
+            cta="Upload or update an official ID document so we can verify your identity and protect your account."
+            iconColor="#03cd8c"
+            borderColor="#d6ebe6"
+            path="/driver/preferences/identity"
+            onNavigate={handleAccordionNavigate}
+          />
+          <AccordionCard
+            icon={MapPin}
+            title="Addresses"
+            description="Your address is important for personalizing your experience and ensuring that you receive relevant information and opportunities tailored to your location."
+            cta="Add at least one valid address so we can personalize your experience and show you the right cities and services."
+            iconColor="#f77f00"
+            borderColor="#ffe0b2"
+            path="/driver/onboarding/profile"
+            onNavigate={handleAccordionNavigate}
+          />
+        </section>
 
-          {/* Next button */}
-          <section className="pt-2 pb-4">
-            <button
-              type="button"
-              disabled={!isValid}
-              onClick={handleNext}
-              className={`w-full rounded-full py-3 text-sm font-semibold shadow-sm transition-colors ${isValid
-                  ? "bg-[#03cd8c] text-white hover:bg-[#02b77c]"
-                  : "bg-slate-200 text-slate-400 cursor-not-allowed"
-                }`}
-            >
-              Next
-            </button>
-          </section>
-        </main>
-
-        {/* Bottom navigation – green */}
-        <nav className="app-bottom-nav border-t border-white/20 flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate("/driver/dashboard/online")} />
-          <BottomNavItem icon={MessageSquare} label="Messages" onClick={() => navigate("/driver/ridesharing/notification")} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate("/driver/earnings/overview")} />
-          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate("/driver/preferences")} />
-        </nav>
-      </div>
+        {/* Next button */}
+        <section className="pt-2 pb-12">
+          <button
+            type="button"
+            disabled={!isValid}
+            onClick={handleNext}
+            className={`w-full rounded-2xl py-4 text-sm font-black tracking-tight shadow-lg transition-all active:scale-[0.98] ${isValid
+                ? "bg-[#03cd8c] text-white shadow-emerald-500/20 hover:bg-[#02b77c]"
+                : "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200 shadow-none"
+              }`}
+          >
+            CONTINUE
+          </button>
+        </section>
+      </main>
     </div>
   );
 }

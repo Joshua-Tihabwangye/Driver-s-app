@@ -46,78 +46,78 @@ export default function RideRequestsPromptScreen() {
   };
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
+    <div className="flex flex-col h-full bg-[#f8fafc]">
       {/* Local style: hide scrollbars but keep swipe scrolling */}
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-              <Activity className="h-4 w-4 text-[#03cd8c]" />
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+              <Activity className="h-5 w-5 text-white" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                Driver
-              </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Online dashboard
-              </h1>
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Console</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">Sector Intel</p>
             </div>
           </div>
+          <div className="w-10" /> {/* Spacer */}
         </header>
-
-        {/* Content */}
-        <main className="app-main flex-1 px-4 pt-3 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
-          {/* Prompt card */}
-          <section className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 flex items-center justify-between">
-            <div className="flex items-start space-x-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white">
-                <ListFilter className="h-4 w-4 text-[#03cd8c]" />
-              </div>
-              <div className="flex flex-col items-start">
-                <span className="text-xs font-semibold text-slate-900">
-                  Try the job requests list
-                </span>
-                <span className="text-[11px] text-slate-600">
-                  Browse nearby jobs (Ride, Delivery, Rental, Tour, Ambulance…)
-                  and choose the ones that best fit your route and range.
-                </span>
-                <span className="mt-1 inline-flex items-center text-[10px] text-slate-500">
-                  <MapPin className="h-3 w-3 mr-1" />
-                  Currently 4 jobs within 5 km
-                </span>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={handleViewJobs}
-              className="inline-flex h-7 rounded-full bg-[#03cd8c] px-2.5 text-[11px] font-semibold text-slate-900 items-center justify-center"
-            >
-              View jobs
-              <ChevronRight className="h-3 w-3 ml-0.5" />
-            </button>
-          </section>
-
-          {/* Placeholder for rest of dashboard */}
-          <section className="rounded-2xl border border-dashed border-slate-200 bg-white px-3 py-3 text-[11px] text-slate-400">
-            This area would show the rest of your online dashboard (map,
-            stats, quick actions).
-          </section>
-        </main>
-
-        {/* Bottom navigation – Home active (dashboard context) */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate("/driver/dashboard/online")}/>
-          <BottomNavItem icon={Briefcase} label="Manager" active={navActive("manager")} onClick={() => navigate("/driver/jobs/list")}/>
-          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate("/driver/earnings/overview")}/>
-          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate("/driver/preferences")}/>
-        </nav>
       </div>
+
+      {/* Content */}
+      <main className="flex-1 px-6 pt-6 pb-24 space-y-6 overflow-y-auto scrollbar-hide">
+        {/* Prompt card */}
+        <section className="rounded-[2.5rem] border border-slate-100 bg-white p-6 flex flex-col items-start space-y-6 shadow-xl shadow-slate-200/50">
+          <div className="flex items-center space-x-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-[#03cd8c] shadow-inner">
+              <ListFilter className="h-6 w-6" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">MISSION ADVISORY</span>
+              <p className="text-sm font-black text-slate-900 uppercase tracking-tight mt-0.5">Interactive Job Matrix</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-tight leading-relaxed">
+              Analyze nearby mission vectors across all sectors including Delivery, Rental, and emergency Ambulance protocols. Select optimal trajectories for maximum yield.
+            </p>
+            <div className="flex items-center space-x-3 text-[10px] font-black text-[#03cd8c] uppercase tracking-widest bg-emerald-50 w-fit px-3 py-1.5 rounded-full">
+              <MapPin className="h-3.5 w-3.5" />
+              <span>4 Active Vectors in current sector</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleViewJobs}
+            className="w-full rounded-full bg-slate-900 text-white py-4 text-[11px] font-black uppercase tracking-widest items-center justify-center flex hover:bg-slate-800 active:scale-95 transition-all shadow-xl shadow-slate-900/20"
+          >
+            Access Matrix
+            <ChevronRight className="h-4 w-4 ml-2" />
+          </button>
+        </section>
+
+        {/* Placeholder for rest of dashboard */}
+        <section className="rounded-[2.5rem] border-2 border-dashed border-slate-100 bg-slate-50/50 p-6 flex flex-col items-center justify-center text-center">
+          <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">
+            Awaiting Dashboard Telemetry
+          </p>
+        </section>
+      </main>
     </div>
   );
 }

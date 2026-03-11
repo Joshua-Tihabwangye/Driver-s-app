@@ -8,7 +8,7 @@ import {
   Wallet,
   Settings
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D93 QR Code – Processing Stage (v1)
 // Screen showing the processing state after scanning a QR code, while verifying with backend.
@@ -32,75 +32,78 @@ function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }
 
 export default function QrProcessingStageScreen() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
-  return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
 
-      {/* Phone frame */}
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-              <QrCode className="h-4 w-4 text-[#03cd8c]" />
+  return (
+    <div className="flex flex-col h-full bg-[#f8fafc]">
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 110 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md shadow-inner">
+              <QrCode className="h-6 w-6 text-white" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
+            <div className="flex flex-col text-left">
+              <span className="text-[10px] uppercase tracking-[0.2em] font-black text-white/70">
                 Driver · Deliveries
               </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Scan QR code
+              <h1 className="text-xl font-black text-white leading-tight">
+                Scan QR Code
               </h1>
             </div>
           </div>
         </header>
+      </div>
 
-        {/* Content */}
-        <main className="app-main flex-1 px-4 pb-4 overflow-y-auto scrollbar-hide flex flex-col items-center justify-center space-y-4">
-          {/* Processing indicator */}
-          <section className="flex flex-col items-center space-y-3">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-50 border border-slate-100">
-              <Loader2 className="h-8 w-8 text-[#03cd8c] animate-spin" />
+      <main className="flex-1 px-6 pb-24 overflow-y-auto scrollbar-hide flex flex-col items-center justify-center space-y-10">
+        {/* Processing indicator */}
+        <section className="flex flex-col items-center space-y-6 w-full pt-12">
+          <div className="relative">
+            <div className="absolute inset-0 rounded-full border-4 border-emerald-100 animate-spin-slow" />
+            <div className="flex h-32 w-32 items-center justify-center rounded-full bg-white border border-slate-100 shadow-xl shadow-emerald-100">
+              <Loader2 className="h-12 w-12 text-[#03cd8c] animate-spin" />
             </div>
-            <div className="flex flex-col items-center text-[11px] text-slate-600">
-              <span className="text-sm font-semibold text-slate-900">
-                Verifying code…
+          </div>
+          <div className="flex flex-col items-center text-center space-y-2">
+            <span className="text-lg font-black text-slate-900 uppercase tracking-widest">
+              Verifying Code
+            </span>
+            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-[0.2em]">
+              Checking details with server…
+            </p>
+          </div>
+        </section>
+
+        {/* Info note */}
+        <section className="w-full max-w-[300px] flex flex-col space-y-6">
+          <div className="rounded-[2rem] bg-slate-900 p-6 shadow-2xl space-y-4">
+            <div className="flex items-center space-x-3 text-[#03cd8c]">
+              <Info className="h-5 w-5" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-white">
+                Important Stay Put
               </span>
-              <span>Checking order details with the server.</span>
             </div>
-          </section>
-
-          {/* Info note */}
-          <section className="w-full max-w-[260px] text-center text-[10px] text-slate-500 flex flex-col space-y-1">
-            <p>
+            <p className="text-[11px] font-medium text-slate-300 leading-relaxed">
               Please wait a moment while we confirm this package. Do not leave
               the pickup point until verification is complete.
             </p>
-            <div className="inline-flex items-center justify-center text-[10px] text-slate-500">
-              <Info className="h-3 w-3 mr-1" />
-              <span>If this takes too long, you can cancel and try scanning again.</span>
-            </div>
-          </section>
-        </main>
+          </div>
 
-        {/* Bottom navigation – Home active (scanner context) */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate("/driver/dashboard/online")}/>
-          <BottomNavItem icon={Briefcase} label="Manager" active={navActive("manager")} onClick={() => navigate("/driver/jobs/list")}/>
-          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate("/driver/earnings/overview")}/>
-          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate("/driver/preferences")}/>
-        </nav>
-      </div>
+          <button
+            onClick={() => navigate(-1)}
+            className="w-full rounded-[2rem] border-2 border-slate-200 bg-white px-6 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400 active:scale-[0.98] transition-all hover:bg-slate-50"
+          >
+            Cancel Verification
+          </button>
+        </section>
+      </main>
     </div>
   );
 }

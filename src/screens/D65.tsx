@@ -96,128 +96,109 @@ export default function FollowMyRideScreen() {
   const hasSelection = selectedIds.length > 0;
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
+    <div className="flex flex-col h-full bg-[#f8fafc]">
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg"
+          >
+            <ChevronLeft className="h-5 w-5 text-white" />
+          </button>
+          <div className="flex flex-col items-center">
+             <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Protocol</span>
+             <p className="text-base font-black text-white tracking-tight leading-tight">Driver App</p>
+          </div>
+          <div className="w-9" />
+        </header>
+      </div>
 
-      {/* Phone frame */}
-      <div className="w-[375px] h-[812px] bg-white rounded-[32px] shadow-2xl overflow-hidden flex flex-col relative">
-        {/* Header */}
-        <header className="flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2 text-left">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-              <Users className="h-4 w-4 text-[#03cd8c]" />
+      {/* Content Area */}
+      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-8">
+
+        {/* Section Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col">
+             <span className="text-[10px] tracking-[0.2em] font-black uppercase text-[#03cd8c]">Safety Hub</span>
+             <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Trip Sharing</h2>
+          </div>
+          <div className="h-10 w-10 bg-slate-50 rounded-2xl flex items-center justify-center text-[#03cd8c]">
+             <Users className="h-5 w-5" />
+          </div>
+        </div>
+
+        {/* Intro card */}
+        <section className="rounded-[2.5rem] bg-slate-900 border border-slate-800 text-white p-6 space-y-4 shadow-2xl">
+          <div className="flex items-center space-x-4 text-left">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#03cd8c] text-white shadow-lg shadow-emerald-500/20">
+              <MapPin className="h-6 w-6" />
             </div>
-            <div className="flex flex-col items-start text-left">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                Driver · Safety
-              </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Follow my ride
-              </h1>
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-[#a5f3fc]">Live Active</span>
+              <p className="text-sm font-black uppercase tracking-tight">Mission Tracking</p>
             </div>
           </div>
-        </header>
+          <p className="text-[11px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed">
+            Sharing a secure link for this trip only. Contacts can see your location and status until mission completion.
+          </p>
+        </section>
 
-        {/* Content */}
-        <main className="flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
-          {/* Intro card */}
-          <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-3">
-            <div className="flex items-center space-x-3 text-left">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#03cd8c] text-white">
-                <MapPin className="h-5 w-5" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] tracking-[0.18em] uppercase text-[#a5f3fc]">
-                  Live trip sharing
-                </span>
-                <p className="text-sm font-semibold">
-                  Let trusted contacts follow this ride.
-                </p>
-              </div>
-            </div>
-            <p className="text-[11px] text-slate-100 leading-snug text-left">
-              We&apos;ll send a secure link for this trip only. They can see your
-              location and trip status until the ride ends.
-            </p>
-          </section>
+        {/* Contacts list */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between ml-1">
+             <h2 className="text-[10px] font-black text-[#03cd8c] uppercase tracking-[0.2em]">Select Trusted Contacts</h2>
+             <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{selectedIds.length} Selected</span>
+          </div>
+          <div className="space-y-3">
+            {contacts.map((c) => (
+              <ContactRow
+                key={c.id}
+                name={c.name}
+                detail={c.detail}
+                channel={c.channel}
+                selected={selectedIds.includes(c.id)}
+                onToggle={() => toggleContact(c.id)}
+              />
+            ))}
+          </div>
+        </section>
 
-          {/* Contacts list */}
-          <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-slate-900 mb-1 text-left">
-              Choose who can follow
-            </h2>
-            <div className="space-y-2">
-              {contacts.map((c) => (
-                <ContactRow
-                  key={c.id}
-                  name={c.name}
-                  detail={c.detail}
-                  channel={c.channel}
-                  selected={selectedIds.includes(c.id)}
-                  onToggle={() => toggleContact(c.id)}
-                />
-              ))}
-            </div>
-          </section>
-
-          {/* Info */}
-          <section className="space-y-2">
-            <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 text-[11px] text-slate-600 text-left">
-              <p className="font-semibold text-xs text-slate-900 mb-0.5">
-                How it works
-              </p>
-              <p>
-                Your contacts receive a link via SMS or email. They cannot
-                control your trip – they can only see status and location.
-              </p>
-            </div>
-          </section>
-        </main>
+        {/* Info */}
+        <section className="rounded-[2rem] border border-slate-100 bg-white p-6 flex items-start space-x-4 shadow-xl shadow-slate-200/50">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 flex-shrink-0">
+             <CheckCircle2 className="h-6 w-6 text-[#03cd8c]" />
+          </div>
+          <div className="flex-1">
+            <p className="font-extrabold text-[11px] text-slate-900 uppercase tracking-tight mb-1">Secure Protocol</p>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed">Contacts receive a link via SMS/Email. They cannot control your trip.</p>
+          </div>
+        </section>
 
         {/* Actions */}
-        <footer className="px-4 pb-4 pt-1 border-t border-slate-100 bg-white/95 backdrop-blur-sm">
+        <div className="pb-8">
           <button
             type="button"
             disabled={!hasSelection}
             onClick={() => navigate("/driver/safety/share-my-ride")}
-            className={`w-full rounded-full py-2.5 text-sm font-semibold flex items-center justify-center shadow-sm transition-all ${hasSelection
-                ? "bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c] active:scale-[0.98] transition-transform"
-                : "bg-slate-100 text-slate-400 cursor-not-allowed"
+            className={`w-full rounded-full py-5 text-[13px] font-black uppercase tracking-[0.2em] flex items-center justify-center shadow-2xl transition-all active:scale-95 ${hasSelection
+                ? "bg-[#03cd8c] text-white shadow-emerald-500/30"
+                : "bg-slate-100 text-slate-300 cursor-not-allowed"
               }`}
           >
-            <Share2 className="h-4 w-4 mr-1" />
-            {hasSelection ? "Send follow-ride link" : "Select at least one contact"}
+            <Share2 className="h-5 w-5 mr-3" />
+            {hasSelection ? "Initiate Sharing" : "Select Contact First"}
           </button>
-        </footer>
-
-        {/* Bottom navigation */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem
-            icon={Home}
-            label="Home"
-           active={navActive("home")} onClick={() => navigate(bottomNavRoutes.home)}
-          />
-          <BottomNavItem
-            icon={Briefcase}
-            label="Manager"
-           active={navActive("manager")} onClick={() => navigate(bottomNavRoutes.manager)}
-          />
-          <BottomNavItem
-            icon={Wallet}
-            label="Wallet"
-           active={navActive("wallet")} onClick={() => navigate(bottomNavRoutes.wallet)}
-          />
-          <BottomNavItem
-            icon={Settings}
-            label="Settings"
-           active={navActive("settings")} onClick={() => navigate(bottomNavRoutes.settings)}
-          />
-        </nav>
-      </div>
+        </div>
+      </main>
     </div>
   );
 }

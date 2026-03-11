@@ -240,91 +240,95 @@ export default function DriverSearchScreen() {
 }[mode];
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
+    <div className="flex flex-col h-full bg-[#f8fafc]">
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* Phone frame */}
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-              <Search className="h-4 w-4 text-[#03cd8c]" />
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+              <Search className="h-5 w-5 text-white" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                Driver
-              </span>
-              <h1 className="text-base font-semibold text-slate-900">Search</h1>
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Console</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">Omni Search</p>
             </div>
           </div>
+          <div className="w-10" /> {/* Spacer */}
         </header>
+      </div>
 
-        {/* Content */}
-        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
-          {/* Search bar */}
-          <section className="space-y-2 pt-1">
-            <div className="flex items-center rounded-full bg-slate-50 px-3 py-1.5 border border-slate-100">
-              <Search className="h-4 w-4 text-slate-400 mr-2" />
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search locations, jobs or riders"
-                className="flex-1 bg-transparent text-[13px] text-slate-900 placeholder:text-slate-400 focus:outline-none"
-              />
-              <button
-                type="button"
-                onClick={() => navigate("/driver/map/settings")}
-                className="inline-flex items-center justify-center text-slate-400 hover:text-slate-600"
-              >
-                <ListFilter className="h-4 w-4 ml-2" />
-              </button>
+      {/* Content */}
+      <main className="flex-1 px-6 pt-6 pb-24 space-y-6 overflow-y-auto scrollbar-hide">
+        {/* Search bar */}
+        <section className="space-y-3 pt-1">
+          <div className="flex items-center rounded-[2rem] bg-white px-5 py-4 border border-slate-100 shadow-xl shadow-slate-200/50 group focus-within:border-[#03cd8c] transition-all">
+            <Search className="h-5 w-5 text-slate-400 mr-3 group-focus-within:text-[#03cd8c]" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search locations, jobs or riders"
+              className="flex-1 bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none font-bold"
+            />
+            <button
+              type="button"
+              onClick={() => navigate("/driver/map/settings")}
+              className="inline-flex items-center justify-center text-slate-400 hover:text-slate-600 ml-2"
+            >
+              <ListFilter className="h-5 w-5" />
+            </button>
+          </div>
+          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight leading-relaxed">
+            Filtering results in <span className="text-[#03cd8c]">{filteredModeLabel}</span>. Full-spectrum scan covers logistics, transport, and sector markers.
+          </p>
+        </section>
+
+        {/* Mode tabs */}
+        <section className="space-y-4">
+          <div className="flex flex-wrap gap-2">
+            <ModeChip
+              label="All"
+              active={mode === "all"}
+              onClick={() => handleModeChange("all")}
+            />
+            <ModeChip
+              label="Locations"
+              active={mode === "locations"}
+              onClick={() => handleModeChange("locations")}
+            />
+            <ModeChip
+              label="Jobs"
+              active={mode === "jobs"}
+              onClick={() => handleModeChange("jobs")}
+            />
+            <ModeChip
+              label="Riders"
+              active={mode === "riders"}
+              onClick={() => handleModeChange("riders")}
+            />
+          </div>
+        </section>
+
+        {/* Results */}
+        {mode === "all" && (
+          <section className="space-y-6 pt-2">
+            <div className="px-1">
+              <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Priority Intervals</h2>
             </div>
-            <p className="text-[10px] text-slate-500">
-              Showing results in <span className="font-semibold">{filteredModeLabel}</span>{" "}
-              view. You can still see all job types (Ride, Delivery, Rental,
-              Tour, Ambulance, Shuttle) through job cards, history and trip
-              details.
-            </p>
-          </section>
-
-          {/* Mode tabs */}
-          <section className="space-y-2">
-            <div className="flex flex-wrap gap-1 text-[11px]">
-              <ModeChip
-                label="All"
-                active={mode === "all"}
-                onClick={() => handleModeChange("all")}
-              />
-              <ModeChip
-                label="Locations"
-                active={mode === "locations"}
-                onClick={() => handleModeChange("locations")}
-              />
-              <ModeChip
-                label="Jobs"
-                active={mode === "jobs"}
-                onClick={() => handleModeChange("jobs")}
-              />
-              <ModeChip
-                label="Riders"
-                active={mode === "riders"}
-                onClick={() => handleModeChange("riders")}
-              />
-            </div>
-          </section>
-
-          {/* Results */}
-          {mode === "all" && (
-            <section className="space-y-3 pt-1 pb-4">
-              <h2 className="text-sm font-semibold text-slate-900 mb-1">
-                Quick suggestions
-              </h2>
+            <div className="space-y-4">
               <LocationRow
                 title="Acacia Mall"
                 subtitle="Shopping · Kampala"
@@ -344,14 +348,16 @@ export default function DriverSearchScreen() {
                 rating="4.9"
                 onClick={handleRiderNavigate}
               />
-            </section>
-          )}
+            </div>
+          </section>
+        )}
 
-          {mode === "locations" && (
-            <section className="space-y-2 pt-1 pb-4">
-              <h2 className="text-sm font-semibold text-slate-900 mb-1">
-                Locations
-              </h2>
+        {mode === "locations" && (
+          <section className="space-y-6 pt-2">
+            <div className="px-1">
+              <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Sector Markers</h2>
+            </div>
+            <div className="space-y-4">
               <LocationRow
                 title="Acacia Mall"
                 subtitle="Shopping · Kampala"
@@ -370,29 +376,27 @@ export default function DriverSearchScreen() {
                 distance="8–12 min away"
                 onClick={handleLocationNavigate}
               />
-            </section>
-          )}
+            </div>
+          </section>
+        )}
 
-          {mode === "jobs" && (
-            <section className="space-y-2 pt-1 pb-4">
-              <div className="flex items-center justify-between mb-1">
-                <h2 className="text-sm font-semibold text-slate-900">Jobs</h2>
-                <span className="text-[10px] text-slate-500 inline-flex items-center">
-                  <Clock className="h-3 w-3 mr-1" />
-                  Recent job matches
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-1 mb-2">
-                {JOB_TABS.map((jt) => (
-                  <JobTypeChip
-                    key={jt}
-                    type={jt}
-                    active={jobTab === jt}
-                    onClick={() => handleJobTabChange(jt)}
-                  />
-                ))}
-              </div>
+        {mode === "jobs" && (
+          <section className="space-y-6 pt-2 pb-12">
+            <div className="flex items-center justify-between px-1">
+              <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Mission Data</h2>
+            </div>
+            <div className="flex flex-wrap gap-2 pb-2">
+              {JOB_TABS.map((jt) => (
+                <JobTypeChip
+                  key={jt}
+                  type={jt}
+                  active={jobTab === jt}
+                  onClick={() => handleJobTabChange(jt)}
+                />
+              ))}
+            </div>
 
+            <div className="space-y-4">
               {(jobTab === "all" || jobTab === "ride") && (
                 <JobRow
                   type="ride"
@@ -447,14 +451,16 @@ export default function DriverSearchScreen() {
                   onClick={() => handleJobNavigate("shuttle")}
                 />
               )}
-            </section>
-          )}
+            </div>
+          </section>
+        )}
 
-          {mode === "riders" && (
-            <section className="space-y-2 pt-1 pb-4">
-              <h2 className="text-sm font-semibold text-slate-900 mb-1">
-                Riders
-              </h2>
+        {mode === "riders" && (
+          <section className="space-y-6 pt-2 pb-12">
+            <div className="px-1">
+              <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Entity Registry</h2>
+            </div>
+            <div className="space-y-4">
               <RiderRow
                 name="John K"
                 trips="24"
@@ -473,38 +479,10 @@ export default function DriverSearchScreen() {
                 rating="5.0"
                 onClick={handleRiderNavigate}
               />
-            </section>
-          )}
-        </main>
-
-        {/* Bottom navigation – Search active (search context) */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem
-            icon={Search}
-            label="Search"
-            active={navActive("home")}
-            onClick={() => navigate(bottomNavRoutes.search)}
-          />
-          <BottomNavItem
-            icon={User}
-            label="Manager"
-            active={navActive("manager")}
-            onClick={() => navigate(bottomNavRoutes.manager)}
-          />
-          <BottomNavItem
-            icon={Clock}
-            label="Wallet"
-            active={navActive("wallet")}
-            onClick={() => navigate(bottomNavRoutes.wallet)}
-          />
-          <BottomNavItem
-            icon={MapPin}
-            label="Settings"
-            active={navActive("settings")}
-            onClick={() => navigate(bottomNavRoutes.settings)}
-          />
-        </nav>
-      </div>
+            </div>
+          </section>
+        )}
+      </main>
     </div>
   );
 }

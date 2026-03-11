@@ -10,7 +10,7 @@ import {
   Wallet,
   Settings
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D87 QR Code – Package Pickup Verification (v1)
 // Screen showing a QR code used to verify package pickup at a location.
@@ -34,110 +34,98 @@ function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }
 
 export default function QrCodePackagePickupVerificationScreen() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
-  return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
 
-      {/* Phone frame */}
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-              <QrCode className="h-4 w-4 text-[#03cd8c]" />
+  return (
+    <div className="flex flex-col h-full bg-[#f8fafc]">
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 110 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md shadow-inner">
+              <QrCode className="h-6 w-6 text-white" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
+            <div className="flex flex-col text-left">
+              <span className="text-[10px] uppercase tracking-[0.2em] font-black text-white/70">
                 Driver · Deliveries
               </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Package pickup verification
+              <h1 className="text-xl font-black text-white leading-tight">
+                Pickup Verify
               </h1>
             </div>
           </div>
         </header>
-
-        {/* Content */}
-        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
-          {/* QR code card */}
-          <section className="rounded-2xl border border-slate-100 bg-white shadow-sm px-4 py-4 flex flex-col items-center space-y-3">
-            <div className="flex flex-col items-center space-y-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e6fff7]">
-                <Package className="h-5 w-5 text-[#03cd8c]" />
-              </div>
-              <div className="flex flex-col items-center text-[11px] text-slate-600">
-                <span className="text-xs font-semibold text-slate-900">
-                  Show this code at pickup
-                </span>
-                <span>Merchant scans to confirm package handover.</span>
-              </div>
-            </div>
-
-            {/* Placeholder QR block */}
-            <div className="mt-1 flex h-40 w-40 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50">
-              <QrCode className="h-16 w-16 text-slate-700" />
-            </div>
-
-            <div className="text-[10px] text-slate-500 text-center max-w-[260px]">
-              Order ID: <span className="font-mono text-slate-700">#3241</span> ·
-              Pickup: Burger Hub, Acacia Mall
-            </div>
-          </section>
-
-          {/* Info & confirmation */}
-          <section className="space-y-2 pt-1 pb-4">
-            <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 flex items-start space-x-2 text-[11px] text-slate-600">
-              <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white">
-                <Info className="h-4 w-4 text-slate-600" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-xs text-slate-900 mb-0.5">
-                  How this works
-                </p>
-                <p>
-                  The merchant or staff member scans this code in their system.
-                  Once verified, the order is marked as picked up and you can
-                  start the delivery leg.
-                </p>
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-3 py-3 flex items-start space-x-2 text-[11px] text-emerald-700">
-              <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white">
-                <CheckCircle2 className="h-4 w-4" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-xs text-emerald-800 mb-0.5">
-                  After scanning
-                </p>
-                <p>
-                  You&apos;ll see a confirmation in the app that the package has
-                  been verified. If the code doesn&apos;t scan, ask the merchant to
-                  confirm the order ID.
-                </p>
-              </div>
-            </div>
-          </section>
-        </main>
-
-        {/* Bottom navigation – Home active (pickup verification context) */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate("/driver/dashboard/online")}/>
-          <BottomNavItem icon={Briefcase} label="Manager" active={navActive("manager")} onClick={() => navigate("/driver/jobs/list")}/>
-          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate("/driver/earnings/overview")}/>
-          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate("/driver/preferences")}/>
-        </nav>
       </div>
+
+      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-6">
+        {/* QR code card */}
+        <section className="rounded-[2.5rem] border border-slate-100 bg-white shadow-xl shadow-slate-200/50 p-8 flex flex-col items-center space-y-6">
+          <div className="flex flex-col items-center space-y-4 text-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 shadow-inner">
+              <Package className="h-8 w-8 text-emerald-500" />
+            </div>
+            <div className="flex flex-col items-center space-y-1">
+              <span className="text-sm font-black text-slate-900 uppercase tracking-widest">
+                Show Code at Pickup
+              </span>
+              <p className="text-[10px] font-medium text-slate-500 leading-relaxed max-w-[200px]">
+                Ask the merchant to scan this code to confirm package handover.
+              </p>
+            </div>
+          </div>
+
+          {/* Placeholder QR block */}
+          <div className="relative flex h-56 w-56 items-center justify-center rounded-[2rem] border-2 border-slate-100 bg-slate-50 shadow-inner overflow-hidden">
+             <div className="absolute inset-4 border-2 border-emerald-500/20 rounded-xl" />
+             <QrCode className="h-24 w-24 text-slate-900" />
+          </div>
+
+          <div className="text-[10px] font-black text-slate-400 text-center uppercase tracking-[0.2em]">
+            Order <span className="text-slate-900">#3241</span> · 
+            Pickup <span className="text-slate-900">Burger Hub</span>
+          </div>
+        </section>
+
+        {/* Info & confirmation */}
+        <section className="space-y-4 pb-12">
+          <div className="rounded-[2.5rem] bg-slate-900 border border-slate-800 p-6 flex items-start space-x-4 text-[11px] text-slate-300 shadow-2xl">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md shadow-inner text-white">
+              <Info className="h-6 w-6" />
+            </div>
+            <div className="flex-1">
+              <p className="font-black text-xs text-white mb-1 uppercase tracking-widest leading-relaxed">
+                How this Works
+              </p>
+              <p className="font-medium leading-relaxed">
+                Once scanned, the order is marked as collected and you can
+                start the delivery.
+              </p>
+            </div>
+          </div>
+
+          <div className="rounded-[2.5rem] bg-emerald-50 border border-emerald-100 p-6 flex items-start space-x-4 text-[11px] text-emerald-700 shadow-sm">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white shadow-sm text-emerald-500">
+              <CheckCircle2 className="h-7 w-7" />
+            </div>
+            <div className="flex-1">
+              <p className="font-black text-xs text-emerald-900 mb-1 uppercase tracking-widest leading-relaxed">
+                After Scanning
+              </p>
+              <p className="font-medium leading-relaxed">
+                You'll receive a confirmation instantly. If it doesn't scan,
+                verify the order ID with the merchant.
+              </p>
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

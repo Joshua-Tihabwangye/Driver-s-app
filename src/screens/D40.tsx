@@ -48,137 +48,114 @@ export default function RideSharingNotificationPopupScreen() {
 };
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
+    <div className="flex flex-col h-full bg-[#f8fafc]">
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-              <Map className="h-4 w-4 text-[#03cd8c]" />
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+              <Map className="h-5 w-5 text-white" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                Driver
-              </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Map view
-              </h1>
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Console</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">Spatial Scan</p>
             </div>
           </div>
+          <div className="w-10" /> {/* Spacer */}
         </header>
+      </div>
 
-        {/* Content */}
-        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide">
-          {/* Map container */}
-          <section className="relative rounded-3xl overflow-hidden border border-slate-100 bg-slate-200 h-[360px]">
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
+      {/* Content */}
+      <main className="flex-1 px-6 pt-6 pb-24 space-y-6 overflow-y-auto scrollbar-hide">
+        {/* Map container */}
+        <section className="relative rounded-[2.5rem] overflow-hidden border border-slate-100 bg-slate-200 h-[460px] shadow-2xl">
+          <div className="absolute inset-0 bg-slate-200" style={{ backgroundImage: 'radial-gradient(#94a3b8 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
 
-            {/* Current location marker */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="relative flex items-center justify-center">
-                <div className="h-10 w-10 rounded-full bg-[#03cd8c]/20" />
-                <div className="absolute h-6 w-6 rounded-full bg-[#03cd8c]/40" />
-                <div className="absolute h-3 w-3 rounded-full bg-[#03cd8c] border-2 border-white" />
-              </div>
+          {/* Current location marker */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="relative flex items-center justify-center">
+              <div className="h-16 w-16 rounded-full bg-[#03cd8c]/20 animate-ping" />
+              <div className="absolute h-8 w-8 rounded-full bg-[#03cd8c]/40" />
+              <div className="absolute h-4 w-4 rounded-full bg-[#03cd8c] border-2 border-white shadow-lg" />
             </div>
+          </div>
 
-            {/* Ride sharing notification popup */}
-            <div className="absolute inset-x-6 top-1/2 -translate-y-1/2">
-              <div className="rounded-2xl bg-white/95 shadow-xl border border-slate-100 px-3 py-3 space-y-2">
-                <div className="flex items-start space-x-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#e6fff7]">
-                    <Users className="h-4 w-4 text-[#03cd8c]" />
-                  </div>
-                  <div className="flex-1 flex flex-col items-start">
-                    <span className="text-xs font-semibold text-slate-900">
-                      Enable ride sharing in your area
-                    </span>
-                    <span className="text-[11px] text-slate-600">
-                      You can receive requests with more than one passenger
-                      (different pick-ups and drop-offs) and earn more per
-                      hour.
-                    </span>
-                  </div>
+          {/* Ride sharing notification popup */}
+          <div className="absolute inset-x-6 bottom-6">
+            <div className="rounded-[2.5rem] bg-white/90 backdrop-blur-xl shadow-2xl border border-slate-100 p-6 space-y-4">
+              <div className="flex items-start space-x-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#e6fff7] text-[#03cd8c] shadow-sm">
+                  <Users className="h-6 w-6" />
+                </div>
+                <div className="flex-1 space-y-1">
+                  <p className="text-sm font-black text-slate-900 uppercase tracking-tight">
+                    Pooled Traversal
+                  </p>
+                  <p className="text-[11px] text-slate-600 font-bold uppercase tracking-tight leading-relaxed">
+                    Activate multi-entity intercept logic. Aggregating vectors optimizes sectoral yield and mission density.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => navigate("/driver/map/online")}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-400 active:scale-90 transition-all"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="rounded-3xl bg-slate-50 p-4 flex items-start space-x-4 border border-slate-100">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm">
+                  <Car className="h-5 w-5 text-[#03cd8c]" />
+                </div>
+                <div className="flex-1 space-y-1">
+                  <p className="font-black text-[11px] text-slate-900 uppercase tracking-tight">
+                    Multi-Vector Intercept</p>
+                  <p className="text-[10px] text-slate-500 font-bold leading-tight">
+                    Neural engine calculates optimal pathing for concurrent pickups and drop-offs.
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4 pt-2">
+                <div className="flex items-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  <AlertTriangle className="h-4 w-4 mr-2 text-orange-500" />
+                  <span>Maintain cargo integrity focus.</span>
+                </div>
+                <div className="flex items-center space-x-3">
                   <button
                     type="button"
                     onClick={() => navigate("/driver/map/online")}
-                    className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-50 text-slate-400"
+                    className="flex-1 rounded-full border border-slate-200 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 active:scale-95 transition-all"
                   >
-                    <X className="h-3 w-3" />
+                    Hold
                   </button>
-                </div>
-
-                <div className="rounded-xl bg-slate-50 px-2 py-2 flex items-start space-x-2 text-[10px] text-slate-600">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white">
-                    <Car className="h-3.5 w-3.5 text-[#03cd8c]" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-[11px] text-slate-900 mb-0.5">
-                      How ride sharing works</p>
-                    <p>
-                      You may pick up additional riders on the way. The app will
-                      show the best route and order of stops.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between pt-1">
-                  <div className="flex items-center text-[10px] text-slate-500">
-                    <AlertTriangle className="h-3 w-3 mr-1 text-[#f97316]" />
-                    <span>Avoid unsafe or overcrowded situations.</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <button
-                      type="button"
-                      onClick={() => navigate("/driver/map/online")}
-                      className="rounded-full border border-slate-200 px-3 py-1 text-[11px] font-medium text-slate-700"
-                    >
-                      Not now
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => navigate("/driver/map/online/variant")}
-                      className="rounded-full bg-[#03cd8c] px-3 py-1 text-[11px] font-semibold text-slate-900"
-                    >
-                      Turn on ride sharing
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => navigate("/driver/map/online/variant")}
+                    className="flex-1 rounded-full bg-[#03cd8c] py-3 text-[10px] font-black uppercase tracking-widest text-slate-900 shadow-xl shadow-emerald-500/20 active:scale-95 transition-all"
+                  >
+                    Engage
+                  </button>
                 </div>
               </div>
             </div>
-          </section>
-        </main>
-
-        {/* Bottom navigation – Home active (map context) */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem
-            icon={Home}
-            label="Home"
-           active={navActive("home")} onClick={() => navigate(bottomNavRoutes.home)}
-          />
-          <BottomNavItem
-            icon={Briefcase}
-            label="Manager"
-           active={navActive("manager")} onClick={() => navigate(bottomNavRoutes.manager)}
-          />
-          <BottomNavItem
-            icon={Wallet}
-            label="Wallet"
-           active={navActive("wallet")} onClick={() => navigate(bottomNavRoutes.wallet)}
-          />
-          <BottomNavItem
-            icon={Settings}
-            label="Settings"
-           active={navActive("settings")} onClick={() => navigate(bottomNavRoutes.settings)}
-          />
-        </nav>
-      </div>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

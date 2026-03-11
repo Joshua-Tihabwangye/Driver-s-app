@@ -9,7 +9,7 @@ import {
   Wallet,
   Settings
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D96 Pick-Up Confirmed Screen (v1)
 // Generic pickup confirmed screen usable for marketing scans or package pickup confirmation.
@@ -33,113 +33,116 @@ function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }
 
 export default function PickupConfirmedGenericScreen() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
-  return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
 
-      {/* Phone frame */}
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50">
-              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+  return (
+    <div className="flex flex-col min-h-full bg-[#f8fafc]">
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 110 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md shadow-inner">
+              <CheckCircle2 className="h-6 w-6 text-white" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                EVzone
+            <div className="flex flex-col text-left">
+              <span className="text-[10px] uppercase tracking-[0.2em] font-black text-white/70">
+                Driver · Deliveries
               </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Pickup confirmed
+              <h1 className="text-xl font-black text-white leading-tight">
+                Pickup Confirmed
               </h1>
             </div>
           </div>
         </header>
-
-        {/* Content */}
-        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide space-y-4">
-          {/* Confirmation card */}
-          <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-3 flex flex-col items-center">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500/10 border border-emerald-300">
-              <CheckCircle2 className="h-10 w-10 text-emerald-400" />
-            </div>
-            <div className="flex flex-col items-center text-[11px] text-slate-100">
-              <span className="text-sm font-semibold text-white">
-                You&apos;re all set
-              </span>
-              <span>
-                This pickup has been confirmed and linked to your EVzone
-                account.
-              </span>
-            </div>
-          </section>
-
-          {/* Details */}
-          <section className="space-y-2">
-            <div className="rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 flex items-start space-x-2 text-[11px] text-slate-600">
-              <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-slate-50">
-                <QrCode className="h-4 w-4 text-[#03cd8c]" />
-              </div>
-              <div className="flex flex-col items-start">
-                <span className="text-xs font-semibold text-slate-900 mb-0.5">
-                  Code details
-                </span>
-                <span>
-                  QR: <span className="font-mono text-slate-800">ABC123</span>
-                </span>
-                <span>Scanned from EVzone poster / packaging.</span>
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 flex items-start space-x-2 text-[11px] text-slate-600">
-              <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-slate-50">
-                <Package className="h-4 w-4 text-slate-700" />
-              </div>
-              <div className="flex flex-col items-start">
-                <span className="text-xs font-semibold text-slate-900 mb-0.5">
-                  Pickup summary
-                </span>
-                <span>Order ID: #3241</span>
-                <span>Location: Burger Hub, Acacia Mall</span>
-                <span className="text-[10px] text-slate-500 mt-0.5">
-                  Time: 18:22 · Linked to today&apos;s earnings
-                </span>
-              </div>
-            </div>
-          </section>
-
-          {/* Hint / next steps */}
-          <section className="space-y-2 pb-4">
-            <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 text-[11px] text-slate-600">
-              <p className="font-semibold text-xs text-slate-900 mb-0.5">
-                What&apos;s next?
-              </p>
-              <p>
-                Head to the delivery address following your active route. You
-                can view this pickup in your Ride & Delivery History.
-              </p>
-            </div>
-          </section>
-        </main>
-
-        {/* Bottom navigation – Home active (generic pickup confirmation context) */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate("/driver/dashboard/online")}/>
-          <BottomNavItem icon={Briefcase} label="Manager" active={navActive("manager")} onClick={() => navigate("/driver/jobs/list")}/>
-          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate("/driver/earnings/overview")}/>
-          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate("/driver/preferences")}/>
-        </nav>
       </div>
+
+      <main className="flex-1 px-6 pt-6 pb-24 space-y-6">
+        {/* Confirmation card */}
+        <section className="relative rounded-[2.5rem] bg-slate-900 overflow-hidden p-8 shadow-2xl flex flex-col items-center text-center space-y-4">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full -mr-16 -mt-16 blur-3xl" />
+          <div className="relative flex h-20 w-20 items-center justify-center rounded-[2rem] bg-emerald-500/10 border border-emerald-500/20 shadow-inner">
+            <CheckCircle2 className="h-10 w-10 text-[#03cd8c]" />
+          </div>
+          <div className="relative space-y-2">
+            <h2 className="text-xl font-black text-white tracking-tight">
+              You're All Set
+            </h2>
+            <p className="text-[11px] font-medium text-slate-400 leading-relaxed max-w-[220px]">
+              This pickup has been confirmed and linked to your EVzone account
+              for today's session.
+            </p>
+          </div>
+        </section>
+
+        {/* Details list */}
+        <section className="space-y-4">
+          <div className="rounded-[2rem] bg-white border border-slate-100 p-5 shadow-xl shadow-slate-200/50 flex items-start space-x-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-slate-400">
+              <QrCode className="h-5 w-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">
+                 Order Details
+               </span>
+               <p className="text-sm font-black text-slate-900 truncate">
+                 ID: #3241 · ABC123
+               </p>
+               <p className="text-[11px] font-medium text-slate-500 mt-0.5">
+                 Scanned from EVzone Poster
+               </p>
+            </div>
+          </div>
+
+          <div className="rounded-[2rem] bg-white border border-slate-100 p-5 shadow-xl shadow-slate-200/50 flex items-start space-x-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-slate-400">
+              <Package className="h-5 w-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">
+                 Pickup Summary
+               </span>
+               <p className="text-sm font-black text-slate-900 truncate uppercase">
+                 Burger Hub, Acacia Mall
+               </p>
+               <p className="text-[11px] font-medium text-slate-500 mt-0.5">
+                 18:22 · Linked to today's earnings
+               </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Next step info */}
+        <section className="space-y-4">
+          <div className="rounded-[2rem] bg-emerald-50/50 border border-emerald-100/50 p-6 flex items-start space-x-4">
+             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+                <MapPin className="h-5 w-5" />
+             </div>
+             <div className="flex-1">
+                <p className="text-xs font-black text-slate-900 uppercase tracking-widest mb-1">
+                  What's Next?
+                </p>
+                <p className="text-[11px] font-medium text-slate-600 leading-relaxed">
+                  Head to the delivery address following your active route. You 
+                  can view this pickup in your History.
+                </p>
+             </div>
+          </div>
+
+          <button
+            onClick={() => navigate("/driver/dashboard/online")}
+            className="w-full rounded-[2rem] bg-slate-900 px-6 py-5 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-slate-200 active:scale-[0.98] transition-all"
+          >
+            Continue to Dashboard
+          </button>
+        </section>
+      </main>
     </div>
   );
 }

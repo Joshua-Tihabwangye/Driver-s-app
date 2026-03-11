@@ -1,10 +1,11 @@
 import React from "react";
 import {
-    Package,
+  Package,
   ShieldCheck,
   CheckCircle2,
   XCircle,
   Info,
+  ChevronLeft,
   Home,
   Briefcase,
   Wallet,
@@ -15,20 +16,6 @@ import { useNavigate , useLocation } from "react-router-dom";
 // EVzone Driver App – D17 Vehicle Accessories
 // Accessories required / recommended for rides & deliveries.
 
-function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
-  return (
-    <button
-      type="button"
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${active ? "text-white" : "text-white/50 hover:text-white/80"
-        }`}
-      onClick={onClick}
-    >
-      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
-      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
-      <span className="relative z-10">{label}</span>
-    </button>
-  );
-}
 
 function AccessoryRow({ icon: Icon, name, detail, status }) {
   const tone =
@@ -83,121 +70,102 @@ function AccessoryRow({ icon: Icon, name, detail, status }) {
 
 export default function VehicleAccessoriesScreen() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
-  const bottomNavRoutes = {
-    home: "/driver/dashboard/online",
-    manager: "/driver/jobs/list",
-    wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences"
-};
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
+    <div className="flex flex-col min-h-full bg-[#f8fafc]">
 
-      {/* Phone frame */}
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-              <Package className="h-4 w-4 text-[#03cd8c]" />
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-90 transition-transform"
+          >
+            <ChevronLeft className="h-5 w-5 text-white" />
+          </button>
+          <h1 className="text-base font-black text-white tracking-tight">Equipment</h1>
+          <div className="w-10" /> {/* Spacer */}
+        </header>
+      </div>
+
+      {/* Content */}
+      <main className="flex-1 px-6 pt-6 pb-24 space-y-6">
+        {/* Compliance identity card */}
+        <section className="rounded-[2.5rem] bg-[#0b1e3a] text-white p-6 space-y-4 shadow-xl relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#03cd8c] text-white">
+              <ShieldCheck className="h-5 w-5" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] font-bold uppercase text-[#03cd8c]">
-                Compliance Center
-              </span>
-              <p className="text-sm font-bold tracking-tight">Equipment Checklist</p>
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-400">COMPLIANCE CENTER</span>
+              <p className="text-sm font-black tracking-tight mt-0.5">Asset & Safety Audit</p>
             </div>
           </div>
-        </header>
+          <p className="text-[11px] text-slate-300 font-medium leading-relaxed">
+            Standardizing on-board equipment ensures superior trip quality and operational safety. Maintain your inventory according to EVzone guidelines.
+          </p>
+        </section>
 
-        {/* Content */}
-        <main className="app-main flex-1 px-4 pt-3 pb-4 space-y-4 overflow-y-auto scrollbar-hide text-left">
-          {/* Safety banner */}
-          <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-2">
-            <div className="flex items-center space-x-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#03cd8c] text-slate-900 flex-shrink-0">
-                <ShieldCheck className="h-4 w-4" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] tracking-[0.18em] uppercase text-[#a5f3fc]">
-                  Safety & equipment
-                </span>
-                <p className="text-xs font-semibold text-white">
-                  Make sure your vehicle has all required accessories.
-                </p>
-              </div>
+        {/* Accessory list */}
+        <section className="space-y-4">
+           <div className="px-1 flex items-center justify-between">
+              <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
+                Mandatory Inventory
+              </h2>
+           </div>
+           <div className="space-y-3">
+             <AccessoryRow
+               icon={Package}
+               name="Safety First Aid Kit"
+               detail="Ministry of Health certified"
+               status="Available"
+             />
+             <AccessoryRow
+               icon={Package} // Replaced with a more generic icon for demo
+               name="Child Safety Seat"
+               detail="ISOFIX compatible model"
+               status="Missing"
+             />
+             <AccessoryRow
+               icon={Package}
+               name="Insulated Food Case"
+               detail="Large capacity delivery bag"
+               status="Required"
+             />
+           </div>
+        </section>
+
+        {/* Info & actions */}
+        <section className="space-y-4 pt-1 pb-12">
+          <div className="rounded-3xl border border-blue-50 bg-blue-50/30 p-5 flex items-start space-x-3">
+            <div className="mt-0.5 bg-blue-100 p-1.5 rounded-xl">
+              <Info className="h-4 w-4 text-blue-600" />
             </div>
-            <p className="text-[11px] text-slate-100 leading-snug">
-              Some accessories are required by law or by EVzone policy,
-              especially for deliveries, night rides and rides with children.
-            </p>
-          </section>
-
-      <BottomNav active="more" />
-
-          {/* Info + reminder */}
-          <section className="space-y-2 pt-1 pb-4">
-            <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 text-[11px] text-slate-600 flex items-start space-x-2">
-              <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white flex-shrink-0">
-                <Info className="h-4 w-4 text-slate-600" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-xs text-slate-900 mb-0.5">
-                  Keep this list up to date
-                </p>
-                <p>
-                  If your vehicle accessories change, update them here so your
-                  trips remain compliant with EVzone safety standards and local
-                  regulations.
-                </p>
-              </div>
+            <div className="shrink text-[11px] text-blue-900/70 space-y-1.5 leading-relaxed">
+              <p className="font-black text-xs text-blue-900 uppercase tracking-tight">Audit Notice</p>
+              <p className="font-medium">Unscheduled safety audits may occur. Ensure all "Required" items are present and in good condition to avoid trip disqualification.</p>
             </div>
+          </div>
 
-            <button
-              type="button"
-              onClick={() => navigate("/driver/vehicles/demo-vehicle")}
-              className="w-full rounded-full py-2.5 text-sm font-semibold shadow-sm bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c] active:scale-[0.98] transition-transform"
-            >
-              Update accessories
-            </button>
-          </section>
-        </main>
-
-        {/* Bottom navigation */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem
-            icon={Home}
-            label="Home"
-           active={navActive("home")} onClick={() => navigate(bottomNavRoutes.home)}
-          />
-          <BottomNavItem
-            icon={Briefcase}
-            label="Manager"
-           active={navActive("manager")} onClick={() => navigate(bottomNavRoutes.manager)}
-          />
-          <BottomNavItem
-            icon={Wallet}
-            label="Wallet"
-           active={navActive("wallet")} onClick={() => navigate(bottomNavRoutes.wallet)}
-          />
-          <BottomNavItem
-            icon={Settings}
-            label="Settings"
-           active={navActive("settings")} onClick={() => navigate(bottomNavRoutes.settings)}
-          />
-        </nav>
-      </div>
+          <button
+            type="button"
+            onClick={() => navigate("/driver/vehicles/demo-vehicle")}
+            className="w-full rounded-2xl bg-[#03cd8c] py-4 text-sm font-black text-white shadow-xl shadow-emerald-500/20 hover:bg-[#02b77c] active:scale-[0.98] transition-all uppercase tracking-widest"
+          >
+            Update Inventory
+          </button>
+        </section>
+      </main>
     </div>
   );
 }

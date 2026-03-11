@@ -68,175 +68,158 @@ function InputRow({ label, placeholder }) {
 export default function VehiclesDetailScreen() {
   const [type, setType] = useState("car");
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Hide scrollbar */}
-        <style>{`
-          .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-          .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        `}</style>
-
-        {/* Green curved header */}
-        <div className="relative" style={{ minHeight: 80 }}>
-          <div
-            className="absolute inset-0"
-            style={{
-              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)"
-}}
-          />
-          <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm"
-            >
-              <ChevronLeft className="h-5 w-5 text-white" />
-            </button>
-            <h1 className="text-base font-semibold text-white">Vehicle details</h1>
-          </header>
-        </div>
-
-        {/* Content */}
-        <main className="app-main flex-1 px-5 pt-5 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
-          {/* Vehicle type selector */}
-          <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-slate-900 mb-1">
-              Select EV type
-            </h2>
-            <div className="flex items-stretch space-x-2">
-              <VehicleTypeChip
-                icon={Car}
-                label="EV car"
-                active={type === "car"}
-                onClick={() => setType("car")}
-              />
-              <VehicleTypeChip
-                icon={Bike}
-                label="E-bike"
-                active={type === "bike"}
-                onClick={() => setType("bike")}
-              />
-              <VehicleTypeChip
-                icon={Truck}
-                label="EV van"
-                active={type === "van"}
-                onClick={() => setType("van")}
-              />
-            </div>
-          </section>
-
-          {/* Key fields */}
-          <section className="space-y-3">
-            <InputRow label="Make" placeholder="e.g. BYD, Tesla" />
-            <InputRow label="Model" placeholder="e.g. Dolphin, Model 3" />
-            <div className="flex space-x-2">
-              <div className="flex-1">
-                <InputRow label="Year" placeholder="e.g. 2024" />
-              </div>
-              <div className="flex-1">
-                <InputRow label="Color" placeholder="e.g. Pearl white" />
-              </div>
-            </div>
-            <InputRow label="License plate" placeholder="e.g. UAX 123Z" />
-            <InputRow
-              label="Battery size (kWh)"
-              placeholder="e.g. 60"
-            />
-            <InputRow
-              label="Approx. range (km)"
-              placeholder="e.g. 380"
-            />
-          </section>
-
-          {/* EV connector + docs links */}
-          <section className="space-y-2 pt-1">
-            <button
-              type="button"
-              onClick={() => navigate("/driver/vehicles/accessories")}
-              className="flex items-center justify-between rounded-xl border border-slate-100 bg-white px-3 py-2.5 shadow-sm active:scale-[0.97] transition-all"
-            >
-              <div className="flex items-center space-x-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50">
-                  <Zap className="h-4 w-4 text-[#03cd8c]" />
-                </div>
-                <div className="flex flex-col items-start">
-                  <span className="text-xs font-semibold text-slate-900">
-                    Charging connector & ports
-                  </span>
-                  <span className="text-[10px] text-slate-500">
-                    e.g. Type 2, CCS, GB/T
-                  </span>
-                </div>
-              </div>
-              <ChevronRight className="h-4 w-4 text-slate-400" />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => navigate("/driver/onboarding/profile/documents/upload")}
-              className="flex items-center justify-between rounded-xl border border-slate-100 bg-white px-3 py-2.5 shadow-sm active:scale-[0.97] transition-all"
-            >
-              <div className="flex items-center space-x-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50">
-                  <Info className="h-4 w-4 text-slate-600" />
-                </div>
-                <div className="flex flex-col items-start">
-                  <span className="text-xs font-semibold text-slate-900">
-                    Registration & insurance
-                  </span>
-                  <span className="text-[10px] text-slate-500">
-                    Upload photos for verification
-                  </span>
-                </div>
-              </div>
-              <ChevronRight className="h-4 w-4 text-slate-400" />
-            </button>
-          </section>
-
-          {/* Info card */}
-          <section className="space-y-2 pt-1 pb-4">
-            <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 text-[11px] text-slate-600 flex items-start space-x-2">
-              <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white">
-                <Info className="h-4 w-4 text-slate-600" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-xs text-slate-900 mb-0.5">
-                  EV details help us plan better trips
-                </p>
-                <p>
-                  Accurate EV information lets us estimate range, show charging
-                  stops, and keep both you and riders informed about longer
-                  routes.
-                </p>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => navigate("/driver/vehicles")}
-              className="w-full rounded-xl bg-[#03cd8c] py-3.5 text-sm font-bold text-white shadow-lg active:scale-[0.98] transition-all"
-            >
-              Save vehicle
-            </button>
-          </section>
-        </main>
-
-        {/* Bottom Navigation – Green */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate("/driver/dashboard/online")} />
-          <BottomNavItem icon={Briefcase} label="Manager" active={navActive("manager")} onClick={() => navigate("/driver/jobs/list")} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate("/driver/earnings/overview")} />
-          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate("/driver/preferences")} />
-        </nav>
+    <div className="flex flex-col min-h-full bg-[#f8fafc]">
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-90 transition-transform"
+          >
+            <ChevronLeft className="h-5 w-5 text-white" />
+          </button>
+          <h1 className="text-base font-black text-white tracking-tight">Vehicle Details</h1>
+          <div className="w-10" /> {/* Spacer */}
+        </header>
       </div>
+
+      {/* Content */}
+      <main className="flex-1 px-6 pt-6 pb-24 space-y-6">
+        {/* Vehicle type selector */}
+        <section className="space-y-4">
+          <div className="px-1">
+             <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
+                Select EV Category
+             </h2>
+          </div>
+          <div className="flex items-stretch space-x-3">
+            <VehicleTypeChip
+              icon={Car}
+              label="Standard Car"
+              active={type === "car"}
+              onClick={() => setType("car")}
+            />
+            <VehicleTypeChip
+              icon={Bike}
+              label="E-Motorcycle"
+              active={type === "bike"}
+              onClick={() => setType("bike")}
+            />
+            <VehicleTypeChip
+              icon={Truck}
+              label="Heavy Van"
+              active={type === "van"}
+              onClick={() => setType("van")}
+            />
+          </div>
+        </section>
+
+        {/* Key fields */}
+        <section className="space-y-4">
+           <div className="px-1">
+              <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
+                 General Information
+              </h2>
+           </div>
+           <div className="space-y-4 bg-white rounded-[2.5rem] border border-slate-100 p-6 shadow-sm">
+             <InputRow label="Manufacturer / Make" placeholder="e.g. BYD, Tesla, Rivian" />
+             <InputRow label="Commercial Model" placeholder="e.g. Dolphin, Model 3, R1T" />
+             <div className="grid grid-cols-2 gap-4">
+               <InputRow label="Production Year" placeholder="YYYY" />
+               <InputRow label="Exterior Color" placeholder="Color" />
+             </div>
+             <InputRow label="Authorized License Plate" placeholder="e.g. UAX 123Z" />
+             <div className="grid grid-cols-2 gap-4">
+               <InputRow label="Battery Size (kWh)" placeholder="e.g. 60" />
+               <InputRow label="Est. Range (KM)" placeholder="e.g. 380" />
+             </div>
+           </div>
+        </section>
+
+        {/* EV connector + docs links */}
+        <section className="space-y-4">
+           <div className="px-1">
+              <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
+                 Linked Assets
+              </h2>
+           </div>
+           <div className="space-y-3">
+              <button
+                type="button"
+                onClick={() => navigate("/driver/vehicles/accessories")}
+                className="flex items-center justify-between rounded-3xl border border-slate-100 bg-white px-4 py-4 shadow-sm active:scale-[0.98] transition-all"
+              >
+                <div className="flex items-center space-x-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 shadow-sm shadow-emerald-500/10">
+                    <Zap className="h-5 w-5 text-[#03cd8c]" />
+                  </div>
+                  <div className="flex flex-col items-start">
+                    <span className="text-xs font-black uppercase tracking-tight text-slate-900">
+                      Charging Connector
+                    </span>
+                    <span className="text-[10px] font-medium text-slate-400">
+                      Type 2, CCS2, GB/T DC
+                    </span>
+                  </div>
+                </div>
+                <ChevronRight className="h-5 w-5 text-slate-300" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => navigate("/driver/onboarding/profile/documents/upload")}
+                className="flex items-center justify-between rounded-3xl border border-slate-100 bg-white px-4 py-4 shadow-sm active:scale-[0.98] transition-all"
+              >
+                <div className="flex items-center space-x-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50 shadow-sm shadow-blue-500/10">
+                    <Info className="h-5 w-5 text-blue-500" />
+                  </div>
+                  <div className="flex flex-col items-start">
+                    <span className="text-xs font-black uppercase tracking-tight text-slate-900">
+                      Verification Documents
+                    </span>
+                    <span className="text-[10px] font-medium text-slate-400">
+                      Registration & Insurance photos
+                    </span>
+                  </div>
+                </div>
+                <ChevronRight className="h-5 w-5 text-slate-300" />
+              </button>
+           </div>
+        </section>
+
+        {/* Info card */}
+        <section className="space-y-4 pt-1">
+          <div className="rounded-3xl border border-blue-50 bg-blue-50/30 p-5 flex items-start space-x-3">
+            <div className="mt-0.5 bg-blue-100 p-1.5 rounded-xl">
+              <Info className="h-4 w-4 text-blue-600" />
+            </div>
+            <div className="shrink text-[11px] text-blue-900/70 space-y-1.5 leading-relaxed">
+              <p className="font-black text-xs text-blue-900 uppercase tracking-tight">System Notice</p>
+              <p className="font-medium">Accurate EV data is critical for route planning, range prediction, and charging station allocation.</p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => navigate("/driver/vehicles")}
+            className="w-full rounded-2xl bg-[#03cd8c] py-4 text-sm font-black text-white shadow-xl shadow-emerald-500/20 hover:bg-[#02b77c] active:scale-[0.98] transition-all uppercase tracking-widest"
+          >
+            Save Vehicle Details
+          </button>
+        </section>
+      </main>
     </div>
   );
 }

@@ -67,18 +67,7 @@ function RejectedDocRow({ icon: Icon, title, reason, onClick, status = "Rejected
 
 export default function DocumentRejectedScreen() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
-  const bottomNavRoutes = {
-    home: "/driver/dashboard/online",
-    messages: "/driver/ridesharing/notification",
-    wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences"
-};
+
   const [docs, setDocs] = useState({
     license: { status: "Rejected", fileName: "" },
     id: { status: "Rejected", fileName: "" }
@@ -99,65 +88,65 @@ export default function DocumentRejectedScreen() {
   };
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Hide scrollbar */}
-        <style>{`
-          .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-          .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        `}</style>
+    <div className="flex flex-col min-h-full bg-[#f8fafc]">
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-90 transition-transform"
+          >
+            <ChevronLeft className="h-5 w-5 text-white" />
+          </button>
+          <h1 className="text-base font-black text-white tracking-tight">Personal Verification</h1>
+          <div className="w-10" /> {/* Spacer */}
+        </header>
+      </div>
 
-        {/* Green curved header */}
-        <div className="relative" style={{ minHeight: 80 }}>
-          <div
-            className="absolute inset-0"
-            style={{
-              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)"
-}}
-          />
-          <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm"
-            >
-              <ChevronLeft className="h-5 w-5 text-white" />
-            </button>
-            <h1 className="text-base font-semibold text-white">Driver Personal</h1>
-          </header>
-        </div>
-
-        {/* Content */}
-        <main className="app-main flex-1 px-4 pt-3 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
-          {/* Rejection summary */}
-          <section className="rounded-2xl border border-red-100 bg-red-50 p-4 space-y-2">
-            <div className="flex items-center space-x-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-red-100">
-                <XCircle className="h-4 w-4 text-red-500" />
-              </div>
-              <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-600">
-                Rejected
-              </span>
+      {/* Content */}
+      <main className="flex-1 px-6 pt-6 pb-24 space-y-6">
+        {/* Rejection summary */}
+        <section className="rounded-[2.5rem] bg-rose-50/50 border border-rose-100 p-6 space-y-4 shadow-sm relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/5 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-100 border border-rose-200 shadow-inner">
+               <XCircle className="h-5 w-5 text-rose-500" />
             </div>
-            <p className="text-sm font-semibold text-slate-900">
-              The image does not display the document.
-            </p>
-            <p className="text-[11px] text-slate-600 leading-snug">
-              Your photo does not include the requested document.
-              Please capture a new photo of your EVZone Vehicle
-              Inspection Report.
-            </p>
-          </section>
+            <div className="flex flex-col">
+              <span className="inline-flex items-center rounded-lg bg-rose-100 px-2 py-0.5 text-[9px] font-black text-rose-700 w-fit uppercase tracking-wider">
+                Action Required
+              </span>
+              <p className="text-sm font-black text-slate-900 mt-1 tracking-tight">
+                Document issue detected
+              </p>
+            </div>
+          </div>
+          <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
+            The image provided does not display the document clearly. Please follow the instructions below to fix and re-submit.
+          </p>
+        </section>
 
-          {/* Rejected docs */}
-          <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-slate-900 mb-1">
-              What needs to be fixed
-            </h2>
+        {/* Rejected docs */}
+        <section className="space-y-4">
+          <div className="px-1">
+             <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
+                Fix These Items
+             </h2>
+          </div>
+          <div className="space-y-4">
             <RejectedDocRow
               icon={FileBadge2}
-              title="Driver's license"
-              reason="The image is blurry and the expiry date is not readable. Please retake the photo in good light and upload again."
+              title="Driver's License"
+              reason="The image is blurry and the expiry date is not readable. Please retake the photo in good light."
               status={docs.license.status}
               fileName={docs.license.fileName}
               onClick={() => triggerFilePick("license")}
@@ -165,63 +154,60 @@ export default function DocumentRejectedScreen() {
             <RejectedDocRow
               icon={IdCard}
               title="National ID"
-              reason="The back side is missing. Please upload both front and back of your ID."
+              reason="The back side is missing. Please upload both front and back images for full verification."
               status={docs.id.status}
               fileName={docs.id.fileName}
               onClick={() => triggerFilePick("id")}
             />
-          </section>
-
-          {/* Hidden file pickers */}
-          <div className="hidden">
-            <input
-              id="reupload-license"
-              type="file"
-              accept="image/*,.pdf"
-              onChange={(e) => handleFileSelected("license", e)}
-            />
-            <input
-              id="reupload-id"
-              type="file"
-              accept="image/*,.pdf"
-              onChange={(e) => handleFileSelected("id", e)}
-            />
           </div>
+        </section>
 
-          {/* Help text */}
-          <section className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 text-[11px] text-slate-600 space-y-1">
-            <p className="font-semibold text-xs text-slate-900">
-              Need help?
+        {/* Hidden file pickers */}
+        <div className="hidden">
+          <input
+            id="reupload-license"
+            type="file"
+            accept="image/*,.pdf"
+            onChange={(e) => handleFileSelected("license", e)}
+          />
+          <input
+            id="reupload-id"
+            type="file"
+            accept="image/*,.pdf"
+            onChange={(e) => handleFileSelected("id", e)}
+          />
+        </div>
+
+        {/* Help text */}
+        <section className="rounded-3xl border border-blue-50 bg-blue-50/30 p-5 flex items-start space-x-3">
+          <div className="mt-0.5 bg-blue-100 p-1.5 rounded-xl">
+             <Info className="h-4 w-4 text-blue-600" />
+          </div>
+          <div className="flex-1 text-[11px] text-blue-900/70 space-y-1.5">
+            <p className="font-black text-xs text-blue-900 uppercase tracking-tight">
+               Need Help?
             </p>
-            <p>
-              • Make sure the entire document is inside the frame.
-              <br />• Avoid reflections on plastic cards.
-              <br />• If you're not sure what to do, contact support from the Help & Support section in Preferences.
-            </p>
-          </section>
+            <div className="font-medium space-y-1">
+              <p>• Avoid reflections on plastic or laminated cards.</p>
+              <p>• Ensure the entire document is inside the frame.</p>
+              <p>• Use a dark background to make the white edges pop.</p>
+            </div>
+          </div>
+        </section>
 
-          {/* CTA */}
-          <section className="pt-1 pb-4">
-            <button
-              type="button"
-              onClick={() =>
-                navigate("/driver/onboarding/profile/documents/review")
-              }
-              className="w-full rounded-full py-2.5 text-sm font-semibold shadow-sm bg-[#f77f00] text-white hover:bg-[#e06f00]"
-            >
-              Upload Again
-            </button>
-          </section>
-        </main>
-
-        {/* Bottom navigation – green */}
-        <nav className="app-bottom-nav border-t border-white/20 flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem icon={Home} label="Home" active={navActive("home")} onClick={() => navigate(bottomNavRoutes.home)} />
-          <BottomNavItem icon={MessageSquare} label="Messages" onClick={() => navigate(bottomNavRoutes.messages)} />
-          <BottomNavItem icon={Wallet} label="Wallet" active={navActive("wallet")} onClick={() => navigate(bottomNavRoutes.wallet)} />
-          <BottomNavItem icon={Settings} label="Settings" active={navActive("settings")} onClick={() => navigate(bottomNavRoutes.settings)} />
-        </nav>
-      </div>
+        {/* CTA */}
+        <section className="pt-4 pb-12">
+          <button
+            type="button"
+            onClick={() =>
+              navigate("/driver/onboarding/profile/documents/review")
+            }
+            className="w-full rounded-2xl bg-[#03cd8c] py-4 text-sm font-black text-white shadow-xl shadow-emerald-500/20 hover:bg-[#02b77c] active:scale-[0.98] transition-all uppercase tracking-widest"
+          >
+            Update & Re-submit
+          </button>
+        </section>
+      </main>
     </div>
   );
 }

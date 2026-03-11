@@ -110,179 +110,161 @@ export default function ArrivedAtPickupScreen() {
   }
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
+    <div className="flex flex-col h-full bg-[#f8fafc]">
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-start space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7] mt-0.5">
-              <Map className="h-4 w-4 text-[#03cd8c]" />
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+              <Map className="h-5 w-5 text-white" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                Driver
-              </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                {headerTitle}
-              </h1>
-              <JobTypeLabel jobType={jobType} />
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Driver</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">{headerTitle}</p>
             </div>
           </div>
+          <div className="w-10" />
         </header>
+      </div>
 
-        {/* Job type switcher for preview purposes */}
-        <section className="px-4 pt-1 pb-2 space-y-1">
-          <span className="text-[11px] text-slate-500 font-medium">
-            Preview job type
-          </span>
-          <div className="flex flex-wrap gap-1">
+      {/* Job type switcher for preview purposes */}
+      <section className="px-6 pt-4 pb-2">
+        <div className="bg-white rounded-3xl p-3 border border-slate-100 shadow-sm space-y-2">
+          <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Simulation Context</span>
+          <div className="flex flex-wrap gap-2">
             {JOB_TYPES.map((type) => (
               <button
                 key={type}
                 type="button"
                 onClick={() => setJobType(type)}
-                className={`rounded-full px-3 py-0.5 text-[11px] font-medium border transition-colors ${
+                className={`rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-widest border transition-all ${
                   jobType === type
-                    ? "bg-[#03cd8c] text-slate-900 border-[#03cd8c]"
-                    : "bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300"
+                    ? "bg-[#03cd8c] text-white border-[#03cd8c] shadow-lg shadow-emerald-500/20"
+                    : "bg-slate-50 text-slate-400 border-slate-100 hover:border-slate-200"
                 }`}
               >
-                {type === "ride"
-                  ? "Ride"
-                  : type === "delivery"
-                  ? "Delivery"
-                  : type === "rental"
-                  ? "Rental"
-                  : type === "tour"
-                  ? "Tour"
-                  : "Ambulance"}
+                {type}
               </button>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Content */}
+      <main className="flex-1 px-6 pt-4 pb-24 overflow-y-auto scrollbar-hide space-y-6">
+        <div className="px-1">
+           <JobTypeLabel jobType={jobType} />
+        </div>
+
+        {/* Map container (static view) */}
+        <section className="relative rounded-[2.5rem] overflow-hidden border border-slate-100 bg-slate-200 h-[260px] shadow-2xl">
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
+
+          {/* Pickup marker at current location */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="relative flex flex-col items-center">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 shadow-xl border-2 border-white">
+                <MapPin className="h-4 w-4 text-[#03cd8c]" />
+              </div>
+              <span className="mt-3 rounded-full bg-slate-900/80 px-3 py-1 text-[9px] font-black text-white uppercase tracking-widest backdrop-blur-sm border border-white/10">
+                Docking Point
+              </span>
+            </div>
+          </div>
+
+          <div className="absolute top-4 left-4">
+             <div className="bg-slate-900/40 backdrop-blur-md rounded-full px-3 py-1 flex items-center space-x-2 border border-white/10">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#03cd8c] animate-pulse" />
+                <span className="text-[9px] font-black text-white uppercase tracking-widest">Stationary Arrived</span>
+             </div>
+          </div>
         </section>
 
-        {/* Content */}
-        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide">
-          {/* Map container (static view) */}
-          <section className="relative rounded-3xl overflow-hidden border border-slate-100 bg-slate-200 h-[260px] mb-3">
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
-
-            {/* Pickup marker at current location */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="relative flex flex-col items-center">
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/90 border border-white">
-                  <MapPin className="h-3.5 w-3.5 text-[#03cd8c]" />
-                </div>
-                <span className="mt-0.5 rounded-full bg-slate-900/80 px-2 py-0.5 text-[9px] text-slate-50">
-                  Pickup
-                </span>
-              </div>
-            </div>
-          </section>
-
-          {/* Arrival info */}
-          <section className="space-y-3">
-            <div className="rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 flex items-center justify-between">
-              <div className="flex flex-col items-start max-w-[220px]">
-                <span className="text-xs font-semibold text-slate-900">
+        {/* Arrival info */}
+        <section className="space-y-4">
+          <div className="rounded-[2.5rem] border border-slate-100 bg-white p-6 space-y-4 shadow-xl shadow-slate-200/50">
+            <div className="flex items-start justify-between">
+              <div className="flex flex-col space-y-1">
+                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">STATUS REPORT</span>
+                <p className="text-sm font-black text-slate-900 uppercase tracking-tight">
                   {summaryTitle}
-                </span>
-                <span className="text-[11px] text-slate-500">{summaryText}</span>
+                </p>
+                <p className="text-[11px] text-slate-500 font-bold uppercase tracking-tight leading-relaxed">
+                  {summaryText}
+                </p>
               </div>
-              <div className="flex flex-col items-end text-[11px] text-slate-500">
-                <span className="inline-flex items-center">
-                  <Clock className="h-3 w-3 mr-1" />
-                  {timeLabel}
-                </span>
+              <div className="flex flex-col items-end">
+                <div className="flex items-center space-x-2 text-[10px] text-[#03cd8c] font-black uppercase tracking-tight">
+                  <Clock className="h-3.5 w-3.5" />
+                  <span>{timeLabel}</span>
+                </div>
               </div>
             </div>
+          </div>
 
-            {/* Contact options */}
-            <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 flex items-center justify-between text-[11px] text-slate-600">
-              <div className="flex items-center space-x-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white">
-                  <MapPin className="h-4 w-4 text-[#03cd8c]" />
-                </div>
-                <div className="flex flex-col items-start">
-                  <span className="text-xs font-semibold text-slate-900">
-                    Confirm pickup spot with rider
-                  </span>
-                  <span>
-                    If you&apos;re not exactly at the pin, send a quick message or
-                    call.
-                  </span>
-                </div>
+          {/* Contact options */}
+          <div className="rounded-[2.5rem] border border-slate-100 bg-slate-50/50 p-6 space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="flex flex-col space-y-1">
+                 <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">Entity Signal</span>
+                 <p className="text-xs font-black text-slate-900 uppercase tracking-tight">Establish contact with client</p>
               </div>
-              <div className="flex flex-col items-end space-y-1">
+              <div className="flex items-center space-x-2">
                 <button
                   type="button"
                   onClick={() => handleMessage("+256700000123")}
-                  className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-[10px] font-medium text-slate-700"
+                  className="h-10 w-10 flex items-center justify-center rounded-2xl bg-white border border-slate-100 text-slate-900 shadow-sm hover:bg-slate-50 transition-colors"
                 >
-                  <MessageCircle className="h-3 w-3 mr-1" />
-                  Message
+                  <MessageCircle className="h-4 w-4" />
                 </button>
                 <button
                   type="button"
                   onClick={() => handleCall("+256700000123")}
-                  className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-[10px] font-medium text-slate-700"
+                  className="h-10 w-10 flex items-center justify-center rounded-2xl bg-slate-900 text-white shadow-lg hover:bg-slate-800 transition-colors"
                 >
-                  <Phone className="h-3 w-3 mr-1" />
-                  Call
+                  <Phone className="h-4 w-4" />
                 </button>
               </div>
             </div>
 
-            <div className="flex space-x-2">
+            <div className="flex space-x-3">
               <button
                 type="button"
                 onClick={() => navigate("/driver/trip/demo-trip/cancel/reason")}
-                className="flex-1 rounded-full py-2.5 text-sm font-semibold border border-red-200 text-red-600 bg-white flex items-center justify-center"
+                className="flex-1 rounded-full py-4 text-[11px] font-black uppercase tracking-widest border border-slate-100 text-slate-400 hover:bg-slate-100 transition-all flex items-center justify-center"
               >
-                <X className="h-4 w-4 mr-1" />
-                Cancel trip
+                Abort
               </button>
               <button
                 type="button"
                 onClick={() => navigate("/driver/trip/demo-trip/waiting")}
-                className="flex-1 rounded-full py-2.5 text-sm font-semibold bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c] flex items-center justify-center"
+                className="flex-[2] rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-slate-900 text-white shadow-xl shadow-slate-900/20 hover:bg-slate-800 transition-all flex items-center justify-center"
               >
-                I&apos;ve arrived
+                Stationary Arrived
               </button>
             </div>
-          </section>
-        </main>
+          </div>
 
-        {/* Bottom navigation – Home active (arrival context) */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem
-            icon={Home}
-            label="Home"
-           active={navActive("home")} onClick={() => navigate(bottomNavRoutes.home)}
-          />
-          <BottomNavItem
-            icon={Briefcase}
-            label="Manager"
-           active={navActive("manager")} onClick={() => navigate(bottomNavRoutes.manager)}
-          />
-          <BottomNavItem
-            icon={Wallet}
-            label="Wallet"
-           active={navActive("wallet")} onClick={() => navigate(bottomNavRoutes.wallet)}
-          />
-          <BottomNavItem
-            icon={Settings}
-            label="Settings"
-           active={navActive("settings")} onClick={() => navigate(bottomNavRoutes.settings)}
-          />
-        </nav>
-      </div>
+          <div className="bg-slate-100/30 rounded-3xl p-4 text-center">
+             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed max-w-[240px] mx-auto">
+               Secure designated docking point. In case of offset, establish direct signal with client entity.
+             </p>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

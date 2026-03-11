@@ -43,87 +43,93 @@ export default function OfflineDashboardScreen() {
   const navigate = useNavigate();
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
+    <div className="flex flex-col h-full bg-[#f8fafc]">
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#ffecec]">
-              <Power className="h-4 w-4 text-red-500" />
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+              <Power className="h-5 w-5 text-white" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                Driver
-              </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                You are offline
-              </h1>
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Console</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">Standby Mode</p>
             </div>
           </div>
+          <div className="w-10" /> {/* Spacer */}
         </header>
-
-        {/* Content */}
-        <main className="app-main flex-1 px-4 pt-3 pb-4 space-y-4 overflow-y-auto scrollbar-hide">
-          {/* Offline status card */}
-          <section className="rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/80">
-                  <WifiOff className="h-4 w-4 text-[#fbbf77]" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] tracking-[0.18em] uppercase text-[#a5f3fc]">
-                    Offline mode
-                  </span>
-                  <p className="text-xs font-semibold">You&apos;re not receiving requests</p>
-                </div>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => navigate("/driver/dashboard/online")}
-              className="rounded-xl bg-[#03cd8c] px-4 py-2.5 text-xs font-black text-white hover:bg-[#02b77c] active:scale-95 transition-all shadow-lg shadow-[#03cd8c]/20"
-            >
-              GO ONLINE
-            </button>
-            <p className="text-[11px] text-slate-400 leading-relaxed mt-3">
-              Connect now to start earning. Ensure your compliance documents are active and your vehicle safety checks are done.
-            </p>
-          </section>
-
-          {/* Issues */}
-          <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-slate-900 mb-1 px-1">
-               Attention Required
-            </h2>
-            <IssueRow 
-              title="Identity Verification"
-              text="Your facial recognition check is due in 3 days."
-              type="info"
-              onClick={() => navigate("/driver/verify-identity")}
-            />
-          </section>
-
-          {/* Info */}
-          <section className="pt-2">
-             <div className="rounded-2xl border-2 border-slate-50 bg-slate-50/50 p-5 text-center">
-                <Info className="h-6 w-6 text-slate-300 mx-auto mb-3" />
-                <p className="text-xs font-bold text-slate-900 mb-1">Take a pause</p>
-                <p className="text-[11px] text-slate-500 leading-relaxed">
-                  You can toggle offline any time you need a break. Remember to park in a designated safe zone first.
-                </p>
-             </div>
-          </section>
-        </main>
-
-        {/* Bottom Navigation */}
-        <BottomNav active="home" />
       </div>
+
+      {/* Content */}
+      <main className="flex-1 px-6 pt-6 pb-24 space-y-6 overflow-y-auto scrollbar-hide">
+        {/* Offline status card */}
+        <section className="rounded-[2.5rem] bg-[#0b1e3a] text-white p-6 space-y-6 shadow-xl relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110" />
+          
+          <div className="flex items-center space-x-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500/20 backdrop-blur-md border border-amber-500/30">
+              <WifiOff className="h-6 w-6 text-amber-500" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-amber-500">OFFLINE</span>
+              <p className="text-base font-black tracking-tight mt-0.5 text-white">System Dormant</p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => navigate("/driver/dashboard/online")}
+            className="w-full rounded-2xl bg-[#03cd8c] py-4 text-xs font-black text-white hover:bg-[#02b77c] active:scale-95 transition-all shadow-xl shadow-emerald-500/20 uppercase tracking-widest"
+          >
+            Initiate Link
+          </button>
+          
+          <p className="text-[11px] text-slate-400 font-medium leading-relaxed">
+            Verify all compliance protocols are active and vehicle telemetry is nominal before initiating service link.
+          </p>
+        </section>
+
+        {/* Issues */}
+        <section className="space-y-4">
+          <div className="px-1">
+            <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Attention Required</h2>
+          </div>
+          <IssueRow 
+            title="Biometric Scan"
+            text="Facial recognition update requested. 72-hour window remaining."
+            type="info"
+            onClick={() => navigate("/driver/verify-identity")}
+          />
+        </section>
+
+        {/* Info */}
+        <section className="pt-2">
+           <div className="rounded-[2.5rem] border-2 border-slate-50 bg-slate-50/50 p-6 text-center space-y-3">
+              <div className="bg-white h-12 w-12 rounded-2xl shadow-sm flex items-center justify-center mx-auto border border-slate-100">
+                <Info className="h-6 w-6 text-[#03cd8c]" />
+              </div>
+              <div>
+                <p className="text-xs font-black text-slate-900 uppercase tracking-tight">Shift Equilibrium</p>
+                <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
+                  Toggle standby mode to maintain optimal focus. Park in authorized safe-zones to ensure platform compliance.
+                </p>
+              </div>
+           </div>
+        </section>
+      </main>
     </div>
   );
 }

@@ -42,126 +42,132 @@ export default function EmergencyAssistanceTypeVariantScreen() {
   ];
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col relative">
+    <div className="flex flex-col h-full bg-[#f8fafc]">
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg"
+          >
+            <ChevronLeft className="h-5 w-5 text-white" />
+          </button>
+          <div className="flex flex-col items-center">
+             <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Protocol</span>
+             <p className="text-base font-black text-white tracking-tight leading-tight">Driver App</p>
+          </div>
+          <div className="w-9" />
+        </header>
+      </div>
 
-        {/* Green curved header */}
-        <div className="relative" style={{ minHeight: 80 }}>
-          <div
-            className="absolute inset-0"
-            style={{
-              background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)"
-}}
-          />
-          <header className="app-header relative z-10 flex items-center justify-between px-5 pt-5 pb-4">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur-sm"
-            >
-              <ChevronLeft className="h-5 w-5 text-white" />
-            </button>
-            <h1 className="text-base font-semibold text-white">Driver App</h1>
-          </header>
+      {/* Content Area */}
+      <main className="flex-1 flex flex-col p-6 relative overflow-y-auto scrollbar-hide space-y-8">
+
+        {/* Section Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col">
+             <span className="text-[10px] tracking-[0.2em] font-black uppercase text-[#03cd8c]">Emergency Hub</span>
+             <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Report Issue</h2>
+          </div>
+          <button
+            onClick={() => navigate('/driver/safety/toolkit')}
+            className="h-10 w-10 bg-slate-100 rounded-2xl flex items-center justify-center active:scale-95 transition-all text-slate-400"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
 
-        {/* Content Area */}
-        <main className="flex-1 flex flex-col p-6 relative overflow-y-auto">
+        {/* Guidance card */}
+        <div className="rounded-[2rem] border border-slate-100 bg-emerald-50/50 p-6 flex items-start space-x-4 shadow-sm">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm flex-shrink-0">
+            <ShieldCheck className="h-6 w-6 text-[#03cd8c]" />
+          </div>
+          <div className="flex-1">
+            <p className="font-extrabold text-[11px] text-slate-900 uppercase tracking-tight mb-1">Tell us what kind of help you need</p>
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight leading-relaxed">Choose the emergency type to share accurate information with responders.</p>
+          </div>
+        </div>
 
-          {/* Section Header */}
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-[19px] font-bold text-slate-800">Emergency Assistance</h2>
+        {/* Grid Categories */}
+        <div className="grid grid-cols-4 gap-3">
+          {categories.map((cat) => (
             <button
-              onClick={() => navigate('/driver/safety/toolkit')}
-              className="h-8 w-8 bg-slate-50 rounded-full flex items-center justify-center active:scale-95 transition-all text-slate-400"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-
-          {/* Guidance card (restored from original) */}
-          <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3 flex items-start space-x-2 text-[11px] text-slate-600 mb-6">
-            <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white flex-shrink-0">
-              <ShieldCheck className="h-4 w-4 text-[#03cd8c]" />
-            </div>
-            <div className="flex-1">
-              <p className="font-semibold text-xs text-slate-900 mb-0.5">Tell us what kind of help you need</p>
-              <p>Choose the type of emergency so we can guide you to the right support and share accurate information with responders.</p>
-            </div>
-          </div>
-
-          {/* Grid Categories */}
-          <div className="grid grid-cols-4 gap-3 mb-8">
-            {categories.map((cat) => (
-              <button
-                key={cat.label}
-                onClick={() => setSelectedCategory(cat.label)}
-                className={`flex flex-col items-center justify-center p-4 py-6 rounded-xl border transition-all space-y-3 ${selectedCategory === cat.label
-                  ? 'border-[#03cd8c] bg-green-50 shadow-sm'
-                  : 'border-slate-100 bg-white'
-                  }`}
-              >
-                <cat.icon className={`h-7 w-7 ${selectedCategory === cat.label ? 'text-[#03cd8c]' : 'text-slate-800'}`} />
-                <span className={`text-[10px] font-bold text-center leading-tight ${selectedCategory === cat.label ? 'text-[#03cd8c]' : 'text-slate-800'}`}>
-                  {cat.label}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          {/* Issue Text Area */}
-          <div className="flex-1 space-y-3 mb-4">
-            <label className="text-[14px] font-bold text-slate-700 block ml-1">
-              Write your issue
-            </label>
-            <textarea
-              value={issue}
-              onChange={(e) => setIssue(e.target.value)}
-              placeholder="Write your issue here..."
-              className="w-full h-48 bg-slate-50 border border-slate-100 rounded-2xl p-5 text-[14px] text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#03cd8c]/20 focus:border-[#03cd8c] transition-all resize-none"
-            />
-          </div>
-
-          {/* Writing guidance (restored from original) */}
-          <div className="rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 flex items-start space-x-2 text-[11px] text-slate-600 mb-4">
-            <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-[#e6fff7] flex-shrink-0">
-              <FileText className="h-4 w-4 text-slate-700" />
-            </div>
-            <div className="flex-1">
-              <p className="font-semibold text-xs text-slate-900 mb-0.5">Use clear, short sentences</p>
-              <p>Include where you are, who is involved, and whether anyone is injured.</p>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="space-y-4 pt-4 pb-2">
-            <button
-              disabled={!canSend}
-              onClick={() => navigate('/driver/safety/sos/sending')}
-              className={`w-full py-4 rounded-xl font-bold text-[18px] shadow-lg active:scale-[0.98] transition-all ${canSend
-                ? "bg-[#03cd8c] text-white"
-                : "bg-slate-100 text-slate-400 cursor-not-allowed"
+              key={cat.label}
+              onClick={() => setSelectedCategory(cat.label)}
+              className={`flex flex-col items-center justify-center py-6 rounded-2xl border transition-all space-y-3 ${selectedCategory === cat.label
+                ? 'border-[#03cd8c] bg-emerald-50 shadow-lg shadow-emerald-500/10'
+                : 'border-slate-50 bg-white'
                 }`}
             >
-              Submit
+              <cat.icon className={`h-6 w-6 transition-colors ${selectedCategory === cat.label ? 'text-[#03cd8c]' : 'text-slate-400'}`} />
+              <span className={`text-[8px] font-black text-center uppercase tracking-widest leading-tight ${selectedCategory === cat.label ? 'text-[#03cd8c]' : 'text-slate-400'}`}>
+                {cat.label}
+              </span>
             </button>
-            <button
-              type="button"
-              onClick={() => callNumber("+256700000555")}
-              className="w-full py-4 rounded-xl border border-slate-200 text-slate-800 bg-white font-bold text-[14px] flex items-center justify-center"
-            >
-              <Phone className="h-4 w-4 mr-2" />
-              Call EVzone support instead
-            </button>
-            <button
-              onClick={() => navigate('/driver/safety/sos/sending')}
-              className="w-full py-4 rounded-xl bg-[#ff3b30] text-white font-black text-[18px] shadow-xl shadow-red-500/20 active:scale-[0.98] transition-all tracking-[0.1em]"
-            >
-              SOS
-            </button>
-          </div>
+          ))}
+        </div>
 
-        </main>
-      </div>
+        {/* Issue Text Area */}
+        <div className="space-y-4">
+          <label className="text-[10px] font-black text-[#03cd8c] uppercase tracking-[0.2em] block ml-1">
+            Describe the situation
+          </label>
+          <textarea
+            value={issue}
+            onChange={(e) => setIssue(e.target.value)}
+            placeholder="What is happening? (Include location and injuries if any)"
+            className="w-full h-48 bg-white border-2 border-slate-50 rounded-[2.5rem] p-6 text-[14px] font-bold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:border-[#03cd8c] transition-all resize-none shadow-sm"
+          />
+        </div>
+
+        {/* Writing guidance */}
+        <div className="rounded-[2rem] border border-slate-100 bg-white p-6 flex items-start space-x-4 shadow-xl shadow-slate-200/50">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 flex-shrink-0">
+            <FileText className="h-6 w-6 text-slate-400" />
+          </div>
+          <div className="flex-1">
+            <p className="font-extrabold text-[11px] text-slate-900 uppercase tracking-tight mb-1">Use clear, short sentences</p>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed">Include where you are, who is involved, and injuries.</p>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="space-y-4 pt-4 pb-12">
+          <button
+            disabled={!canSend}
+            onClick={() => navigate('/driver/safety/sos/sending')}
+            className={`w-full py-5 rounded-full font-black text-[13px] uppercase tracking-[0.2em] shadow-2xl transition-all active:scale-95 ${canSend
+              ? "bg-[#03cd8c] text-white shadow-emerald-500/30"
+              : "bg-slate-100 text-slate-300 cursor-not-allowed"
+              }`}
+          >
+            Submit Incident
+          </button>
+          <button
+            type="button"
+            onClick={() => callNumber("+256700000555")}
+            className="w-full py-4 rounded-full border border-slate-100 text-slate-500 bg-white font-black text-[11px] flex items-center justify-center uppercase tracking-widest"
+          >
+            <Phone className="h-4 w-4 mr-2" />
+            Call Support instead
+          </button>
+          <button
+            onClick={() => navigate('/driver/safety/sos/sending')}
+            className="w-full py-6 rounded-full bg-red-600 text-white font-black text-[15px] uppercase tracking-[0.3em] shadow-2xl shadow-red-900/30 active:scale-95 transition-all"
+          >
+            SOS
+          </button>
+        </div>
+
+      </main>
     </div>
   );
 }

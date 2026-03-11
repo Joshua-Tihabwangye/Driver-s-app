@@ -197,197 +197,167 @@ export default function RideRequestIncomingScreen() {
   };
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      {/* Local style: hide scrollbars but keep swipe scrolling */}
+    <div className="flex flex-col h-full bg-[#f8fafc]">
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col">
-        {/* Header */}
-        <header className="app-header flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e6fff7]">
-              <Map className="h-4 w-4 text-[#03cd8c]" />
+      {/* Green curved header */}
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+              <Map className="h-5 w-5 text-white" />
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                Driver
-              </span>
-              <h1 className="text-base font-semibold text-slate-900">
-                Incoming job request
-              </h1>
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Console</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">Intercept Alert</p>
             </div>
           </div>
+          <div className="w-10" /> {/* Spacer */}
         </header>
+      </div>
 
+      {/* Content */}
+      <main className="flex-1 px-6 pt-6 pb-24 space-y-6 overflow-y-auto scrollbar-hide">
         {/* Job type selector (for preview only) */}
-        <section className="px-4 pb-1 pt-1 flex flex-wrap gap-1 text-[10px] text-slate-600">
-          {JOB_TYPES.map((type) => (
-            <button
-              key={type}
-              type="button"
-              onClick={() => setJobType(type)}
-              className={`rounded-full px-2 py-0.5 border text-[10px] font-medium ${
-                jobType === type
-                  ? "bg-[#03cd8c] border-[#03cd8c] text-slate-900"
-                  : "bg-white border-slate-200 text-slate-600"
-              }`}
-            >
-              {type === "ride"
-                ? "Ride"
-                : type === "delivery"
-                ? "Delivery"
-                : type === "rental"
-                ? "Rental"
-                : type === "tour"
-                ? "Tour"
-                : type === "ambulance"
-                ? "Ambulance"
-                : "Shuttle"}
-            </button>
-          ))}
+        <section className="bg-slate-100/50 backdrop-blur-sm rounded-3xl p-2 border border-slate-100">
+          <div className="flex flex-wrap gap-1.5 justify-center">
+            {JOB_TYPES.map((type) => (
+              <button
+                key={type}
+                type="button"
+                onClick={() => setJobType(type)}
+                className={`rounded-full px-3 py-1 border text-[9px] font-black uppercase tracking-wider transition-all ${
+                  jobType === type
+                    ? "bg-[#03cd8c] border-[#03cd8c] text-white shadow-md shadow-[#03cd8c]/20"
+                    : "bg-white border-slate-200 text-slate-400 hover:border-slate-300"
+                }`}
+              >
+                {type}
+              </button>
+            ))}
+          </div>
         </section>
 
-        {/* Content */}
-        <main className="app-main flex-1 px-4 pt-3 pb-4 overflow-y-auto scrollbar-hide">
-          {/* Request card */}
-          <section className="mt-1 rounded-2xl bg-[#0b1e3a] text-white p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#03cd8c] text-slate-900">
-                  <User className="h-4 w-4" />
-                </div>
-                <div className="flex flex-col items-start">
-                  <span className="text-xs font-semibold">
-                    {isAmbulance
-                      ? "Ambulance dispatch"
-                      : isShuttle
-                      ? "Shuttle run · Green Valley School"
-                      : "John K · 4.92 ★"}
-                  </span>
-                  <span className="text-[11px] text-slate-100">
-                    {isAmbulance
-                      ? "High priority case"
-                      : isShuttle
-                      ? "School shuttle job (opens shuttle app)"
-                      : "120 trips · 98% completion"}
-                  </span>
-                  <div className="mt-1">
-                    <JobTypePill jobType={jobType} />
-                  </div>
-                </div>
+        {/* Request card */}
+        <section className="rounded-[2.5rem] bg-slate-900 text-white p-6 space-y-6 shadow-2xl relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#03cd8c]/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110" />
+          
+          <div className="flex items-start justify-between relative z-10">
+            <div className="flex items-center space-x-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#03cd8c] text-slate-900 shadow-xl shadow-emerald-500/20">
+                <User className="h-6 w-6" />
               </div>
-              <div className="flex flex-col items-end text-[10px] text-slate-100">
-                <span
-                  className={`text-[11px] font-medium ${
-                    isAmbulance ? "text-red-300" : "text-emerald-300"
-                  }`}
-                >
-                  {rightLine1}
+              <div className="flex flex-col">
+                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-500">
+                  ENTITY DATA
                 </span>
-                <span>{rightLine2}</span>
-              </div>
-            </div>
-
-            <div className="space-y-1 text-[11px]">
-              <div className="flex items-start space-x-2">
-                <MapPin className="mt-0.5 h-3.5 w-3.5 text-emerald-300" />
-                <div className="flex flex-col items-start">
-                  <span className="font-semibold">{pickupLabel}</span>
-                  <span className="text-slate-200">{pickupSub}</span>
-                </div>
-              </div>
-              <div className="flex items-start space-x-2">
-                <MapPin className="mt-0.5 h-3.5 w-3.5 text-slate-200" />
-                <div className="flex flex-col items-start">
-                  <span className="font-semibold">{dropoffLabel}</span>
-                  <span className="text-slate-200">{dropoffSub}</span>
+                <p className="text-base font-black text-white leading-tight mt-0.5">
+                  {isAmbulance
+                    ? "Ambulance Dispatch"
+                    : isShuttle
+                    ? "Shuttle Service"
+                    : "John K · 4.92 ★"}
+                </p>
+                <div className="mt-2">
+                  <JobTypePill jobType={jobType} />
                 </div>
               </div>
             </div>
-
-            {!isAmbulance && (
-              <div className="flex items-center justify-between pt-1 text-[11px] text-slate-200">
-                <span className="inline-flex items-center">
-                  <Clock className="h-3 w-3 mr-1" />
-                  Arrive by 18:42
-                </span>
-                {!isShuttle && (
-                  <button
-                    type="button"
-                    onClick={() => navigate("/driver/delivery/route/demo-route/stop/alpha-stop/contact")}
-                    className="inline-flex items-center rounded-full border border-slate-400 px-2 py-0.5 text-[10px]"
-                  >
-                    <Phone className="h-3 w-3 mr-1" />
-                    Contact
-                  </button>
-                )}
-              </div>
-            )}
-          </section>
-
-          {/* Timer + actions */}
-          <section className="mt-3 space-y-3">
-            <div className="flex items-center justify-center space-x-2 text-[11px] text-slate-500">
-              <Clock className="h-3.5 w-3.5" />
-              <span>
-                Auto-declining in
-                {" "}
-                <span className="font-semibold text-slate-900">{timeLeft}s</span>
-                {" "}
-                if you don&apos;t respond
+            <div className="flex flex-col items-end">
+              <span className={`text-[11px] font-black uppercase tracking-widest ${isAmbulance ? "text-red-400" : "text-[#03cd8c]"}`}>
+                {rightLine1}
+              </span>
+              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-tight mt-1">
+                {rightLine2}
               </span>
             </div>
+          </div>
 
-            <div className="flex space-x-2">
+          <div className="space-y-4 pt-2 relative z-10 border-t border-white/5">
+            <div className="flex items-start space-x-4">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-[#03cd8c]">
+                <MapPin className="h-4 w-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[11px] font-black text-white uppercase tracking-tight">{pickupLabel}</span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">{pickupSub}</span>
+              </div>
+            </div>
+            <div className="flex items-start space-x-4">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-slate-500/10 text-slate-400">
+                <MapPin className="h-4 w-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[11px] font-black text-white uppercase tracking-tight">{dropoffLabel}</span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">{dropoffSub}</span>
+              </div>
+            </div>
+          </div>
+
+          {!isAmbulance && (
+            <div className="flex items-center justify-between pt-2 text-[10px] font-black text-slate-400 uppercase tracking-widest relative z-10">
+              <span className="inline-flex items-center">
+                <Clock className="h-3.5 w-3.5 mr-2" />
+                Intercept Target: 18:42
+              </span>
               {!isShuttle && (
                 <button
                   type="button"
-                  onClick={handleDecline}
-                  className="flex-1 rounded-full py-2.5 text-sm font-semibold border border-red-200 text-red-600 bg-white flex items-center justify-center"
+                  onClick={() => navigate("/driver/delivery/route/demo-route/stop/alpha-stop/contact")}
+                  className="inline-flex items-center rounded-full border border-slate-700 px-3 py-1 text-[10px] hover:bg-white/5 transition-colors"
                 >
-                  <X className="h-4 w-4 mr-1" />
-                  Decline
+                  <Phone className="h-3.5 w-3.5 mr-2" />
+                  Signal
                 </button>
               )}
+            </div>
+          )}
+        </section>
+
+        {/* Timer + actions */}
+        <section className="space-y-6 pt-2">
+          <div className="flex items-center justify-center space-x-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+            <div className="relative flex items-center justify-center">
+               <div className="h-8 w-8 rounded-full border-2 border-slate-100 animate-pulse" />
+               <Clock className="absolute h-4 w-4" />
+            </div>
+            <span>
+              Auto-Flush in <span className="text-slate-900 mx-1">{timeLeft}s</span>
+            </span>
+          </div>
+
+          <div className="flex items-center space-x-4">
+            {!isShuttle && (
               <button
                 type="button"
-                onClick={handleAccept}
-                className="flex-1 rounded-full py-2.5 text-sm font-semibold bg-[#03cd8c] text-slate-900 hover:bg-[#02b77c] flex items-center justify-center"
+                onClick={handleDecline}
+                className="flex-[0.4] rounded-full py-5 text-[11px] font-black uppercase tracking-widest border border-slate-200 text-slate-500 bg-white hover:bg-slate-50 active:scale-95 transition-all flex items-center justify-center"
               >
-                {!isShuttle && <Check className="h-4 w-4 mr-1" />}
-                {primaryCta}
+                Decline
               </button>
-            </div>
-          </section>
-        </main>
-
-        {/* Bottom navigation – Home active (incoming request context) */}
-        <nav className="app-bottom-nav flex" style={{ background: "#03cd8c" }}>
-          <BottomNavItem
-            icon={Home}
-            label="Home"
-           active={navActive("home")} onClick={() => navigate(bottomNavRoutes.home)}
-          />
-          <BottomNavItem
-            icon={Briefcase}
-            label="Manager"
-           active={navActive("manager")} onClick={() => navigate(bottomNavRoutes.manager)}
-          />
-          <BottomNavItem
-            icon={Wallet}
-            label="Wallet"
-           active={navActive("wallet")} onClick={() => navigate(bottomNavRoutes.wallet)}
-          />
-          <BottomNavItem
-            icon={Settings}
-            label="Settings"
-           active={navActive("settings")} onClick={() => navigate(bottomNavRoutes.settings)}
-          />
-        </nav>
-      </div>
+            )}
+            <button
+              type="button"
+              onClick={handleAccept}
+              className="flex-1 rounded-full py-5 text-[11px] font-black uppercase tracking-widest bg-slate-900 text-white shadow-xl hover:bg-slate-800 active:scale-95 transition-all flex items-center justify-center"
+            >
+              {!isShuttle && <Check className="h-4 w-4 mr-3" />}
+              {primaryCta}
+            </button>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }
