@@ -1,14 +1,12 @@
-import React from "react";
 import {
-    ChevronLeft,
-  ChevronRight,
-  Car,
-  Wallet as WalletIcon,
-  Truck,
-  History
+Car,
+ChevronLeft,
+ChevronRight,
+History,
+Wallet as WalletIcon
 } from "lucide-react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import BottomNav from "../components/BottomNav";
 
 // EVzone Driver App – D33 Driver App – Earnings & Stats Dashboard
 // Redesigned to match Screenshot 3.

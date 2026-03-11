@@ -1,38 +1,19 @@
-import React, { useState } from "react";
 import {
-    Car,
-  Bike,
-  Truck,
-  Zap,
-  ChevronRight,
-  Info,
-  ChevronLeft,
-  Home,
-  Briefcase,
-  Wallet,
-  Settings
+Bike,
+Car,
+ChevronLeft,
+ChevronRight,
+Info,
+Truck,
+Zap
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D15 Vehicles (v1)
 // Redesigned with Green curved header and bottom nav.
 // Preserving all functionality: type selection, input fields, navigation to accessories.
 
-function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
-        active ? "text-white" : "text-white/50 hover:text-white/80"
-      }`}
-    >
-      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
-      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
-      <span className="relative z-10">{label}</span>
-    </button>
-  );
-}
 
 function VehicleTypeChip({ icon: Icon, label, active, onClick }) {
   return (

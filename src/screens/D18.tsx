@@ -1,15 +1,10 @@
-import React, { useState } from "react";
 import {
-    ChevronLeft,
-  Car,
-  PlayCircle,
-  CheckCircle2,
-  Home,
-  Briefcase,
-  Wallet,
-  Settings
+Car,
+CheckCircle2,
+ChevronLeft,
+PlayCircle
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D18 Preferences – Intro to Driving
 // Redesigned to match Screenshot 4.

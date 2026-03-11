@@ -1,16 +1,10 @@
-import React, { useState } from "react";
 import {
-  ChevronLeft,
-    Map,
-  Navigation,
-  MapPin,
-  Clock,
-  Package,
-  CheckCircle2,
-  Home,
-  Briefcase,
-  Wallet,
-  Settings
+CheckCircle2,
+ChevronLeft,
+Clock,
+Map,
+MapPin,
+Navigation
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -18,21 +12,6 @@ import { useNavigate } from "react-router-dom";
 // Active route details: progress summary + per-stop status (Completed / Next / Upcoming).
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
-        active ? "text-white" : "text-white/50 hover:text-white/80"
-      }`}
-    >
-      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
-      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
-      <span className="relative z-10">{label}</span>
-    </button>
-  );
-}
 
 function StatusChip({ state }) {
   if (state === "completed") {

@@ -1,18 +1,13 @@
-import React, { useState } from "react";
 import {
-  ChevronLeft,
-    ShieldCheck,
-  Phone,
-  MessageCircle,
-  MapPin,
-  AlertTriangle,
-  LifeBuoy,
-  Home,
-  Briefcase,
-  Wallet,
-  Settings
+AlertTriangle,
+ChevronLeft,
+LifeBuoy,
+MapPin,
+MessageCircle,
+Phone,
+ShieldCheck
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D59 Driver – Safety Toolkit Screen (v2)
 // Central hub for safety tools: SOS, follow ride, incident reporting, help.
@@ -20,63 +15,11 @@ import { useNavigate , useLocation } from "react-router-dom";
 // runs – Safety toolkit is not tied to only rides.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
-  return (
-    <button
-      type="button"
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${active ? "text-white" : "text-white/50 hover:text-white/80"
-        }`}
-      onClick={onClick}
-    >
-      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
-      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
-      <span className="relative z-10">{label}</span>
-    </button>
-  );
-}
 
-function SafetyTile({ icon: Icon, title, subtitle, tone = "default", onClick }) {
-  const bg =
-    tone === "danger"
-      ? "bg-red-50 border-red-100"
-      : tone === "important"
-        ? "bg-amber-50 border-amber-100"
-        : "bg-white border-slate-100";
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex items-start space-x-2 rounded-2xl border ${bg} px-3 py-3 shadow-sm active:scale-[0.98] transition-transform w-full`}
-    >
-      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50">
-        <Icon className="h-4 w-4 text-slate-700" />
-      </div>
-      <div className="flex flex-col items-start text-left">
-        <span className="text-xs font-semibold text-slate-900 mb-0.5">
-          {title}
-        </span>
-        <span className="text-[11px] text-slate-600 leading-snug">{subtitle}</span>
-      </div>
-    </button>
-  );
-}
 
 export default function SafetyToolkitScreen() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
 
-  const bottomNavRoutes = {
-    home: "/driver/dashboard/online",
-    manager: "/driver/jobs/list",
-    wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences"
-};
 
   return (
     <div className="flex flex-col h-full bg-[#f8fafc]">

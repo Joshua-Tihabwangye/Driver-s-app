@@ -1,13 +1,12 @@
-import React, { useState } from "react";
 import {
-  ChevronLeft,
-  ListFilter,
-  MapPin,
-  ArrowRight,
-  HelpCircle,
-  Truck,
-  Bell
+ArrowRight,
+Bell,
+ChevronLeft,
+HelpCircle,
+ListFilter,
+MapPin
 } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D44 Ride Requests

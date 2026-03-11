@@ -1,22 +1,12 @@
-import React, { useState } from "react";
 import {
-  ChevronLeft,
-  IdCard,
-  ShieldCheck,
-  User,
-  CalendarDays,
-  Hash,
-  Info,
-  Camera,
-  Eye,
-  FileText,
-  Home,
-  MessageSquare,
-  Wallet,
-  Settings,
-  CheckCircle2,
-  Moon,
-  Sun
+Camera,
+CheckCircle2,
+ChevronLeft,
+Eye,
+FileText,
+Moon,
+Sun,
+User
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
@@ -26,7 +16,7 @@ import { useTheme } from "../context/ThemeContext";
 // personal details display, linked documents, support contact button, routing.
 
 
-function DocRow({ icon: Icon, title, subtitle, dateLabel, isDark, onClick }) {
+function DocRow({ title, subtitle, dateLabel, isDark, onClick }) {
   return (
     <button
       type="button"
@@ -54,7 +44,6 @@ function DocRow({ icon: Icon, title, subtitle, dateLabel, isDark, onClick }) {
 }
 
 export default function IdentityVerificationScreen() {
-  const [nav] = useState("settings");
   const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
@@ -135,7 +124,6 @@ export default function IdentityVerificationScreen() {
             <div className="space-y-3">
               <DocRow
                 isDark={isDark}
-                icon={FileText}
                 title="Driving License (Front)"
                 subtitle="High Fidelity Scan"
                 dateLabel="Issued: 08/2024"
@@ -143,7 +131,6 @@ export default function IdentityVerificationScreen() {
               />
               <DocRow
                 isDark={isDark}
-                icon={FileText}
                 title="Driving License (Back)"
                 subtitle="High Fidelity Scan"
                 dateLabel="Issued: 08/2024"
@@ -151,7 +138,6 @@ export default function IdentityVerificationScreen() {
               />
               <DocRow
                 isDark={isDark}
-                icon={FileText}
                 title="Vehicle RC Book"
                 subtitle="Registration Cert"
                 dateLabel="Issued: 05/2023"

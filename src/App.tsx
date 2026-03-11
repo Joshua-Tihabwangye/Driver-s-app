@@ -1,17 +1,16 @@
-import React, { useEffect } from "react";
+import { Moon,Sun } from "lucide-react";
 import {
-  Routes,
-  Route,
-  useNavigate,
-  useLocation,
-  Navigate,
-  matchPath,
+Navigate,
+Route,
+Routes,
+useLocation,
 } from "react-router-dom";
-import { MapPin, Moon, Sun } from "lucide-react";
-import { useTheme } from "./context/ThemeContext";
 import MobileShell from "./components/MobileShell";
+import { useTheme } from "./context/ThemeContext";
 
 // ── Screen Imports (D01–D102) ───────────────────────────
+import AboutScreen from "./screens/About";
+import CashOutScreen from "./screens/CashOut";
 import D01Screen from "./screens/D01.jsx";
 import D02Screen from "./screens/D02.jsx";
 import D03Screen from "./screens/D03.jsx";
@@ -22,6 +21,9 @@ import D07Screen from "./screens/D07.jsx";
 import D08Screen from "./screens/D08.jsx";
 import D09Screen from "./screens/D09.jsx";
 import D10Screen from "./screens/D10.jsx";
+import D100Screen from "./screens/D100.jsx";
+import D101Screen from "./screens/D101.jsx";
+import D102Screen from "./screens/D102.jsx";
 import D11Screen from "./screens/D11.jsx";
 import D12Screen from "./screens/D12.jsx";
 import D13Screen from "./screens/D13.jsx";
@@ -111,14 +113,9 @@ import D96Screen from "./screens/D96.jsx";
 import D97Screen from "./screens/D97.jsx";
 import D98Screen from "./screens/D98.jsx";
 import D99Screen from "./screens/D99.jsx";
-import D100Screen from "./screens/D100.jsx";
-import D101Screen from "./screens/D101.jsx";
-import D102Screen from "./screens/D102.jsx";
-import CashOutScreen from "./screens/CashOut";
+import HelpScreen from "./screens/Help";
 import MoreMenuScreen from "./screens/MoreMenu";
 import ProfileScreen from "./screens/Profile";
-import HelpScreen from "./screens/Help";
-import AboutScreen from "./screens/About";
 
 // ── Auth & Landing ──────────────────────────────────────
 import LandingPage from "./screens/LandingPage";
@@ -259,11 +256,8 @@ const SCREENS = [
 
 const DEFAULT_SCREEN = SCREENS.find((s) => s.id === "D31") || SCREENS[0];
 
-import { useAuth } from "./context/AuthContext";
-
 export default function App() {
   const { isDark, toggleTheme } = useTheme();
-  const { isLoggedIn } = useAuth();
   const location = useLocation();
   const rootNavRoutes = new Set([
     "/driver/dashboard/online",

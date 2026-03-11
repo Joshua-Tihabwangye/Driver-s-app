@@ -1,19 +1,14 @@
-import React, { useState, useEffect } from "react";
 import {
-  ChevronLeft,
-    Map,
-  User,
-  MapPin,
-  Clock,
-  Phone,
-  X,
-  Check,
-  Home,
-  Briefcase,
-  Wallet,
-  Settings
+Check,
+ChevronLeft,
+Clock,
+Map,
+MapPin,
+Phone,
+User
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useEffect,useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D42 Driver App – Ride Request Incoming (v2)
 // Full-screen incoming job request with timer, pickup/drop details, accept/decline actions
@@ -22,21 +17,6 @@ import { useNavigate , useLocation } from "react-router-dom";
 
 const JOB_TYPES = ["ride", "delivery", "rental", "tour", "ambulance", "shuttle"];
 
-function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
-  return (
-    <button
-      type="button"
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
-        active ? "text-white" : "text-white/50 hover:text-white/80"
-      }`}
-      onClick={onClick}
-    >
-      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
-      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
-      <span className="relative z-10">{label}</span>
-    </button>
-  );
-}
 
 function JobTypePill({ jobType }) {
   const labelMap = {
@@ -104,18 +84,6 @@ export default function RideRequestIncomingScreen() {
   // Demo state so you can preview all variants inside the canvas
   const [jobType, setJobType] = useState("ride");
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
-  const bottomNavRoutes = {
-    home: "/driver/dashboard/online",
-    manager: "/driver/jobs/list",
-    wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences"
-};
 
   useEffect(() => {
     if (timeLeft <= 0) return;

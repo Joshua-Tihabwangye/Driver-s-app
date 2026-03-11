@@ -1,17 +1,12 @@
-import React from "react";
 import {
-  Package,
-  ShieldCheck,
-  CheckCircle2,
-  XCircle,
-  Info,
-  ChevronLeft,
-  Home,
-  Briefcase,
-  Wallet,
-  Settings
+CheckCircle2,
+ChevronLeft,
+Info,
+Package,
+ShieldCheck,
+XCircle
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D17 Vehicle Accessories
 // Accessories required / recommended for rides & deliveries.

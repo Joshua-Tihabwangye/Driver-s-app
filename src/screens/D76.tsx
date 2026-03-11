@@ -1,39 +1,21 @@
-import React, { useState } from "react";
 import {
-  ChevronLeft,
-    ListFilter,
-  Package,
-  Utensils,
-  Pill,
-  Truck,
-  ShoppingBag,
-  MapPin,
-  Clock,
-  DollarSign,
-  Home,
-  Briefcase,
-  Wallet,
-  Settings
+ChevronLeft,
+DollarSign,
+ListFilter,
+MapPin,
+Package,
+Pill,
+ShoppingBag,
+Truck,
+Utensils
 } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D76 List of Orders – Select Order Type (v1)
 // List of orders with a prominent order-type filter (Food, Pharmacy, Parcel, Grocery).
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
-  return (
-    <button
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
-        active ? "text-white" : "text-white/50 hover:text-white/80"
-      }`}
-    >
-      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
-      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
-      <span className="relative z-10">{label}</span>
-    </button>
-  );
-}
 
 function TypeChip({ icon: Icon, label, active, onClick }) {
   return (

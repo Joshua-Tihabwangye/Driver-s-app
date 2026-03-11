@@ -1,19 +1,13 @@
-import React, { useState } from "react";
 import {
-  ChevronLeft,
-  ShieldCheck,
-  CheckCircle2,
-  IdCard,
-  FileBadge2,
-  ClipboardCheck,
-  Car,
-  Info,
-  Home,
-  MessageSquare,
-  Wallet,
-  Settings
+Car,
+CheckCircle2,
+ChevronLeft,
+ClipboardCheck,
+FileBadge2,
+IdCard,
+Info
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D10 Driver Personal – All Documents Verified
 // Green curved header design. ALL original functionality preserved:

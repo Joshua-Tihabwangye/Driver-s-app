@@ -1,49 +1,22 @@
-import React, { useState } from "react";
 import {
-  ChevronLeft,
-    AlertTriangle,
-  Map,
-  MapPin,
-  Clock,
-  MessageCircle,
-  Phone,
-  XCircle,
-  CheckCircle2,
-  Home,
-  Briefcase,
-  Wallet,
-  Settings
+AlertTriangle,
+CheckCircle2,
+ChevronLeft,
+Clock,
+Map,
+MapPin,
+MessageCircle,
+Phone
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D52 Driver App – Cancel Ride (Passenger No-Show Alert) (v1)
 // Confirmation alert before cancelling a ride as passenger no-show.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
-        active ? "text-white" : "text-white/50 hover:text-white/80"
-      }`}
-    >
-      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
-      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
-      <span className="relative z-10">{label}</span>
-    </button>
-  );
-}
 
 export default function CancelRideNoShowAlertScreen() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
   return (
     <div className="flex flex-col h-full bg-[#f8fafc]">
       <style>{`

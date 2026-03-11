@@ -1,14 +1,13 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft,
-  TrendingUp,
-  DollarSign,
-  Car,
-  Package,
-  Star
+Car,
+ChevronLeft,
+DollarSign,
+Package,
+Star,
+TrendingUp
 } from "lucide-react";
-import BottomNav from "../components/BottomNav";
+import React,{ useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 // ─── Mock Data ────────────────────────────────────────
 const EARNINGS_DATA = {
@@ -168,34 +167,38 @@ export default function AnalyticsDashboard() {
   const periods: Period[] = ["today", "week", "month"];
 
   return (
-    <div className="app-stage min-h-screen flex justify-center bg-[#edf3f2] py-4 px-3">
-      <style>{`
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
-      
-      <div className="app-phone w-[375px] h-[812px] bg-white rounded-[20px] border border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden flex flex-col relative">
-        {/* Header */}
-        <header className="flex items-center justify-between px-4 pt-6 pb-4 bg-white sticky top-0 z-20">
-          <div className="flex items-center">
+    <div className="flex flex-col h-full bg-[#f8fafc]">
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: "40px",
+            borderBottomRightRadius: "40px",
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-3">
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 mr-4 active:scale-90 transition-transform shadow-sm"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
             >
-              <ArrowLeft className="h-5 w-5 text-slate-700" />
+              <ChevronLeft className="h-5 w-5 text-white" />
             </button>
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+              <TrendingUp className="h-5 w-5 text-white" />
+            </div>
             <div className="flex flex-col">
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#03cd8c]">
-                 Insights
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-100/70">
+                Insights
               </span>
-              <h1 className="text-lg font-bold text-slate-900 tracking-tight">
-                 Analytics
+              <h1 className="text-base font-black text-white tracking-tight leading-tight">
+                Analytics
               </h1>
             </div>
           </div>
-          {/* Period Selector */}
-          <div className="flex bg-slate-100/50 rounded-xl p-1 border border-slate-100 backdrop-blur-sm">
+          <div className="flex bg-white/20 rounded-xl p-1 border border-white/30 backdrop-blur-sm">
             {periods.map((p) => (
               <button
                 key={p}
@@ -203,8 +206,8 @@ export default function AnalyticsDashboard() {
                 onClick={() => setPeriod(p)}
                 className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
                   period === p
-                    ? "bg-[#03cd8c] text-white shadow-lg shadow-[#03cd8c]/20"
-                    : "text-slate-400"
+                    ? "bg-white text-[#03cd8c] shadow-lg"
+                    : "text-white/80"
                 }`}
               >
                 {periodLabels[p]}
@@ -212,8 +215,9 @@ export default function AnalyticsDashboard() {
             ))}
           </div>
         </header>
+      </div>
 
-        <div className="flex-1 px-4 pt-4 pb-20 space-y-6 overflow-y-auto no-scrollbar">
+      <main className="flex-1 px-4 pt-6 pb-24 space-y-6 overflow-y-auto scrollbar-hide">
           {/* Summary banner */}
           <section className="rounded-3xl bg-slate-900 text-white p-6 space-y-4 shadow-xl relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-[#03cd8c]/20 rounded-full -mr-16 -mt-16 blur-2xl" />
@@ -294,10 +298,7 @@ export default function AnalyticsDashboard() {
             </h3>
             <ServiceBreakdown />
           </section>
-        </div>
-
-        <BottomNav active="earnings" />
-      </div>
+      </main>
     </div>
   );
 }

@@ -1,14 +1,12 @@
-import React from "react";
 import {
-  ChevronLeft,
-    Power,
-  WifiOff,
-  AlertCircle,
-  Info,
-  ChevronRight
+AlertCircle,
+ChevronLeft,
+ChevronRight,
+Info,
+Power,
+WifiOff
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import BottomNav from "../components/BottomNav";
 
 // EVzone Driver App – D27 Driver App – Dashboard (Offline State)
 // Driver dashboard when offline, showing status + any blocking issues.

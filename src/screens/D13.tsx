@@ -1,19 +1,15 @@
-import React, { useState } from "react";
 import {
-    Camera,
-  Image as ImageIcon,
-  UploadCloud,
-  CheckCircle2,
-  Info,
-  SunMedium,
-  Eye,
-  ChevronLeft,
-  Home,
-  Briefcase,
-  Wallet,
-  Settings
+Camera,
+CheckCircle2,
+ChevronLeft,
+Eye,
+Image as ImageIcon,
+Info,
+SunMedium,
+UploadCloud
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D13 Upload Your Image
 // Redesigned UI (green curved header, circular preview, green checkmark badge)
