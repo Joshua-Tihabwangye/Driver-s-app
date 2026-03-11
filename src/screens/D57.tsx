@@ -1,15 +1,10 @@
-import React, { useState } from "react";
 import {
-  ChevronLeft,
-    AlertTriangle,
-  XCircle,
-  Info,
-  Home,
-  Briefcase,
-  Wallet,
-  Settings
+AlertTriangle,
+ChevronLeft,
+Info
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D57 Driver – Cancel Ride Reason Screen (v1)
 // Screen for selecting a reason when cancelling a ride (non no-show cases as well).
@@ -24,60 +19,12 @@ const REASONS = [
   "Other",
 ];
 
-function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
-  return (
-    <button
-      type="button"
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
-        active ? "text-white" : "text-white/50 hover:text-white/80"
-      }`}
-      onClick={onClick}
-    >
-      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
-      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
-      <span className="relative z-10">{label}</span>
-    </button>
-  );
-}
 
-function ReasonRow({ label, selected, onClick }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`w-full rounded-2xl border px-3 py-2.5 text-left text-[11px] font-medium flex items-center justify-between active:scale-[0.98] transition-transform ${
-        selected
-          ? "border-[#03cd8c] bg-[#e6fff7] text-slate-900"
-          : "border-slate-100 bg-white text-slate-700"
-      }`}
-    >
-      <span className="pr-2 truncate max-w-[220px]">{label}</span>
-      {selected && (
-        <span className="h-5 w-5 rounded-full border border-[#03cd8c] bg-[#03cd8c]" />
-      )}
-      {!selected && (
-        <span className="h-5 w-5 rounded-full border border-slate-300 bg-white" />
-      )}
-    </button>
-  );
-}
 
 export default function CancelRideReasonScreen() {
   const [selectedReason, setSelectedReason] = useState("");
   const [notes, setNotes] = useState("");
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
-  const bottomNavRoutes = {
-    home: "/driver/dashboard/online",
-    manager: "/driver/jobs/list",
-    wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences"
-};
 
   const canSubmit = Boolean(selectedReason);
 

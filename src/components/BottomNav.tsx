@@ -1,12 +1,12 @@
+import {
+Briefcase,
+DollarSign,
+Home,
+MoreHorizontal,
+ShieldCheck
+} from "lucide-react";
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-  Home, 
-  Briefcase, 
-  DollarSign, 
-  ShieldCheck, 
-  MoreHorizontal 
-} from "lucide-react";
 
 interface BottomNavItemProps {
   icon: React.ElementType;

@@ -1,39 +1,19 @@
-import React, { useState } from "react";
 import {
-  ChevronLeft,
-    Map,
-  Settings as SettingsIcon,
-  SunMedium,
-  Moon,
-  Eye,
-  AlertCircle,
-  Send,
-  Home,
-  Briefcase,
-  Wallet,
-  Settings
+AlertCircle,
+ChevronLeft,
+Eye,
+Map,
+Moon,
+Send,
+Settings as SettingsIcon,
+SunMedium
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D37 Driver App – Map Settings & Report Issues (v1)
 // Screen for adjusting map preferences (theme, traffic, compass) and reporting map issues.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
-
-function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
-  return (
-    <button
-      type="button"
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
-        active ? "text-white" : "text-white/50 hover:text-white/80"
-      }`}
-      onClick={onClick}
-    >
-      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
-      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
-      <span className="relative z-10">{label}</span>
-    </button>
-  );
-}
 
 function ToggleRow({ icon: Icon, title, subtitle, checked, onChange }) {
   return (
@@ -43,12 +23,6 @@ function ToggleRow({ icon: Icon, title, subtitle, checked, onChange }) {
       className="flex items-center justify-between rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform"
     >
       <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-white" />
-            </button>
         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-50">
           <Icon className="h-4 w-4 text-slate-700" />
         </div>
@@ -78,18 +52,6 @@ export default function MapSettingsScreen() {
   const [showCompass, setShowCompass] = useState(true);
   const [issueText, setIssueText] = useState("");
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
-  const bottomNavRoutes = {
-    home: "/driver/dashboard/online",
-    manager: "/driver/jobs/list",
-    wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences"
-};
 
   const handleSubmitIssue = () => {
     navigate("/driver/safety/toolkit");
@@ -114,6 +76,12 @@ export default function MapSettingsScreen() {
         />
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
           <div className="flex items-center space-x-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
+            >
+              <ChevronLeft className="h-5 w-5 text-white" />
+            </button>
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
               <Map className="h-5 w-5 text-white" />
             </div>

@@ -1,37 +1,18 @@
-import React, { useState } from "react";
 import {
-  ChevronLeft,
-    Target,
-  DollarSign,
-  TrendingUp,
-  Plus,
-  Minus,
-  Home,
-  Briefcase,
-  Wallet,
-  Settings
+ChevronLeft,
+DollarSign,
+Minus,
+Plus,
+Target,
+TrendingUp
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D38 Set Weekly Earning Goal (Driver App) (v1)
 // Screen to set a weekly earnings goal with quick presets and +/- controls.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
-  return (
-    <button
-      type="button"
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
-        active ? "text-white" : "text-white/50 hover:text-white/80"
-      }`}
-      onClick={onClick}
-    >
-      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
-      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
-      <span className="relative z-10">{label}</span>
-    </button>
-  );
-}
 
 function PresetButton({ label, active, onClick }) {
   return (
@@ -52,18 +33,6 @@ function PresetButton({ label, active, onClick }) {
 export default function WeeklyEarningGoalScreen() {
   const [goal, setGoal] = useState(80); // default weekly goal
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
-  const bottomNavRoutes = {
-    home: "/driver/dashboard/online",
-    manager: "/driver/jobs/list",
-    wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences"
-};
 
   const clampGoal = (value) => Math.max(20, Math.min(value, 500));
 

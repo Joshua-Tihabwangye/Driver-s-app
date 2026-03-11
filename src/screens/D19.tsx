@@ -1,14 +1,9 @@
-import React, { useState } from "react";
 import {
-    ChevronLeft,
-  Play,
-  CheckCircle2,
-  Home,
-  Briefcase,
-  Wallet,
-  Settings
+CheckCircle2,
+ChevronLeft,
+Play
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D19 Info Session for Driver-Partners
 // Redesigned to match Screenshot 0.
@@ -50,12 +45,6 @@ function ModuleCard({ title, description, image, completed, onClick }) {
 
 export default function InfoSessionListScreen() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
 
   const modules = [
     {

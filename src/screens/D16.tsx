@@ -1,18 +1,13 @@
-import React from "react";
 import {
-    Building2,
-  Car,
-  Truck,
-  ShieldCheck,
-  AlertTriangle,
-  Info,
-  ChevronLeft,
-  Home,
-  Briefcase,
-  Wallet,
-  Settings
+AlertTriangle,
+Building2,
+Car,
+ChevronLeft,
+Info,
+ShieldCheck,
+Truck
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D16 Business Vehicles
 // Business-owned / fleet vehicles assigned to the driver.

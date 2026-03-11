@@ -1,12 +1,11 @@
-import React from "react";
 import {
-  ChevronLeft,
-    ShieldCheck,
-  LifeBuoy,
-  AlertTriangle,
-  MapPin,
-  Phone,
-  Share2
+AlertTriangle,
+ChevronLeft,
+LifeBuoy,
+MapPin,
+Phone,
+Share2,
+ShieldCheck
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 

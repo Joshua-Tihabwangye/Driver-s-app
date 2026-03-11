@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import { ArrowLeft,ArrowRight,Chrome,Eye,EyeOff,Lock,Mail } from "lucide-react";
+import React,{ useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Mail, Lock, Eye, EyeOff, ArrowLeft, ArrowRight, Chrome } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 /**

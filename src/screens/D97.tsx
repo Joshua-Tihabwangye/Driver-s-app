@@ -1,18 +1,13 @@
-import React, { useState } from "react";
 import {
-  ChevronLeft,
-    ClipboardList,
-  User,
-  Car,
-  MapPin,
-  Phone,
-  FileText,
-  Clock,
-  Home,
-  Briefcase,
-  Wallet,
-  Settings
+Car,
+ChevronLeft,
+ClipboardList,
+FileText,
+MapPin,
+Phone,
+User
 } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D97 Rental Job Overview / On Rental Screen (v1)
@@ -27,21 +22,6 @@ import { useNavigate } from "react-router-dom";
 
 const STATUSES = ["On rental", "Waiting at hotel", "With client", "Returning to base"];
 
-function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
-  return (
-    <button
-      type="button"
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
-        active ? "text-white" : "text-white/50 hover:text-white/80"
-      }`}
-      onClick={onClick}
-    >
-      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
-      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
-      <span className="relative z-10">{label}</span>
-    </button>
-  );
-}
 
 function StatusChip({ label, active, onClick }) {
   return (

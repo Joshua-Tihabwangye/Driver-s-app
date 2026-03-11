@@ -1,19 +1,18 @@
+import {
+Car,
+ChevronLeft,
+ChevronRight,
+HelpCircle,
+History,
+Info,
+ListChecks,
+LogOut,
+Map,
+Phone,
+Settings as SettingsIcon
+} from "lucide-react";
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  ChevronLeft,
-  User,
-  History,
-  Settings as SettingsIcon,
-  Car,
-  HelpCircle,
-  Info,
-  ChevronRight,
-  ListChecks,
-  Phone,
-  LogOut,
-  Map,
-} from "lucide-react";
 
 function MenuSection({
   title,

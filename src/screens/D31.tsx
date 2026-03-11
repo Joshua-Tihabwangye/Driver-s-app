@@ -1,20 +1,14 @@
-import React from "react";
 import {
-  ChevronLeft,
-    Activity,
-  Map,
-  MapPin,
-  ShieldCheck,
-  DollarSign,
-  Home,
-  Briefcase,
-  Wallet,
-  Settings,
-  Car,
-  Package
+Activity,
+Car,
+ChevronLeft,
+DollarSign,
+Map,
+MapPin,
+Package,
+ShieldCheck
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
-import BottomNav from "../components/BottomNav";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D31 Online Dashboard (Active Mode)
 // Restoration of the original design from Driver-s-app.
@@ -39,18 +33,6 @@ function QuickAction({ icon: Icon, label, sub, onClick }) {
 
 export default function OnlineMapDashboardScreen() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
-  const bottomNavRoutes = {
-    home: "/driver/dashboard/online",
-    manager: "/driver/jobs/list",
-    wallet: "/driver/earnings/overview",
-    settings: "/driver/preferences"
-};
 
   return (
     <div className="flex flex-col h-full bg-[#f8fafc]">

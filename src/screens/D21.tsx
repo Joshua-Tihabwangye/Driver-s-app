@@ -1,16 +1,12 @@
-import React, { useState } from "react";
 import {
-    ChevronLeft,
-  Play,
-  CheckCircle2,
-  XCircle,
-  Info,
-  Home,
-  Briefcase,
-  Wallet,
-  Settings
+CheckCircle2,
+ChevronLeft,
+Info,
+Play,
+XCircle
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D21 Preferences – Driver Info Session Quiz (Initial State)
 // Redesigned to match Screenshot 2.

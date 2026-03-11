@@ -1,37 +1,18 @@
-import React, { useState } from "react";
 import {
-  ChevronLeft,
-    DollarSign,
-  Calendar,
-  LineChart,
-  TrendingUp,
-  ChevronDown,
-  Home,
-  Briefcase,
-  Wallet,
-  Settings
+Calendar,
+ChevronDown,
+ChevronLeft,
+DollarSign,
+LineChart,
+TrendingUp
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D35 Driver App – Monthly Earnings Summary (v1)
 // Monthly view: total earnings, week-by-week breakdown and highlight.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
-        active ? "text-white" : "text-white/50 hover:text-white/80"
-      }`}
-    >
-      {active && <span className="absolute inset-x-2 inset-y-1 rounded-xl bg-white/20" />}
-      <Icon className="h-5 w-5 mb-0.5 relative z-10" />
-      <span className="relative z-10">{label}</span>
-    </button>
-  );
-}
 
 const MONTH_DATA = [
   { label: "Week 1", total: 210 },
@@ -42,12 +23,6 @@ const MONTH_DATA = [
 
 export default function MonthlyEarningsSummaryScreen() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
   const [month] = useState("August 2025");
 
   const total = MONTH_DATA.reduce((acc, d) => acc + d.total, 0).toFixed(2);

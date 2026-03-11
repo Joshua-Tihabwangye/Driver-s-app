@@ -1,45 +1,20 @@
-import React, { useState } from "react";
 import {
-  ChevronLeft,
-    ListFilter,
-  Activity,
-  MapPin,
-  ChevronRight,
-  Home,
-  Briefcase,
-  Wallet,
-  Settings
+Activity,
+ChevronLeft,
+ChevronRight,
+ListFilter,
+MapPin
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D45 Driver – Ride Requests Prompt (v2)
 // Small prompt card encouraging the driver to open the Ride Requests screen (D44).
 // Updated copy to reflect multiple job types and CTA that opens the job list.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-function BottomNavItem({ icon: Icon, label, active = false, onClick = () => {} }) {
-  return (
-    <button
-      className={`flex flex-col items-center justify-center flex-1 py-2 text-xs font-semibold transition-all relative ${
-        active ? "text-white" : "text-white/50 hover:text-white/80"
-      }`}
-    >
-      <span className="flex items-center space-x-1">
-        <Icon className="h-5 w-5" />
-        <span>{label}</span>
-      </span>
-    </button>
-  );
-}
 
 export default function RideRequestsPromptScreen() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
   const handleViewJobs = () => {
     // In the real app, navigate to the Ride Requests / Job list (D44), e.g.:
     // navigate("/driver/ride-requests");

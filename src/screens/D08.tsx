@@ -1,18 +1,13 @@
-import React, { useState } from "react";
 import {
-  ChevronLeft,
-  Hourglass,
-  IdCard,
-  FileBadge2,
-  ClipboardCheck,
-  Clock3,
-  Info,
-  Home,
-  MessageSquare,
-  Wallet,
-  Settings
+ChevronLeft,
+ClipboardCheck,
+Clock3,
+FileBadge2,
+Hourglass,
+IdCard,
+Info
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D08 Driver Personal – Document Under Review
 // Green curved header design. ALL original functionality preserved:

@@ -1,6 +1,5 @@
-import React from "react";
+import { ChevronRight,Layers,ShieldCheck,TrendingUp,Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Zap, ShieldCheck, TrendingUp, ChevronRight, Globe, Layers } from "lucide-react";
 
 /**
  * Stunning Landing Page for EVzone Driver App.

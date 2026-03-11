@@ -1,13 +1,12 @@
-import React, { useState, useEffect } from "react";
 import {
-  ChevronLeft,
-  ChevronRight,
-  MicOff,
-  Volume2,
-  Phone,
-  PhoneOff
+ChevronLeft,
+ChevronRight,
+MicOff,
+PhoneOff,
+Volume2
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useEffect,useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D63 Driver – Emergency Calling Screen (v4)
 // Redesigned to match the high-fidelity orbit animation with avatars and swipe-to-cancel slider.
@@ -21,12 +20,6 @@ function formatCallTime(seconds) {
 
 export default function EmergencyCallingScreen() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const navActive = (key) => {
-    const p = location.pathname;
-    const routes = { home: ["/driver/dashboard", "/driver/map/", "/driver/trip/", "/driver/safety/"], manager: ["/driver/jobs/", "/driver/delivery/", "/driver/vehicles", "/driver/onboarding/", "/driver/register", "/driver/training/", "/driver/help/"], wallet: ["/driver/earnings/", "/driver/surge/"], settings: ["/driver/preferences", "/driver/search"] };
-    return (routes[key] || []).some(r => p.startsWith(r));
-  };
   const [isSwiped, setIsSwiped] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [muted, setMuted] = useState(false);

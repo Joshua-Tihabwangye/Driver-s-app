@@ -1,25 +1,21 @@
-import React, { useState } from "react";
 import {
-  ChevronLeft,
-  Building2,
-  MapPin,
-  Truck,
-  Ambulance,
-  Bus,
-  GraduationCap,
-  Briefcase,
-  Plane,
-  Car,
-  ShoppingCart,
-  Package,
-  Clock,
-  ClipboardCheck,
-  Home,
-  MessageSquare,
-  Wallet,
-  Settings
+Ambulance,
+Briefcase,
+Building2,
+Bus,
+Car,
+ChevronLeft,
+ClipboardCheck,
+Clock,
+GraduationCap,
+MapPin,
+Package,
+Plane,
+ShoppingCart,
+Truck
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D06 Preferences
 // New design: green curved header, toggleable Areas/Services/Requirements cards, green nav.

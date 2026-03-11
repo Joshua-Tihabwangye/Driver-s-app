@@ -1,16 +1,11 @@
-import React, { useState } from "react";
 import {
-    ChevronLeft,
-  Zap,
-  Plus,
-  CheckCircle2,
-  Info,
-  Home,
-  Briefcase,
-  Wallet,
-  Settings
+CheckCircle2,
+ChevronLeft,
+Info,
+Plus,
+Zap
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D14 My Vehicles
 // Redesigned with green curved header and vehicle image cards.

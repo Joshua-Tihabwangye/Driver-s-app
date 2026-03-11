@@ -1,14 +1,10 @@
-import React, { useState } from "react";
 import {
-    ChevronLeft,
-  ChevronRight,
-  Play,
-  Home,
-  Briefcase,
-  Wallet,
-  Settings
+ChevronLeft,
+ChevronRight,
+Play
 } from "lucide-react";
-import { useNavigate , useLocation } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 // EVzone Driver App – D20 Preferences – Driver Info Tutorial (Lesson View)
 // Redesigned to match Screenshot 1.
@@ -16,7 +12,7 @@ import { useNavigate , useLocation } from "react-router-dom";
 
 
 export default function DriverLessonDetailScreen() {
-  const [page, setPage] = useState(2); // Mocking active dot position
+  const [page] = useState(2); // Mocking active dot position
   const navigate = useNavigate();
 
   return (
