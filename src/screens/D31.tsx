@@ -18,9 +18,9 @@ function QuickAction({ icon: Icon, label, sub, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="flex flex-col items-start rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 shadow-sm flex-1 min-w-[0] active:scale-[0.97] transition-transform"
+      className="flex flex-col items-start rounded-2xl border-2 border-orange-500/10 bg-cream shadow-sm px-3 py-3 flex-1 min-w-[0] active:scale-[0.97] hover:scale-[1.02] hover:shadow-md hover:border-orange-500/30 transition-all duration-300"
     >
-      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#e6fff7] mb-1">
+      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#f0faf7] mb-1 group-hover:bg-[#03cd8c]/20">
         <Icon className="h-4 w-4 text-[#03cd8c]" />
       </div>
       <span className="text-xs font-semibold text-slate-900 mb-0.5 truncate w-full text-left">
@@ -76,7 +76,7 @@ export default function OnlineMapDashboardScreen() {
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-24 space-y-6 overflow-y-auto scrollbar-hide">
         {/* Status + mini summary */}
-        <section className="rounded-[2.5rem] bg-slate-900 text-white p-6 space-y-6 shadow-2xl shadow-slate-200/50 relative overflow-hidden group">
+        <section className="rounded-[2.5rem] bg-cream p-6 flex items-start justify-between shadow-xl shadow-slate-200/50 border-2 border-orange-500/10 group hover:scale-[1.01] transition-transform duration-500">
           <div className="absolute top-0 right-0 w-32 h-32 bg-[#03cd8c]/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110" />
           
           <div className="flex items-center justify-between relative z-10">

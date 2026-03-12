@@ -323,7 +323,7 @@ export default function RideRequestIncomingScreen() {
               <button
                 type="button"
                 onClick={handleDecline}
-                className="flex-[0.4] rounded-full py-5 text-[11px] font-black uppercase tracking-widest border border-slate-200 text-slate-500 bg-white hover:bg-slate-50 active:scale-95 transition-all flex items-center justify-center"
+                className="flex-[0.4] rounded-full py-5 text-[11px] font-black uppercase tracking-widest border-2 border-orange-500/10 text-slate-500 bg-cream hover:bg-slate-50 active:scale-95 transition-all flex items-center justify-center hover:border-orange-500/30 shadow-sm"
               >
                 Decline
               </button>

@@ -24,8 +24,8 @@ export default function AppPhoneShell({ children }: AppPhoneShellProps) {
         className={`relative flex flex-col overflow-hidden
                       w-full h-full
                       sm:w-[410px] sm:h-[calc(100%-40px)] sm:max-h-[840px] sm:rounded-2xl shadow-2xl shadow-black/60
-                      md:w-[430px] md:h-[calc(100%-60px)] md:max-h-[900px] border-[8px]
-                      ${isDark ? "bg-slate-950 border-slate-800" : "bg-white border-slate-900"}`}
+                      md:w-[430px] md:h-[calc(100%-60px)] md:max-h-[900px]
+                      ${isDark ? "bg-slate-950 border-[8px] border-slate-800 shadow-2xl shadow-black/60" : "bg-white border-0 shadow-2xl shadow-slate-200"}`}
       >
         <div
           className={`flex-1 overflow-y-auto overflow-x-hidden pb-[70px] ${

@@ -14,8 +14,8 @@ import { useNavigate } from "react-router-dom";
 
 function StatCard({ label, value, sub = null, icon: Icon = null }: { label: string; value: string; sub?: string | null; icon?: React.ElementType | null }) {
   return (
-    <div className="rounded-2xl bg-white border border-slate-100 p-4 space-y-1.5 relative overflow-hidden shadow-sm">
-      {Icon && <Icon className="absolute top-3 right-3 h-4 w-4 text-slate-200" />}
+    <div className="rounded-2xl bg-cream border-2 border-orange-500/10 p-4 space-y-1.5 relative overflow-hidden shadow-sm hover:shadow-md hover:scale-[1.02] hover:border-orange-500/30 transition-all duration-300 group">
+      {Icon && <Icon className="absolute top-3 right-3 h-4 w-4 text-slate-200 group-hover:text-[#03cd8c]/20 transition-colors" />}
       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{label}</span>
       <div className="flex flex-col">
         <span className="text-base font-bold text-slate-800">{value}</span>
@@ -28,18 +28,18 @@ function StatCard({ label, value, sub = null, icon: Icon = null }: { label: stri
 function StationRow({ name, value, total, colorClass }) {
   const percentage = Math.min((value / total) * 100, 100);
   return (
-    <div className="rounded-2xl border border-slate-100 bg-white p-3.5 space-y-2 shadow-sm">
+    <div className="rounded-2xl border-2 border-orange-500/10 bg-cream p-3.5 space-y-2 shadow-sm hover:shadow-md hover:scale-[1.01] hover:border-orange-500/30 transition-all duration-300 group">
       <div className="flex justify-between text-[11px] font-medium">
         <div className="flex flex-col">
-          <span className="text-slate-400">Total Riders</span>
+          <span className="text-slate-400 group-hover:text-slate-500 transition-colors">Total Riders</span>
           <span className="text-slate-900 font-bold">{value}</span>
         </div>
         <div className="flex flex-col items-end">
-          <span className="text-slate-400">Total Earnings</span>
+          <span className="text-slate-400 group-hover:text-slate-500 transition-colors">Total Earnings</span>
           <span className="text-slate-900 font-bold">UGX 4,200</span>
         </div>
       </div>
-      <div className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Location</div>
+      <div className="text-[10px] text-slate-400 font-medium uppercase tracking-wider group-hover:text-slate-500">Location</div>
       <div className="text-[12px] text-slate-800 font-bold">{name}</div>
       <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
         <div className={`h-full rounded-full ${colorClass}`} style={{ width: `${percentage}%` }} />
@@ -84,8 +84,8 @@ export default function EarningsStatsDashboardScreen() {
       <main className="flex-1 px-6 pt-6 pb-24 space-y-6 overflow-y-auto scrollbar-hide">
 
         {/* Welcome Banner */}
-        <section className="rounded-[2.5rem] bg-[#00a3ff] p-6 flex items-center justify-between text-white relative h-28 overflow-hidden shadow-2xl shadow-blue-500/20 group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110" />
+        <section className="rounded-[2.5rem] bg-[#00a3ff] p-6 flex items-center justify-between text-white relative h-28 overflow-hidden shadow-2xl shadow-blue-500/20 group hover:scale-[1.01] transition-transform duration-500">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-125 duration-700" />
           <div className="z-10 space-y-1">
             <h2 className="text-lg font-black tracking-tight uppercase">Earnings Dashboard</h2>
             <p className="text-[10px] text-white/80 max-w-[180px] leading-tight font-bold uppercase tracking-wide">

@@ -25,7 +25,7 @@ function MetricCard({ label, value, sub, icon: Icon, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={`flex flex-col rounded-2xl bg-white px-4 py-4 shadow-sm border border-slate-50 flex-1 min-w-[0] group ${clickableStyles}`}
+      className={`flex flex-col rounded-2xl bg-cream px-4 py-4 shadow-sm border-2 border-orange-500/10 flex-1 min-w-[0] group hover:scale-[1.02] hover:shadow-md hover:border-orange-500/30 transition-all duration-300 ${clickableStyles}`}
     >
       <div className="flex items-center justify-between mb-2">
         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight truncate">{label}</span>
@@ -48,17 +48,17 @@ function JobMixPill({ icon: Icon, label, value, colorClass, onClick }: { icon: a
     <button
       type="button"
       onClick={onClick}
-      className={`flex flex-col items-start rounded-2xl border px-4 py-4 text-left active:scale-[0.98] transition-all group hover:shadow-md ${colorClass}`}
+      className={`flex flex-col items-start rounded-2xl border-2 border-orange-500/10 px-4 py-4 text-left active:scale-[0.98] transition-all group hover:shadow-md bg-cream hover:scale-[1.01] hover:border-orange-500/30 ${colorClass}`}
     >
       <div className="flex items-center space-x-3 mb-3">
-        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/90 shadow-sm group-hover:scale-110 transition-transform">
+        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white shadow-sm border border-orange-50 group-hover:scale-110 transition-transform">
           <Icon className="h-4 w-4" />
         </div>
         <span className="text-[11px] font-black text-slate-900 uppercase tracking-wider">{label}</span>
       </div>
       <div className="flex items-center justify-between w-full">
          <span className="text-xl font-black text-slate-900 tracking-tighter">{value}</span>
-         <div className="p-1 bg-white/40 rounded-full">
+         <div className="p-1 bg-[#03cd8c]/10 rounded-full">
             <TrendingUp className="h-3 w-3 text-slate-600" />
          </div>
       </div>
@@ -114,7 +114,7 @@ export default function D29ActiveDashboardScreen() {
             </div>
             <div className="flex flex-col">
               <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Performance</span>
-              <p className="text-base font-black text-white tracking-tight leading-tight">Sector Activity</p>
+              <p className="text-base font-black text-white tracking-tight leading-tight">Summary</p>
             </div>
           </div>
           <div className="w-10" /> {/* Spacer */}
@@ -140,7 +140,7 @@ export default function D29ActiveDashboardScreen() {
               </div>
               <div className="flex flex-col">
                 <span className="text-[10px] tracking-[0.3em] font-black uppercase text-slate-500">
-                  Uptime
+                  Time Online
                 </span>
                 <p className="text-2xl font-black text-white tracking-tight">{onlineTime}</p>
               </div>
@@ -149,11 +149,11 @@ export default function D29ActiveDashboardScreen() {
           
           <div className="pt-6 border-t border-slate-800 grid grid-cols-2 gap-4 relative z-10">
             <div className="flex flex-col space-y-1">
-               <span className="text-[10px] uppercase font-black text-slate-600 tracking-widest">Intercepts</span>
+               <span className="text-[10px] uppercase font-black text-slate-600 tracking-widest">Trips</span>
                <span className="text-lg font-black text-white tracking-tight">{jobsToday}</span>
             </div>
             <div className="flex flex-col space-y-1 text-right">
-               <span className="text-[10px] uppercase font-black text-slate-600 tracking-widest">Gains Today</span>
+               <span className="text-[10px] uppercase font-black text-slate-600 tracking-widest">Earnings Today</span>
                <span className="text-lg font-black text-emerald-400 tracking-tight">{earningsToday}</span>
             </div>
           </div>
@@ -162,34 +162,34 @@ export default function D29ActiveDashboardScreen() {
         {/* Key stats */}
         <section className="space-y-4">
           <div className="px-1">
-            <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Telemetry Metrics</h2>
+            <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Key Metrics</h2>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <MetricCard
-              label="Session"
+              label="Online"
               value={onlineTime}
-              sub="Total Shift Time"
+              sub="Total Active Time"
               icon={Clock}
               onClick={() => navigate("/driver/map/online")}
             />
             <MetricCard
-              label="Tasks"
+              label="Trips"
               value={`${jobsToday}`}
-              sub="Verified Logs"
+              sub="Completed Today"
               icon={Activity}
               onClick={() => navigate("/driver/history/rides")}
             />
             <MetricCard
-              label="Revenue"
+              label="Earnings"
               value={earningsToday}
-              sub="Gross Yield"
+              sub="Net Earnings"
               icon={DollarSign}
               onClick={() => navigate("/driver/earnings/overview")}
             />
             <MetricCard
-              label="Coverage"
+              label="Drive"
               value="Multi-Mode"
-              sub="Fleet Range"
+              sub="Distance Covered"
               icon={Map}
               onClick={() => navigate("/driver/map/online/variant")}
             />
@@ -199,7 +199,7 @@ export default function D29ActiveDashboardScreen() {
         {/* Job mix breakdown */}
         <section className="space-y-4 pb-8">
           <div className="flex items-center justify-between px-1">
-            <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Service Vectors</h2>
+            <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Job Breakdown</h2>
             <div className="bg-slate-100 px-3 py-1 rounded-lg">
                <span className="text-[10px] font-black text-slate-600 uppercase">{totalJobs} UNITS</span>
             </div>
@@ -210,28 +210,28 @@ export default function D29ActiveDashboardScreen() {
               icon={Car}
               label="Rides"
               value={`${jobMix.ride}`}
-              colorClass="border-emerald-50 bg-white"
+              colorClass="border-emerald-50"
               onClick={() => navigate("/driver/jobs/list")}
             />
             <JobMixPill
               icon={Package}
               label="Cargo"
               value={`${jobMix.delivery}`}
-              colorClass="border-blue-50 bg-white"
+              colorClass="border-blue-50"
               onClick={() => navigate("/driver/delivery/orders")}
             />
             <JobMixPill
               icon={Briefcase}
               label="Rentals"
               value={`${jobMix.rental}`}
-              colorClass="border-teal-50 bg-white"
+              colorClass="border-teal-50"
               onClick={() => navigate("/driver/rental/job/demo-job")}
             />
             <JobMixPill
               icon={Map}
               label="Tours"
               value={`${jobMix.tour}`}
-              colorClass="border-orange-50 bg-white"
+              colorClass="border-orange-50"
               onClick={() => navigate("/driver/tour/demo-tour/today")}
             />
           </div>
@@ -240,13 +240,13 @@ export default function D29ActiveDashboardScreen() {
             icon={Ambulance}
             label="Emergency"
             value={`${jobMix.ambulance}`}
-            colorClass="border-red-50 bg-white"
+            colorClass="border-red-50"
             onClick={() => navigate("/driver/ambulance/job/demo-job/status")}
           />
 
           <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100 shadow-inner">
              <p className="text-[10px] text-slate-400 leading-relaxed font-bold uppercase tracking-tight">
-                CERTIFICATION NOTICE: Specialized vectors (Emergency/VIP) are restricted to high-trust command profiles. Maintain 4.9+ rating for continued access.
+                CERTIFICATION NOTICE: Specialized jobs (Emergency/VIP) are restricted to high-trust driver profiles. Maintain 4.9+ rating for continued access.
              </p>
           </div>
         </section>

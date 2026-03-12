@@ -123,7 +123,7 @@ export default function TripCompletionScreen({ initialJobType = "ride" }) {
 
       {/* Job type switcher for preview purposes */}
       <section className="px-6 pt-4 pb-2">
-        <div className="bg-white rounded-3xl p-3 border border-slate-100 shadow-sm space-y-2">
+        <div className="bg-cream rounded-3xl p-3 border-2 border-orange-500/10 shadow-sm space-y-2">
           <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Simulation Context</span>
           <div className="flex flex-wrap gap-2">
             {JOB_TYPES.map((type) => (
@@ -134,7 +134,7 @@ export default function TripCompletionScreen({ initialJobType = "ride" }) {
                 className={`rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-widest border transition-all ${
                   jobType === type
                     ? "bg-[#03cd8c] text-white border-[#03cd8c] shadow-lg shadow-emerald-500/20"
-                    : "bg-slate-50 text-slate-400 border-slate-100 hover:border-slate-200"
+                    : "bg-white border-slate-100 text-slate-400 hover:border-slate-200"
                 }`}
               >
                 {jobTypeLabelMap[type]}
@@ -194,7 +194,7 @@ export default function TripCompletionScreen({ initialJobType = "ride" }) {
 
         {/* Payment & rating info */}
         <section className="space-y-4">
-          <div className="rounded-[2.5rem] border border-slate-100 bg-white p-6 space-y-6 shadow-xl shadow-slate-200/50">
+          <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-cream p-6 space-y-6 shadow-xl shadow-slate-200/50">
             <div className="flex items-center justify-between">
               <div className="flex flex-col space-y-1">
                 <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">{paymentTitle}</span>
@@ -213,9 +213,9 @@ export default function TripCompletionScreen({ initialJobType = "ride" }) {
             </div>
           </div>
 
-          <div className="rounded-[2.5rem] border border-slate-100 bg-slate-50/50 p-6 flex flex-col space-y-4">
+          <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-cream p-6 flex flex-col space-y-4 hover:border-orange-500/30 transition-all duration-300 shadow-lg">
             <div className="flex items-center space-x-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm border border-orange-50">
                  <Star className="h-5 w-5 text-[#03cd8c]" />
               </div>
               <div className="flex flex-col">

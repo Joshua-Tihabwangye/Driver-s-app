@@ -144,7 +144,7 @@ function TripRow({ from, to, date, time, amount, hasProof, jobType, onClick }: a
     <button
       type="button"
       onClick={onClick}
-      className="w-full rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform flex items-center justify-between text-[11px] text-slate-600"
+      className="w-full rounded-2xl border-2 border-orange-500/10 bg-cream shadow-sm px-3 py-2.5 active:scale-[0.98] transition-all flex items-center justify-between text-[11px] text-slate-600 hover:border-orange-500/30 hover:shadow-md group"
     >
       <div className="flex flex-col items-start max-w-[200px]">
         <span className="text-sm font-bold text-slate-900 leading-tight group-hover:text-[#03cd8c] transition-colors">
@@ -228,7 +228,7 @@ export default function RideHistoryScreen() {
 
       <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-6">
         {/* Info card */}
-        <section className="rounded-[2rem] border border-slate-100 bg-white p-5 shadow-sm">
+        <section className="rounded-[2rem] border-2 border-orange-500/10 bg-cream p-5 shadow-sm">
            <p className="font-black text-[10px] uppercase tracking-widest text-[#03cd8c] mb-2">
             Trips & Proof
           </p>
@@ -249,7 +249,7 @@ export default function RideHistoryScreen() {
                 className={`rounded-full px-5 py-2 border-2 text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all active:scale-95 shadow-sm ${
                   filter === f.key
                     ? "bg-[#03cd8c] border-[#03cd8c] text-white"
-                    : "bg-white border-slate-100 text-slate-400"
+                    : "bg-cream border-orange-500/10 text-slate-400 hover:border-orange-500/30"
                 }`}
               >
                 {f.label}

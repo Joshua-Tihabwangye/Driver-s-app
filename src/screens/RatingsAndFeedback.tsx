@@ -74,12 +74,12 @@ export default function RatingsAndFeedback() {
 
         {/* Breakdown Stats */}
         <section className="grid grid-cols-2 gap-4">
-          <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm flex flex-col items-center space-y-2">
+          <div className="bg-cream rounded-3xl p-5 border-2 border-orange-500/10 shadow-sm flex flex-col items-center space-y-2 hover:border-orange-500/30 transition-all duration-300 hover:scale-[1.02]">
             <TrendingUp className="h-6 w-6 text-[#03cd8c]" />
             <span className="text-[20px] font-black text-slate-900">98%</span>
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Acceptance</span>
           </div>
-          <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm flex flex-col items-center space-y-2">
+          <div className="bg-cream rounded-3xl p-5 border-2 border-orange-500/10 shadow-sm flex flex-col items-center space-y-2 hover:border-orange-500/30 transition-all duration-300 hover:scale-[1.02]">
             <ThumbsUp className="h-6 w-6 text-blue-500" />
             <span className="text-[20px] font-black text-slate-900">4.9★</span>
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Professionalism</span>
@@ -94,10 +94,10 @@ export default function RatingsAndFeedback() {
           </div>
           <div className="space-y-4">
             {FEEDBACK.map((item) => (
-              <div key={item.id} className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-3">
+              <div key={item.id} className="bg-cream rounded-3xl p-6 border-2 border-orange-500/10 shadow-sm space-y-3 hover:border-orange-500/30 transition-all duration-300">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <div className="h-8 w-8 bg-slate-50 rounded-full flex items-center justify-center border border-slate-100">
+                    <div className="h-8 w-8 bg-white rounded-full flex items-center justify-center border border-orange-50">
                       <User className="h-4 w-4 text-slate-400" />
                     </div>
                     <span className="text-xs font-black text-slate-900">{item.user}</span>

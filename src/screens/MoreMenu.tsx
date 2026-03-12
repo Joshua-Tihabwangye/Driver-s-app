@@ -11,6 +11,7 @@ import {
   Settings as SettingsIcon,
   Star,
   Bell,
+  ShieldCheck,
 } from "lucide-react";
 import React from "react";
 import { useNavigate } from "react-router-dom";
@@ -49,8 +50,8 @@ function MenuItem({
     <button
       type="button"
       onClick={onClick}
-      className={`flex w-full items-center rounded-2xl border border-slate-50 bg-white px-4 py-4 shadow-sm active:scale-[0.98] transition-all group ${
-        variant === "danger" ? "hover:bg-red-50 hover:border-red-100" : "hover:bg-slate-50 hover:border-[#03cd8c]/20"
+      className={`flex w-full items-center rounded-2xl border-2 border-orange-500/10 bg-cream px-4 py-4 shadow-sm hover:shadow-md active:scale-[0.98] hover:scale-[1.01] transition-all duration-300 group ${
+        variant === "danger" ? "hover:bg-red-50 hover:border-red-100" : "hover:bg-[#fffdf5] hover:border-orange-500/30"
       }`}
     >
       <div className={`flex h-10 w-10 items-center justify-center rounded-xl mr-4 shrink-0 transition-colors ${
@@ -98,7 +99,7 @@ export default function MoreMenu() {
         <button
           type="button"
           onClick={() => navigate("/driver/profile")}
-          className="w-full flex items-center rounded-[2rem] border-2 border-[#03cd8c]/10 bg-white px-5 py-4 shadow-sm active:scale-[0.98] transition-all hover:border-[#03cd8c]/30 group"
+          className="w-full flex items-center rounded-[2rem] border-2 border-orange-500/10 bg-cream px-5 py-4 shadow-sm active:scale-[0.98] transition-all hover:border-orange-500/30 group"
         >
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#03cd8c] text-white text-xl font-bold mr-4 shrink-0 shadow-lg shadow-[#03cd8c]/20">
             JD
@@ -161,6 +162,12 @@ export default function MoreMenu() {
         </MenuSection>
 
         <MenuSection title="Support">
+          <MenuItem
+            icon={ShieldCheck}
+            label="Safety Hub"
+            description="Emergency tools and safety settings"
+            onClick={() => navigate("/driver/safety/hub")}
+          />
           <MenuItem
             icon={HelpCircle}
             label="Help & Support"
