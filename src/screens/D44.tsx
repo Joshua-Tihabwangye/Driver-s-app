@@ -1,7 +1,6 @@
 import {
 ArrowRight,
 Bell,
-ChevronLeft,
 HelpCircle,
 ListFilter,
 MapPin
@@ -124,24 +123,15 @@ export default function RideRequestsListScreen() {
           }}
         />
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-white" />
-            </button>
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
-              <ListFilter className="h-5 w-5 text-white" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Console</span>
-              <p className="text-base font-black text-white tracking-tight leading-tight">Requests</p>
-            </div>
-          </div>
-          <button type="button" className="relative inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 text-white shadow-lg active:scale-95 transition-transform">
+          <button type="button" className="relative inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 text-white shadow-lg active:scale-95 transition-transform">
             <Bell className="h-5 w-5" />
           </button>
+          <div className="w-9 h-9" />
+          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
+            <p className="text-center text-base font-black text-white tracking-tight leading-tight">
+              Requests
+            </p>
+          </div>
         </header>
       </div>
 

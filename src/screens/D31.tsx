@@ -1,12 +1,12 @@
 import {
-Activity,
-Car,
-ChevronLeft,
-DollarSign,
-Map,
-MapPin,
-Package,
-ShieldCheck
+  Activity,
+  Car,
+  DollarSign,
+  Map,
+  MapPin,
+  Package,
+  ShieldCheck,
+  Power
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -52,22 +52,24 @@ export default function OnlineMapDashboardScreen() {
           }}
         />
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-white" />
-            </button>
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
-              <Activity className="h-5 w-5 text-white" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Console</span>
-              <p className="text-base font-black text-white tracking-tight leading-tight">Link Established</p>
-            </div>
+          <button
+            onClick={() => navigate("/driver/more")}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
+          >
+            <ShieldCheck className="h-5 w-5 text-white" />
+          </button>
+          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
+            <p className="text-center text-base font-black text-white tracking-tight leading-tight">
+              Online Dashboard
+            </p>
           </div>
-          <div className="w-10" /> {/* Spacer */}
+          <button
+            onClick={() => navigate("/driver/dashboard/offline")}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform group"
+            title="Go Offline"
+          >
+            <Power className="h-5 w-5 text-white group-hover:text-red-200 transition-colors" />
+          </button>
         </header>
       </div>
 
@@ -84,31 +86,31 @@ export default function OnlineMapDashboardScreen() {
               </div>
               <div className="flex flex-col">
                 <span className="text-[10px] tracking-[0.3em] font-black uppercase text-slate-500 tracking-widest">
-                  CONNECTION
+                  STATUS
                 </span>
-                <p className="text-sm font-black text-white uppercase tracking-tight">Intercept Protocol Active</p>
+                <p className="text-sm font-black text-white uppercase tracking-tight">You're Online</p>
               </div>
             </div>
             <div className="text-right">
-               <span className="block text-[10px] uppercase font-black text-slate-500 tracking-widest">UPTIME</span>
+               <span className="block text-[10px] uppercase font-black text-slate-500 tracking-widest">TIME ONLINE</span>
                <span className="text-xs font-black text-emerald-400">1h 12m</span>
             </div>
           </div>
           
           <div className="pt-6 border-t border-slate-800 grid grid-cols-2 gap-4 relative z-10">
             <div className="flex flex-col space-y-1">
-               <span className="text-[10px] uppercase font-black text-slate-600 tracking-widest">CREDITS</span>
+               <span className="text-[10px] uppercase font-black text-slate-600 tracking-widest">TODAY'S EARNINGS</span>
                <span className="text-lg font-black text-white tracking-tight">$24.60</span>
             </div>
             <div className="flex flex-col space-y-1 text-right">
-               <span className="text-[10px] uppercase font-black text-slate-600 tracking-widest">TASKS</span>
+               <span className="text-[10px] uppercase font-black text-slate-600 tracking-widest">TRIPS</span>
                <span className="text-lg font-black text-white tracking-tight">3</span>
             </div>
           </div>
         </section>
 
         <p className="text-[11px] text-slate-400 leading-relaxed font-bold uppercase tracking-tight bg-slate-50 p-4 rounded-3xl border border-slate-100 shadow-inner">
-          ADVISORY: Maintain patrol velocity in high-density sectors. Monitor tactical intercept feed for incoming fleet assignments.
+          TIP: Drive towards areas with higher demand to get more ride requests. Keep your acceptance rate high for bonus eligibility.
         </p>
 
         {/* Mini map preview */}
@@ -134,7 +136,7 @@ export default function OnlineMapDashboardScreen() {
           <div className="absolute left-6 top-6 flex items-center space-x-2 bg-slate-900/90 backdrop-blur-sm px-4 py-2 rounded-2xl border border-white/10 shadow-xl">
             <MapPin className="h-3.5 w-3.5 text-[#03cd8c]" />
             <span className="text-[9px] text-white font-black uppercase tracking-widest">
-              SURGE SECTOR
+              HIGH DEMAND
             </span>
           </div>
           
@@ -146,31 +148,31 @@ export default function OnlineMapDashboardScreen() {
         {/* Quick actions */}
         <section className="space-y-4">
           <div className="px-1">
-            <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Primary Vectors</h2>
+            <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Quick Actions</h2>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <QuickAction
               icon={Map}
-              label="Tactical Overlay"
-              sub="Precision Navigation"
+              label="Map View"
+              sub="Navigate & Explore"
               onClick={() => navigate("/driver/map/online")}
             />
             <QuickAction
               icon={Car}
-              label="Fleet Interface"
-              sub="Ride Intercepts"
+              label="Active Rides"
+              sub="Manage Trips"
               onClick={() => navigate("/driver/dashboard/active")}
             />
             <QuickAction
               icon={Package}
-              label="Cargo Link"
-              sub="Logistics Feed"
+              label="Deliveries"
+              sub="Orders & Parcels"
               onClick={() => navigate("/driver/delivery/orders-dashboard")}
             />
             <QuickAction
               icon={ShieldCheck}
-              label="Defense Tier"
-              sub="Safety Protocols"
+              label="Safety"
+              sub="Emergency & Help"
               onClick={() => navigate("/driver/safety/hub")}
             />
           </div>
@@ -188,10 +190,10 @@ export default function OnlineMapDashboardScreen() {
             </div>
             <div className="flex-1 space-y-1">
               <p className="font-black text-sm text-slate-900 uppercase tracking-tight leading-none">
-                Yield Projection
+                Earnings Forecast
               </p>
               <p className="text-[11px] text-slate-400 leading-relaxed font-bold uppercase tracking-tight">
-                Current trajectory estimates <span className="text-[#03cd8c]">$60.00–$75.00</span> daily yield based on historical sector density.
+                Based on current demand, you could earn <span className="text-[#03cd8c]">$60.00–$75.00</span> today. Stay online to maximize earnings.
               </p>
             </div>
           </button>

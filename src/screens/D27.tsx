@@ -70,8 +70,8 @@ export default function OfflineDashboardScreen() {
               <Power className="h-5 w-5 text-white" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Console</span>
-              <p className="text-base font-black text-white tracking-tight leading-tight">Standby Mode</p>
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Driver</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">Offline</p>
             </div>
           </div>
           <div className="w-10" /> {/* Spacer */}
@@ -96,7 +96,7 @@ export default function OfflineDashboardScreen() {
             </div>
             <div className="flex flex-col">
               <span className="text-[10px] tracking-[0.2em] font-black uppercase text-amber-500">OFFLINE</span>
-              <p className="text-base font-black tracking-tight mt-0.5 text-white">System Dormant</p>
+              <p className="text-base font-black tracking-tight mt-0.5 text-white">You're Offline</p>
             </div>
           </div>
 
@@ -105,11 +105,11 @@ export default function OfflineDashboardScreen() {
             onClick={() => navigate("/driver/dashboard/online")}
             className="w-full rounded-2xl bg-[#03cd8c] py-4 text-xs font-black text-white hover:bg-[#02b77c] active:scale-95 transition-all shadow-xl shadow-emerald-500/20 uppercase tracking-widest"
           >
-            Initiate Link
+            Go Online
           </button>
           
           <p className="text-[11px] text-slate-400 font-medium leading-relaxed">
-            Verify all compliance protocols are active and vehicle telemetry is nominal before initiating service link.
+            Make sure your vehicle documents are up to date and verified before going online to receive ride requests.
           </p>
         </section>
 
@@ -119,10 +119,10 @@ export default function OfflineDashboardScreen() {
             <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Attention Required</h2>
           </div>
           <IssueRow 
-            title="Biometric Scan"
-            text="Facial recognition update requested. 72-hour window remaining."
+            title="Identity Verification"
+            text="Please complete your face verification. You have 72 hours remaining."
             type="info"
-            onClick={() => navigate("/driver/verify-identity")}
+            onClick={() => navigate("/driver/preferences/identity")}
           />
         </section>
 
@@ -133,9 +133,9 @@ export default function OfflineDashboardScreen() {
                 <Info className="h-6 w-6 text-[#03cd8c]" />
               </div>
               <div>
-                <p className="text-xs font-black text-slate-900 uppercase tracking-tight">Shift Equilibrium</p>
+                <p className="text-xs font-black text-slate-900 uppercase tracking-tight">Take a Break</p>
                 <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
-                  Toggle standby mode to maintain optimal focus. Park in authorized safe-zones to ensure platform compliance.
+                  Rest when you need to. When you're ready, tap Go Online to start receiving ride requests.
                 </p>
               </div>
            </div>

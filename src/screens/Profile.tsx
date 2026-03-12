@@ -1,15 +1,17 @@
 import {
-Camera,
-Car,
-Check,
-ChevronLeft,
-Edit3,
-Mail,
-MapPin,
-Phone,
-ShieldCheck,
-Star,
-User,
+  Camera,
+  Car,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Edit3,
+  FileText,
+  Mail,
+  MapPin,
+  Phone,
+  ShieldCheck,
+  Star,
+  User,
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -158,6 +160,42 @@ export default function Profile() {
 
         <section className="space-y-3 pt-2">
           <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">Security & Identity</h3>
+          <button
+            type="button"
+            onClick={() => navigate("/driver/documents")}
+            className="w-full rounded-2xl border border-blue-100 bg-blue-50/20 px-5 py-5 flex items-center justify-between group active:scale-[0.98] transition-all"
+          >
+            <div className="flex items-center space-x-4">
+              <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center group-hover:bg-blue-500 transition-colors">
+                <FileText className="h-5 w-5 text-blue-500 group-hover:text-white" />
+              </div>
+              <div className="flex flex-col items-start text-left">
+                <p className="text-sm font-bold text-slate-800">Documents</p>
+                <p className="text-[11px] text-slate-500 font-medium">Manage your compliance items</p>
+              </div>
+            </div>
+            <div className="bg-amber-400 rounded-full px-2.5 py-1">
+              <span className="text-[9px] font-bold text-white uppercase">Attention</span>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => navigate("/driver/vehicles/manage")}
+            className="w-full rounded-2xl border border-slate-100 bg-white px-5 py-5 flex items-center justify-between group active:scale-[0.98] transition-all"
+          >
+            <div className="flex items-center space-x-4">
+              <div className="w-10 h-10 rounded-xl bg-slate-50 shadow-sm flex items-center justify-center group-hover:bg-slate-900 transition-colors">
+                <Car className="h-5 w-5 text-slate-500 group-hover:text-white" />
+              </div>
+              <div className="flex flex-col items-start text-left">
+                <p className="text-sm font-bold text-slate-800">My Vehicle</p>
+                <p className="text-[11px] text-slate-500 font-medium">Toyota Prius • UBB 123X</p>
+              </div>
+            </div>
+            <ChevronRight className="h-5 w-5 text-slate-300" />
+          </button>
+
           <button
             type="button"
             onClick={() => navigate("/driver/preferences/identity")}

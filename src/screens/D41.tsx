@@ -44,8 +44,8 @@ export default function LastTripSummaryPopupScreen() {
               <Map className="h-5 w-5 text-white" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Console</span>
-              <p className="text-base font-black text-white tracking-tight leading-tight">Session Recap</p>
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Driver</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">Last Trip</p>
             </div>
           </div>
           <div className="w-10" /> {/* Spacer */}
@@ -88,7 +88,7 @@ export default function LastTripSummaryPopupScreen() {
               <DollarSign className="h-5 w-5 text-[#03cd8c]" />
             </div>
             <span className="mt-2 rounded-full bg-slate-900 px-3 py-1 text-[10px] font-black text-white uppercase tracking-widest shadow-xl">
-              Intercept
+              Drop-off
             </span>
           </div>
 
@@ -98,20 +98,20 @@ export default function LastTripSummaryPopupScreen() {
               <div className="flex items-center justify-between">
                 <div className="flex flex-col items-start">
                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">
-                    MISSION RECAP
+                    LAST TRIP
                   </span>
                   <span className="text-sm font-black text-slate-900 uppercase tracking-tight">
                     City Centre → Ntinda
                   </span>
                   <span className="text-[11px] text-[#03cd8c] font-bold uppercase tracking-tight">
-                    8.4 km Total Traversal
+                    8.4 km Total Distance
                   </span>
                 </div>
                 <div className="flex flex-col items-end">
                   <span className="text-xl font-black text-slate-900 tracking-tighter">
                     $6.80
                   </span>
-                  <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mt-0.5">YIELD</span>
+                  <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mt-0.5">EARNED</span>
                 </div>
               </div>
 
@@ -124,7 +124,7 @@ export default function LastTripSummaryPopupScreen() {
               <ChevronLeft className="h-5 w-5 text-white" />
             </button>
                   <span className="inline-flex items-center text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                    <Clock className="h-4 w-4 mr-2 text-slate-400" /> 17m Cycle
+                    <Clock className="h-4 w-4 mr-2 text-slate-400" /> 17m Duration
                   </span>
                   <span className="inline-flex items-center text-[10px] font-black text-slate-500 uppercase tracking-widest">
                     <Star className="h-4 w-4 mr-2 text-amber-400" /> 5.0 Rating
@@ -137,7 +137,7 @@ export default function LastTripSummaryPopupScreen() {
                 onClick={() => navigate("/driver/history/rides")}
                 className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest border border-slate-200 text-slate-900 bg-white hover:bg-slate-50 active:scale-95 transition-all shadow-sm flex items-center justify-center"
               >
-                Logistics Data
+                View Trip Details
               </button>
             </div>
           </div>

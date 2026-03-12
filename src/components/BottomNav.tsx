@@ -6,66 +6,135 @@ MoreHorizontal,
 ShieldCheck
 } from "lucide-react";
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation,useNavigate } from "react-router-dom";
+import { useTheme } from "../context/ThemeContext";
 
 interface BottomNavItemProps {
   icon: React.ElementType;
   label: string;
   active: boolean;
   onClick: () => void;
+  isDark: boolean;
 }
 
-function BottomNavItem({ icon: Icon, label, active, onClick }: BottomNavItemProps) {
+function BottomNavItem({ icon: Icon, label, active, onClick, isDark }: BottomNavItemProps) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`flex flex-col items-center justify-center flex-1 py-1.5 transition-all duration-200 ${
-        active 
-          ? "text-[#03cd8c] scale-105" 
-          : "text-slate-400 hover:text-slate-600"
+      className={`flex flex-col items-center justify-center flex-1 py-2 group relative transition-all duration-300 ${
+        active
+          ? "text-[#03cd8c]"
+          : isDark
+          ? "text-slate-300"
+          : "text-slate-400"
       }`}
     >
-      <Icon className={`h-5 w-5 mb-0.5 ${active ? "stroke-[2.5px]" : "stroke-[2px]"}`} />
-      <span className={`text-[10px] font-medium ${active ? "font-bold" : ""}`}>
+      <div className={`mb-1 transition-all duration-300 ${active ? "scale-110" : "group-hover:scale-105"}`}>
+        <Icon strokeWidth={active ? 2.5 : 2} className="h-5 w-5" />
+      </div>
+      <span
+        className={`text-[10px] tracking-tight transition-all duration-300 ${
+          active
+            ? "font-black opacity-100"
+            : `font-bold opacity-70 group-hover:opacity-100 ${
+                isDark ? "group-hover:text-slate-100" : "group-hover:text-slate-600"
+              }`
+        }`}
+      >
         {label}
       </span>
+      <div className={`absolute bottom-1 w-1 h-1 rounded-full bg-[#03cd8c] transition-all duration-500 ${
+        active ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+      }`} />
     </button>
   );
 }
 
-/**
- * Centered Bottom Navigation for the Driver App.
- * 5-tab pattern: Home, Jobs, Earnings, Safety, More.
- */
-export default function BottomNav({ active = "home" }) {
-  const navigate = useNavigate();
+const TABS = [
+  { id: "home", label: "Home", icon: Home, route: "/driver/dashboard/online" },
+  { id: "jobs", label: "Jobs", icon: Briefcase, route: "/driver/jobs/list" },
+  { id: "earnings", label: "Earnings", icon: DollarSign, route: "/driver/earnings/overview" },
+  { id: "safety", label: "Safety", icon: ShieldCheck, route: "/driver/safety/hub" },
+  { id: "more", label: "More", icon: MoreHorizontal, route: "/driver/more" },
+];
 
-  const tabs = [
-    { id: "home", label: "Home", icon: Home, route: "/driver/dashboard/online" },
-    { id: "jobs", label: "Jobs", icon: Briefcase, route: "/driver/jobs/list" },
-    { id: "earnings", label: "Earnings", icon: DollarSign, route: "/driver/earnings/overview" },
-    { id: "safety", label: "Safety", icon: ShieldCheck, route: "/driver/safety/hub" },
-    { id: "more", label: "More", icon: MoreHorizontal, route: "/driver/more" },
-  ];
+function getActiveTab(pathname: string): string {
+  if (
+    pathname.startsWith("/driver/dashboard") ||
+    pathname.startsWith("/driver/map")
+  ) {
+    return "home";
+  }
+  if (
+    pathname.startsWith("/driver/jobs") ||
+    pathname.startsWith("/driver/delivery") ||
+    pathname.startsWith("/driver/trip") ||
+    pathname.startsWith("/driver/rental") ||
+    pathname.startsWith("/driver/tour") ||
+    pathname.startsWith("/driver/ambulance") ||
+    pathname.startsWith("/driver/qr")
+  ) {
+    return "jobs";
+  }
+  if (
+    pathname.startsWith("/driver/earnings") ||
+    pathname.startsWith("/driver/analytics") ||
+    pathname.startsWith("/driver/surge")
+  ) {
+    return "earnings";
+  }
+  if (pathname.startsWith("/driver/safety")) {
+    return "safety";
+  }
+  if (
+    pathname.startsWith("/driver/more") ||
+    pathname.startsWith("/driver/preferences") ||
+    pathname.startsWith("/driver/help") ||
+    pathname.startsWith("/driver/about") ||
+    pathname.startsWith("/driver/profile") ||
+    pathname.startsWith("/driver/history") ||
+    pathname.startsWith("/driver/settings") ||
+    pathname.startsWith("/driver/onboarding") ||
+    pathname.startsWith("/driver/vehicles") ||
+    pathname.startsWith("/driver/training") ||
+    pathname.startsWith("/driver/search") ||
+    pathname.startsWith("/driver/notifications") ||
+    pathname.startsWith("/driver/ratings") ||
+    pathname.startsWith("/driver/documents")
+  ) {
+    return "more";
+  }
+  return "home";
+}
+
+export default function BottomNav() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { isDark } = useTheme();
+  const active = getActiveTab(location.pathname);
 
   return (
     <nav 
-      className="absolute bottom-0 left-0 right-0 h-[64px] bg-white/95 backdrop-blur-md flex items-center px-2 z-[1000]"
+      className={`absolute bottom-0 left-0 right-0 z-[2000] backdrop-blur-xl border-t ${
+        isDark ? "bg-slate-900/95 border-slate-700" : "bg-white/95 border-slate-100"
+      }`}
       style={{ 
-        borderTop: "1px solid rgba(229,231,235,0.8)",
-        boxShadow: "0 -4px 12px rgba(0,0,0,0.03)" 
+        boxShadow: isDark ? "0 -8px 24px rgba(0,0,0,0.35)" : "0 -8px 24px rgba(0,0,0,0.04)"
       }}
     >
-      {tabs.map((tab) => (
-        <BottomNavItem
-          key={tab.id}
-          icon={tab.icon}
-          label={tab.label}
-          active={active === tab.id}
-          onClick={() => navigate(tab.route)}
-        />
-      ))}
+      <div className="mx-auto flex h-[70px] w-full max-w-[520px] px-2 items-center">
+        {TABS.map((tab) => (
+          <BottomNavItem
+            key={tab.id}
+            icon={tab.icon}
+            label={tab.label}
+            active={active === tab.id}
+            onClick={() => navigate(tab.route)}
+            isDark={isDark}
+          />
+        ))}
+      </div>
     </nav>
   );
 }

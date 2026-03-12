@@ -3,9 +3,8 @@ import {
 Navigate,
 Route,
 Routes,
-useLocation,
 } from "react-router-dom";
-import MobileShell from "./components/MobileShell";
+import AppPhoneShell from "./components/AppPhoneShell";
 import { useTheme } from "./context/ThemeContext";
 
 // ── Screen Imports (D01–D102) ───────────────────────────
@@ -120,6 +119,14 @@ import ProfileScreen from "./screens/Profile";
 // ── Auth & Landing ──────────────────────────────────────
 import LandingPage from "./screens/LandingPage";
 import Login from "./screens/Login";
+import ForgotPassword from "./screens/ForgotPassword";
+import OTPVerification from "./screens/OTPVerification";
+import NotificationsCenter from "./screens/NotificationsCenter";
+import RatingsAndFeedback from "./screens/RatingsAndFeedback";
+import Settings from "./screens/Settings";
+import DocumentCenter from "./screens/DocumentCenter";
+import DestinationFilter from "./screens/DestinationFilter";
+import TripDetails from "./screens/TripDetails";
 
 const SAMPLE_IDS = {
   vehicle: "v123",
@@ -252,30 +259,23 @@ const SCREENS = [
   { id: "Help", label: "Help & Support", path: "/driver/help", Component: HelpScreen },
   { id: "About", label: "About EVzone", path: "/driver/about", Component: AboutScreen },
   { id: "CashOut", label: "Cash Out – Payment Gateway", path: "/driver/earnings/cashout", Component: CashOutScreen },
+  { id: "ForgotPassword", label: "Forgot Password", path: "/auth/forgot-password", Component: ForgotPassword },
+  { id: "OTPVerification", label: "OTP Verification", path: "/auth/verify-otp", Component: OTPVerification },
+  { id: "NotificationsCenter", label: "Notifications", path: "/driver/notifications", Component: NotificationsCenter },
+  { id: "Ratings", label: "Ratings & Reviews", path: "/driver/ratings", Component: RatingsAndFeedback },
+  { id: "Settings", label: "Settings", path: "/driver/settings", Component: Settings },
+  { id: "Documents", label: "Document Center", path: "/driver/documents", Component: DocumentCenter },
+  { id: "DestinationFilter", label: "Destination Filter", path: "/driver/navigation/destination", Component: DestinationFilter },
+  { id: "TripDetails", label: "Trip Details", path: "/driver/trip/:tripId/details", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/details`, Component: TripDetails },
 ];
 
 const DEFAULT_SCREEN = SCREENS.find((s) => s.id === "D31") || SCREENS[0];
 
 export default function App() {
   const { isDark, toggleTheme } = useTheme();
-  const location = useLocation();
-  const rootNavRoutes = new Set([
-    "/driver/dashboard/online",
-    "/driver/jobs/list",
-    "/driver/earnings/overview",
-    "/driver/safety/hub",
-    "/driver/more",
-  ]);
-  const normalizedPath =
-    location.pathname.length > 1
-      ? location.pathname.replace(/\/+$/, "")
-      : location.pathname;
-  const isRootNavRoute = rootNavRoutes.has(normalizedPath);
 
   return (
-    <div
-      className={`app-root ${isDark ? "dark" : ""} ${isRootNavRoute ? "root-nav-route" : ""}`}
-    >
+    <div className={`app-root ${isDark ? "dark" : ""}`}>
       {/* Global Theme Toggle */}
       <button
         type="button"
@@ -291,12 +291,12 @@ export default function App() {
         <Route path="/" element={<Navigate to="/landing" replace />} />
         <Route path="/landing" element={<LandingPage />} />
         <Route path="/auth/login" element={<Login />} />
-        
-        {/* App Flow - Wrapped in MobileShell */}
+
+        {/* App Flow - Mobile Phone View */}
         <Route
           path="/*"
           element={
-            <MobileShell>
+            <AppPhoneShell>
               <Routes>
                 {SCREENS.map((screen) => (
                   <Route
@@ -315,7 +315,7 @@ export default function App() {
                   }
                 />
               </Routes>
-            </MobileShell>
+            </AppPhoneShell>
           }
         />
       </Routes>
