@@ -41,21 +41,21 @@ const RATING_DIST = [
 ];
 
 const SERVICE_BREAKDOWN = [
-  { label: "Rides", pct: 52, color: "#03cd8c" },
-  { label: "Deliveries", pct: 28, color: "#0ea5e9" },
-  { label: "Rentals", pct: 10, color: "#8b5cf6" },
-  { label: "Tours", pct: 7, color: "#f59e0b" },
-  { label: "Ambulance", pct: 3, color: "#ef4444" },
+  { label: "Rides", pct: 52, color: "#f97316" },
+  { label: "Deliveries", pct: 28, color: "#fb923c" },
+  { label: "Rentals", pct: 10, color: "#fdba74" },
+  { label: "Tours", pct: 7, color: "#fed7aa" },
+  { label: "Ambulance", pct: 3, color: "#ffedd5" },
 ];
 
 type Period = "today" | "week" | "month";
 
 // ─── Stat Card ─────────────────────────────────────────
-function StatCard({ icon: Icon, label, value, sub, color = "#03cd8c" }: {
+function StatCard({ icon: Icon, label, value, sub, color = "#f97316" }: {
   icon: React.ElementType; label: string; value: string; sub?: string; color?: string;
 }) {
   return (
-    <div className="flex flex-col rounded-2xl border border-slate-50 bg-white px-4 py-4 shadow-sm group">
+    <div className="flex flex-col rounded-2xl border-2 border-orange-500/10 bg-cream px-4 py-4 shadow-sm group">
       <div className="flex items-center space-x-2 mb-2">
         <div className="flex h-8 w-8 items-center justify-center rounded-xl transition-colors group-hover:scale-110" style={{ backgroundColor: color + "15" }}>
           <Icon className="h-4 w-4" style={{ color }} />
@@ -87,14 +87,14 @@ function EarningsTrendChart() {
     <svg viewBox={`0 0 ${w} ${h}`} className="w-full mt-2" preserveAspectRatio="xMidYMid meet">
       <defs>
         <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#03cd8c" stopOpacity="0.3" />
-          <stop offset="100%" stopColor="#03cd8c" stopOpacity="0.01" />
+          <stop offset="0%" stopColor="#f97316" stopOpacity="0.3" />
+          <stop offset="100%" stopColor="#f97316" stopOpacity="0.01" />
         </linearGradient>
       </defs>
       <path d={areaPath} fill="url(#areaGrad)" />
-      <path d={linePath} fill="none" stroke="#03cd8c" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+      <path d={linePath} fill="none" stroke="#f97316" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
       {points.map((p, i) => (
-        <circle key={i} cx={p.x} cy={p.y} r="3" fill="#03cd8c" stroke="white" strokeWidth="1.5" />
+        <circle key={i} cx={p.x} cy={p.y} r="3" fill="#f97316" stroke="white" strokeWidth="1.5" />
       ))}
     </svg>
   );
@@ -108,8 +108,8 @@ function RidesDeliveriesChart() {
       {DAILY_EARNINGS.map((d) => (
         <div key={d.label} className="flex flex-col items-center flex-1 min-w-0 space-y-1.5 group">
           <div className="flex items-end space-x-1 w-full h-full">
-            <div className="flex-1 rounded-t-full bg-[#03cd8c] shadow-sm transform group-hover:scale-y-105 transition-transform" style={{ height: `${(d.rides / maxVal) * 100}%` }} />
-            <div className="flex-1 rounded-t-full bg-[#0ea5e9] shadow-sm transform group-hover:scale-y-105 transition-transform" style={{ height: `${(d.deliveries / maxVal) * 100}%` }} />
+            <div className="flex-1 rounded-t-full bg-[#f97316] shadow-sm transform group-hover:scale-y-105 transition-transform" style={{ height: `${(d.rides / maxVal) * 100}%` }} />
+            <div className="flex-1 rounded-t-full bg-[#fb923c] shadow-sm transform group-hover:scale-y-105 transition-transform" style={{ height: `${(d.deliveries / maxVal) * 100}%` }} />
           </div>
           <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">{d.label.slice(0, 1)}</span>
         </div>
@@ -191,7 +191,7 @@ export default function AnalyticsDashboard() {
             </div>
             <div className="flex flex-col">
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-100/70">
-                Insights
+                Analysis
               </span>
               <h1 className="text-base font-black text-white tracking-tight leading-tight">
                 Analytics
@@ -223,11 +223,11 @@ export default function AnalyticsDashboard() {
             <div className="absolute top-0 right-0 w-32 h-32 bg-[#03cd8c]/20 rounded-full -mr-16 -mt-16 blur-2xl" />
             <div className="flex items-center justify-between relative">
               <div className="flex items-center space-x-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#03cd8c] text-white shadow-lg shadow-[#03cd8c]/30">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-orange-500 text-white shadow-lg shadow-orange-500/30">
                   <TrendingUp className="h-6 w-6 stroke-[2.5px]" />
                 </div>
                 <div className="flex flex-col">
-                  <p className="text-[10px] tracking-[0.2em] font-bold uppercase text-[#03cd8c]">
+                  <p className="text-[10px] tracking-[0.2em] font-bold uppercase text-orange-500">
                      Total Income
                   </p>
                   <p className="text-2xl font-black tracking-tight">${data.total.toFixed(2)}</p>
@@ -255,27 +255,27 @@ export default function AnalyticsDashboard() {
           </div>
 
           {/* Earnings Trend */}
-          <section className="rounded-3xl border border-slate-50 bg-white p-5 shadow-sm space-y-4">
+          <section className="rounded-3xl border-2 border-orange-500/10 bg-cream p-5 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-1">
-                 Momentum Trend
-              </h3>
-              <div className="flex items-center space-x-1 bg-emerald-50 px-2 py-0.5 rounded-full">
-                <TrendingUp className="h-3 w-3 text-emerald-600" />
-                <span className="text-[10px] text-emerald-600 font-black">+12%</span>
+               <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-1">
+                  Earnings Trend
+               </h3>
+              <div className="flex items-center space-x-1 bg-orange-50 px-2 py-0.5 rounded-full">
+                <TrendingUp className="h-3 w-3 text-orange-600" />
+                <span className="text-[10px] text-orange-600 font-black">+12%</span>
               </div>
             </div>
-            <div className="bg-slate-50 p-2 rounded-2xl border border-slate-100/50">
+            <div className="bg-white p-2 rounded-2xl border border-orange-100/50 shadow-inner">
                <EarningsTrendChart />
             </div>
           </section>
 
           {/* Service Comparison */}
-          <section className="rounded-3xl border border-slate-50 bg-white p-5 shadow-sm space-y-4">
+          <section className="rounded-3xl border-2 border-orange-500/10 bg-cream p-5 shadow-sm space-y-4">
             <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-1">
                Service Volume
             </h3>
-            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100/50">
+            <div className="bg-white p-4 rounded-2xl border border-orange-100/50 shadow-inner">
                <RidesDeliveriesChart />
             </div>
           </section>
@@ -284,7 +284,7 @@ export default function AnalyticsDashboard() {
           <section className="rounded-3xl border border-slate-50 bg-white p-5 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
                <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-1">
-                  Voice of User
+                  User Ratings
                </h3>
                <span className="text-xs font-black text-amber-500">{data.rating.toFixed(2)} ★</span>
             </div>

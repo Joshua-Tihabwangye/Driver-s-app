@@ -1,6 +1,7 @@
 import React from "react";
 import BottomNav from "./BottomNav";
 import { useTheme } from "../context/ThemeContext";
+import { useState, useEffect, useRef } from "react";
 
 interface AppPhoneShellProps {
   children: React.ReactNode;
@@ -8,6 +9,54 @@ interface AppPhoneShellProps {
 
 export default function AppPhoneShell({ children }: AppPhoneShellProps) {
   const { isDark } = useTheme();
+  const [isVisible, setIsVisible] = useState(false);
+  const [lastScrollTop, setLastScrollTop] = useState(0);
+  const scrollTimeoutRef = useRef<any>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!scrollContainerRef.current) return;
+      
+      const currentScrollTop = scrollContainerRef.current.scrollTop;
+      
+      // Clear previous timeout
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+
+      // Logic: 
+      // 1. Hide at the very top
+      if (currentScrollTop <= 0) {
+        setIsVisible(false);
+      } 
+      // 2. Show if scrolling up or just started scrolling
+      else {
+        setIsVisible(true);
+        
+        // 3. Set timeout to hide after 3 seconds of inactivity
+        scrollTimeoutRef.current = setTimeout(() => {
+          setIsVisible(false);
+        }, 3000);
+      }
+
+      setLastScrollTop(currentScrollTop);
+    };
+
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener("scroll", handleScroll);
+    }
+
+    return () => {
+      if (container) {
+        container.removeEventListener("scroll", handleScroll);
+      }
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, [lastScrollTop]);
 
   return (
     <div
@@ -24,12 +73,13 @@ export default function AppPhoneShell({ children }: AppPhoneShellProps) {
                     ${isDark ? "bg-slate-900" : "bg-white"}`}
       >
         <div
+          ref={scrollContainerRef}
           className="flex-1 overflow-y-auto overflow-x-hidden pb-[70px]"
           style={{ WebkitOverflowScrolling: "touch", minHeight: 0 }}
         >
           {children}
         </div>
-        <BottomNav />
+        <BottomNav isVisible={isVisible} />
       </div>
     </div>
   );

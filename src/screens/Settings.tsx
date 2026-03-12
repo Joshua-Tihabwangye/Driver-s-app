@@ -42,52 +42,52 @@ export default function Settings() {
         <section className="space-y-4">
           <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-1">App Configuration</h2>
           <div className="bg-cream rounded-[2.5rem] border-2 border-orange-500/10 shadow-sm divide-y divide-orange-500/5 overflow-hidden">
-            <div className="flex items-center justify-between p-6">
+            <div className="flex items-center justify-between p-6 hover:bg-orange-50/30 transition-colors group cursor-pointer">
               <div className="flex items-center space-x-4">
-                <div className="h-10 w-10 bg-blue-50 rounded-2xl flex items-center justify-center">
-                  <Globe className="h-5 w-5 text-blue-500" />
+                <div className="h-10 w-10 bg-orange-100/50 rounded-2xl flex items-center justify-center border border-orange-200/50">
+                  <Globe className="h-5 w-5 text-orange-600" />
                 </div>
                 <div>
                   <h3 className="text-xs font-black text-slate-900 uppercase">App Language</h3>
                   <p className="text-[10px] text-slate-400 font-bold">English (UK)</p>
                 </div>
               </div>
-              <ChevronRight className="h-5 w-5 text-slate-300" />
+              <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-orange-500 transition-colors" />
             </div>
 
             <div className="flex items-center justify-between p-6">
               <div className="flex items-center space-x-4">
-                <div className="h-10 w-10 bg-slate-900 rounded-2xl flex items-center justify-center">
+                <div className="h-10 w-10 bg-slate-900 rounded-2xl flex items-center justify-center shadow-lg shadow-slate-900/10">
                   <Moon className="h-5 w-5 text-white" />
                 </div>
                 <div>
                   <h3 className="text-xs font-black text-slate-900 uppercase">Dark Mode</h3>
-                  <p className="text-[10px] text-slate-400 font-bold">Adjust app appearance</p>
+                  <p className="text-[10px] text-slate-400 font-bold">Standard appearance</p>
                 </div>
               </div>
               <button
                 onClick={() => setDarkMode(!darkMode)}
-                className={`w-12 h-6 rounded-full relative transition-colors ${darkMode ? "bg-[#03cd8c]" : "bg-slate-200"}`}
+                className={`w-12 h-6 rounded-full relative transition-colors ${darkMode ? "bg-orange-500" : "bg-slate-200"}`}
               >
-                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${darkMode ? "left-7" : "left-1"}`} />
+                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${darkMode ? "left-7" : "left-1"} shadow-sm`} />
               </button>
             </div>
 
             <div className="flex items-center justify-between p-6">
               <div className="flex items-center space-x-4">
-                <div className="h-10 w-10 bg-amber-50 rounded-2xl flex items-center justify-center">
-                  <Bell className="h-5 w-5 text-amber-500" />
+                <div className="h-10 w-10 bg-orange-100/50 rounded-2xl flex items-center justify-center border border-orange-200/50">
+                  <Bell className="h-5 w-5 text-orange-600" />
                 </div>
                 <div>
                   <h3 className="text-xs font-black text-slate-900 uppercase">Push Notifications</h3>
-                  <p className="text-[10px] text-slate-400 font-bold">Ride alerts & promos</p>
+                  <p className="text-[10px] text-slate-400 font-bold">Ride & Service Alerts</p>
                 </div>
               </div>
               <button
                 onClick={() => setNotifications(!notifications)}
-                className={`w-12 h-6 rounded-full relative transition-colors ${notifications ? "bg-[#03cd8c]" : "bg-slate-200"}`}
+                className={`w-12 h-6 rounded-full relative transition-colors ${notifications ? "bg-orange-500" : "bg-slate-200"}`}
               >
-                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${notifications ? "left-7" : "left-1"}`} />
+                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${notifications ? "left-7" : "left-1"} shadow-sm`} />
               </button>
             </div>
           </div>

@@ -130,7 +130,7 @@ export default function CashOutScreen() {
           <button
             type="button"
             onClick={() => navigate("/driver/dashboard/online")}
-            className="w-full mt-2 rounded-full border-2 border-orange-500/10 bg-cream py-3 text-sm font-semibold text-slate-700 hover:border-orange-500/30 transition-all shadow-sm"
+            className="w-full mt-2 rounded-full border-2 border-orange-500/10 bg-cream py-3.5 text-sm font-black uppercase tracking-widest text-slate-600 hover:border-orange-500/30 transition-all shadow-sm"
           >
             Go to Dashboard
           </button>

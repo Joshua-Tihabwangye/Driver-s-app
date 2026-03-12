@@ -101,7 +101,7 @@ function getActiveTab(pathname: string): string {
   return "home";
 }
 
-export default function BottomNav() {
+export default function BottomNav({ isVisible = true }: { isVisible?: boolean }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { isDark } = useTheme();
@@ -109,7 +109,9 @@ export default function BottomNav() {
 
   return (
     <nav 
-      className="absolute bottom-0 left-0 right-0 z-[2000] bg-[#03cd8c] border-t border-white/10 shadow-[0_-8px_24px_rgba(3,205,140,0.2)]"
+      className={`absolute bottom-0 left-0 right-0 z-[2000] bg-[#03cd8c] border-t border-white/10 shadow-[0_-8px_24px_rgba(3,205,140,0.2)] transition-all duration-500 transform ${
+        isVisible ? "translate-y-0 opacity-100" : "translate-y-full opacity-0 pointer-events-none"
+      }`}
     >
       <div className="mx-auto flex h-[70px] w-full max-w-[520px] px-2 items-center">
         {TABS.map((tab) => (
