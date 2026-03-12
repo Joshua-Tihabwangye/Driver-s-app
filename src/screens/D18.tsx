@@ -77,14 +77,14 @@ export default function IntroEvzoneRideScreen() {
             <p className="text-[13px] text-slate-500 leading-relaxed font-medium">
               Join our community of elite drivers. This 5-minute session covers everything from system basics to advanced EV management.
             </p>
-            <div className="flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-[#03cd8c] bg-emerald-50 w-fit px-3 py-1.5 rounded-full">
+            <div className="flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-orange-500 bg-orange-50/50 w-fit px-3 py-1.5 rounded-full border border-orange-100">
               <CheckCircle2 className="h-3.5 w-3.5" />
               <span>Investment: 5–7 Minutes</span>
             </div>
           </div>
 
           {/* Module outline (restored from original) */}
-          <div className="w-full mt-10 space-y-4">
+          <div className="w-full mt-10 space-y-4 p-6 bg-cream rounded-3xl border-2 border-orange-500/10 shadow-sm">
             <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Knowledge Modules</h3>
             <ul className="space-y-3">
               <Bullet>System proficiency: From going online to handling multi-stop pickups.</Bullet>
@@ -94,14 +94,14 @@ export default function IntroEvzoneRideScreen() {
           </div>
 
           {/* Video CTA (restored from original) */}
-          <div className="w-full mt-8 rounded-3xl border border-slate-100 bg-slate-50 p-4 flex items-center justify-between group cursor-pointer hover:bg-white hover:shadow-xl transition-all" onClick={() => {}}>
+          <div className="w-full mt-8 rounded-3xl border-2 border-orange-500/10 bg-[#f0fff4]/50 p-4 flex items-center justify-between group cursor-pointer hover:border-orange-500/30 hover:scale-[1.01] transition-all" onClick={() => {}}>
             <div className="flex items-center space-x-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm shadow-emerald-500/10 group-hover:bg-[#03cd8c] transition-colors">
-                <PlayCircle className="h-6 w-6 text-[#03cd8c] group-hover:text-white" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-orange-50 shadow-sm group-hover:bg-orange-500 transition-all">
+                <PlayCircle className="h-6 w-6 text-orange-500 group-hover:text-white" />
               </div>
               <div className="flex flex-col items-start">
                 <span className="text-xs font-black uppercase tracking-tight text-slate-900">Watch Masterclass</span>
-                <span className="text-[10px] font-medium text-slate-400">Complete EVzone ride-through</span>
+                <span className="text-[10px] font-medium text-slate-500">Complete EVzone ride-through</span>
               </div>
             </div>
             <span className="text-[10px] font-black text-slate-400 mr-2">4:32</span>

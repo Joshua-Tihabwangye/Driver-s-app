@@ -57,8 +57,8 @@ export default function MonthlyEarningsSummaryScreen() {
               <DollarSign className="h-5 w-5 text-white" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Registry</span>
-              <p className="text-base font-black text-white tracking-tight leading-tight">Monthly Intervals</p>
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-100/70">Earnings</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">Monthly Summary</p>
             </div>
           </div>
           <div className="w-10" /> {/* Spacer */}
@@ -77,19 +77,19 @@ export default function MonthlyEarningsSummaryScreen() {
               </div>
               <div className="flex flex-col">
                 <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-500">
-                  MACRO CYCLE
+                  MONTHLY TOTAL
                 </span>
                 <p className="text-base font-black text-white leading-tight mt-0.5">${total}</p>
               </div>
             </div>
-            <button className="inline-flex items-center rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-emerald-400">
+            <button className="inline-flex items-center rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-orange-400">
               <Calendar className="h-3.5 w-3.5 mr-2" />
               {month}
               <ChevronDown className="h-3 w-3 ml-2" />
             </button>
           </div>
           <p className="text-[11px] text-slate-400 leading-relaxed font-bold uppercase tracking-tight relative z-10">
-            Complete macro-cycle audit for intercepted vectors and logistics throughput. High-fidelity yield analysis for current epoch.
+            Summary of your earnings across the current month. Stay consistent to hit your monthly goals.
           </p>
         </section>
 
@@ -109,14 +109,14 @@ export default function MonthlyEarningsSummaryScreen() {
                     {week.label}
                   </span>
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
-                    INTERVAL YIELD
+                    WEEKLY TOTAL
                   </span>
                 </div>
                 <div className="flex flex-col items-end">
                   <span className="text-sm font-black text-slate-900">
                     ${week.total}
                   </span>
-                  <span className="text-[9px] font-black text-[#03cd8c] uppercase">
+                  <span className="text-[9px] font-black text-orange-500 uppercase">
                     ~${Math.round(week.total / 7)} daily
                   </span>
                 </div>
@@ -128,15 +128,15 @@ export default function MonthlyEarningsSummaryScreen() {
         {/* Trend highlight */}
         <section className="pt-2 pb-12">
           <div className="rounded-3xl border border-slate-100 bg-emerald-50 p-6 flex items-start space-x-5 shadow-inner">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-[#03cd8c] shadow-sm">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-orange-500 shadow-sm">
               <TrendingUp className="h-6 w-6" />
             </div>
             <div className="flex-1 space-y-1">
               <p className="font-black text-sm text-slate-900 uppercase tracking-tight">
-                Macro-Trajectory
+                Monthly Trend
               </p>
               <p className="text-[11px] text-slate-500 font-bold uppercase tracking-tight leading-relaxed">
-                Aggregated yield anticipated to exceed previous macro-cycle by 15%. Week 4 peak efficiency optimization contributed significantly to current trajectory.
+                Your earnings are anticipated to exceed last month by 15%. Consistent driving during peak hours has contributed significantly to this growth.
               </p>
             </div>
           </div>

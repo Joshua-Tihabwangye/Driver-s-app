@@ -22,14 +22,14 @@ function ContactRow({ name, detail, channel, selected, onToggle }) {
     <button
       type="button"
       onClick={onToggle}
-      className={`flex items-center justify-between rounded-2xl border px-3 py-2.5 text-[11px] shadow-sm active:scale-[0.98] transition-transform w-full ${selected
-          ? "border-[#03cd8c] bg-[#e6fff7] text-slate-900"
-          : "border-slate-100 bg-white text-slate-700"
+      className={`flex items-center justify-between rounded-2xl border-2 px-3 py-2.5 text-[11px] shadow-sm active:scale-[0.98] transition-transform w-full ${selected
+          ? "border-orange-500 bg-orange-50 text-slate-900"
+          : "border-orange-500/5 bg-cream text-slate-700 hover:border-orange-500/20"
         }`}
     >
       <div className="flex items-center space-x-2">
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50 text-slate-400">
-          <Icon className="h-4 w-4 text-[#03cd8c]" />
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-orange-500 shadow-sm border border-orange-50">
+          <Icon className="h-4 w-4" />
         </div>
         <div className="flex flex-col items-start truncate overflow-hidden">
           <span className="text-xs font-semibold text-slate-900 truncate max-w-[160px]">
@@ -41,7 +41,7 @@ function ContactRow({ name, detail, channel, selected, onToggle }) {
         </div>
       </div>
       {selected && (
-        <CheckCircle2 className="h-4 w-4 text-[#03cd8c] flex-shrink-0" />
+        <CheckCircle2 className="h-4 w-4 text-orange-500 flex-shrink-0" />
       )}
     </button>
   );
@@ -86,8 +86,8 @@ export default function FollowMyRideScreen() {
             <ChevronLeft className="h-5 w-5 text-white" />
           </button>
           <div className="flex flex-col items-center">
-             <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Protocol</span>
-             <p className="text-base font-black text-white tracking-tight leading-tight">Driver App</p>
+             <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Support</span>
+             <p className="text-lg font-black text-white tracking-tight leading-tight">Safety Features</p>
           </div>
           <div className="w-9" />
         </header>
@@ -99,34 +99,34 @@ export default function FollowMyRideScreen() {
         {/* Section Header */}
         <div className="flex items-center justify-between">
           <div className="flex flex-col">
-             <span className="text-[10px] tracking-[0.2em] font-black uppercase text-[#03cd8c]">Safety Hub</span>
+             <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-500">Contact</span>
              <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Trip Sharing</h2>
           </div>
-          <div className="h-10 w-10 bg-slate-50 rounded-2xl flex items-center justify-center text-[#03cd8c]">
+          <div className="h-10 w-10 bg-cream border-2 border-orange-500/10 rounded-2xl flex items-center justify-center text-orange-500">
              <Users className="h-5 w-5" />
           </div>
         </div>
 
         {/* Intro card */}
         <section className="rounded-[2.5rem] bg-slate-900 border border-slate-800 text-white p-6 space-y-4 shadow-2xl">
-          <div className="flex items-center space-x-4 text-left">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#03cd8c] text-white shadow-lg shadow-emerald-500/20">
-              <MapPin className="h-6 w-6" />
+            <div className="flex items-center space-x-4 text-left">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#03cd8c] text-white shadow-lg shadow-emerald-500/20">
+                <MapPin className="h-6 w-6" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/80">Live Now</span>
+                <p className="text-sm font-black uppercase tracking-tight">Trip Tracking</p>
+              </div>
             </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-[#a5f3fc]">Live Active</span>
-              <p className="text-sm font-black uppercase tracking-tight">Mission Tracking</p>
-            </div>
-          </div>
           <p className="text-[11px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed">
-            Sharing a secure link for this trip only. Contacts can see your location and status until mission completion.
+            Sharing a secure link for this trip only. Contacts can see your location and status until the trip is completed.
           </p>
         </section>
 
         {/* Contacts list */}
         <section className="space-y-4">
           <div className="flex items-center justify-between ml-1">
-             <h2 className="text-[10px] font-black text-[#03cd8c] uppercase tracking-[0.2em]">Select Trusted Contacts</h2>
+             <h2 className="text-[10px] font-black text-orange-500 uppercase tracking-[0.2em]">Select Trusted Contacts</h2>
              <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{selectedIds.length} Selected</span>
           </div>
           <div className="space-y-3">
@@ -144,12 +144,12 @@ export default function FollowMyRideScreen() {
         </section>
 
         {/* Info */}
-        <section className="rounded-[2rem] border border-slate-100 bg-white p-6 flex items-start space-x-4 shadow-xl shadow-slate-200/50">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 flex-shrink-0">
-             <CheckCircle2 className="h-6 w-6 text-[#03cd8c]" />
+        <section className="rounded-[2rem] border-2 border-orange-500/10 bg-cream p-6 flex items-start space-x-4 shadow-sm hover:border-orange-500/30 transition-all">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-orange-50 flex-shrink-0 shadow-sm">
+             <CheckCircle2 className="h-6 w-6 text-orange-500" />
           </div>
           <div className="flex-1">
-            <p className="font-extrabold text-[11px] text-slate-900 uppercase tracking-tight mb-1">Secure Protocol</p>
+            <p className="font-extrabold text-[11px] text-slate-900 uppercase tracking-tight mb-1">Secure Sharing</p>
             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed">Contacts receive a link via SMS/Email. They cannot control your trip.</p>
           </div>
         </section>
@@ -161,12 +161,12 @@ export default function FollowMyRideScreen() {
             disabled={!hasSelection}
             onClick={() => navigate("/driver/safety/share-my-ride")}
             className={`w-full rounded-full py-5 text-[13px] font-black uppercase tracking-[0.2em] flex items-center justify-center shadow-2xl transition-all active:scale-95 ${hasSelection
-                ? "bg-[#03cd8c] text-white shadow-emerald-500/30"
+                ? "bg-orange-500 text-white shadow-orange-500/30"
                 : "bg-slate-100 text-slate-300 cursor-not-allowed"
               }`}
           >
             <Share2 className="h-5 w-5 mr-3" />
-            {hasSelection ? "Initiate Sharing" : "Select Contact First"}
+            {hasSelection ? "Start Sharing" : "Select Contact First"}
           </button>
         </div>
       </main>

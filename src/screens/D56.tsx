@@ -92,7 +92,7 @@ export default function TripCompletionScreen({ initialJobType = "ride" }) {
       `}</style>
 
       {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+      <div className="relative shrink-0" style={{ minHeight: 110 }}>
         <div
           className="absolute inset-0"
           style={{
@@ -101,40 +101,39 @@ export default function TripCompletionScreen({ initialJobType = "ride" }) {
             borderBottomRightRadius: '40px',
           }}
         />
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+        <header className="relative z-10 flex items-center justify-between px-6 pt-10 pb-6">
           <div className="flex items-center space-x-3">
             <button
               onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
             >
               <ChevronLeft className="h-5 w-5 text-white" />
             </button>
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
               <CheckCircle2 className="h-5 w-5 text-white" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Driver</span>
-              <p className="text-base font-black text-white tracking-tight leading-tight">Trip completed</p>
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Review</span>
+              <p className="text-lg font-black text-white tracking-tight leading-tight">Trip Completed</p>
             </div>
           </div>
-          <div className="w-10" />
         </header>
       </div>
 
-      {/* Job type switcher for preview purposes */}
+      {/* Trip Switcher (Preview) */}
       <section className="px-6 pt-4 pb-2">
-        <div className="bg-cream rounded-3xl p-3 border-2 border-orange-500/10 shadow-sm space-y-2">
-          <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Simulation Context</span>
+        <div className="bg-cream rounded-[2rem] p-4 border-2 border-orange-500/10 shadow-sm space-y-3">
+          <span className="text-[9px] text-slate-400 font-black uppercase tracking-widest block ml-1">Trip Preview Control</span>
           <div className="flex flex-wrap gap-2">
             {JOB_TYPES.map((type) => (
               <button
                 key={type}
                 type="button"
                 onClick={() => setJobType(type)}
-                className={`rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-widest border transition-all ${
+                className={`rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-widest border-2 transition-all ${
                   jobType === type
-                    ? "bg-[#03cd8c] text-white border-[#03cd8c] shadow-lg shadow-emerald-500/20"
-                    : "bg-white border-slate-100 text-slate-400 hover:border-slate-200"
+                    ? "bg-orange-500 text-white border-orange-500 shadow-md"
+                    : "bg-white text-slate-400 border-orange-500/5 hover:border-orange-500/20"
                 }`}
               >
                 {jobTypeLabelMap[type]}
@@ -146,9 +145,9 @@ export default function TripCompletionScreen({ initialJobType = "ride" }) {
 
       {/* Content */}
       <main className="flex-1 px-6 pt-4 pb-24 overflow-y-auto scrollbar-hide space-y-6">
-        <div className="px-1">
-           <span className="text-[11px] font-black text-[#03cd8c] uppercase tracking-widest">
-             Job type: {jobTypeLabelMap[jobType]}
+        <div className="px-2">
+           <span className="text-[11px] font-black text-orange-500 uppercase tracking-[0.2em]">
+             Service: {jobTypeLabelMap[jobType]}
            </span>
         </div>
 
@@ -244,16 +243,16 @@ export default function TripCompletionScreen({ initialJobType = "ride" }) {
              <button
                type="button"
                onClick={() => navigate("/driver/dashboard/online")}
-               className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-[#03cd8c] text-white shadow-xl shadow-emerald-500/20 hover:bg-[#02b77c] transition-all"
+               className="w-full rounded-full py-4.5 text-[11px] font-black uppercase tracking-widest bg-orange-500 text-white shadow-xl shadow-orange-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all"
              >
                Go back online
              </button>
              <button
                type="button"
                onClick={() => navigate("/driver/history/rides")}
-               className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest border border-slate-100 text-slate-400 hover:bg-slate-100 transition-all"
+               className="w-full rounded-full py-4.5 text-[11px] font-black uppercase tracking-widest border-2 border-orange-500/10 bg-cream text-slate-500 hover:border-orange-500/30 transition-all flex items-center justify-center space-x-2"
              >
-               View trip details
+               <span>View Trip Details</span>
              </button>
           </div>
           <div className="bg-slate-100/30 rounded-3xl p-4 text-center">

@@ -57,8 +57,8 @@ export default function WeeklyEarningsSummaryScreen() {
               <DollarSign className="h-5 w-5 text-white" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Registry</span>
-              <p className="text-base font-black text-white tracking-tight leading-tight">Weekly Intercepts</p>
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-100/70">Earnings</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">Weekly Summary</p>
             </div>
           </div>
           <div className="w-10" /> {/* Spacer */}
@@ -77,47 +77,47 @@ export default function WeeklyEarningsSummaryScreen() {
               </div>
               <div className="flex flex-col">
                 <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-500">
-                  INTERVAL TOTAL
+                  TOTAL EARNINGS
                 </span>
                 <p className="text-base font-black text-white leading-tight mt-0.5">${total}</p>
               </div>
             </div>
-            <button className="inline-flex items-center rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-emerald-400">
+            <button className="inline-flex items-center rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-orange-400">
               <Calendar className="h-3.5 w-3.5 mr-2" />
               WEEK 10–16
               <ChevronDown className="h-3 w-3 ml-2" />
             </button>
           </div>
           <p className="text-[11px] text-slate-400 leading-relaxed font-bold uppercase tracking-tight relative z-10">
-            Aggregated metrics for fleet intercept and cargo logistics across current seven-day cycle.
+            Aggregated earnings for rides and deliveries across the current seven-day cycle.
           </p>
         </section>
 
         {/* Daily cards */}
         <section className="space-y-4">
           <div className="px-1">
-            <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Cycle Breakdown</h2>
+            <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Daily Breakdown</h2>
           </div>
           <div className="grid grid-cols-2 gap-3">
             {WEEK_DATA.map((d) => (
               <div
                 key={d.label}
-                className="rounded-3xl border border-slate-100 bg-white p-5 shadow-xl shadow-slate-200/50 flex flex-col space-y-2 group"
+                className="rounded-3xl border-2 border-orange-500/10 bg-cream p-5 shadow-sm flex flex-col space-y-2 group hover:border-orange-500/30 hover:scale-[1.02] transition-all"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-black text-slate-900 uppercase">
                     {d.label}
                   </span>
-                  <span className="text-[11px] font-black text-emerald-500">
+                  <span className="text-[11px] font-black text-orange-500">
                     ${d.total}
                   </span>
                 </div>
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
-                  {d.rides} INTERCEPT · {d.deliveries} LOGISTICS
+                  {d.rides} TRIPS · {d.deliveries} DELIVERIES
                 </span>
                 <div className="h-2 w-full rounded-full bg-slate-50 overflow-hidden mt-1 border border-slate-100">
                   <div
-                    className="h-full bg-slate-900 rounded-full transition-all duration-1000 group-hover:bg-[#03cd8c]"
+                    className="h-full bg-orange-500 rounded-full transition-all duration-1000"
                     style={{ width: `${Math.min((d.total / 60) * 100, 100)}%` }}
                   />
                 </div>
@@ -128,16 +128,16 @@ export default function WeeklyEarningsSummaryScreen() {
 
         {/* Trend highlight */}
         <section className="pt-2 pb-12">
-          <div className="rounded-3xl border border-slate-100 bg-emerald-50 p-6 flex items-start space-x-5 shadow-inner">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-[#03cd8c] shadow-sm">
+          <div className="rounded-3xl border-2 border-orange-500/10 bg-[#f0fff4]/50 p-6 flex items-start space-x-5 shadow-sm">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white border border-orange-50 text-orange-500 shadow-sm">
               <TrendingUp className="h-6 w-6" />
             </div>
             <div className="flex-1 space-y-1">
               <p className="font-black text-sm text-slate-900 uppercase tracking-tight">
-                Velocity Trend
+                Earnings Trend
               </p>
               <p className="text-[11px] text-slate-500 font-bold uppercase tracking-tight leading-relaxed">
-                Interval performance optimized by 18% compared to previous cycle. Focus intercept window on late-cycle peaks for maximum yield.
+                Performance is up by 18% compared to last week. Drive during peak hours to maximize your earnings.
               </p>
             </div>
           </div>

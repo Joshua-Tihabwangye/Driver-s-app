@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 function StatCard({ label, value, sub = null, icon: Icon = null }: { label: string; value: string; sub?: string | null; icon?: React.ElementType | null }) {
   return (
     <div className="rounded-2xl bg-cream border-2 border-orange-500/10 p-4 space-y-1.5 relative overflow-hidden shadow-sm hover:shadow-md hover:scale-[1.02] hover:border-orange-500/30 transition-all duration-300 group">
-      {Icon && <Icon className="absolute top-3 right-3 h-4 w-4 text-slate-200 group-hover:text-[#03cd8c]/20 transition-colors" />}
+      {Icon && <Icon className="absolute top-3 right-3 h-4 w-4 text-orange-500/20 group-hover:text-orange-500/40 transition-colors" />}
       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{label}</span>
       <div className="flex flex-col">
         <span className="text-base font-bold text-slate-800">{value}</span>
@@ -42,7 +42,7 @@ function StationRow({ name, value, total, colorClass }) {
       <div className="text-[10px] text-slate-400 font-medium uppercase tracking-wider group-hover:text-slate-500">Location</div>
       <div className="text-[12px] text-slate-800 font-bold">{name}</div>
       <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full ${colorClass}`} style={{ width: `${percentage}%` }} />
+        <div className={`h-full rounded-full bg-orange-500`} style={{ width: `${percentage}%` }} />
       </div>
       <div className="flex justify-end text-[10px] font-bold text-slate-400">{percentage.toFixed(0)}%</div>
     </div>
@@ -104,7 +104,7 @@ export default function EarningsStatsDashboardScreen() {
         {/* Wallet Card */}
         <section className="rounded-[2rem] bg-slate-900 p-6 flex items-center space-x-4 shadow-2xl border border-white/5">
           <div className="h-14 w-14 flex items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md border border-white/10">
-            <WalletIcon className="h-7 w-7 text-emerald-400" />
+            <WalletIcon className="h-7 w-7 text-orange-400" />
           </div>
           <div className="flex-1">
             <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">WALLET BALANCE</span>
@@ -113,7 +113,7 @@ export default function EarningsStatsDashboardScreen() {
           <button 
             type="button" 
             onClick={() => navigate("/driver/earnings/cashout")} 
-            className="rounded-2xl bg-[#03cd8c] px-5 py-3 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-emerald-500/20 active:scale-95 transition-all"
+            className="rounded-2xl bg-orange-500 px-5 py-3 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-orange-500/20 active:scale-95 transition-all"
           >
             CASH OUT
           </button>
@@ -127,7 +127,7 @@ export default function EarningsStatsDashboardScreen() {
             <ChevronRight className="h-5 w-5" />
           </div>
           <div className="text-center space-y-1">
-            <div className="text-2xl font-black text-[#03cd8c] tracking-tighter">UGX 12,500</div>
+            <div className="text-2xl font-black text-orange-500 tracking-tighter">UGX 12,500</div>
             <div className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">Weekly Total: $24,141.00</div>
           </div>
           <div className="flex items-end justify-between h-40 px-2 pt-4">
@@ -195,12 +195,12 @@ export default function EarningsStatsDashboardScreen() {
                 <path d="M50,0 Q30,25 50,50 T50,100" fill="none" stroke="#64748b" strokeWidth="1" />
               </svg>
             </div>
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-6 w-6 rounded-full bg-[#03cd8c] border-4 border-white shadow-2xl animate-pulse" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-6 w-6 rounded-full bg-orange-500 border-4 border-white shadow-2xl animate-pulse" />
           </div>
 
           <div className="space-y-4">
-            <StationRow name="Central Command: Kampala" value="20" total="28" colorClass="bg-[#03cd8c]" />
-            <StationRow name="North-East Hub: Nakasero" value="14" total="22" colorClass="bg-[#00a3ff]" />
+            <StationRow name="Main Hub: Kampala" value="20" total="28" colorClass="bg-orange-500" />
+            <StationRow name="East Side Hub: Nakasero" value="14" total="22" colorClass="bg-blue-500" />
           </div>
         </section>
 

@@ -63,8 +63,8 @@ export default function EmergencyCallingScreen() {
             <ChevronLeft className="h-5 w-5 text-white" />
           </button>
           <div className="flex flex-col items-center">
-             <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Protocol</span>
-             <p className="text-base font-black text-white tracking-tight leading-tight">Emergency SOS</p>
+             <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Secure</span>
+             <p className="text-lg font-black text-white tracking-tight leading-tight">Emergency SOS</p>
           </div>
           <div className="w-9" />
         </header>
@@ -123,10 +123,10 @@ export default function EmergencyCallingScreen() {
             onClick={() => setMuted((v) => !v)}
             className="flex flex-col items-center space-y-2 group"
           >
-            <div className={`flex h-14 w-14 items-center justify-center rounded-3xl transition-all shadow-sm ${muted ? "bg-emerald-50 text-[#03cd8c]" : "bg-white border border-slate-50 text-slate-400 group-active:scale-95"}`}>
+            <div className={`flex h-14 w-14 items-center justify-center rounded-3xl transition-all shadow-sm ${muted ? "bg-orange-500 text-white" : "bg-white border-2 border-orange-500/10 text-slate-400 group-active:scale-95"}`}>
               <MicOff className="h-5 w-5" />
             </div>
-            <span className={`text-[9px] font-black uppercase tracking-widest ${muted ? "text-[#03cd8c]" : "text-slate-400"}`}>{muted ? "Muted" : "Mute"}</span>
+            <span className={`text-[9px] font-black uppercase tracking-widest ${muted ? "text-orange-500" : "text-slate-400"}`}>{muted ? "Muted" : "Mute"}</span>
           </button>
           
           <button
@@ -134,10 +134,10 @@ export default function EmergencyCallingScreen() {
             onClick={() => setSpeaker((v) => !v)}
             className="flex flex-col items-center space-y-2 group"
           >
-            <div className={`flex h-14 w-14 items-center justify-center rounded-3xl transition-all shadow-sm ${speaker ? "bg-emerald-50 text-[#03cd8c]" : "bg-white border border-slate-50 text-slate-400 group-active:scale-95"}`}>
+            <div className={`flex h-14 w-14 items-center justify-center rounded-3xl transition-all shadow-sm ${speaker ? "bg-orange-500 text-white" : "bg-white border-2 border-orange-500/10 text-slate-400 group-active:scale-95"}`}>
               <Volume2 className="h-5 w-5" />
             </div>
-            <span className={`text-[9px] font-black uppercase tracking-widest ${speaker ? "text-[#03cd8c]" : "text-slate-400"}`}>{speaker ? "Speaker On" : "Speaker"}</span>
+            <span className={`text-[9px] font-black uppercase tracking-widest ${speaker ? "text-orange-500" : "text-slate-400"}`}>{speaker ? "Speaker On" : "Speaker"}</span>
           </button>
 
           <button
@@ -156,7 +156,7 @@ export default function EmergencyCallingScreen() {
         <div className="w-full pb-12">
           <div className="relative h-20 bg-emerald-50/50 rounded-full p-2 border-2 border-slate-100 overflow-hidden group">
             <div
-              className={`flex items-center justify-center w-full h-full text-emerald-800 font-extrabold text-[12px] uppercase tracking-[0.2em] transition-opacity duration-300 ${isSwiped ? 'opacity-0' : 'opacity-100'}`}
+              className={`flex items-center justify-center w-full h-full text-orange-800 font-extrabold text-[12px] uppercase tracking-[0.2em] transition-opacity duration-300 ${isSwiped ? 'opacity-0' : 'opacity-100'}`}
             >
               Swipe if safe now
             </div>
@@ -165,14 +165,14 @@ export default function EmergencyCallingScreen() {
               onMouseDown={() => { }}
               draggable
               onDragEnd={() => { setIsSwiped(true); setTimeout(() => navigate('/driver/dashboard/online'), 500); }}
-              className="absolute left-2 top-2 bottom-2 aspect-square bg-[#03cd8c] rounded-full flex items-center justify-center text-white shadow-xl shadow-emerald-500/20 active:scale-95 transition-all cursor-grab active:cursor-grabbing hover:bg-[#02bb7e]"
+              className="absolute left-2 top-2 bottom-2 aspect-square bg-orange-500 rounded-full flex items-center justify-center text-white shadow-xl shadow-orange-500/20 active:scale-95 transition-all cursor-grab active:cursor-grabbing hover:bg-orange-600"
             >
               <ChevronRight className="h-6 w-6 stroke-[3px]" />
             </button>
 
             {/* Background Fill on Swipe */}
             {isSwiped && (
-              <div className="absolute inset-0 bg-[#03cd8c] flex items-center justify-center text-white font-black text-[13px] uppercase tracking-[0.3em] animate-in fade-in duration-300">
+              <div className="absolute inset-0 bg-orange-500 flex items-center justify-center text-white font-black text-[13px] uppercase tracking-[0.3em] animate-in fade-in duration-300">
                 LATCH SECURED
               </div>
             )}

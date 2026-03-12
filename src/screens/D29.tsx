@@ -58,9 +58,9 @@ function JobMixPill({ icon: Icon, label, value, colorClass, onClick }: { icon: a
       </div>
       <div className="flex items-center justify-between w-full">
          <span className="text-xl font-black text-slate-900 tracking-tighter">{value}</span>
-         <div className="p-1 bg-[#03cd8c]/10 rounded-full">
-            <TrendingUp className="h-3 w-3 text-slate-600" />
-         </div>
+          <div className="p-1 bg-orange-500/10 rounded-full">
+            <TrendingUp className="h-3 w-3 text-orange-600" />
+          </div>
       </div>
     </button>
   );
@@ -113,8 +113,8 @@ export default function D29ActiveDashboardScreen() {
               <Activity className="h-5 w-5 text-white" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Performance</span>
-              <p className="text-base font-black text-white tracking-tight leading-tight">Summary</p>
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-100/70">Performance</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">Dashboard</p>
             </div>
           </div>
           <div className="w-10" /> {/* Spacer */}
@@ -154,7 +154,7 @@ export default function D29ActiveDashboardScreen() {
             </div>
             <div className="flex flex-col space-y-1 text-right">
                <span className="text-[10px] uppercase font-black text-slate-600 tracking-widest">Earnings Today</span>
-               <span className="text-lg font-black text-emerald-400 tracking-tight">{earningsToday}</span>
+               <span className="text-lg font-black text-orange-400 tracking-tight">{earningsToday}</span>
             </div>
           </div>
         </section>
@@ -199,9 +199,9 @@ export default function D29ActiveDashboardScreen() {
         {/* Job mix breakdown */}
         <section className="space-y-4 pb-8">
           <div className="flex items-center justify-between px-1">
-            <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Job Breakdown</h2>
+            <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Job Types</h2>
             <div className="bg-slate-100 px-3 py-1 rounded-lg">
-               <span className="text-[10px] font-black text-slate-600 uppercase">{totalJobs} UNITS</span>
+               <span className="text-[10px] font-black text-slate-600 uppercase">{totalJobs} TOTAL</span>
             </div>
           </div>
           
@@ -246,7 +246,7 @@ export default function D29ActiveDashboardScreen() {
 
           <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100 shadow-inner">
              <p className="text-[10px] text-slate-400 leading-relaxed font-bold uppercase tracking-tight">
-                CERTIFICATION NOTICE: Specialized jobs (Emergency/VIP) are restricted to high-trust driver profiles. Maintain 4.9+ rating for continued access.
+                SYSTEM NOTICE: Specialized jobs (Emergency/VIP) are restricted to high-trust driver profiles. Maintain 4.9+ rating for continued access.
              </p>
           </div>
         </section>

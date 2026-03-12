@@ -63,14 +63,14 @@ export default function ShareMyRideScreen() {
         {/* Intro card */}
         <section className="rounded-[2.5rem] bg-slate-900 border border-slate-800 text-white p-6 space-y-4 shadow-2xl">
           <div className="flex items-center space-x-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/20 backdrop-blur-md">
-              <Link2 className="h-6 w-6 text-[#03cd8c]" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500/20 backdrop-blur-md">
+              <Link2 className="h-6 w-6 text-orange-500" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] uppercase font-black text-[#03cd8c]">
-                Follow-ride link
+              <span className="text-[10px] tracking-[0.2em] uppercase font-black text-orange-500">
+                Tracking Link
               </span>
-              <p className="text-sm font-bold">
+              <p className="text-sm font-bold text-white">
                 Share this link for this trip only.
               </p>
             </div>
@@ -85,7 +85,7 @@ export default function ShareMyRideScreen() {
         <section className="space-y-3">
           <div className="rounded-[2rem] border border-slate-100 bg-white shadow-sm p-4 flex items-center justify-between">
             <div className="flex flex-col items-start max-w-[180px]">
-              <span className="text-[10px] font-black uppercase tracking-widest text-[#03cd8c] mb-1">
+              <span className="text-[10px] font-black uppercase tracking-widest text-orange-500 mb-1">
                 Shareable URL
               </span>
               <span className="truncate text-[11px] font-bold text-slate-900">
@@ -95,7 +95,7 @@ export default function ShareMyRideScreen() {
             <button
               type="button"
               onClick={handleCopy}
-              className={`inline-flex items-center rounded-2xl px-5 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-sm ${copied ? "bg-emerald-500 text-white" : "bg-slate-900 text-white"}`}
+              className={`inline-flex items-center rounded-2xl px-5 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-sm ${copied ? "bg-orange-500 text-white" : "bg-slate-900 text-white"}`}
             >
               <Copy className="h-3.5 w-3.5 mr-2" />
               {copied ? "Copied" : "Copy"}
@@ -111,40 +111,40 @@ export default function ShareMyRideScreen() {
           <div className="grid grid-cols-3 gap-4">
             <button
               type="button"
-              className="group flex flex-col items-center justify-center rounded-[2rem] border border-slate-100 bg-white p-5 active:scale-95 transition-all shadow-sm hover:border-[#03cd8c]/30"
+              className="group flex flex-col items-center justify-center rounded-[2rem] border-2 border-orange-500/10 bg-cream p-5 active:scale-95 transition-all shadow-sm hover:border-orange-500/30"
             >
-              <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center mb-3 group-hover:bg-[#03cd8c] transition-colors">
-                <MessageCircle className="h-5 w-5 text-[#03cd8c] group-hover:text-white" />
+              <div className="h-10 w-10 rounded-xl bg-white border border-orange-50 flex items-center justify-center mb-3 group-hover:bg-orange-500 transition-colors">
+                <MessageCircle className="h-5 w-5 text-orange-500 group-hover:text-white" />
               </div>
               <span className="text-[10px] font-black uppercase tracking-wider text-slate-900">SMS / Chat</span>
             </button>
 
             <button
               type="button"
-              className="group flex flex-col items-center justify-center rounded-[2rem] border border-slate-100 bg-white p-5 active:scale-95 transition-all shadow-sm hover:border-[#03cd8c]/30"
+              className="group flex flex-col items-center justify-center rounded-[2rem] border-2 border-orange-500/10 bg-cream p-5 active:scale-95 transition-all shadow-sm hover:border-orange-500/30"
             >
-              <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center mb-3 group-hover:bg-[#03cd8c] transition-colors">
-                <Mail className="h-5 w-5 text-[#03cd8c] group-hover:text-white" />
+              <div className="h-10 w-10 rounded-xl bg-white border border-orange-50 flex items-center justify-center mb-3 group-hover:bg-orange-500 transition-colors">
+                <Mail className="h-5 w-5 text-orange-500 group-hover:text-white" />
               </div>
               <span className="text-[10px] font-black uppercase tracking-wider text-slate-900">Email</span>
             </button>
 
             <button
               type="button"
-              className="group flex flex-col items-center justify-center rounded-[2rem] border border-slate-100 bg-white p-5 active:scale-95 transition-all shadow-sm hover:border-[#03cd8c]/30"
+              className="group flex flex-col items-center justify-center rounded-[2rem] border-2 border-orange-500/10 bg-cream p-5 active:scale-95 transition-all shadow-sm hover:border-orange-500/30"
             >
-              <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center mb-3 group-hover:bg-[#03cd8c] transition-colors">
-                <QrCode className="h-5 w-5 text-[#03cd8c] group-hover:text-white" />
+              <div className="h-10 w-10 rounded-xl bg-white border border-orange-50 flex items-center justify-center mb-3 group-hover:bg-orange-500 transition-colors">
+                <QrCode className="h-5 w-5 text-orange-500 group-hover:text-white" />
               </div>
               <span className="text-[10px] font-black uppercase tracking-wider text-slate-900">QR Code</span>
             </button>
           </div>
 
-          <div className="rounded-[2.5rem] border border-slate-200 bg-slate-50 p-6">
+          <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-cream p-6 shadow-sm">
             <div className="flex items-center space-x-3 mb-2">
-              <div className="h-1.5 w-1.5 rounded-full bg-[#03cd8c]" />
+              <div className="h-1.5 w-1.5 rounded-full bg-orange-500" />
               <p className="font-black text-[10px] uppercase tracking-widest text-slate-900">
-                Privacy note
+                Privacy Note
               </p>
             </div>
             <p className="text-[11px] font-medium text-slate-500 leading-relaxed">

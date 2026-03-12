@@ -50,21 +50,21 @@ function MenuItem({
     <button
       type="button"
       onClick={onClick}
-      className={`flex w-full items-center rounded-2xl border-2 border-orange-500/10 bg-cream px-4 py-4 shadow-sm hover:shadow-md active:scale-[0.98] hover:scale-[1.01] transition-all duration-300 group ${
-        variant === "danger" ? "hover:bg-red-50 hover:border-red-100" : "hover:bg-[#fffdf5] hover:border-orange-500/30"
+      className={`flex w-full items-center rounded-2xl border border-orange-500/5 bg-cream px-4 py-3 active:scale-[0.98] transition-all duration-200 group ${
+        variant === "danger" ? "hover:bg-red-50 hover:border-red-100" : "hover:border-orange-500/20 shadow-sm"
       }`}
     >
-      <div className={`flex h-10 w-10 items-center justify-center rounded-xl mr-4 shrink-0 transition-colors ${
-        variant === "danger" ? "bg-red-50 text-red-600 group-hover:bg-red-100" : "bg-slate-50 text-slate-600 group-hover:bg-[#03cd8c]/10 group-hover:text-[#03cd8c]"
+      <div className={`flex h-9 w-9 items-center justify-center rounded-xl mr-4 shrink-0 transition-colors ${
+        variant === "danger" ? "bg-red-50 text-red-600" : "bg-white text-slate-500 group-hover:text-[#03cd8c] border border-orange-50"
       }`}>
-        <Icon className="h-5 w-5" />
+        <Icon className="h-4.5 w-4.5" />
       </div>
       <div className="flex-1 text-left">
-        <p className={`text-[13px] font-bold ${variant === "danger" ? "text-red-600" : "text-slate-900 group-hover:text-[#03cd8c]"} transition-colors`}>{label}</p>
-        <p className="text-[11px] text-slate-500 mt-0.5">{description}</p>
+        <p className={`text-[13px] font-bold ${variant === "danger" ? "text-red-600" : "text-slate-800"} transition-colors`}>{label}</p>
+        <p className="text-[10px] text-slate-400 mt-0.5 line-clamp-1">{description}</p>
       </div>
       <ChevronRight className={`h-4 w-4 ml-2 shrink-0 transition-colors ${
-        variant === "danger" ? "text-red-300 group-hover:text-red-500" : "text-slate-300 group-hover:text-[#03cd8c]"
+        variant === "danger" ? "text-red-300" : "text-slate-300 group-hover:text-[#03cd8c]"
       }`} />
     </button>
   );
@@ -99,18 +99,18 @@ export default function MoreMenu() {
         <button
           type="button"
           onClick={() => navigate("/driver/profile")}
-          className="w-full flex items-center rounded-[2rem] border-2 border-orange-500/10 bg-cream px-5 py-4 shadow-sm active:scale-[0.98] transition-all hover:border-orange-500/30 group"
+          className="w-full flex items-center rounded-[2rem] border border-orange-500/10 bg-cream px-5 py-4 shadow-sm active:scale-[0.98] transition-all group"
         >
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#03cd8c] text-white text-xl font-bold mr-4 shrink-0 shadow-lg shadow-[#03cd8c]/20">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#03cd8c] text-white text-lg font-bold mr-4 shrink-0 shadow-lg shadow-[#03cd8c]/20">
             JD
           </div>
           <div className="flex-1 text-left">
-            <p className="text-[16px] font-bold text-slate-900 group-hover:text-[#03cd8c] transition-colors">
+            <p className="text-[15px] font-black text-slate-900">
               John Driver
             </p>
-            <p className="text-[12px] text-slate-500 font-medium">+256 700 123 456</p>
+            <p className="text-[11px] text-slate-400 font-bold">+256 700 123 456</p>
           </div>
-          <ChevronRight className="h-5 w-5 text-slate-300 ml-2 shrink-0 transition-transform group-hover:translate-x-1" />
+          <ChevronRight className="h-5 w-5 text-slate-300 ml-2 shrink-0" />
         </button>
 
         <MenuSection title="Fleet & Tools">

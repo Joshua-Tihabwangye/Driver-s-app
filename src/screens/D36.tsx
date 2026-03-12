@@ -1,14 +1,15 @@
 import {
-Ambulance,
-Bus,
-Car,
-ChevronLeft,
-Clock,
-ListFilter,
-MapPin,
-Package,
-Search,
-User
+  AlertTriangle,
+  Ambulance,
+  Bus,
+  Car,
+  ChevronLeft,
+  Clock,
+  ListFilter,
+  MapPin,
+  Package,
+  Search,
+  User
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -39,8 +40,8 @@ function ModeChip({ label, active, onClick }) {
       onClick={onClick}
       className={`rounded-full px-3 py-1 text-[11px] font-medium border transition-colors ${
         active
-          ? "bg-[#03cd8c] text-slate-900 border-[#03cd8c]"
-          : "bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300"
+          ? "bg-orange-500 text-white border-orange-500"
+          : "bg-white text-slate-600 border-orange-500/10 hover:border-orange-500/30"
       }`}
     >
       {label}
@@ -87,11 +88,11 @@ function LocationRow({ title, subtitle, distance, onClick = () => {} }) {
     <button
       type="button"
       onClick={onClick}
-      className="w-full rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform flex items-center justify-between text-[11px] text-slate-600"
+      className="w-full rounded-2xl border-2 border-orange-500/10 bg-cream shadow-sm px-3 py-2.5 active:scale-[0.98] hover:border-orange-500/30 hover:scale-[1.01] transition-all flex items-center justify-between text-[11px] text-slate-600 group"
     >
       <div className="flex items-center space-x-2 max-w-[220px]">
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50">
-          <MapPin className="h-4 w-4 text-[#03cd8c]" />
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-50">
+          <MapPin className="h-4 w-4 text-orange-500" />
         </div>
         <div className="flex flex-col items-start">
           <span className="text-xs font-semibold text-slate-900 truncate max-w-[180px]">
@@ -126,11 +127,11 @@ function JobRow({ type, title, detail, eta, onClick = () => {} }) {
     <button
       type="button"
       onClick={onClick}
-      className="w-full rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform flex items-center justify-between text-[11px] text-slate-600"
+      className="w-full rounded-2xl border-2 border-orange-500/10 bg-cream shadow-sm px-3 py-2.5 active:scale-[0.98] hover:border-orange-500/30 hover:scale-[1.01] transition-all flex items-center justify-between text-[11px] text-slate-600 group"
     >
       <div className="flex items-center space-x-2 max-w-[220px]">
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50">
-          <Icon className="h-4 w-4 text-[#03cd8c]" />
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-50">
+          <Icon className="h-4 w-4 text-orange-500" />
         </div>
         <div className="flex flex-col items-start">
           <span className="text-xs font-semibold text-slate-900 truncate max-w-[180px]">
@@ -154,11 +155,11 @@ function RiderRow({ name, trips, rating, onClick = () => {} }) {
     <button
       type="button"
       onClick={onClick}
-      className="w-full rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform flex items-center justify-between text-[11px] text-slate-600"
+      className="w-full rounded-2xl border-2 border-orange-500/10 bg-cream shadow-sm px-3 py-2.5 active:scale-[0.98] hover:border-orange-500/30 hover:scale-[1.01] transition-all flex items-center justify-between text-[11px] text-slate-600 group"
     >
       <div className="flex items-center space-x-2 max-w-[220px]">
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50">
-          <User className="h-4 w-4 text-[#03cd8c]" />
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-50">
+          <User className="h-4 w-4 text-orange-500" />
         </div>
         <div className="flex flex-col items-start">
           <span className="text-xs font-semibold text-slate-900 truncate max-w-[180px]">
@@ -241,8 +242,8 @@ export default function DriverSearchScreen() {
               <Search className="h-5 w-5 text-white" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Console</span>
-              <p className="text-base font-black text-white tracking-tight leading-tight">Omni Search</p>
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-100/70">Search</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">Global Search</p>
             </div>
           </div>
           <div className="w-10" /> {/* Spacer */}
@@ -251,10 +252,27 @@ export default function DriverSearchScreen() {
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-24 space-y-6 overflow-y-auto scrollbar-hide">
+        {/* Intro card */}
+        <section className="rounded-[2.5rem] bg-cream border-2 border-orange-500/10 p-6 space-y-4 shadow-sm relative overflow-hidden group hover:border-orange-500/30 transition-all">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110" />
+          
+          <div className="flex items-center space-x-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-orange-50 text-orange-500 shadow-sm">
+              <AlertTriangle className="h-6 w-6" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-500">Restricted Mode</span>
+              <p className="text-base font-black tracking-tight mt-0.5 text-slate-900">Incomplete Setup</p>
+            </div>
+          </div>
+          <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
+            Safety and regulatory requirements must be completed before you can start receiving ride and delivery requests.
+          </p>
+        </section>
         {/* Search bar */}
         <section className="space-y-3 pt-1">
-          <div className="flex items-center rounded-[2rem] bg-white px-5 py-4 border border-slate-100 shadow-xl shadow-slate-200/50 group focus-within:border-[#03cd8c] transition-all">
-            <Search className="h-5 w-5 text-slate-400 mr-3 group-focus-within:text-[#03cd8c]" />
+          <div className="flex items-center rounded-[2rem] bg-cream px-5 py-4 border-2 border-orange-500/10 shadow-sm group focus-within:border-orange-500/50 transition-all">
+            <Search className="h-5 w-5 text-orange-500 mr-3 opacity-50 group-focus-within:opacity-100" />
             <input
               type="text"
               value={query}
@@ -271,7 +289,7 @@ export default function DriverSearchScreen() {
             </button>
           </div>
           <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight leading-relaxed">
-            Filtering results in <span className="text-[#03cd8c]">{filteredModeLabel}</span>. Full-spectrum scan covers logistics, transport, and sector markers.
+            Filtering results for <span className="text-orange-500">{filteredModeLabel}</span>. Full-app search covers deliveries, rides, and locations.
           </p>
         </section>
 
@@ -305,7 +323,7 @@ export default function DriverSearchScreen() {
         {mode === "all" && (
           <section className="space-y-6 pt-2">
             <div className="px-1">
-              <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Priority Intervals</h2>
+              <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Suggested Results</h2>
             </div>
             <div className="space-y-4">
               <LocationRow
@@ -334,7 +352,7 @@ export default function DriverSearchScreen() {
         {mode === "locations" && (
           <section className="space-y-6 pt-2">
             <div className="px-1">
-              <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Sector Markers</h2>
+              <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Nearby Places</h2>
             </div>
             <div className="space-y-4">
               <LocationRow
@@ -362,7 +380,7 @@ export default function DriverSearchScreen() {
         {mode === "jobs" && (
           <section className="space-y-6 pt-2 pb-12">
             <div className="flex items-center justify-between px-1">
-              <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Mission Data</h2>
+              <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Available Requests</h2>
             </div>
             <div className="flex flex-wrap gap-2 pb-2">
               {JOB_TABS.map((jt) => (
@@ -437,7 +455,7 @@ export default function DriverSearchScreen() {
         {mode === "riders" && (
           <section className="space-y-6 pt-2 pb-12">
             <div className="px-1">
-              <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Entity Registry</h2>
+              <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Recent Customers</h2>
             </div>
             <div className="space-y-4">
               <RiderRow

@@ -35,12 +35,12 @@ function DocItem({
     <button
       type="button"
       onClick={onClick}
-      className={`flex w-full items-center justify-between rounded-2xl border bg-white px-3 py-2.5 shadow-sm active:scale-[0.97] transition-transform ${emphasise ? "border-[#03cd8c]" : "border-slate-100"
+      className={`flex w-full items-center justify-between rounded-2xl border-2 bg-cream px-3 py-2.5 shadow-sm active:scale-[0.97] transition-all hover:scale-[1.01] ${emphasise ? "border-orange-500 shadow-orange-100/50" : "border-orange-500/10 hover:border-orange-500/30"
         }`}
     >
       <div className="flex items-center space-x-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-50">
-          <Icon className="h-4 w-4 text-slate-700" />
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white border border-orange-50">
+          <Icon className="h-4 w-4 text-orange-500" />
         </div>
         <div className="flex flex-col items-start">
           <span className="text-xs font-semibold text-slate-900">{title}</span>
@@ -120,13 +120,13 @@ export default function DocumentVerificationScreen() {
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-24 space-y-6">
         {/* Intro banner */}
-        <section className="rounded-[2.5rem] bg-white border border-slate-100 p-6 space-y-3 shadow-sm relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-[#03cd8c]/5 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
+        <section className="rounded-[2.5rem] bg-cream border-2 border-orange-500/10 p-6 space-y-3 shadow-sm relative overflow-hidden group hover:border-orange-500/30 transition-all">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/5 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
           <div className="flex items-center gap-2">
-            <div className="p-1 bg-emerald-50 rounded-lg">
-                <ShieldCheck className="h-4 w-4 text-[#03cd8c]" />
+            <div className="p-1 bg-white border border-orange-50 rounded-lg">
+                <ShieldCheck className="h-4 w-4 text-orange-500" />
             </div>
-            <p className="text-[10px] tracking-[0.2em] uppercase text-[#03cd8c] font-black">
+            <p className="text-[10px] tracking-[0.2em] uppercase text-orange-500 font-black">
               Verify Account
             </p>
           </div>
@@ -200,12 +200,12 @@ export default function DocumentVerificationScreen() {
         </div>
 
         {/* Helper text */}
-        <section className="rounded-3xl border border-blue-50 bg-blue-50/30 p-5 flex items-start space-x-3">
-          <div className="mt-0.5 bg-blue-100 p-1.5 rounded-xl">
-            <Info className="h-4 w-4 text-blue-600" />
+        <section className="rounded-3xl border-2 border-orange-500/10 bg-[#f0fff4]/50 p-5 flex items-start space-x-3 shadow-sm">
+          <div className="mt-0.5 bg-white p-1.5 rounded-xl border border-orange-50 shadow-sm">
+            <Info className="h-4 w-4 text-orange-500" />
           </div>
-          <div className="flex-1 text-[11px] text-blue-900/70 space-y-1.5">
-            <p className="font-black text-xs text-blue-900 uppercase tracking-tight">
+          <div className="flex-1 text-[11px] text-slate-600/80 space-y-1.5">
+            <p className="font-black text-xs text-slate-900 uppercase tracking-tight">
               Speed Up Approval
             </p>
             <div className="font-medium space-y-1">

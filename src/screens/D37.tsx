@@ -33,7 +33,7 @@ function ToggleRow({ icon: Icon, title, subtitle, checked, onChange }) {
       </div>
       <div
         className={`flex h-5 w-9 items-center rounded-full p-[2px] transition-colors ${
-          checked ? "bg-[#03cd8c]" : "bg-slate-300"
+          checked ? "bg-orange-500" : "bg-slate-300"
         }`}
       >
         <div
@@ -86,8 +86,8 @@ export default function MapSettingsScreen() {
               <Map className="h-5 w-5 text-white" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Console</span>
-              <p className="text-base font-black text-white tracking-tight leading-tight">Spatial Config</p>
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-100/70">Settings</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">Map Preferences</p>
             </div>
           </div>
           <div className="w-10" /> {/* Spacer */}
@@ -105,15 +105,15 @@ export default function MapSettingsScreen() {
             </div>
             <div className="flex flex-col">
               <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-500">
-                PROJECTION OPS
+                MAP SETTINGS
               </span>
               <p className="text-base font-black text-white leading-tight mt-0.5">
-                Cartographic Controls
+                Display Settings
               </p>
             </div>
           </div>
           <p className="text-[11px] text-slate-400 leading-relaxed font-bold uppercase tracking-tight relative z-10">
-            Optimize orbital visualization and tactical overlay behavior for high-velocity traversal.
+            Customize how information appears on your map for better visibility and awareness.
           </p>
         </section>
 
@@ -127,8 +127,8 @@ export default function MapSettingsScreen() {
               title={nightMode ? "Chrono: Night" : "Chrono: Day"}
               subtitle={
                 nightMode
-                  ? "Dark-spectrum projection for low-light ops."
-                  : "High-visibility projection for standard cycles."
+                  ? "Dark mode for low-light conditions."
+                  : "Light mode for better day visibility."
               }
               checked={nightMode}
               onChange={() => setNightMode((v) => !v)}
@@ -142,8 +142,8 @@ export default function MapSettingsScreen() {
             />
             <ToggleRow
               icon={SettingsIcon}
-              title="Spatial Orientation"
-              subtitle="Active compass and vector heading lock."
+              title="Navigation View"
+              subtitle="Lock map rotation to your driving direction."
               checked={showCompass}
               onChange={() => setShowCompass((v) => !v)}
             />
@@ -164,7 +164,7 @@ export default function MapSettingsScreen() {
                 Data Anomaly?
               </p>
               <p className="text-[11px] text-slate-500 font-bold uppercase tracking-tight leading-relaxed">
-                If sectoral markers or traversal paths exhibit discrepancies, transmit a diagnostic packet for correction.
+                If map details like locations or routes are incorrect, please report it so we can fix it.
               </p>
             </div>
           </div>
@@ -172,19 +172,19 @@ export default function MapSettingsScreen() {
           <div className="space-y-4">
             <textarea
               rows={4}
-              placeholder="TRANSIT DIAGNOSTIC DATA (e.g. incorrect vector, missing sector terminal)"
-              className="w-full rounded-[2rem] border border-slate-200 bg-white px-6 py-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#03cd8c] focus:outline-none focus:ring-4 focus:ring-emerald-500/10 font-bold"
+              placeholder="Tell us what's wrong (e.g. incorrect address, missing street)"
+              className="w-full rounded-[2rem] border-2 border-orange-500/10 bg-cream px-6 py-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500/50 focus:outline-none font-bold"
               value={issueText}
               onChange={(e) => setIssueText(e.target.value)}
             />
 
             <button
-              type="button"
-              onClick={handleSubmitIssue}
-              className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest shadow-xl bg-slate-900 text-white hover:bg-slate-800 flex items-center justify-center active:scale-95 transition-all"
+               type="button"
+               onClick={handleSubmitIssue}
+               className="w-full rounded-2xl bg-orange-500 py-4 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-orange-500/20 active:scale-95 transition-all flex items-center justify-center hover:bg-orange-600"
             >
               <Send className="h-4 w-4 mr-3" />
-              Transmit Report
+              Send Report
             </button>
           </div>
         </section>

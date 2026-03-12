@@ -55,8 +55,8 @@ export default function EmergencyAssistanceTypeVariantScreen() {
             <ChevronLeft className="h-5 w-5 text-white" />
           </button>
           <div className="flex flex-col items-center">
-             <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Protocol</span>
-             <p className="text-base font-black text-white tracking-tight leading-tight">Driver App</p>
+             <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Support</span>
+             <p className="text-lg font-black text-white tracking-tight leading-tight">Safety Toolkit</p>
           </div>
           <div className="w-9" />
         </header>
@@ -68,21 +68,21 @@ export default function EmergencyAssistanceTypeVariantScreen() {
         {/* Section Header */}
         <div className="flex items-center justify-between">
           <div className="flex flex-col">
-             <span className="text-[10px] tracking-[0.2em] font-black uppercase text-[#03cd8c]">Emergency Hub</span>
+             <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-500">Contact</span>
              <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Report Issue</h2>
           </div>
           <button
             onClick={() => navigate('/driver/safety/toolkit')}
-            className="h-10 w-10 bg-slate-100 rounded-2xl flex items-center justify-center active:scale-95 transition-all text-slate-400"
+            className="h-11 w-11 bg-cream border-2 border-orange-500/10 rounded-2xl flex items-center justify-center active:scale-95 transition-all text-slate-400 hover:border-orange-500/30"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Guidance card */}
-        <div className="rounded-[2rem] border border-slate-100 bg-emerald-50/50 p-6 flex items-start space-x-4 shadow-sm">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm flex-shrink-0">
-            <ShieldCheck className="h-6 w-6 text-[#03cd8c]" />
+        <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-[#f0fff4]/50 p-6 flex items-start space-x-4 shadow-sm">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm flex-shrink-0 border border-emerald-50">
+            <ShieldCheck className="h-6 w-6 text-emerald-500" />
           </div>
           <div className="flex-1">
             <p className="font-extrabold text-[11px] text-slate-900 uppercase tracking-tight mb-1">Tell us what kind of help you need</p>
@@ -96,13 +96,13 @@ export default function EmergencyAssistanceTypeVariantScreen() {
             <button
               key={cat.label}
               onClick={() => setSelectedCategory(cat.label)}
-              className={`flex flex-col items-center justify-center py-6 rounded-2xl border transition-all space-y-3 ${selectedCategory === cat.label
-                ? 'border-[#03cd8c] bg-emerald-50 shadow-lg shadow-emerald-500/10'
-                : 'border-slate-50 bg-white'
+              className={`flex flex-col items-center justify-center py-6 rounded-2xl border-2 transition-all space-y-3 ${selectedCategory === cat.label
+                ? 'border-orange-500 bg-orange-50 shadow-lg shadow-orange-500/10'
+                : 'border-orange-500/5 bg-cream hover:border-orange-500/20'
                 }`}
             >
-              <cat.icon className={`h-6 w-6 transition-colors ${selectedCategory === cat.label ? 'text-[#03cd8c]' : 'text-slate-400'}`} />
-              <span className={`text-[8px] font-black text-center uppercase tracking-widest leading-tight ${selectedCategory === cat.label ? 'text-[#03cd8c]' : 'text-slate-400'}`}>
+              <cat.icon className={`h-6 w-6 transition-colors ${selectedCategory === cat.label ? 'text-orange-500' : 'text-slate-400'}`} />
+              <span className={`text-[8px] font-black text-center uppercase tracking-widest leading-tight ${selectedCategory === cat.label ? 'text-orange-500' : 'text-slate-400'}`}>
                 {cat.label}
               </span>
             </button>
@@ -111,20 +111,20 @@ export default function EmergencyAssistanceTypeVariantScreen() {
 
         {/* Issue Text Area */}
         <div className="space-y-4">
-          <label className="text-[10px] font-black text-[#03cd8c] uppercase tracking-[0.2em] block ml-1">
+          <label className="text-[10px] font-black text-orange-500 uppercase tracking-[0.2em] block ml-1">
             Describe the situation
           </label>
           <textarea
             value={issue}
             onChange={(e) => setIssue(e.target.value)}
             placeholder="What is happening? (Include location and injuries if any)"
-            className="w-full h-48 bg-white border-2 border-slate-50 rounded-[2.5rem] p-6 text-[14px] font-bold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:border-[#03cd8c] transition-all resize-none shadow-sm"
+            className="w-full h-48 bg-cream border-2 border-orange-500/10 rounded-[2.5rem] p-6 text-[14px] font-bold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:border-orange-500 transition-all resize-none shadow-sm"
           />
         </div>
 
         {/* Writing guidance */}
-        <div className="rounded-[2rem] border border-slate-100 bg-white p-6 flex items-start space-x-4 shadow-xl shadow-slate-200/50">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 flex-shrink-0">
+        <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-cream p-6 flex items-start space-x-4 shadow-sm hover:border-orange-500/30 transition-all">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white flex-shrink-0 border border-orange-50">
             <FileText className="h-6 w-6 text-slate-400" />
           </div>
           <div className="flex-1">
@@ -139,7 +139,7 @@ export default function EmergencyAssistanceTypeVariantScreen() {
             disabled={!canSend}
             onClick={() => navigate('/driver/safety/sos/sending')}
             className={`w-full py-5 rounded-full font-black text-[13px] uppercase tracking-[0.2em] shadow-2xl transition-all active:scale-95 ${canSend
-              ? "bg-[#03cd8c] text-white shadow-emerald-500/30"
+              ? "bg-orange-500 text-white shadow-orange-500/30 hover:scale-[1.02]"
               : "bg-slate-100 text-slate-300 cursor-not-allowed"
               }`}
           >
@@ -148,14 +148,14 @@ export default function EmergencyAssistanceTypeVariantScreen() {
           <button
             type="button"
             onClick={() => callNumber("+256700000555")}
-            className="w-full py-4 rounded-full border border-slate-100 text-slate-500 bg-white font-black text-[11px] flex items-center justify-center uppercase tracking-widest"
+            className="w-full py-4.5 rounded-full border-2 border-orange-500/10 text-slate-500 bg-cream font-black text-[11px] flex items-center justify-center uppercase tracking-widest hover:border-orange-500/30 transition-all"
           >
             <Phone className="h-4 w-4 mr-2" />
             Call Support instead
           </button>
           <button
             onClick={() => navigate('/driver/safety/sos/sending')}
-            className="w-full py-6 rounded-full bg-red-600 text-white font-black text-[15px] uppercase tracking-[0.3em] shadow-2xl shadow-red-900/30 active:scale-95 transition-all"
+            className="w-full py-6 rounded-full bg-red-600 text-white font-black text-[15px] uppercase tracking-[0.3em] shadow-2xl shadow-red-900/40 active:scale-95 transition-all"
           >
             SOS
           </button>

@@ -17,33 +17,33 @@ import { useNavigate } from "react-router-dom";
 
 function ActiveRideCard() {
   return (
-    <div className="w-full rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 shadow-sm flex flex-col space-y-2">
+    <div className="w-full rounded-2xl border-2 border-orange-500/10 bg-[#f0fff4]/50 px-3 py-2.5 shadow-sm flex flex-col space-y-2 hover:border-orange-500/30 transition-all">
       <div className="flex items-center justify-between">
         <div className="flex flex-col items-start">
-          <span className="text-[11px] uppercase tracking-[0.12em] text-emerald-700">
-            Active ride
+          <span className="text-[11px] uppercase tracking-[0.12em] text-orange-500 font-black">
+            Active trip
           </span>
-          <span className="text-xs font-semibold text-slate-900">
+          <span className="text-xs font-bold text-slate-900">
             Acacia Mall 
-            <ArrowRight className="inline h-3 w-3 mx-1 text-slate-400" />
+            <ArrowRight className="inline h-3 w-3 mx-1 text-orange-500" />
             Ntinda
           </span>
-          <span className="text-[11px] text-slate-600">
-            Rider: John K · 4.92 ★ · 2 seats
+          <span className="text-[11px] text-slate-500">
+            Customer: John K · 4.92 ★ · 2 seats
           </span>
         </div>
-        <div className="flex flex-col items-end text-[10px] text-emerald-800">
-          <span className="text-sm font-semibold text-emerald-800">$6.80</span>
-          <span>7.9 km · 18 min left</span>
+        <div className="flex flex-col items-end text-[10px] text-slate-900">
+          <span className="text-sm font-black text-orange-500">$6.80</span>
+          <span className="font-medium">7.9 km · 18 min left</span>
         </div>
       </div>
-      <div className="flex items-center justify-between text-[11px] text-slate-700">
+      <div className="flex items-center justify-between text-[11px] text-slate-600">
         <span className="inline-flex items-center">
-          <MapPin className="h-3 w-3 mr-1 text-emerald-700" />
+          <MapPin className="h-3 w-3 mr-1 text-orange-500" />
           0.8 km to next stop
         </span>
         <span className="inline-flex items-center">
-          <Clock className="h-3 w-3 mr-1" />
+          <Clock className="h-3 w-3 mr-1 text-orange-500" />
           ETA 18:25
         </span>
       </div>
@@ -53,26 +53,26 @@ function ActiveRideCard() {
 
 function AdditionalRequestCard({ from, to, detour, extraFare }) {
   return (
-    <button className="w-full rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform flex flex-col space-y-2">
+    <button className="w-full rounded-2xl border-2 border-orange-500/10 bg-cream shadow-sm px-3 py-2.5 active:scale-[0.98] hover:border-orange-500/30 hover:scale-[1.01] transition-all flex flex-col space-y-2 group">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-slate-900 truncate max-w-[170px]">
+        <span className="text-xs font-bold text-slate-900 truncate max-w-[170px]">
           {from} 
-          <ArrowRight className="inline h-3 w-3 mx-1 text-slate-400" />
+          <ArrowRight className="inline h-3 w-3 mx-1 text-orange-500" />
           {to}
         </span>
-        <span className="text-sm font-semibold text-slate-900 flex items-center">
+        <span className="text-sm font-bold text-orange-600 flex items-center">
           <DollarSign className="h-3 w-3 mr-0.5" />
           {extraFare}
         </span>
       </div>
       <div className="flex items-center justify-between text-[11px] text-slate-500">
         <span className="inline-flex items-center">
-          <MapPin className="h-3 w-3 mr-1" />
+          <MapPin className="h-3 w-3 mr-1 text-orange-500" />
           Adds {detour} detour
         </span>
         <span className="inline-flex items-center">
-          <Users className="h-3 w-3 mr-1" />
-          +1 passenger
+          <Users className="h-3 w-3 mr-1 text-orange-500" />
+          +1 customer
         </span>
       </div>
     </button>
@@ -154,28 +154,22 @@ export default function ActiveRideWithAdditionalRequestsScreen() {
 
         {/* Hint */}
         <section className="pt-2">
-          <div className="rounded-[2.5rem] border border-slate-100 bg-white p-6 flex flex-col items-start space-y-4 shadow-xl shadow-slate-200/50">
+          <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-[#f0fff4]/50 p-6 flex flex-col items-start space-y-4 shadow-sm">
             <div className="flex items-center space-x-4">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-white" />
-            </button>
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-[#03cd8c] shadow-inner">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-orange-50 text-orange-500 shadow-sm">
                 <Settings className="h-6 w-6" />
               </div>
               <div className="flex flex-col">
                 <p className="font-black text-sm text-slate-900 uppercase tracking-tight">
-                  Logistics Protocol
+                  Trip Management
                 </p>
                 <p className="text-[11px] text-slate-500 font-bold uppercase tracking-tight">
-                  Capacity management
+                  Capacity control
                 </p>
               </div>
             </div>
             <p className="text-[11px] text-slate-500 leading-relaxed font-bold uppercase tracking-tight">
-              Only add extra riders if the detour still keeps your current passenger comfortable and on time. Always follow local capacity and safety rules.
+              Only accept extra customers if the detour keeps your current trip comfortable and on time. 
             </p>
           </div>
         </section>

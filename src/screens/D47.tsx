@@ -93,9 +93,9 @@ export default function NavigateToPickupScreen() {
 
       {/* Job type switcher for preview purposes */}
       <section className="px-6 pt-4 pb-2">
-        <div className="bg-white rounded-3xl p-3 border border-slate-100 shadow-sm space-y-2">
+        <div className="bg-cream rounded-3xl p-3 border-2 border-orange-500/10 shadow-sm space-y-2">
           <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
-            Simulation Matrix
+            Simulation View
           </span>
           <div className="flex flex-wrap gap-2">
             {JOB_TYPES.map((type) => (
@@ -103,10 +103,10 @@ export default function NavigateToPickupScreen() {
                 key={type}
                 type="button"
                 onClick={() => setJobType(type)}
-                className={`rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-widest border transition-all ${
+                className={`rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-widest border-2 transition-all ${
                   jobType === type
-                    ? "bg-[#03cd8c] text-white border-[#03cd8c] shadow-lg shadow-emerald-500/20"
-                    : "bg-slate-50 text-slate-400 border-slate-100 hover:border-slate-200"
+                    ? "bg-orange-500 text-white border-orange-500 shadow-md"
+                    : "bg-white text-slate-400 border-orange-500/5 hover:border-orange-500/20"
                 }`}
               >
                 {jobTypeLabelMap[type]}
@@ -166,26 +166,26 @@ export default function NavigateToPickupScreen() {
           </div>
 
           <div className="absolute top-4 left-4">
-             <div className="bg-slate-900/40 backdrop-blur-md rounded-full px-3 py-1 flex items-center space-x-2 border border-white/10">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#03cd8c] animate-pulse" />
-                <span className="text-[9px] font-black text-white uppercase tracking-widest">Tracking Signal</span>
+             <div className="bg-cream/90 backdrop-blur-md rounded-full px-3 py-1 flex items-center space-x-2 border-2 border-orange-500/20">
+                <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+                <span className="text-[9px] font-black text-slate-900 uppercase tracking-widest">Tracking Customer</span>
              </div>
           </div>
         </section>
 
         {/* Trip info + actions */}
         <section className="space-y-4">
-          <div className="rounded-[2.5rem] border border-slate-100 bg-white p-6 space-y-6 shadow-xl shadow-slate-200/50">
+          <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-cream p-6 space-y-6 shadow-sm hover:border-orange-500/30 transition-all">
             <div className="flex items-start justify-between">
               <div className="flex flex-col space-y-1">
-                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">TARGET ACQUISITION</span>
+                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-500">Pickup Location</span>
                 <p className="text-sm font-black text-slate-900 uppercase tracking-tight">
                   {pickupTitle}
                 </p>
                 <div className="flex items-center space-x-3 mt-1">
                   <span className="text-[10px] text-slate-500 font-bold uppercase tracking-tight">{pickupSub}</span>
                   {(rentalExtra || tourExtra) && <div className="w-1 h-1 rounded-full bg-slate-300" />}
-                  <span className="text-[10px] text-[#03cd8c] font-black uppercase tracking-tight">{rentalExtra || tourExtra}</span>
+                  <span className="text-[10px] text-orange-600 font-black uppercase tracking-tight">{rentalExtra || tourExtra}</span>
                 </div>
               </div>
               <div className="flex flex-col items-end space-y-1">
@@ -199,10 +199,10 @@ export default function NavigateToPickupScreen() {
                   <button
                     type="button"
                     onClick={() => navigate("/driver/trip/demo-trip/en-route-details")}
-                    className="inline-flex items-center rounded-full bg-slate-50 border border-slate-100 px-3 py-1.5 text-[10px] font-black uppercase tracking-tight text-slate-900 hover:bg-slate-100 transition-colors"
+                    className="inline-flex items-center rounded-full bg-white border border-orange-50 px-3 py-1.5 text-[10px] font-black uppercase tracking-tight text-orange-500 shadow-sm hover:bg-orange-50 transition-colors"
                   >
-                    <Phone className="h-3 w-3 mr-2 text-[#03cd8c]" />
-                    Signal HQ
+                    <Phone className="h-3 w-3 mr-2" />
+                    Support
                   </button>
                 )}
               </div>
@@ -212,23 +212,23 @@ export default function NavigateToPickupScreen() {
               <button
                 type="button"
                 onClick={() => navigate("/driver/trip/demo-trip/cancel/reason")}
-                className="flex-1 rounded-full py-4 text-[11px] font-black uppercase tracking-widest border border-slate-100 text-slate-400 hover:bg-slate-50 transition-all flex items-center justify-center"
+                className="flex-1 rounded-full py-4 text-[11px] font-black uppercase tracking-widest border-2 border-orange-500/10 text-slate-400 hover:bg-orange-50 hover:border-orange-500/30 transition-all flex items-center justify-center"
               >
-                Abort
+                Cancel
               </button>
               <button
                 type="button"
                 onClick={() => navigate("/driver/trip/demo-trip/arrived")}
-                className="flex-[2] rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-slate-900 text-white shadow-xl hover:bg-slate-800 transition-all flex items-center justify-center"
+                className="flex-[2] rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-orange-500 text-white shadow-xl shadow-orange-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center"
               >
-                Stationary Arrived
+                Confirm Arrival
               </button>
             </div>
           </div>
 
-          <div className="bg-slate-100/50 rounded-3xl p-4 text-center">
-             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed max-w-[240px] mx-auto">
-               Secure designated docking point. In case of offset, establish direct signal with client entity.
+          <div className="bg-[#f0fff4]/50 rounded-3xl p-4 text-center border-2 border-orange-500/10">
+             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight leading-relaxed max-w-[240px] mx-auto">
+               Secure designated pickup point. If needed, contact the customer directly for more info.
              </p>
           </div>
         </section>
