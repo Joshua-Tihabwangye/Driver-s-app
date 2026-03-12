@@ -9,54 +9,39 @@ interface AppPhoneShellProps {
 
 export default function AppPhoneShell({ children }: AppPhoneShellProps) {
   const { isDark } = useTheme();
-  const [isVisible, setIsVisible] = useState(false);
-  const [lastScrollTop, setLastScrollTop] = useState(0);
+  const [isVisible, setIsVisible] = useState(true); // Start visible so user sees it initially
   const scrollTimeoutRef = useRef<any>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Initial hide timeout after mount
+    scrollTimeoutRef.current = setTimeout(() => {
+      setIsVisible(false);
+    }, 1000);
+
     const handleScroll = () => {
-      if (!scrollContainerRef.current) return;
-      
-      const currentScrollTop = scrollContainerRef.current.scrollTop;
-      
-      // Clear previous timeout
       if (scrollTimeoutRef.current) {
         clearTimeout(scrollTimeoutRef.current);
       }
 
-      // Logic: 
-      // 1. Hide at the very top
-      if (currentScrollTop <= 0) {
+      // Always show on scroll
+      setIsVisible(true);
+      
+      // Auto-hide after 1 second of inactivity
+      scrollTimeoutRef.current = setTimeout(() => {
         setIsVisible(false);
-      } 
-      // 2. Show if scrolling up or just started scrolling
-      else {
-        setIsVisible(true);
-        
-        // 3. Set timeout to hide after 3 seconds of inactivity
-        scrollTimeoutRef.current = setTimeout(() => {
-          setIsVisible(false);
-        }, 3000);
-      }
-
-      setLastScrollTop(currentScrollTop);
+      }, 1000);
     };
 
-    const container = scrollContainerRef.current;
-    if (container) {
-      container.addEventListener("scroll", handleScroll);
-    }
+    // Use capture phase (true) to catch scroll events from any nested container
+    window.addEventListener("scroll", handleScroll, true);
 
     return () => {
-      if (container) {
-        container.removeEventListener("scroll", handleScroll);
-      }
+      window.removeEventListener("scroll", handleScroll, true);
       if (scrollTimeoutRef.current) {
         clearTimeout(scrollTimeoutRef.current);
       }
     };
-  }, [lastScrollTop]);
+  }, []);
 
   return (
     <div
@@ -73,7 +58,6 @@ export default function AppPhoneShell({ children }: AppPhoneShellProps) {
                     ${isDark ? "bg-slate-900" : "bg-white"}`}
       >
         <div
-          ref={scrollContainerRef}
           className="flex-1 overflow-y-auto overflow-x-hidden pb-[70px]"
           style={{ WebkitOverflowScrolling: "touch", minHeight: 0 }}
         >
