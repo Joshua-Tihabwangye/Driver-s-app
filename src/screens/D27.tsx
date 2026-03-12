@@ -103,7 +103,7 @@ export default function OfflineDashboardScreen() {
           <button
             type="button"
             onClick={() => navigate("/driver/dashboard/online")}
-            className="w-full rounded-2xl bg-[#03cd8c] py-4 text-xs font-black text-white hover:bg-[#02b77c] active:scale-95 transition-all shadow-xl shadow-emerald-500/20 uppercase tracking-widest"
+            className="w-full rounded-2xl bg-orange-500 py-4 text-xs font-black text-white hover:bg-orange-600 active:scale-95 transition-all shadow-xl shadow-orange-500/20 uppercase tracking-widest"
           >
             Go Online
           </button>
@@ -130,7 +130,7 @@ export default function OfflineDashboardScreen() {
         <section className="pt-2">
            <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-cream p-6 text-center space-y-3 shadow-sm">
               <div className="bg-white h-12 w-12 rounded-2xl shadow-sm flex items-center justify-center mx-auto border border-orange-100">
-                <Info className="h-6 w-6 text-[#03cd8c]" />
+                <Info className="h-6 w-6 text-orange-500" />
               </div>
               <div>
                 <p className="text-xs font-black text-slate-900 uppercase tracking-tight">Take a Break</p>

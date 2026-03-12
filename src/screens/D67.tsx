@@ -22,13 +22,13 @@ function StatusBadge({ status }) {
   if (status === "submitting") {
     return (
       <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700 border border-amber-100">
-        Submitting…
+        Submitting...
       </span>
     );
   }
   if (status === "submitted") {
     return (
-      <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700 border border-emerald-100">
+      <span className="inline-flex items-center rounded-full bg-orange-50 px-2 py-0.5 text-[10px] font-medium text-orange-700 border border-orange-100">
         <CheckCircle2 className="h-3 w-3 mr-1" />
         Submitted
       </span>
@@ -143,7 +143,7 @@ export default function ProofOfTripMainScreen() {
                 Driver · Safety
               </span>
               <h1 className="text-xl font-black text-white leading-tight">
-                Proof of trip
+                Trip Documentation
               </h1>
               <div className="mt-1 inline-flex items-center bg-white/20 backdrop-blur-md rounded-full px-3 py-0.5 border border-white/20">
                 <div className="h-1.5 w-1.5 rounded-full bg-white mr-2" />
@@ -168,7 +168,7 @@ export default function ProofOfTripMainScreen() {
                 key={type}
                 type="button"
                 onClick={() => setJobType(type)}
-                className={`rounded-full px-5 py-2 text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 border-2 shadow-sm ${jobType === type ? "bg-[#03cd8c] border-[#03cd8c] text-white" : "bg-white border-slate-100 text-slate-400"}`}
+                className={`rounded-full px-5 py-2 text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 border-2 shadow-sm ${jobType === type ? "bg-orange-500 border-orange-500 text-white" : "bg-white border-orange-500/5 text-slate-400 hover:border-orange-500/20"}`}
               >
                 {jobTypeLabelMap[type]}
               </button>
@@ -182,12 +182,12 @@ export default function ProofOfTripMainScreen() {
              <StatusBadge status={status} />
           </div>
           <div className="flex items-center space-x-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/20 backdrop-blur-md">
-              <ShieldCheck className="h-6 w-6 text-[#03cd8c]" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500/20 backdrop-blur-md">
+              <ShieldCheck className="h-6 w-6 text-orange-500" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] uppercase font-black text-[#03cd8c]">
-                Trip Proof
+              <span className="text-[10px] tracking-[0.2em] uppercase font-black text-orange-500">
+                Documentation
               </span>
               <p className="text-sm font-bold">
                 Capture documentation
@@ -208,11 +208,11 @@ export default function ProofOfTripMainScreen() {
             <button
               type="button"
               onClick={handleAddPhoto}
-              className="w-full flex items-center justify-between rounded-[2rem] border border-slate-100 bg-white p-5 active:scale-[0.98] transition-all shadow-sm group hover:border-[#03cd8c]/30"
+              className="w-full flex items-center justify-between rounded-[2rem] border-2 border-orange-500/10 bg-cream p-5 active:scale-[0.98] transition-all shadow-sm group hover:border-orange-500/30"
             >
               <div className="flex items-center space-x-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 group-hover:bg-emerald-50 transition-colors">
-                  <Camera className="h-5 w-5 text-slate-600 group-hover:text-[#03cd8c]" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white border border-orange-50 shadow-sm group-hover:bg-orange-500 transition-colors">
+                  <Camera className="h-5 w-5 text-orange-500 group-hover:text-white" />
                 </div>
                 <div className="flex flex-col items-start">
                   <span className="text-[11px] font-black uppercase tracking-widest text-slate-900">
@@ -221,8 +221,8 @@ export default function ProofOfTripMainScreen() {
                   <span className="text-[10px] font-medium text-slate-400 text-left line-clamp-1">{photosText}</span>
                 </div>
               </div>
-              <div className="h-8 min-w-[32px] rounded-full bg-slate-50 flex items-center justify-center px-3 border border-slate-100 group-hover:bg-emerald-500 group-hover:border-emerald-500 transition-all">
-                <span className="text-[10px] font-black text-slate-400 group-hover:text-white uppercase">
+              <div className="h-8 min-w-[32px] rounded-full bg-white flex items-center justify-center px-3 border border-orange-50 shadow-sm group-hover:bg-orange-500 group-hover:border-orange-500 transition-all">
+                <span className="text-[10px] font-black text-orange-500 group-hover:text-white uppercase">
                   {photoCount > 0 ? photoCount : "Add"}
                 </span>
               </div>
@@ -231,11 +231,11 @@ export default function ProofOfTripMainScreen() {
             <button
               type="button"
               onClick={handleAddNote}
-              className="w-full flex items-center justify-between rounded-[2rem] border border-slate-100 bg-white p-5 active:scale-[0.98] transition-all shadow-sm group hover:border-[#03cd8c]/30"
+              className="w-full flex items-center justify-between rounded-[2rem] border-2 border-orange-500/10 bg-cream p-5 active:scale-[0.98] transition-all shadow-sm group hover:border-orange-500/30"
             >
               <div className="flex items-center space-x-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 group-hover:bg-emerald-50 transition-colors">
-                  <FileText className="h-5 w-5 text-slate-600 group-hover:text-[#03cd8c]" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white border border-orange-50 shadow-sm group-hover:bg-orange-500 transition-colors">
+                  <FileText className="h-5 w-5 text-orange-500 group-hover:text-white" />
                 </div>
                 <div className="flex flex-col items-start">
                   <span className="text-[11px] font-black uppercase tracking-widest text-slate-900">
@@ -244,8 +244,8 @@ export default function ProofOfTripMainScreen() {
                   <span className="text-[10px] font-medium text-slate-400 text-left line-clamp-1">{noteText || notesText}</span>
                 </div>
               </div>
-              <div className="h-8 min-w-[32px] rounded-full bg-slate-50 flex items-center justify-center px-3 border border-slate-100 group-hover:bg-emerald-500 group-hover:border-emerald-500 transition-all">
-                <span className="text-[10px] font-black text-slate-400 group-hover:text-white uppercase">
+              <div className="h-8 min-w-[32px] rounded-full bg-white flex items-center justify-center px-3 border border-orange-50 shadow-sm group-hover:bg-orange-500 group-hover:border-orange-500 transition-all">
+                <span className="text-[10px] font-black text-orange-500 group-hover:text-white uppercase">
                    {noteText ? "1" : "Add"}
                 </span>
               </div>
@@ -254,11 +254,11 @@ export default function ProofOfTripMainScreen() {
             <button
               type="button"
               onClick={() => navigate("/driver/map/online")}
-              className="w-full flex items-center justify-between rounded-[2rem] border border-slate-100 bg-white p-5 active:scale-[0.98] transition-all shadow-sm group hover:border-[#03cd8c]/30"
+              className="w-full flex items-center justify-between rounded-[2rem] border-2 border-orange-500/10 bg-cream p-5 active:scale-[0.98] transition-all shadow-sm group hover:border-orange-500/30"
             >
               <div className="flex items-center space-x-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 group-hover:bg-emerald-50 transition-colors">
-                  <MapPin className="h-5 w-5 text-slate-600 group-hover:text-[#03cd8c]" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white border border-orange-50 shadow-sm group-hover:bg-orange-500 transition-colors">
+                  <MapPin className="h-5 w-5 text-orange-500 group-hover:text-white" />
                 </div>
                 <div className="flex flex-col items-start">
                   <span className="text-[11px] font-black uppercase tracking-widest text-slate-900">
@@ -267,8 +267,8 @@ export default function ProofOfTripMainScreen() {
                   <span className="text-[10px] font-medium text-slate-400 text-left line-clamp-1">Auto-capture location & time</span>
                 </div>
               </div>
-              <div className="h-8 min-w-[32px] rounded-full bg-emerald-50 flex items-center justify-center px-3 border border-emerald-100 group-hover:bg-emerald-500 group-hover:border-emerald-500 transition-all">
-                <span className="text-[10px] font-black text-[#03cd8c] group-hover:text-white uppercase">
+              <div className="h-8 min-w-[32px] rounded-full bg-orange-500/10 flex items-center justify-center px-3 border border-orange-500/20 group-hover:bg-orange-500 group-hover:border-orange-500 transition-all">
+                <span className="text-[10px] font-black text-orange-500 group-hover:text-white uppercase">
                    AUTO
                 </span>
               </div>
@@ -286,9 +286,9 @@ export default function ProofOfTripMainScreen() {
 
         {/* Guidance and Actions */}
         <section className="space-y-6 pb-4">
-          <div className="rounded-[2.5rem] border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/50">
+          <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-cream p-6 shadow-sm">
             <div className="flex items-center space-x-4 mb-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 border border-slate-800">
                 <AlertCircle className="h-5 w-5 text-white" />
               </div>
               <p className="font-black text-[11px] uppercase tracking-widest text-slate-900">
@@ -299,8 +299,8 @@ export default function ProofOfTripMainScreen() {
               {isAmbulance
                 ? "Use for operational review only when requested. Avoid patient faces or medical records."
                 : isTour
-                  ? "Use if there is a dispute about stops or route. Normal segments don't require proof."
-                  : "Use for disputes, no-shows or safety issues. Normal trips don't require proof."}
+                  ? "Use if there is a dispute about stops or route. Normal segments don't require documentation."
+                  : "Use for disputes, no-shows or safety issues. Normal trips don't require documentation."}
             </p>
           </div>
 
@@ -308,14 +308,14 @@ export default function ProofOfTripMainScreen() {
             <button
               type="button"
               onClick={handleSubmitProof}
-              className="w-full rounded-[2rem] bg-[#03cd8c] py-5 text-[11px] font-black uppercase tracking-[0.2em] text-slate-900 shadow-lg shadow-emerald-500/20 active:scale-95 transition-all"
+              className="w-full rounded-[2rem] bg-orange-500 py-5 text-[11px] font-black uppercase tracking-[0.2em] text-white shadow-lg shadow-orange-500/20 active:scale-95 transition-all"
             >
-              Submit Proof
+              Submit Documentation
             </button>
             <button
               type="button"
               onClick={handleReset}
-              className="w-full rounded-[2rem] border-2 border-slate-100 bg-white py-5 text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 active:scale-95 transition-all"
+              className="w-full rounded-[2rem] border-2 border-orange-500/10 bg-cream py-5 text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 active:scale-95 hover:border-orange-500/30 transition-all"
             >
               Reset
             </button>

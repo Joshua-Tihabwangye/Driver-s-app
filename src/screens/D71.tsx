@@ -19,16 +19,16 @@ function SectionCard({ icon: Icon, title, subtitle, onClick = () => {} }) {
     <button
       type="button"
       onClick={onClick}
-      className="w-full rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 shadow-sm flex items-start space-x-2 text-[11px] text-slate-600 active:scale-[0.98] transition-transform"
+      className="w-full rounded-2xl border-2 border-orange-500/10 bg-cream shadow-sm px-3 py-3 flex items-start space-x-2 text-[11px] text-slate-600 active:scale-[0.98] transition-all hover:border-orange-500/30"
     >
-      <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-slate-50">
-        <Icon className="h-4 w-4 text-slate-700" />
+      <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-white border border-orange-50 shadow-sm text-orange-500">
+        <Icon className="h-4 w-4" />
       </div>
       <div className="flex flex-col items-start">
-        <span className="text-xs font-semibold text-slate-900 mb-0.5">
+        <span className="text-xs font-black uppercase tracking-widest text-slate-900 mb-0.5">
           {title}
         </span>
-        <span>{subtitle}</span>
+        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">{subtitle}</span>
       </div>
     </button>
   );
@@ -76,14 +76,14 @@ export default function SafetyHubExpandedScreen() {
         {/* Intro card */}
         <section className="rounded-[2.5rem] bg-slate-900 border border-slate-800 text-white p-6 space-y-4 shadow-2xl">
           <div className="flex items-center space-x-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/20 backdrop-blur-md">
-              <ShieldCheck className="h-6 w-6 text-[#03cd8c]" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500/20 backdrop-blur-md">
+              <ShieldCheck className="h-6 w-6 text-orange-500" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] uppercase font-black text-[#03cd8c]">
+              <span className="text-[10px] tracking-[0.2em] uppercase font-black text-orange-500">
                 Safety Hub
               </span>
-              <p className="text-sm font-bold">
+              <p className="text-sm font-bold text-white">
                 Learn, report and get help.
               </p>
             </div>

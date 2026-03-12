@@ -26,10 +26,10 @@ function HubTile({
       : "bg-slate-50";
   const border =
     tone === "primary"
-      ? "border-slate-100"
+      ? "border-orange-500/10"
       : tone === "warning"
-      ? "border-amber-100"
-      : "border-slate-100";
+      ? "border-red-100"
+      : "border-orange-500/10";
 
   return (
     <button
@@ -37,14 +37,14 @@ function HubTile({
       onClick={onClick}
       className={`flex items-start space-x-3 rounded-2xl border ${border} ${bg} px-4 py-4 shadow-sm active:scale-[0.98] transition-all w-full text-left group hover:border-[#03cd8c]/30`}
     >
-      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${tone === "warning" ? "bg-red-50" : "bg-slate-50"} shadow-sm group-hover:bg-emerald-50 transition-colors`}>
-        <Icon className={`h-5 w-5 ${tone === "warning" ? "text-red-500" : "text-slate-700 group-hover:text-[#03cd8c]"}`} />
+      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${tone === "warning" ? "bg-red-500 shadow-lg shadow-red-500/20" : "bg-white border border-orange-50 shadow-sm"} group-hover:bg-orange-500 transition-colors`}>
+        <Icon className={`h-5 w-5 ${tone === "warning" ? "text-white" : "text-orange-500 group-hover:text-white"}`} />
       </div>
       <div className="flex flex-col">
-        <span className="text-xs font-bold text-slate-900 mb-1">
+        <span className="text-xs font-black uppercase tracking-widest text-slate-900 mb-1">
           {title}
         </span>
-        <span className="text-[11px] text-slate-500 leading-relaxed">{subtitle}</span>
+        <span className="text-[10px] font-bold text-slate-500 leading-relaxed uppercase tracking-tight">{subtitle}</span>
       </div>
     </button>
   );
@@ -87,14 +87,14 @@ export default function SafetyHubScreen() {
         {/* Intro card */}
         <section className="rounded-[2.5rem] bg-slate-900 border border-slate-800 text-white p-6 space-y-4 shadow-2xl">
           <div className="flex items-center space-x-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#03cd8c]/20 backdrop-blur-md">
-              <ShieldCheck className="h-6 w-6 text-[#03cd8c]" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500/20 backdrop-blur-md">
+              <ShieldCheck className="h-6 w-6 text-orange-500" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] uppercase font-black text-[#03cd8c]">
+              <span className="text-[10px] tracking-[0.2em] uppercase font-black text-orange-500">
                  Help & Safety
               </span>
-              <p className="text-sm font-bold">
+              <p className="text-sm font-bold text-white">
                 Quick access to security tools.
               </p>
             </div>
@@ -142,7 +142,7 @@ export default function SafetyHubScreen() {
             />
             <HubTile
               icon={Share2}
-              title="Share my ride link"
+              title="Share my trip link"
               subtitle="Create a link or QR code friends or family can use."
               onClick={() => navigate("/driver/safety/share-my-ride")}
             />
@@ -174,7 +174,7 @@ export default function SafetyHubScreen() {
             <button
               type="button"
               onClick={() => navigate("/driver/safety/driving-hours")}
-              className="w-full rounded-[2rem] border-2 border-slate-100 bg-white p-5 text-[10px] font-black uppercase tracking-widest text-slate-900 active:scale-[0.98] transition-all shadow-sm flex items-center justify-center space-x-2"
+              className="w-full rounded-[2rem] border-2 border-orange-500/10 bg-cream p-5 text-[10px] font-black uppercase tracking-widest text-slate-900 active:scale-[0.98] transition-all shadow-sm flex items-center justify-center space-x-2 hover:border-orange-500/30"
             >
               <span>Review Driving Guidelines</span>
             </button>

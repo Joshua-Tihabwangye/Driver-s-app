@@ -67,8 +67,8 @@ export default function RiderVerificationCodeEntryScreen() {
               <ShieldCheck className="h-5 w-5 text-white" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Safety Protocol</span>
-              <p className="text-base font-black text-white tracking-tight leading-tight">Entity Verification</p>
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-200">Safety</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">Customer Verification</p>
             </div>
           </div>
           <div className="w-10" />
@@ -78,24 +78,18 @@ export default function RiderVerificationCodeEntryScreen() {
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-24 space-y-6 overflow-y-auto scrollbar-hide">
         {/* Info block */}
-        <section className="rounded-[2.5rem] bg-slate-900 border border-slate-800 text-white p-6 space-y-4 shadow-2xl">
+        <section className="rounded-[2.5rem] bg-cream border-2 border-orange-500/10 p-6 space-y-4 shadow-sm hover:border-orange-500/30 transition-all">
           <div className="flex items-center space-x-4">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-white" />
-            </button>
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#03cd8c] text-slate-900 shadow-lg shadow-emerald-500/20">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-orange-50 text-orange-500 shadow-sm">
               <User className="h-6 w-6" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">ACTION REQUIRED</span>
-              <p className="text-sm font-black uppercase tracking-tight">Rider Handshake</p>
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-500">ACTION REQUIRED</span>
+              <p className="text-sm font-black uppercase tracking-tight text-slate-900">Verification</p>
             </div>
           </div>
-          <p className="text-[11px] text-slate-300 font-bold uppercase tracking-tight leading-relaxed">
-            Acquire the 4-digit verification sequence from the client entity. Enter the sequence below to authorize trip commencement.
+          <p className="text-[11px] text-slate-500 font-bold uppercase tracking-tight leading-relaxed">
+            Please ask the customer for their 4-digit verification code and enter it below to begin the trip.
           </p>
         </section>
 
@@ -111,36 +105,36 @@ export default function RiderVerificationCodeEntryScreen() {
                 value={digit}
                 onChange={(e) => handleChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
-                className="h-14 w-14 rounded-2xl border-2 border-slate-100 bg-white text-center text-xl font-black text-slate-900 focus:border-[#03cd8c] focus:outline-none transition-all shadow-sm"
+                className="h-14 w-14 rounded-2xl border-2 border-orange-500/10 bg-white text-center text-xl font-black text-slate-900 focus:border-orange-500 focus:outline-none transition-all shadow-sm"
               />
             ))}
           </div>
-          <div className="bg-slate-100/30 rounded-3xl p-4 text-center">
-             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed max-w-[240px] mx-auto">
-               Secure designated docking point. In case of offset, establish direct signal with client entity.
+          <div className="bg-[#f0fff4]/50 rounded-3xl p-4 text-center border-2 border-orange-500/10">
+             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight leading-relaxed max-w-[240px] mx-auto">
+               Ensure you are at the correct pickup point before verifying the code.
              </p>
           </div>
         </section>
 
         {/* Contact & help */}
         <section className="space-y-4">
-          <div className="rounded-[2.5rem] border border-slate-100 bg-slate-50/50 p-6 flex flex-col space-y-4">
+          <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-cream p-6 flex flex-col space-y-4 shadow-sm hover:border-orange-500/30 transition-all">
              <div className="flex items-center justify-between">
                 <div className="flex flex-col space-y-1">
-                   <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">Conflict mitigation</span>
-                   <p className="text-xs font-black text-slate-900 uppercase tracking-tight leading-tight">Sequence mismatch detected?</p>
+                   <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-500">Support</span>
+                   <p className="text-xs font-black text-slate-900 uppercase tracking-tight leading-tight">Code not working?</p>
                 </div>
                 <div className="flex items-center space-x-2">
-                   <button className="h-10 w-10 flex items-center justify-center rounded-2xl bg-white border border-slate-100 text-slate-900 shadow-sm hover:bg-slate-50 transition-colors">
+                   <button className="h-10 w-10 flex items-center justify-center rounded-2xl bg-white border border-orange-50 text-orange-500 shadow-sm hover:bg-orange-50 transition-colors">
                      <MessageCircle className="h-4 w-4" />
                    </button>
-                   <button className="h-10 w-10 flex items-center justify-center rounded-2xl bg-slate-900 text-white shadow-lg hover:bg-slate-800 transition-colors">
+                   <button className="h-10 w-10 flex items-center justify-center rounded-2xl bg-orange-500 text-white shadow-xl shadow-orange-500/20 hover:scale-110 transition-all">
                      <Phone className="h-4 w-4" />
                    </button>
                 </div>
              </div>
              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed">
-               If signals do not align, re-verify with client app interface. If discrepancy persists, abort mission and contact command.
+               If the code doesn't match, ask the customer to check their app. Contact support if the issue persists.
              </p>
           </div>
 
@@ -150,14 +144,14 @@ export default function RiderVerificationCodeEntryScreen() {
               disabled={!isComplete}
               className={`w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest transition-all ${
                 isComplete
-                  ? "bg-[#03cd8c] text-white shadow-xl shadow-emerald-500/20 hover:bg-[#02b77c]"
+                  ? "bg-orange-500 text-white shadow-xl shadow-orange-500/20 hover:scale-[1.02] active:scale-[0.98]"
                   : "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-50"
               }`}
             >
-              Verify & Authorize
+              Verify & Start Trip
             </button>
-            <button type="button" onClick={() => navigate("/driver/trip/demo-trip/cancel/reason")} className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest border border-slate-100 text-slate-400 hover:bg-slate-100 transition-all">
-              Abort Pickup
+            <button type="button" onClick={() => navigate("/driver/trip/demo-trip/cancel/reason")} className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest border-2 border-orange-500/10 text-slate-400 hover:bg-white hover:border-orange-500/30 transition-all">
+              Cancel Trip
             </button>
           </div>
         </section>

@@ -14,7 +14,7 @@ import { useNavigate } from "react-router-dom";
 
 function VehicleCard({ image, brand, model, badge, primary, onClick }) {
   return (
-    <div className="flex items-center space-x-4 rounded-xl border border-slate-100 bg-white p-3 shadow-sm">
+    <div className="flex items-center space-x-4 rounded-xl border-2 border-orange-500/10 bg-cream p-3 shadow-sm hover:border-orange-500/30 hover:scale-[1.01] transition-all group">
       <div className="h-16 w-24 flex-shrink-0 overflow-hidden rounded-lg bg-slate-50">
         <img src={image} alt={brand} className="h-full w-full object-contain p-1" />
       </div>
@@ -107,18 +107,18 @@ export default function MyVehiclesScreen() {
       <main className="flex-1 px-6 pt-6 pb-24 space-y-6">
 
         {/* EV-only banner (restored from original) */}
-        <section className="rounded-[2.5rem] bg-[#0b1e3a] text-white p-6 space-y-4 shadow-xl relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
+        <section className="rounded-[2.5rem] bg-[#f0fff4] border-2 border-orange-500/10 p-6 space-y-4 shadow-sm relative overflow-hidden group hover:border-orange-500/30 transition-all">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/5 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
           <div className="flex items-center space-x-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#03cd8c] text-white shadow-lg shadow-emerald-500/20">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white border border-orange-50 text-orange-500 shadow-sm">
               <Zap className="h-5 w-5" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-400">EV-ONLY PLATFORM</span>
-              <p className="text-sm font-black tracking-tight mt-0.5">Strictly Electric Fleet</p>
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-500">EV-ONLY PLATFORM</span>
+              <p className="text-sm font-black tracking-tight mt-0.5 text-slate-900">Strictly Electric Fleet</p>
             </div>
           </div>
-          <p className="text-[11px] text-slate-300 font-medium leading-relaxed">
+          <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
             Only 100% electric vehicles are allowed. Add your primary EV and any backups you utilize.
           </p>
         </section>
@@ -146,12 +146,12 @@ export default function MyVehiclesScreen() {
         </section>
 
         {/* Info card (restored from original) */}
-        <section className="rounded-3xl border border-blue-50 bg-blue-50/30 p-5 flex items-start space-x-3">
-          <div className="mt-0.5 bg-blue-100 p-1.5 rounded-xl">
-            <Info className="h-4 w-4 text-blue-600" />
+        <section className="rounded-3xl border-2 border-orange-500/10 bg-[#f0fff4]/50 p-5 flex items-start space-x-3 shadow-sm">
+          <div className="mt-0.5 bg-white p-1.5 rounded-xl border border-orange-50 shadow-sm">
+            <Info className="h-4 w-4 text-orange-500" />
           </div>
-          <div className="shrink text-[11px] text-blue-900/70 space-y-1.5 leading-relaxed">
-            <p className="font-black text-xs text-blue-900 uppercase tracking-tight">Compliance Reminder</p>
+          <div className="shrink text-[11px] text-slate-600/80 space-y-1.5 leading-relaxed">
+            <p className="font-black text-xs text-slate-900 uppercase tracking-tight">Compliance Reminder</p>
             <p className="font-medium">Keep your EV details updated for accurate range estimates, insurance validity, and safety checks.</p>
           </div>
         </section>

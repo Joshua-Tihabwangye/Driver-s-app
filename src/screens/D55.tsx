@@ -114,10 +114,10 @@ export default function RideInProgressScreen() {
                 key={type}
                 type="button"
                 onClick={() => setJobType(type)}
-                className={`rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-widest border transition-all ${
+                className={`rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-widest border-2 transition-all ${
                   jobType === type
-                    ? "bg-[#03cd8c] text-white border-[#03cd8c] shadow-lg shadow-emerald-500/20"
-                    : "bg-slate-50 text-slate-400 border-slate-100 hover:border-slate-200"
+                    ? "bg-orange-500 text-white border-orange-500 shadow-md"
+                    : "bg-white text-slate-400 border-orange-500/5 hover:border-orange-500/20"
                 }`}
               >
                 {jobTypeLabelMap[type]}
@@ -130,7 +130,7 @@ export default function RideInProgressScreen() {
       {/* Content */}
       <main className="flex-1 px-6 pt-4 pb-24 overflow-y-auto scrollbar-hide space-y-6">
         <div className="px-1">
-           <span className="text-[11px] font-black text-[#03cd8c] uppercase tracking-widest">
+           <span className="text-[11px] font-black text-orange-500 uppercase tracking-widest">
              Job type: {jobTypeLabelMap[jobType]}
            </span>
         </div>
@@ -158,9 +158,9 @@ export default function RideInProgressScreen() {
           </div>
 
           <div className="absolute top-4 left-4">
-             <div className="bg-slate-900/40 backdrop-blur-md rounded-full px-3 py-1 flex items-center space-x-2 border border-white/10">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#03cd8c] animate-pulse" />
-                <span className="text-[9px] font-black text-white uppercase tracking-widest">Navigation Active</span>
+             <div className="bg-cream/90 backdrop-blur-md rounded-full px-3 py-1 flex items-center space-x-2 border-2 border-orange-500/20">
+                <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+                <span className="text-[9px] font-black text-slate-900 uppercase tracking-widest">Navigation Active</span>
              </div>
           </div>
 
@@ -181,10 +181,10 @@ export default function RideInProgressScreen() {
 
         {/* Trip info */}
         <section className="space-y-4">
-          <div className="rounded-[2.5rem] border border-slate-100 bg-white p-6 space-y-6 shadow-xl shadow-slate-200/50">
+          <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-cream p-6 space-y-6 shadow-sm hover:border-orange-500/30 transition-all">
             <div className="flex items-start justify-between">
               <div className="flex flex-col space-y-1">
-                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">MISSION STATUS</span>
+                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-500">Trip Status</span>
                 <p className="text-sm font-black text-slate-900 uppercase tracking-tight leading-tight">
                   {titleText}
                 </p>
@@ -193,12 +193,12 @@ export default function RideInProgressScreen() {
               <div className="flex flex-col items-end space-y-2">
                 {!isAmbulance && (
                   <span className="inline-flex items-center text-sm font-black text-slate-900">
-                    <DollarSign className="h-4 w-4 mr-0.5" />
+                    <DollarSign className="h-4 w-4 mr-0.5 text-orange-500" />
                     {rightLine1}
                   </span>
                 )}
                 {isAmbulance && (
-                  <span className="inline-flex items-center text-xs font-black text-emerald-600 uppercase tracking-widest">
+                  <span className="inline-flex items-center text-xs font-black text-orange-600 uppercase tracking-widest">
                     {rightLine1}
                   </span>
                 )}
@@ -208,30 +208,30 @@ export default function RideInProgressScreen() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between border-t border-slate-50 pt-4">
+            <div className="flex items-center justify-between border-t border-orange-50 pt-4">
                <div className="flex items-center space-x-2 text-[10px] text-slate-400 font-black uppercase tracking-tight">
-                  <Clock className="h-4 w-4 text-[#03cd8c]" />
+                  <Clock className="h-4 w-4 text-orange-500" />
                   <span>ETA: 13 min</span>
                </div>
-               <div className="flex items-center space-x-2 text-[10px] text-[#03cd8c] font-black uppercase tracking-tight">
+               <div className="flex items-center space-x-2 text-[10px] text-orange-600 font-black uppercase tracking-tight">
                   <ShieldCheck className="h-4 w-4" />
                   <span>Safety Verified</span>
                </div>
             </div>
           </div>
 
-          <div className="rounded-[2.5rem] border border-slate-100 bg-slate-50/50 p-6 flex flex-col space-y-4">
+          <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-[#f0fff4]/50 p-6 flex flex-col space-y-4 shadow-sm hover:border-orange-500/30 transition-all">
             <div className="flex items-center space-x-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm">
-                <ShieldCheck className="h-5 w-5 text-[#03cd8c]" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm border border-orange-50 text-orange-500">
+                <ShieldCheck className="h-5 w-5" />
               </div>
               <div className="flex flex-col">
-                 <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">Support signals</span>
+                 <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-500">Safety Support</span>
                  <p className="text-xs font-black text-slate-900 uppercase tracking-tight">Safety tools active</p>
               </div>
             </div>
             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed">
-              SOS, track-position, and incident reporting are available in the command menu.
+              SOS, position tracking, and incident reporting are available in the options menu.
             </p>
           </div>
         </section>

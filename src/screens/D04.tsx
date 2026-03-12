@@ -77,8 +77,8 @@ export default function D04RegistrationEvzoneDriverScreen() {
         </section>
 
         {/* Driver Information section header */}
-        <section className="bg-emerald-50/50 rounded-3xl p-6 border border-emerald-100/50">
-          <h3 className="text-sm font-black text-[#03cd8c] uppercase tracking-widest mb-1">Driver Info</h3>
+        <section className="bg-cream rounded-3xl p-6 border-2 border-orange-500/10 shadow-sm">
+          <h3 className="text-sm font-black text-orange-500 uppercase tracking-widest mb-1">Driver Info</h3>
           <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
             Complete your profile by providing essential business information, enabling seamless
             communication and access to our services.
@@ -86,10 +86,10 @@ export default function D04RegistrationEvzoneDriverScreen() {
         </section>
 
         {/* EVzone Driver card */}
-        <div className="rounded-[2.5rem] border border-slate-100 bg-white p-8 text-center shadow-sm space-y-4">
+        <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-cream p-8 text-center shadow-sm space-y-4 hover:border-orange-500/30 transition-all">
           <div className="flex justify-center">
-            <div className="h-16 w-16 rounded-2xl bg-[#e6fff7] flex items-center justify-center shadow-lg shadow-emerald-100">
-              <Car className="h-8 w-8 text-[#03cd8c]" />
+            <div className="h-16 w-16 rounded-2xl bg-white border border-orange-50 flex items-center justify-center shadow-lg shadow-emerald-100">
+              <Car className="h-8 w-8 text-orange-500" />
             </div>
           </div>
           <div>
@@ -110,16 +110,16 @@ export default function D04RegistrationEvzoneDriverScreen() {
                 key={mode.key}
                 type="button"
                 onClick={() => setCoreMode(mode.key)}
-                className={`w-full rounded-2xl border px-4 py-4 text-left flex items-start space-x-3 transition-all active:scale-[0.98] ${coreMode === mode.key
-                    ? "border-[#03cd8c] bg-[#e6fff7] shadow-lg shadow-emerald-500/5"
-                    : "border-slate-100 bg-white hover:bg-slate-50"
+                className={`w-full rounded-2xl border-2 px-4 py-4 text-left flex items-start space-x-3 transition-all active:scale-[0.98] hover:scale-[1.01] ${coreMode === mode.key
+                    ? "border-orange-500 bg-[#fffdf5] shadow-lg shadow-orange-500/5"
+                    : "border-orange-500/10 bg-cream hover:border-orange-500/30"
                   }`}
               >
-                <div className={`mt-0.5 flex h-10 w-10 items-center justify-center rounded-xl ${coreMode === mode.key ? 'bg-white' : 'bg-slate-50'}`}>
+                <div className={`mt-0.5 flex h-10 w-10 items-center justify-center rounded-xl ${coreMode === mode.key ? 'bg-white shadow-sm' : 'bg-white/50 border border-orange-50'}`}>
                   {mode.key === "delivery" ? (
-                    <Package className={`h-5 w-5 ${coreMode === mode.key ? 'text-[#03cd8c]' : 'text-slate-400'}`} />
+                    <Package className={`h-5 w-5 ${coreMode === mode.key ? 'text-orange-500' : 'text-slate-400'}`} />
                   ) : (
-                    <Car className={`h-5 w-5 ${coreMode === mode.key ? 'text-[#03cd8c]' : 'text-slate-400'}`} />
+                    <Car className={`h-5 w-5 ${coreMode === mode.key ? 'text-orange-500' : 'text-slate-400'}`} />
                   )}
                 </div>
                 <div className="flex flex-col">
@@ -148,13 +148,13 @@ export default function D04RegistrationEvzoneDriverScreen() {
               { id: 'shuttle', state: shuttle, set: setShuttle, icon: Bus, label: "School shuttle", desc: "Managed via Separate App." },
               { id: 'ambulance', state: ambulance, set: setAmbulance, icon: ShieldCheck, label: "Ambulance driver", desc: "Strict medical requirements." }
             ].map((prog) => (
-              <label key={prog.id} className={`flex items-start space-x-3 rounded-2xl border px-4 py-4 transition-all cursor-pointer ${prog.state ? 'border-emerald-100 bg-[#e6fff7]' : 'border-slate-100 bg-white hover:bg-slate-50'}`}>
+              <label key={prog.id} className={`flex items-start space-x-3 rounded-2xl border-2 px-4 py-4 transition-all cursor-pointer hover:scale-[1.01] ${prog.state ? 'border-orange-500 bg-[#fffdf5] shadow-lg' : 'border-orange-500/10 bg-cream hover:border-orange-500/30'}`}>
                 <div className="mt-1">
                   <input
                     type="checkbox"
                     checked={prog.state}
                     onChange={(e) => prog.set(e.target.checked)}
-                    className="h-5 w-5 rounded-lg border-slate-300 text-[#03cd8c] focus:ring-[#03cd8c] transition-all"
+                    className="h-5 w-5 rounded-lg border-orange-200 text-orange-500 focus:ring-orange-500 transition-all bg-white"
                   />
                 </div>
                 <div className="flex-1">
@@ -177,15 +177,15 @@ export default function D04RegistrationEvzoneDriverScreen() {
         </section>
 
         {/* Vehicles accordion */}
-        <section className="rounded-2xl border border-slate-100 bg-white overflow-hidden shadow-sm">
+        <section className="rounded-2xl border-2 border-orange-500/10 bg-cream overflow-hidden shadow-sm hover:border-orange-500/30 transition-all">
           <button
             type="button"
             onClick={() => navigate("/driver/vehicles")}
             className="flex w-full items-center justify-between px-5 py-4 group"
           >
-            <span className="text-sm font-black text-slate-900 group-hover:text-[#03cd8c] transition-colors">Vehicles</span>
-            <div className="p-1.5 bg-slate-50 rounded-lg group-hover:bg-emerald-50 transition-colors">
-              <ChevronDown className="h-4 w-4 text-slate-400 group-hover:text-[#03cd8c]" />
+            <span className="text-sm font-black text-slate-900 group-hover:text-orange-500 transition-colors">Vehicles</span>
+            <div className="p-1.5 bg-white rounded-lg border border-orange-50 group-hover:bg-orange-50 transition-colors">
+              <ChevronDown className="h-4 w-4 text-slate-400 group-hover:text-orange-500" />
             </div>
           </button>
         </section>

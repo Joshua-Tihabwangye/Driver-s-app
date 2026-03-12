@@ -43,7 +43,7 @@ function QuizOption({ index, label, selected, showResult, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`w-full rounded-full border px-4 py-3.5 text-left text-[14px] font-medium transition-all active:scale-[0.98] flex items-center justify-between ${classes}`}
+      className={`w-full rounded-full border-2 px-4 py-3.5 text-left text-[14px] font-medium transition-all active:scale-[0.98] hover:scale-[1.01] flex items-center justify-between ${classes} ${!showResult && !selected ? 'bg-cream border-orange-500/10 hover:border-orange-500/30' : ''}`}
     >
       <span className="pr-2">{label}</span>
       {icon}
@@ -141,16 +141,16 @@ export default function DriverQuizInitialScreen() {
         {/* Feedback card */}
         {submitted && (
           <div
-            className={`mt-6 rounded-3xl border p-5 text-[11px] flex items-start space-x-3 shadow-sm ${isCorrect
-              ? "border-emerald-100 bg-emerald-50 text-emerald-900"
-              : "border-amber-100 bg-amber-50 text-amber-900"
+            className={`mt-6 rounded-3xl border-2 p-5 text-[11px] flex items-start space-x-3 shadow-sm transition-all ${isCorrect
+              ? "border-emerald-200 bg-[#f0fff4] text-emerald-900 shadow-emerald-100/50"
+              : "border-orange-200 bg-[#fffdf5] text-orange-900 shadow-orange-100/50"
               }`}
           >
-            <div className={`mt-0.5 p-1.5 rounded-xl ${isCorrect ? 'bg-emerald-100' : 'bg-amber-100'}`}>
+            <div className={`mt-0.5 p-1.5 rounded-xl bg-white border border-opacity-20 ${isCorrect ? 'border-emerald-500' : 'border-orange-500'}`}>
                {isCorrect ? (
                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                ) : (
-                 <Info className="h-4 w-4 text-amber-600" />
+                 <Info className="h-4 w-4 text-orange-500" />
                )}
             </div>
             <div className="flex-1 space-y-1">

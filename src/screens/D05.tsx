@@ -43,7 +43,7 @@ function DocRow({ icon: Icon, title, description, statusTone, statusLabel, color
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center justify-between rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-2.5 shadow-[0_1px_4px_rgba(0,0,0,0.04)] active:scale-[0.97] transition-transform"
+      className="flex w-full items-center justify-between rounded-2xl border-2 border-orange-500/10 bg-cream shadow-sm px-3 py-2.5 active:scale-[0.97] hover:border-orange-500/30 hover:scale-[1.01] transition-all"
     >
       <div className="flex items-center space-x-3">
         <div
@@ -96,12 +96,12 @@ export default function DriverPersonalScreen() {
       <main className="flex-1 px-6 pt-6 pb-24 space-y-6">
 
         {/* Top profile card */}
-        <section className="rounded-[2.5rem] bg-white border border-slate-100 p-5 flex items-center space-x-4 shadow-sm hover:shadow-md transition-shadow">
+        <section className="rounded-[2.5rem] bg-cream border-2 border-orange-500/10 p-5 flex items-center space-x-4 shadow-sm hover:shadow-md hover:border-orange-500/30 transition-all">
           <div className="relative">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#f0faf7] border-2 border-[#03cd8c]">
-              <User className="h-7 w-7 text-[#03cd8c]" />
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white border border-orange-50">
+              <User className="h-7 w-7 text-orange-500" />
             </div>
-            <span className="absolute -bottom-1 -right-1 inline-flex items-center rounded-lg bg-[#03cd8c] px-1.5 py-0.5 text-[8px] font-black text-white shadow-lg uppercase tracking-tighter">
+            <span className="absolute -bottom-1 -right-1 inline-flex items-center rounded-lg bg-orange-500 px-1.5 py-0.5 text-[8px] font-black text-white shadow-lg uppercase tracking-tighter">
               EV Zone
             </span>
           </div>
@@ -128,7 +128,7 @@ export default function DriverPersonalScreen() {
         </section>
 
         {/* Take Selfie section */}
-        <section className="bg-white rounded-[2.5rem] border border-slate-100 p-8 text-center space-y-4 shadow-sm group">
+        <section className="bg-cream rounded-[2.5rem] border-2 border-orange-500/10 p-8 text-center space-y-4 shadow-sm group hover:border-orange-500/30 transition-all">
           <div className="space-y-1">
             <h3 className="text-sm font-black text-slate-900 tracking-tight">Identity Check</h3>
             <p className="text-[11px] text-slate-500 font-medium">
@@ -137,8 +137,8 @@ export default function DriverPersonalScreen() {
           </div>
           
           <div className="flex justify-center">
-            <button className="h-20 w-20 rounded-[2rem] bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center group-hover:bg-[#03cd8c]/5 group-hover:border-[#03cd8c]/30 transition-all active:scale-95">
-              <Camera className="h-8 w-8 text-slate-300 group-hover:text-[#03cd8c]" />
+            <button className="h-20 w-20 rounded-[2rem] bg-white border-2 border-dashed border-orange-200 flex items-center justify-center group-hover:bg-orange-50/50 group-hover:border-orange-500/30 transition-all active:scale-95 shadow-sm">
+              <Camera className="h-8 w-8 text-slate-300 group-hover:text-orange-500" />
             </button>
           </div>
           
@@ -149,10 +149,10 @@ export default function DriverPersonalScreen() {
         </section>
 
         {/* Variables section */}
-        <section className="rounded-3xl border border-slate-100 bg-white p-6 text-center space-y-4 shadow-sm">
+        <section className="rounded-3xl border-2 border-orange-500/10 bg-cream p-6 text-center space-y-4 shadow-sm hover:border-orange-500/30 transition-all">
           <div className="flex justify-center">
-            <div className="h-12 w-12 rounded-2xl bg-amber-50 flex items-center justify-center border border-amber-100">
-              <Link2 className="h-6 w-6 text-amber-600" />
+            <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center border border-orange-50 shadow-sm">
+              <Link2 className="h-6 w-6 text-orange-500" />
             </div>
           </div>
           <div>
@@ -161,7 +161,7 @@ export default function DriverPersonalScreen() {
                Link your social media to enhance your driver profile visibility.
              </p>
           </div>
-          <p className="text-[11px] font-black text-[#03cd8c] tracking-tight">vehicles.evzone@driver.com</p>
+          <p className="text-[11px] font-black text-orange-500 tracking-tight">vehicles.evzone@driver.com</p>
         </section>
 
         {/* Go to verification link */}
@@ -186,15 +186,15 @@ export default function DriverPersonalScreen() {
         </section>
 
         {/* KYC Verification */}
-        <section className="rounded-[2.5rem] bg-[#03cd8c] p-8 space-y-6 text-white text-center shadow-xl shadow-emerald-500/20 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16" />
-          <p className="text-xs font-black leading-relaxed opacity-90 relative z-10 px-2 tracking-tight">
+        <section className="rounded-[2.5rem] bg-[#03cd8c] border-2 border-orange-500/20 p-8 space-y-6 text-white text-center shadow-xl shadow-emerald-500/20 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/20 rounded-full blur-3xl -mr-16 -mt-16 transition-transform group-hover:scale-110" />
+          <p className="text-xs font-black leading-relaxed opacity-95 relative z-10 px-2 tracking-tight">
             Complete your KYC verification to unlock income transfers and premium features.
           </p>
           <button
             type="button"
             onClick={() => navigate("/driver/preferences/identity")}
-            className="relative z-10 w-full rounded-2xl bg-white px-6 py-4 text-xs font-black text-[#03cd8c] shadow-lg hover:shadow-xl active:scale-95 transition-all uppercase tracking-widest"
+            className="relative z-10 w-full rounded-2xl bg-white px-6 py-4 text-xs font-black text-orange-500 shadow-lg hover:shadow-xl active:scale-95 transition-all uppercase tracking-widest border border-orange-50"
           >
             Update Your KYC
           </button>
@@ -204,8 +204,8 @@ export default function DriverPersonalScreen() {
         <section className="space-y-5">
           <div className="text-center space-y-1">
             <div className="flex justify-center mb-3">
-              <div className="h-14 w-14 rounded-2xl bg-blue-50 flex items-center justify-center border border-blue-100">
-                <FileText className="h-7 w-7 text-blue-600" />
+              <div className="h-14 w-14 rounded-2xl bg-white flex items-center justify-center border-2 border-orange-500/10 shadow-sm">
+                <FileText className="h-7 w-7 text-orange-500" />
               </div>
             </div>
             <h3 className="text-base font-black text-slate-900 tracking-tight uppercase">Personal Documents</h3>
@@ -301,19 +301,19 @@ export default function DriverPersonalScreen() {
 
         {/* Navigation Blocks */}
         <section className="grid grid-cols-1 gap-3">
-          <button onClick={() => navigate("/driver/preferences")} className="flex items-center gap-4 bg-white p-5 rounded-3xl border border-slate-100 shadow-sm text-left group active:scale-95 transition-all">
-             <div className="h-12 w-12 rounded-2xl bg-emerald-50 flex items-center justify-center border border-emerald-100">
-                <SettingsIcon className="h-6 w-6 text-[#03cd8c]" />
+          <button onClick={() => navigate("/driver/preferences")} className="flex items-center gap-4 bg-cream p-5 rounded-3xl border-2 border-orange-500/10 shadow-sm text-left group active:scale-95 hover:scale-[1.01] hover:border-orange-500/30 transition-all">
+             <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center border border-orange-50 shadow-sm">
+                <SettingsIcon className="h-6 w-6 text-orange-500" />
              </div>
              <div>
                 <span className="block text-sm font-black text-slate-900 tracking-tight">Preferences</span>
                 <span className="text-[11px] text-slate-400 font-medium">Configure your driving profile</span>
              </div>
           </button>
-
-          <button onClick={() => navigate("/driver/onboarding/profile")} className="flex items-center gap-4 bg-white p-5 rounded-3xl border border-slate-100 shadow-sm text-left group active:scale-95 transition-all">
-             <div className="h-12 w-12 rounded-2xl bg-blue-50 flex items-center justify-center border border-blue-100">
-                <MapPin className="h-6 w-6 text-blue-600" />
+ 
+          <button onClick={() => navigate("/driver/onboarding/profile")} className="flex items-center gap-4 bg-cream p-5 rounded-3xl border-2 border-orange-500/10 shadow-sm text-left group active:scale-95 hover:scale-[1.01] hover:border-orange-500/30 transition-all">
+             <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center border border-orange-50 shadow-sm">
+                <MapPin className="h-6 w-6 text-orange-500" />
              </div>
              <div>
                 <span className="block text-sm font-black text-slate-900 tracking-tight">Info Breakdowns</span>

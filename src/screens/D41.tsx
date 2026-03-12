@@ -44,7 +44,7 @@ export default function LastTripSummaryPopupScreen() {
               <Map className="h-5 w-5 text-white" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Driver</span>
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-100/70">Driver</span>
               <p className="text-base font-black text-white tracking-tight leading-tight">Last Trip</p>
             </div>
           </div>
@@ -64,7 +64,7 @@ export default function LastTripSummaryPopupScreen() {
               <path
                 d="M20 80 C 40 60, 60 40, 80 20"
                 fill="none"
-                stroke="#03cd8c"
+                stroke="#f97316"
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeDasharray="4 2"
@@ -76,7 +76,7 @@ export default function LastTripSummaryPopupScreen() {
           {/* Start and end markers */}
           <div className="absolute left-10 bottom-12 flex flex-col items-center">
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 border border-white/20 shadow-xl">
-              <Car className="h-5 w-5 text-[#03cd8c]" />
+              <Car className="h-5 w-5 text-orange-500" />
             </div>
             <span className="mt-2 rounded-full bg-slate-900 px-3 py-1 text-[10px] font-black text-white uppercase tracking-widest shadow-xl">
               Origin
@@ -85,7 +85,7 @@ export default function LastTripSummaryPopupScreen() {
 
           <div className="absolute right-12 top-12 flex flex-col items-center">
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 border border-white/20 shadow-xl">
-              <DollarSign className="h-5 w-5 text-[#03cd8c]" />
+              <DollarSign className="h-5 w-5 text-orange-500" />
             </div>
             <span className="mt-2 rounded-full bg-slate-900 px-3 py-1 text-[10px] font-black text-white uppercase tracking-widest shadow-xl">
               Drop-off
@@ -103,7 +103,7 @@ export default function LastTripSummaryPopupScreen() {
                   <span className="text-sm font-black text-slate-900 uppercase tracking-tight">
                     City Centre → Ntinda
                   </span>
-                  <span className="text-[11px] text-[#03cd8c] font-bold uppercase tracking-tight">
+                  <span className="text-[11px] text-orange-500 font-bold uppercase tracking-tight">
                     8.4 km Total Distance
                   </span>
                 </div>
@@ -135,7 +135,7 @@ export default function LastTripSummaryPopupScreen() {
               <button
                 type="button"
                 onClick={() => navigate("/driver/history/rides")}
-                className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest border-2 border-orange-500/10 text-slate-900 bg-cream hover:bg-slate-50 active:scale-95 transition-all shadow-sm flex items-center justify-center"
+                className="w-full rounded-2xl py-4 text-[11px] font-black uppercase tracking-widest border-2 border-orange-500/10 text-slate-900 bg-cream hover:bg-orange-50 active:scale-95 transition-all shadow-sm flex items-center justify-center"
               >
                 View Trip Details
               </button>

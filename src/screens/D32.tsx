@@ -44,8 +44,8 @@ export default function SearchingForRideScreen() {
               <Map className="h-5 w-5 text-white" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Intercept</span>
-              <p className="text-base font-black text-white tracking-tight leading-tight">Quantum Match</p>
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Searching</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">Finding Ride</p>
             </div>
           </div>
           <div className="w-10" /> {/* Spacer */}
@@ -71,7 +71,7 @@ export default function SearchingForRideScreen() {
           <div className="absolute inset-x-6 bottom-6 flex items-center justify-center">
             <div className="w-full inline-flex items-center justify-center rounded-2xl bg-[#0b1e3a]/90 backdrop-blur-md px-4 py-4 text-[11px] font-black uppercase tracking-widest text-emerald-400 border border-white/10 shadow-2xl">
               <Loader2 className="mr-3 h-5 w-5 animate-spin" />
-              Scanning for adjacent vectors…
+              Searching for nearby riders...
             </div>
           </div>
         </section>
@@ -84,10 +84,10 @@ export default function SearchingForRideScreen() {
             </div>
             <div className="flex-1 space-y-1">
               <p className="font-black text-sm text-slate-900 uppercase tracking-tight">
-                Queuing Lifecycle
+                Search Progress
               </p>
               <p className="text-[11px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed">
-                Currently iterating through local sector assignments. High-probability matches are anticipated within 60-180 seconds.
+                Currently searching for the best ride match in your area. This usually takes between 60-180 seconds.
               </p>
             </div>
           </div>
@@ -97,7 +97,7 @@ export default function SearchingForRideScreen() {
             className="w-full rounded-2xl py-5 text-xs font-black uppercase tracking-[0.2em] shadow-xl bg-white text-red-500 border border-red-50 active:scale-95 transition-all flex items-center justify-center"
           >
             <XCircle className="h-5 w-5 mr-3" />
-            Abort Intercept
+            Cancel Search
           </button>
         </section>
       </main>

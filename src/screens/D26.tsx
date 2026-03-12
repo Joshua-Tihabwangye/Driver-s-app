@@ -48,8 +48,8 @@ export default function OnlineMapViewScreen() {
               <Map className="h-5 w-5 text-white" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Navigation</span>
-              <p className="text-base font-black text-white tracking-tight leading-tight">Sector Recon</p>
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-100/70">Navigation</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">Map Explorer</p>
             </div>
           </div>
           <div className="inline-flex items-center rounded-full bg-white/20 backdrop-blur-md border border-white/30 px-3 py-1 text-[10px] font-black text-white uppercase tracking-widest">
@@ -66,26 +66,26 @@ export default function OnlineMapViewScreen() {
           {/* Fake map background */}
           <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
 
-          <div className="absolute top-4 right-4 rounded-xl bg-white/90 backdrop-blur-md px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-[#03cd8c] border border-white shadow-lg">
-            {zoom}x Precision
+          <div className="absolute top-4 right-4 rounded-xl bg-white/90 backdrop-blur-md px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-orange-500 border border-white shadow-lg">
+            {zoom}x Zoom
           </div>
 
           {/* Current location marker */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="relative flex items-center justify-center">
-              <div className="h-16 w-16 rounded-full bg-[#03cd8c]/10 animate-ping" />
-              <div className="absolute h-10 w-10 rounded-full bg-[#03cd8c]/20" />
-              <div className="absolute h-4 w-4 rounded-full bg-[#03cd8c] border-4 border-white shadow-lg" />
+              <div className="h-16 w-16 rounded-full bg-orange-500/10 animate-ping" />
+              <div className="absolute h-10 w-10 rounded-full bg-orange-500/20" />
+              <div className="absolute h-4 w-4 rounded-full bg-orange-500 border-4 border-white shadow-lg" />
             </div>
           </div>
 
           {/* Nearby hotspot marker example */}
           <div className="absolute left-12 top-16 flex flex-col items-center group">
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#0b1e3a] border-2 border-white shadow-xl group-hover:scale-110 transition-transform">
-              <MapPin className="h-4 w-4 text-[#03cd8c]" />
+              <MapPin className="h-4 w-4 text-orange-500" />
             </div>
             <span className="mt-2 rounded-lg bg-[#0b1e3a]/90 backdrop-blur-sm px-3 py-1 text-[9px] font-black text-white uppercase tracking-widest">
-              High Traffic Zone
+              High Demand Zone
             </span>
           </div>
 
@@ -108,7 +108,7 @@ export default function OnlineMapViewScreen() {
             <button
               type="button"
               onClick={() => navigate("/driver/map/settings")}
-              className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#0b1e3a] text-[#03cd8c] shadow-2xl border border-slate-800 active:scale-90 transition-all"
+              className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#0b1e3a] text-orange-500 shadow-2xl border border-slate-800 active:scale-90 transition-all"
             >
               <Navigation className="h-5 w-5" />
             </button>
@@ -124,20 +124,20 @@ export default function OnlineMapViewScreen() {
             >
               <ChevronLeft className="h-5 w-5 text-white" />
             </button>
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 border border-emerald-100 text-[#03cd8c]">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 border border-orange-100 text-orange-500">
               <Target className="h-6 w-6" />
             </div>
             <div className="flex flex-col">
-              <p className="text-xs font-black text-slate-900 uppercase tracking-tight">Active Duty</p>
-              <p className="text-[11px] text-slate-500 font-medium">Listening for intercept requests...</p>
+              <p className="text-xs font-black text-slate-900 uppercase tracking-tight">Active Online</p>
+              <p className="text-[11px] text-slate-500 font-medium">Scanning for requests...</p>
             </div>
           </div>
           <button
             type="button"
             onClick={() => navigate("/driver/dashboard/offline")}
-            className="rounded-xl border-2 border-slate-100 px-4 py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:border-slate-200 hover:text-slate-600 transition-all"
+            className="rounded-xl border-2 border-slate-100 px-4 py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:border-orange-500/20 hover:text-orange-500 transition-all"
           >
-            End Shift
+            Go Offline
           </button>
         </section>
       </main>

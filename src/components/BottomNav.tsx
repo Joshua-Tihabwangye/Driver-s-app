@@ -22,12 +22,10 @@ function BottomNavItem({ icon: Icon, label, active, onClick, isDark }: BottomNav
     <button
       type="button"
       onClick={onClick}
-      className={`flex flex-col items-center justify-center flex-1 py-2 group relative transition-all duration-300 ${
+      className={`flex flex-col items-center justify-center flex-1 py-2 group relative transition-all duration-300 active:scale-95 hover:bg-white/10 rounded-xl mx-1 ${
         active
-          ? "text-[#03cd8c]"
-          : isDark
-          ? "text-slate-300"
-          : "text-slate-400"
+          ? "text-white"
+          : "text-white/70"
       }`}
     >
       <div className={`mb-1 transition-all duration-300 ${active ? "scale-110" : "group-hover:scale-105"}`}>
@@ -37,14 +35,12 @@ function BottomNavItem({ icon: Icon, label, active, onClick, isDark }: BottomNav
         className={`text-[10px] tracking-tight transition-all duration-300 ${
           active
             ? "font-black opacity-100"
-            : `font-bold opacity-70 group-hover:opacity-100 ${
-                isDark ? "group-hover:text-slate-100" : "group-hover:text-slate-600"
-              }`
+            : "font-bold opacity-70 group-hover:opacity-100"
         }`}
       >
         {label}
       </span>
-      <div className={`absolute bottom-1 w-1 h-1 rounded-full bg-[#03cd8c] transition-all duration-500 ${
+      <div className={`absolute bottom-1 w-1 h-1 rounded-full bg-white transition-all duration-500 ${
         active ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
       }`} />
     </button>
@@ -113,12 +109,7 @@ export default function BottomNav() {
 
   return (
     <nav 
-      className={`absolute bottom-0 left-0 right-0 z-[2000] backdrop-blur-xl border-t ${
-        isDark ? "bg-slate-900/95 border-slate-700" : "bg-white/95 border-slate-100"
-      }`}
-      style={{ 
-        boxShadow: isDark ? "0 -8px 24px rgba(0,0,0,0.35)" : "0 -8px 24px rgba(0,0,0,0.04)"
-      }}
+      className="absolute bottom-0 left-0 right-0 z-[2000] bg-[#03cd8c] border-t border-white/10 shadow-[0_-8px_24px_rgba(3,205,140,0.2)]"
     >
       <div className="mx-auto flex h-[70px] w-full max-w-[520px] px-2 items-center">
         {TABS.map((tab) => (

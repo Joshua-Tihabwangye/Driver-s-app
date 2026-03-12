@@ -97,7 +97,7 @@ export default function RideRequestIncomingScreen() {
   const isShuttle = jobType === "shuttle";
 
   // Right-hand summary block content per jobType
-  let rightLine1 = "${5.80} (est.)";
+  let rightLine1 = "$5.80 (est.)";
   let rightLine2 = "7.4 km · 18 min";
 
   if (isRental) {

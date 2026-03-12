@@ -17,11 +17,11 @@ import { useNavigate } from "react-router-dom";
 
 function StatCard({ label, value, sub }) {
   return (
-    <div className="flex flex-col rounded-2xl bg-white px-3 py-3 shadow-sm border border-slate-100 flex-1 min-w-[0]">
-      <span className="text-[11px] text-slate-500 truncate">{label}</span>
-      <span className="text-sm font-semibold text-slate-900 truncate">{value}</span>
+    <div className="flex flex-col rounded-2xl bg-cream px-3 py-3 shadow-sm border-2 border-orange-500/10 flex-1 min-w-[0] hover:border-orange-500/30 transition-all">
+      <span className="text-[11px] font-black uppercase tracking-widest text-slate-500 truncate">{label}</span>
+      <span className="text-sm font-black text-slate-900 truncate">{value}</span>
       {sub && (
-        <span className="mt-0.5 text-[10px] text-slate-500 truncate">{sub}</span>
+        <span className="mt-0.5 text-[9px] font-bold text-slate-500 truncate uppercase tracking-tight">{sub}</span>
       )}
     </div>
   );
@@ -70,14 +70,14 @@ export default function DrivingHoursScreen() {
         <section className="rounded-[2.5rem] bg-slate-900 border border-slate-800 text-white p-6 space-y-4 shadow-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/20 backdrop-blur-md text-[#03cd8c]">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500/20 backdrop-blur-md text-orange-500">
                 <Activity className="h-6 w-6" />
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] tracking-[0.2em] uppercase font-black text-[#03cd8c]">
+                <span className="text-[10px] tracking-[0.2em] uppercase font-black text-orange-500">
                   Today&apos;s Activity
                 </span>
-                <p className="text-sm font-bold">6h 10m driving time</p>
+                <p className="text-sm font-bold text-white">6h 10m driving time</p>
               </div>
             </div>
             <div className="flex flex-col items-end text-[10px] text-slate-400 font-bold uppercase tracking-widest text-right">
@@ -107,16 +107,16 @@ export default function DrivingHoursScreen() {
 
         {/* Rest guidance */}
         <section className="space-y-4 pb-12">
-          <div className="rounded-[2.5rem] border border-slate-100 bg-white p-6 shadow-xl shadow-slate-200/50 space-y-4">
+          <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-cream p-6 shadow-sm space-y-4 hover:border-orange-500/30 transition-all">
             <div className="flex items-center space-x-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50">
-                <AlertTriangle className="h-5 w-5 text-amber-500" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500 text-white shadow-lg shadow-orange-500/20">
+                <AlertTriangle className="h-5 w-5" />
               </div>
               <div className="flex-1">
                 <p className="font-black text-[11px] uppercase tracking-widest text-slate-900">
                   Take a break soon
                 </p>
-                <p className="text-[10px] text-slate-500 font-medium mt-0.5">
+                <p className="text-[10px] text-slate-500 font-bold mt-0.5 uppercase tracking-tight">
                   You&apos;re close to the daily limit. Find a safe place to rest.
                 </p>
               </div>

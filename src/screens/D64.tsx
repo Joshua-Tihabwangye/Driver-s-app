@@ -50,8 +50,8 @@ export default function FollowMyRideSelectionScreen() {
             <ChevronLeft className="h-5 w-5 text-white" />
           </button>
           <div className="flex flex-col items-center">
-             <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Protocol</span>
-             <p className="text-base font-black text-white tracking-tight leading-tight">Driver App</p>
+             <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Support</span>
+             <p className="text-lg font-black text-white tracking-tight leading-tight">Safety Hub</p>
           </div>
           <div className="w-9" />
         </header>
@@ -102,7 +102,7 @@ export default function FollowMyRideSelectionScreen() {
         <div className="bg-white rounded-t-[3rem] shadow-[0_-20px_60px_rgba(0,0,0,0.2)] pb-12 px-8 pt-8">
           <div className="flex items-center justify-between mb-8">
             <div className="flex flex-col">
-               <span className="text-[10px] tracking-[0.2em] font-black uppercase text-[#03cd8c]">Safety Hub</span>
+               <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-500">Contact</span>
                <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Follow My Ride</h2>
             </div>
             <button
@@ -121,7 +121,7 @@ export default function FollowMyRideSelectionScreen() {
             <input
               type="text"
               placeholder="Search contact name..."
-              className="w-full h-16 bg-slate-50 rounded-[2rem] pl-14 pr-6 text-[14px] font-bold text-slate-900 border-2 border-transparent focus:border-[#03cd8c] focus:outline-none transition-all placeholder:text-slate-300 placeholder:uppercase placeholder:tracking-widest placeholder:text-[10px]"
+              className="w-full h-16 bg-cream rounded-[2rem] pl-14 pr-6 text-[14px] font-bold text-slate-900 border-2 border-orange-500/10 focus:border-orange-500 focus:outline-none transition-all placeholder:text-slate-300 placeholder:uppercase placeholder:tracking-widest placeholder:text-[10px]"
             />
           </div>
 
@@ -129,7 +129,7 @@ export default function FollowMyRideSelectionScreen() {
           <div className="flex items-start space-x-6 mb-10 overflow-x-auto scrollbar-hide pb-4">
             {/* Add Contact */}
             <button className="flex flex-col items-center space-y-3 flex-shrink-0 active:scale-95 transition-all group">
-              <div className="h-18 w-18 rounded-full bg-[#03cd8c] flex items-center justify-center text-white shadow-2xl shadow-emerald-500/20 group-hover:scale-105 transition-transform">
+              <div className="h-18 w-18 rounded-full bg-orange-500 flex items-center justify-center text-white shadow-2xl shadow-orange-500/20 group-hover:scale-105 transition-transform">
                 <Plus className="h-8 w-8 stroke-[3]" />
               </div>
               <span className="text-[9px] font-black text-slate-400 text-center uppercase tracking-widest leading-tight">Add<br />New</span>
@@ -146,14 +146,14 @@ export default function FollowMyRideSelectionScreen() {
                   <div className="relative h-18 w-18 rounded-full border-2 border-slate-50 overflow-hidden shadow-sm group-hover:scale-105 transition-transform">
                     <img src={contact.img} alt={contact.name} className={`h-full w-full object-cover transition-all ${isSelected ? 'scale-110 grayscale-0' : 'grayscale opacity-70'}`} />
                     {isSelected && (
-                      <div className="absolute inset-0 bg-[#03cd8c]/20 flex items-center justify-center">
-                        <div className="h-8 w-8 rounded-full bg-white border-2 border-[#03cd8c] flex items-center justify-center shadow-xl">
-                          <Check className="h-4 w-4 text-[#03cd8c] stroke-[4]" />
+                      <div className="absolute inset-0 bg-orange-500/20 flex items-center justify-center">
+                        <div className="h-8 w-8 rounded-full bg-white border-2 border-orange-500 flex items-center justify-center shadow-xl">
+                          <Check className="h-4 w-4 text-orange-500 stroke-[4]" />
                         </div>
                       </div>
                     )}
                   </div>
-                  <span className={`text-[9px] font-black text-center uppercase tracking-widest leading-tight transition-colors ${isSelected ? 'text-[#03cd8c]' : 'text-slate-400'}`}>
+                  <span className={`text-[9px] font-black text-center uppercase tracking-widest leading-tight transition-colors ${isSelected ? 'text-orange-500' : 'text-slate-400'}`}>
                     {contact.name.split(' ').map((txt, idx) => (
                       <React.Fragment key={idx}>{txt}<br /></React.Fragment>
                     ))}
@@ -165,19 +165,19 @@ export default function FollowMyRideSelectionScreen() {
 
           {/* Action Buttons */}
           <div className="space-y-4">
-            <button className="w-full h-16 bg-emerald-50/50 rounded-full flex items-center justify-center space-x-3 text-[#03cd8c] font-black text-[11px] uppercase tracking-widest active:scale-[0.98] transition-all border border-emerald-100/50">
+            <button className="w-full h-16 bg-cream rounded-full flex items-center justify-center space-x-3 text-orange-500 font-black text-[11px] uppercase tracking-widest active:scale-[0.98] transition-all border-2 border-orange-500/10 hover:border-orange-500/30">
               <Link2 className="h-5 w-5 rotate-45" />
-              <span>Copy Link Protocol</span>
+              <span>Copy Direct Link</span>
             </button>
             <button
               onClick={() => navigate('/driver/safety/emergency/map')}
               disabled={selectedContacts.length === 0}
               className={`w-full h-18 rounded-full font-black text-[13px] uppercase tracking-[0.2em] transition-all active:scale-[0.98] shadow-2xl ${selectedContacts.length > 0
-                ? 'bg-[#03cd8c] text-white shadow-emerald-500/30'
+                ? 'bg-orange-500 text-white shadow-orange-500/30'
                 : 'bg-slate-100 text-slate-300'
                 }`}
             >
-              Start Mission Tracking
+              Start Live Tracking
             </button>
           </div>
         </div>
