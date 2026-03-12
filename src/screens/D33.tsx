@@ -70,22 +70,13 @@ export default function EarningsStatsDashboardScreen() {
           }}
         />
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-white" />
-            </button>
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
-              <History className="h-5 w-5 text-white" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Registry</span>
-              <p className="text-base font-black text-white tracking-tight leading-tight">Yield Metrics</p>
-            </div>
+          <div className="w-9 h-9" />
+          <div className="w-9 h-9" />
+          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
+            <p className="text-center text-base font-black text-white tracking-tight leading-tight">
+              Earnings
+            </p>
           </div>
-          <div className="w-10" /> {/* Spacer */}
         </header>
       </div>
 
@@ -96,9 +87,9 @@ export default function EarningsStatsDashboardScreen() {
         <section className="rounded-[2.5rem] bg-[#00a3ff] p-6 flex items-center justify-between text-white relative h-28 overflow-hidden shadow-2xl shadow-blue-500/20 group">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110" />
           <div className="z-10 space-y-1">
-            <h2 className="text-lg font-black tracking-tight uppercase">Pilot Interface</h2>
+            <h2 className="text-lg font-black tracking-tight uppercase">Earnings Dashboard</h2>
             <p className="text-[10px] text-white/80 max-w-[180px] leading-tight font-bold uppercase tracking-wide">
-              Welcome back, Commander. Reviewing sectoral yield and logistics efficiency metrics.
+              Welcome back, Driver. Here's your earnings overview and performance summary.
             </p>
           </div>
           <div className="relative h-20 w-20 flex-shrink-0 z-10">
@@ -116,7 +107,7 @@ export default function EarningsStatsDashboardScreen() {
             <WalletIcon className="h-7 w-7 text-emerald-400" />
           </div>
           <div className="flex-1">
-            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">CREDIT RESERVE</span>
+            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">WALLET BALANCE</span>
             <div className="text-xl font-black text-white tracking-tight">UGX 25,750</div>
           </div>
           <button 
@@ -124,7 +115,7 @@ export default function EarningsStatsDashboardScreen() {
             onClick={() => navigate("/driver/earnings/cashout")} 
             className="rounded-2xl bg-[#03cd8c] px-5 py-3 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-emerald-500/20 active:scale-95 transition-all"
           >
-            DISBURSE
+            CASH OUT
           </button>
         </section>
 
@@ -132,12 +123,12 @@ export default function EarningsStatsDashboardScreen() {
         <section className="rounded-[2.5rem] border border-slate-100 bg-white p-6 space-y-6 shadow-xl shadow-slate-200/50">
           <div className="flex items-center justify-between text-slate-400">
             <ChevronLeft className="h-5 w-5" />
-            <span className="text-[11px] font-black uppercase tracking-widest">Spectral Window: 01-07 JAN</span>
+            <span className="text-[11px] font-black uppercase tracking-widest">Weekly View: 01-07 JAN</span>
             <ChevronRight className="h-5 w-5" />
           </div>
           <div className="text-center space-y-1">
             <div className="text-2xl font-black text-[#03cd8c] tracking-tighter">UGX 12,500</div>
-            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">Peak Interval Yield: $24,141.00</div>
+            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">Weekly Total: $24,141.00</div>
           </div>
           <div className="flex items-end justify-between h-40 px-2 pt-4">
             {[12, 18, 25, 14, 30, 10, 16].map((h, i) => (
@@ -163,9 +154,9 @@ export default function EarningsStatsDashboardScreen() {
           <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
           <div className="z-10 space-y-4">
             <div className="space-y-1">
-              <h2 className="text-base font-black uppercase tracking-tight">Vanguard Missions</h2>
+              <h2 className="text-base font-black uppercase tracking-tight">Start Earning</h2>
               <p className="text-[10px] text-white/80 max-w-[150px] leading-tight font-bold uppercase tracking-wide">
-                Commence sectoral traversal and tactical intercept monitoring.
+                Go online and start accepting rides to boost your earnings.
               </p>
             </div>
             <button 
@@ -173,7 +164,7 @@ export default function EarningsStatsDashboardScreen() {
               onClick={() => navigate("/driver/delivery/orders")} 
               className="rounded-full bg-white text-[#00a3ff] px-6 py-2 text-[10px] font-black uppercase tracking-widest shadow-xl active:scale-95 transition-all"
             >
-              SCAN SECTOR
+              VIEW RIDES
             </button>
           </div>
           <div className="h-16 w-24 relative opacity-40">
@@ -183,18 +174,18 @@ export default function EarningsStatsDashboardScreen() {
 
         {/* Stats Grid 1 */}
         <div className="grid grid-cols-2 gap-4">
-          <StatCard label="Intercepts" value="45" icon={History} />
-          <StatCard label="Net Yield" value="UGX 7,500" sub="+ $5.00 interval delta" icon={History} />
-          <StatCard label="Traversal" value="248 miles" />
-          <StatCard label="Reserved" value="10" icon={History} />
-          <StatCard label="Uptime" value="36H 20M" />
-          <StatCard label="Success" value="38" />
+          <StatCard label="Total Trips" value="45" icon={History} />
+          <StatCard label="Net Earnings" value="UGX 7,500" sub="+ $5.00 this week" icon={History} />
+          <StatCard label="Distance" value="248 miles" />
+          <StatCard label="Scheduled" value="10" icon={History} />
+          <StatCard label="Hours Online" value="36H 20M" />
+          <StatCard label="Completed" value="38" />
         </div>
 
         {/* Stations List */}
         <section className="space-y-6 pt-4 pb-12">
           <div className="px-1">
-            <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Alpha Sectors</h2>
+            <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Top Locations</h2>
           </div>
           {/* Map Placeholder */}
           <div className="rounded-[2.5rem] h-48 bg-slate-50 overflow-hidden relative border border-slate-100 shadow-inner">

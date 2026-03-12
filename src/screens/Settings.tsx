@@ -1,0 +1,138 @@
+import { Settings as SettingsIcon, ChevronLeft, Globe, Moon, Bell, Lock, Shield, ChevronRight, UserX } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+
+export default function Settings() {
+  const navigate = useNavigate();
+  const [darkMode, setDarkMode] = useState(false);
+  const [notifications, setNotifications] = useState(true);
+
+  return (
+    <div className="flex flex-col h-full bg-[#f8fafc]">
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
+            >
+              <ChevronLeft className="h-5 w-5 text-white" />
+            </button>
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+              <SettingsIcon className="h-5 w-5 text-white" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Preferences</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">Settings</p>
+            </div>
+          </div>
+        </header>
+      </div>
+
+      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-8">
+        {/* App Settings */}
+        <section className="space-y-4">
+          <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-1">App Configuration</h2>
+          <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm divide-y divide-slate-50 overflow-hidden">
+            <div className="flex items-center justify-between p-6">
+              <div className="flex items-center space-x-4">
+                <div className="h-10 w-10 bg-blue-50 rounded-2xl flex items-center justify-center">
+                  <Globe className="h-5 w-5 text-blue-500" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-black text-slate-900 uppercase">App Language</h3>
+                  <p className="text-[10px] text-slate-400 font-bold">English (UK)</p>
+                </div>
+              </div>
+              <ChevronRight className="h-5 w-5 text-slate-300" />
+            </div>
+
+            <div className="flex items-center justify-between p-6">
+              <div className="flex items-center space-x-4">
+                <div className="h-10 w-10 bg-slate-900 rounded-2xl flex items-center justify-center">
+                  <Moon className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-black text-slate-900 uppercase">Dark Mode</h3>
+                  <p className="text-[10px] text-slate-400 font-bold">Adjust app appearance</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setDarkMode(!darkMode)}
+                className={`w-12 h-6 rounded-full relative transition-colors ${darkMode ? "bg-[#03cd8c]" : "bg-slate-200"}`}
+              >
+                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${darkMode ? "left-7" : "left-1"}`} />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between p-6">
+              <div className="flex items-center space-x-4">
+                <div className="h-10 w-10 bg-amber-50 rounded-2xl flex items-center justify-center">
+                  <Bell className="h-5 w-5 text-amber-500" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-black text-slate-900 uppercase">Push Notifications</h3>
+                  <p className="text-[10px] text-slate-400 font-bold">Ride alerts & promos</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setNotifications(!notifications)}
+                className={`w-12 h-6 rounded-full relative transition-colors ${notifications ? "bg-[#03cd8c]" : "bg-slate-200"}`}
+              >
+                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${notifications ? "left-7" : "left-1"}`} />
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Security & Data */}
+        <section className="space-y-4">
+          <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-1">Security & Privacy</h2>
+          <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm divide-y divide-slate-50 overflow-hidden">
+            <div className="flex items-center justify-between p-6">
+              <div className="flex items-center space-x-4">
+                <div className="h-10 w-10 bg-slate-50 rounded-2xl flex items-center justify-center font-black">
+                  <Lock className="h-5 w-5 text-slate-600" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-black text-slate-900 uppercase">Change Password</h3>
+                  <p className="text-[10px] text-slate-400 font-bold">Secure your account</p>
+                </div>
+              </div>
+              <ChevronRight className="h-5 w-5 text-slate-300" />
+            </div>
+
+            <div className="flex items-center justify-between p-6">
+              <div className="flex items-center space-x-4">
+                <div className="h-10 w-10 bg-slate-50 rounded-2xl flex items-center justify-center">
+                  <Shield className="h-5 w-5 text-slate-600" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-black text-slate-900 uppercase">Privacy Center</h3>
+                  <p className="text-[10px] text-slate-400 font-bold">Manage your data</p>
+                </div>
+              </div>
+              <ChevronRight className="h-5 w-5 text-slate-300" />
+            </div>
+          </div>
+        </section>
+
+        {/* Danger Zone */}
+        <section className="pt-4 pb-10">
+          <button className="w-full rounded-full py-5 flex items-center justify-center space-x-3 bg-red-50 text-red-500 border border-red-100 active:scale-[0.98] transition-all">
+            <UserX className="h-5 w-5" />
+            <span className="text-xs font-black uppercase tracking-widest">Delete My Account</span>
+          </button>
+        </section>
+      </main>
+    </div>
+  );
+}

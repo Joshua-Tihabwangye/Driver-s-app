@@ -219,10 +219,19 @@ export default function TripCompletionScreen({ initialJobType = "ride" }) {
                  <Star className="h-5 w-5 text-[#03cd8c]" />
               </div>
               <div className="flex flex-col">
-                 <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">Feedback tunnel</span>
-                 <p className="text-xs font-black text-slate-900 uppercase tracking-tight">Anything unusual?</p>
+                 <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">Rate Your Rider</span>
+                 <p className="text-xs font-black text-slate-900 uppercase tracking-tight">How was this trip?</p>
               </div>
             </div>
+            {!isAmbulance && (
+              <div className="flex items-center justify-center space-x-3 py-2">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <button key={s} type="button" className="active:scale-110 transition-transform">
+                    <Star className="h-8 w-8 text-amber-400 fill-amber-400" />
+                  </button>
+                ))}
+              </div>
+            )}
             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed">
               If there was a safety issue, lost item or dispute, you can report it from the Help & Safety section after this screen.
             </p>

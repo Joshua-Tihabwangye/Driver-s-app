@@ -194,8 +194,8 @@ export default function RideRequestIncomingScreen() {
               <Map className="h-5 w-5 text-white" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Console</span>
-              <p className="text-base font-black text-white tracking-tight leading-tight">Intercept Alert</p>
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Driver</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">Ride Request</p>
             </div>
           </div>
           <div className="w-10" /> {/* Spacer */}
@@ -241,7 +241,7 @@ export default function RideRequestIncomingScreen() {
               </div>
               <div className="flex flex-col">
                 <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-500">
-                  ENTITY DATA
+                  RIDER INFO
                 </span>
                 <p className="text-base font-black text-white leading-tight mt-0.5">
                   {isAmbulance
@@ -290,7 +290,7 @@ export default function RideRequestIncomingScreen() {
             <div className="flex items-center justify-between pt-2 text-[10px] font-black text-slate-400 uppercase tracking-widest relative z-10">
               <span className="inline-flex items-center">
                 <Clock className="h-3.5 w-3.5 mr-2" />
-                Intercept Target: 18:42
+                Pickup ETA: 18:42
               </span>
               {!isShuttle && (
                 <button
@@ -299,7 +299,7 @@ export default function RideRequestIncomingScreen() {
                   className="inline-flex items-center rounded-full border border-slate-700 px-3 py-1 text-[10px] hover:bg-white/5 transition-colors"
                 >
                   <Phone className="h-3.5 w-3.5 mr-2" />
-                  Signal
+                  Call
                 </button>
               )}
             </div>
@@ -314,7 +314,7 @@ export default function RideRequestIncomingScreen() {
                <Clock className="absolute h-4 w-4" />
             </div>
             <span>
-              Auto-Flush in <span className="text-slate-900 mx-1">{timeLeft}s</span>
+              Auto-decline in <span className="text-slate-900 mx-1">{timeLeft}s</span>
             </span>
           </div>
 

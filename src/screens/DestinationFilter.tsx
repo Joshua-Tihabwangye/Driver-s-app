@@ -1,0 +1,108 @@
+import { MapPin, ChevronLeft, Search, Clock, History, Navigation2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+
+const RECENT = [
+  { id: 1, name: "Home", address: "Ggaba Road, Kampala", type: "Home" },
+  { id: 2, name: "City Mall", address: "Kampala Road, Central", type: "Recent" },
+  { id: 3, name: "Entebbe Airport", address: "Airport Road, Entebbe", type: "Favorite" },
+];
+
+export default function DestinationFilter() {
+  const navigate = useNavigate();
+  const [search, setSearch] = useState("");
+
+  return (
+    <div className="flex flex-col h-full bg-[#f8fafc]">
+      <div className="relative shrink-0" style={{ minHeight: 90 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
+            borderBottomLeftRadius: '40px',
+            borderBottomRightRadius: '40px',
+          }}
+        />
+        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
+            >
+              <ChevronLeft className="h-5 w-5 text-white" />
+            </button>
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+              <Navigation2 className="h-5 w-5 text-white" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Navigation</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">Destination Filter</p>
+            </div>
+          </div>
+        </header>
+      </div>
+
+      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-8">
+        {/* Search Bar */}
+        <section className="space-y-4">
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-slate-400 group-focus-within:text-[#03cd8c] transition-colors" />
+            </div>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="block w-full pl-12 pr-4 py-4 bg-white border border-slate-100 rounded-3xl text-sm font-bold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#03cd8c]/20 focus:border-[#03cd8c] transition-all shadow-md"
+              placeholder="Where are you heading?"
+            />
+          </div>
+          <div className="rounded-[2.5rem] bg-slate-900 p-6 text-white text-center space-y-2 shadow-xl shadow-slate-200">
+             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#03cd8c]/20 mx-auto mb-2 border border-[#03cd8c]/30">
+                <Navigation2 className="h-5 w-5 text-[#03cd8c]" />
+             </div>
+             <h3 className="text-xs font-black uppercase tracking-tight">Active Destination Mode</h3>
+             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wide leading-relaxed">
+                When active, we'll only send you ride requests heading toward your destination.
+             </p>
+          </div>
+        </section>
+
+        {/* Recent & Saved */}
+        <section className="space-y-4">
+          <div className="px-1">
+            <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Recent & Saved</h2>
+          </div>
+          <div className="space-y-3">
+            {RECENT.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => navigate("/driver/dashboard/online")}
+                className="w-full bg-white rounded-3xl p-5 border border-slate-100 flex items-center space-x-4 shadow-sm active:scale-[0.98] transition-all text-left"
+              >
+                <div className="h-10 w-10 bg-slate-50 rounded-xl flex items-center justify-center shrink-0 border border-slate-100">
+                  <Clock className="h-5 w-5 text-slate-400" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-black text-slate-900 tracking-tight">{item.name}</h3>
+                  <p className="text-[11px] text-slate-500 font-bold uppercase tracking-tight">{item.address}</p>
+                </div>
+                <div className="px-3 py-1 bg-slate-50 rounded-full border border-slate-100">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{item.type}</span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* Favorites */}
+        <section className="pt-2 pb-10">
+          <button className="w-full rounded-full py-5 flex items-center justify-center space-x-3 bg-emerald-50 text-[#03cd8c] border border-emerald-100 active:scale-[0.98] transition-all">
+             <MapPin className="h-5 w-5" />
+             <span className="text-xs font-black uppercase tracking-widest">Set Current Location</span>
+          </button>
+        </section>
+      </main>
+    </div>
+  );
+}

@@ -1,15 +1,16 @@
 import {
-Car,
-ChevronLeft,
-ChevronRight,
-HelpCircle,
-History,
-Info,
-ListChecks,
-LogOut,
-Map,
-Phone,
-Settings as SettingsIcon
+  Car,
+  ChevronRight,
+  HelpCircle,
+  History,
+  Info,
+  ListChecks,
+  LogOut,
+  Map,
+  Phone,
+  Settings as SettingsIcon,
+  Star,
+  Bell,
 } from "lucide-react";
 import React from "react";
 import { useNavigate } from "react-router-dom";
@@ -83,26 +84,13 @@ export default function MoreMenu() {
           }}
         />
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-white" />
-            </button>
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
-              <SettingsIcon className="h-5 w-5 text-white" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">
-                Driver
-              </span>
-              <h1 className="text-base font-black text-white tracking-tight leading-tight">
-                More & Account
-              </h1>
-            </div>
+          <div className="w-9 h-9" />
+          <div className="w-9 h-9" />
+          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
+            <p className="text-center text-base font-black text-white tracking-tight leading-tight">
+              More & Account
+            </p>
           </div>
-          <div className="w-10" />
         </header>
       </div>
 
@@ -138,6 +126,12 @@ export default function MoreMenu() {
             onClick={() => navigate("/driver/history/rides")}
           />
           <MenuItem
+            icon={Star}
+            label="Ratings & Reviews"
+            description="View your performance feedback"
+            onClick={() => navigate("/driver/ratings")}
+          />
+          <MenuItem
             icon={Map}
             label="Surge Map"
             description="Check area demand zones"
@@ -148,21 +142,21 @@ export default function MoreMenu() {
         <MenuSection title="App Preferences">
           <MenuItem
             icon={SettingsIcon}
-            label="Preferences"
+            label="Settings"
             description="App theme, language and privacy"
-            onClick={() => navigate("/driver/preferences")}
+            onClick={() => navigate("/driver/settings")}
+          />
+          <MenuItem
+            icon={Bell}
+            label="Notifications"
+            description="Recent alerts and messages"
+            onClick={() => navigate("/driver/notifications")}
           />
           <MenuItem
             icon={ListChecks}
             label="Service Legend"
             description="Icon reference and job types"
             onClick={() => navigate("/driver/settings/job-types-legend")}
-          />
-          <MenuItem
-            icon={Phone}
-            label="Notifications"
-            description="Recent alerts and messages"
-            onClick={() => navigate("/driver/ridesharing/notification")}
           />
         </MenuSection>
 
