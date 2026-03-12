@@ -55,10 +55,10 @@ export default function Profile() {
             </div>
             <div className="flex flex-col">
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-100/70">
-                Personal Hub
+                Account
               </span>
               <h1 className="text-base font-black text-white tracking-tight leading-tight">
-                Driver Profile
+                Profile
               </h1>
             </div>
           </div>
@@ -101,20 +101,20 @@ export default function Profile() {
             </button>
           </div>
           <h2 className="mt-5 text-xl font-bold text-slate-900">{profile.name}</h2>
-          <div className="flex items-center space-x-1.5 mt-1.5 bg-slate-50 px-3 py-1 rounded-full border border-slate-100">
-            <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
+          <div className="flex items-center space-x-1.5 mt-1.5 bg-orange-50 px-3 py-1 rounded-full border border-orange-100">
+            <Star className="h-3.5 w-3.5 text-orange-500 fill-orange-500" />
             <span className="text-xs font-bold text-slate-700 tracking-tight">4.92 Rating</span>
-            <span className="text-[10px] text-slate-400 font-medium ml-1">(324 Global Trips)</span>
+            <span className="text-[10px] text-slate-400 font-medium ml-1">(324 Total Trips)</span>
           </div>
         </div>
 
         <div className="grid grid-cols-3 gap-3">
           {[
-            { label: "Total KM", value: "2.4k", icon: Car, color: "#03cd8c" },
-            { label: "On Time", value: "98%", icon: Star, color: "#f59e0b" },
-            { label: "City", value: "Kampala", icon: MapPin, color: "#0ea5e9" },
+            { label: "Total KM", value: "2.4k", icon: Car, color: "#f97316" },
+            { label: "On Time", value: "98%", icon: Star, color: "#f97316" },
+            { label: "City", value: "Kampala", icon: MapPin, color: "#f97316" },
           ].map((stat) => (
-            <div key={stat.label} className="flex flex-col items-center rounded-2xl border border-slate-50 bg-white px-1 py-4 shadow-sm">
+            <div key={stat.label} className="flex flex-col items-center rounded-2xl border-2 border-orange-500/10 bg-cream px-1 py-4 shadow-sm">
               <stat.icon className="h-4 w-4 mb-2" style={{ color: stat.color }} />
               <span className="text-sm font-bold text-slate-900 tracking-tight">{stat.value}</span>
               <span className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">{stat.label}</span>
@@ -126,14 +126,14 @@ export default function Profile() {
           <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">Core Information</h3>
           <div className="space-y-2">
             {[
-              { label: "Full Identity", value: profile.name, key: "name", icon: User },
+              { label: "Full Name", value: profile.name, key: "name", icon: User },
               { label: "Primary Phone", value: profile.phone, key: "phone", icon: Phone },
               { label: "Official Email", value: profile.email, key: "email", icon: Mail },
               { label: "Operational City", value: profile.city, key: "city", icon: MapPin },
             ].map((field) => (
               <div
                 key={field.key}
-                className={`rounded-2xl border transition-all duration-300 ${isEditing ? "bg-slate-50 border-[#03cd8c]/30" : "bg-white border-slate-50"} px-5 py-4 shadow-sm`}
+                className={`rounded-2xl border-2 transition-all duration-300 ${isEditing ? "bg-[#fffdf5] border-orange-500/30 shadow-md" : "bg-cream border-orange-500/10 shadow-sm"} px-5 py-4`}
               >
                 <div className="flex items-center justify-between mb-1">
                   <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest flex items-center">
