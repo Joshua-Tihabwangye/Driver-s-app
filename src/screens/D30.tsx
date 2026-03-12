@@ -15,13 +15,11 @@ import { useNavigate } from "react-router-dom";
 
 function ActionRow({ icon: Icon, title, text, type, onClick }) {
   const isBlocking = type === "blocking";
-  const bg = isBlocking ? "bg-red-50" : "bg-amber-50";
-  const border = isBlocking ? "border-red-100" : "border-amber-100";
   const iconColor = isBlocking ? "text-red-600" : "text-amber-600";
 
   return (
-    <button type="button" onClick={onClick} className={`flex items-start space-x-2 rounded-2xl border ${border} ${bg} px-3 py-2.5 text-[11px] w-full text-left active:scale-[0.99] transition-transform`}>
-      <div className={`mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white ${iconColor}`}>
+    <button type="button" onClick={onClick} className={`flex items-start space-x-2 rounded-2xl border-2 border-orange-500/10 bg-cream px-3 py-2.5 text-[11px] w-full text-left active:scale-[0.99] transition-all hover:scale-[1.01] hover:border-orange-500/30 hover:shadow-md group`}>
+      <div className={`mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-sm transition-colors ${iconColor} group-hover:bg-orange-500 group-hover:text-white`}>
         <Icon className="h-4 w-4" />
       </div>
       <div className="flex-1 text-slate-700">
@@ -69,8 +67,8 @@ export default function RequiredActionsAlertDashboardScreen() {
               <AlertTriangle className="h-5 w-5 text-white" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Compliance</span>
-              <p className="text-base font-black text-white tracking-tight leading-tight">Action Registry</p>
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Account Setup</span>
+              <p className="text-base font-black text-white tracking-tight leading-tight">Required Actions</p>
             </div>
           </div>
           <div className="w-10" /> {/* Spacer */}
@@ -94,31 +92,31 @@ export default function RequiredActionsAlertDashboardScreen() {
               <AlertTriangle className="h-6 w-6" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-400">Restricted Mode</span>
-              <p className="text-base font-black tracking-tight mt-0.5 text-white">Prerequisite Gap Detected</p>
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-400">Account Restricted</span>
+              <p className="text-base font-black tracking-tight mt-0.5 text-white">Incomplete Setup Detected</p>
             </div>
           </div>
           <p className="text-[11px] text-slate-400 font-medium leading-relaxed">
-            Safety and regulatory protocols must be satisfied before unrestricted platform access is granted. Complete the following vectors immediately.
+            Safety and regulatory requirements must be completed before you can start receiving ride requests. Please address the items below.
           </p>
         </section>
 
         {/* Required and recommended actions */}
         <section className="space-y-4">
           <div className="px-1">
-            <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 font-black">Mandatory Vectors</h2>
+            <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 font-black">Mandatory Steps</h2>
           </div>
           <ActionRow
             icon={FileText}
-            title="Credential Validation"
-            text="Operating authorization review pending. Regenerate high-resolution imagery of front/rear license components."
+            title="Driver License Photo"
+            text="Please upload a clearer photo of your driver license (front and back) for verification."
             onClick={() => navigate("/driver/onboarding/profile/documents/upload")}
             type="blocking"
           />
           <ActionRow
             icon={BookOpenCheck}
-            title="Protocol Certification"
-            text="Finish the EV-Safety & Crisis Management module to unlock advanced patrol zones."
+            title="Safety Training"
+            text="Finish the EV-Safety & Crisis Management module to unlock all service areas."
             onClick={() => navigate("/driver/training/intro")}
             type="blocking"
           />
@@ -126,19 +124,19 @@ export default function RequiredActionsAlertDashboardScreen() {
 
         <section className="space-y-4 pt-1 pb-12">
           <div className="px-1">
-            <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 font-black">Optimization Tasks</h2>
+            <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 font-black">Account Optimization</h2>
           </div>
           <ActionRow
             icon={ShieldCheck}
-            title="Telemetry Audit"
-            text="Update recent maintenance logs to ensure vehicle safety rating remains at ELITE level."
+            title="Vehicle Inspection"
+            text="Update your recent maintenance logs to ensure your vehicle rating remains at the highest level."
             onClick={() => navigate("/driver/vehicles")}
             type="recommended"
           />
           <ActionRow
             icon={Info}
-            title="Yield Maximization"
-            text="Strategic tutorial: Mastering peak-demand intercepts and surge synchronization."
+            title="Earnings Tutorial"
+            text="Learn how to maximize your earnings by driving during peak demand periods."
             onClick={() => navigate("/driver/training/earnings-tutorial")}
             type="recommended"
           />

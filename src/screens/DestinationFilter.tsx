@@ -53,7 +53,7 @@ export default function DestinationFilter() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="block w-full pl-12 pr-4 py-4 bg-white border border-slate-100 rounded-3xl text-sm font-bold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#03cd8c]/20 focus:border-[#03cd8c] transition-all shadow-md"
+              className="block w-full pl-12 pr-4 py-4 bg-cream border-2 border-orange-500/10 rounded-3xl text-sm font-bold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#03cd8c]/20 focus:border-[#03cd8c] transition-all shadow-md hover:border-orange-500/30"
               placeholder="Where are you heading?"
             />
           </div>
@@ -78,16 +78,16 @@ export default function DestinationFilter() {
               <button
                 key={item.id}
                 onClick={() => navigate("/driver/dashboard/online")}
-                className="w-full bg-white rounded-3xl p-5 border border-slate-100 flex items-center space-x-4 shadow-sm active:scale-[0.98] transition-all text-left"
+                className="w-full bg-cream rounded-3xl p-5 border-2 border-orange-500/10 flex items-center space-x-4 shadow-sm active:scale-[0.98] transition-all text-left hover:border-orange-500/30 hover:shadow-md group"
               >
-                <div className="h-10 w-10 bg-slate-50 rounded-xl flex items-center justify-center shrink-0 border border-slate-100">
-                  <Clock className="h-5 w-5 text-slate-400" />
+                <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center shrink-0 border border-orange-50">
+                  <Clock className="h-5 w-5 text-slate-400 group-hover:text-orange-500 transition-colors" />
                 </div>
                 <div className="flex-1">
                   <h3 className="text-sm font-black text-slate-900 tracking-tight">{item.name}</h3>
                   <p className="text-[11px] text-slate-500 font-bold uppercase tracking-tight">{item.address}</p>
                 </div>
-                <div className="px-3 py-1 bg-slate-50 rounded-full border border-slate-100">
+                <div className="px-3 py-1 bg-white rounded-full border border-orange-50 group-hover:bg-orange-50 transition-colors">
                     <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{item.type}</span>
                 </div>
               </button>

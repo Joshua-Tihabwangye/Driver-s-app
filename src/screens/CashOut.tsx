@@ -130,7 +130,7 @@ export default function CashOutScreen() {
           <button
             type="button"
             onClick={() => navigate("/driver/dashboard/online")}
-            className="w-full mt-2 rounded-full border border-slate-200 bg-white py-3 text-sm font-semibold text-slate-700"
+            className="w-full mt-2 rounded-full border-2 border-orange-500/10 bg-cream py-3 text-sm font-semibold text-slate-700 hover:border-orange-500/30 transition-all shadow-sm"
           >
             Go to Dashboard
           </button>
@@ -176,7 +176,7 @@ export default function CashOutScreen() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-100 bg-white p-4 space-y-3">
+            <div className="rounded-2xl border-2 border-orange-500/10 bg-cream p-4 space-y-3 shadow-sm">
               <h3 className="text-sm font-semibold text-slate-900">Summary</h3>
               <div className="flex justify-between text-[13px]">
                 <span className="text-slate-500">Amount</span>
@@ -190,7 +190,7 @@ export default function CashOutScreen() {
                 <span className="text-slate-500">Estimated arrival</span>
                 <span className="font-semibold text-slate-900">{selectedMethod?.time}</span>
               </div>
-              <div className="h-px bg-slate-100 my-1" />
+              <div className="h-px bg-orange-500/5 my-1" />
               <div className="flex justify-between text-[13px]">
                 <span className="font-semibold text-slate-900">You receive</span>
                 <span className="font-bold text-[#03cd8c] text-base">UGX {amount}</span>
@@ -305,10 +305,10 @@ export default function CashOutScreen() {
                     key={method.id}
                     type="button"
                     onClick={() => setSelected(method.id)}
-                    className={`w-full rounded-2xl border p-3.5 flex items-center gap-3.5 text-left transition-all active:scale-[0.98] ${
+                    className={`w-full rounded-2xl border-2 p-3.5 flex items-center gap-3.5 text-left transition-all active:scale-[0.98] ${
                       isSelected
-                        ? "border-[#03cd8c] bg-[#f0fdf9] shadow-sm shadow-emerald-100"
-                        : "border-slate-100 bg-white hover:border-slate-200"
+                        ? "border-orange-500 bg-[#fffdf5] shadow-md ring-1 ring-orange-500/20"
+                        : "border-orange-500/10 bg-cream hover:border-orange-500/30 shadow-sm"
                     }`}
                   >
                     <div

@@ -22,7 +22,7 @@ function IssueRow({ title, text, type, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={`flex items-start space-x-4 rounded-2xl border ${border} ${bg} px-4 py-4 text-left w-full active:scale-[0.98] transition-all group hover:bg-white`}
+      className={`flex items-start space-x-4 rounded-2xl border-2 border-orange-500/10 bg-cream px-4 py-4 text-left w-full active:scale-[0.98] hover:scale-[1.01] transition-all group hover:bg-[#fffdf5] hover:shadow-md hover:border-orange-500/30`}
     >
       <div className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm ${color}`}>
         <Icon className="h-5 w-5" />
@@ -81,8 +81,8 @@ export default function OfflineDashboardScreen() {
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-24 space-y-6 overflow-y-auto scrollbar-hide">
         {/* Offline status card */}
-        <section className="rounded-[2.5rem] bg-[#0b1e3a] text-white p-6 space-y-6 shadow-xl relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110" />
+        <section className="rounded-[2.5rem] bg-[#0b1e3a] text-white p-6 space-y-6 shadow-xl relative overflow-hidden group hover:scale-[1.01] transition-transform duration-500">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-125 duration-700" />
           
           <div className="flex items-center space-x-4">
             <button
@@ -128,8 +128,8 @@ export default function OfflineDashboardScreen() {
 
         {/* Info */}
         <section className="pt-2">
-           <div className="rounded-[2.5rem] border-2 border-slate-50 bg-slate-50/50 p-6 text-center space-y-3">
-              <div className="bg-white h-12 w-12 rounded-2xl shadow-sm flex items-center justify-center mx-auto border border-slate-100">
+           <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-cream p-6 text-center space-y-3 shadow-sm">
+              <div className="bg-white h-12 w-12 rounded-2xl shadow-sm flex items-center justify-center mx-auto border border-orange-100">
                 <Info className="h-6 w-6 text-[#03cd8c]" />
               </div>
               <div>

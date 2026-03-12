@@ -117,9 +117,9 @@ export default function DocumentCenter() {
             {DOCUMENTS.map((doc) => (
               <div
                 key={doc.id}
-                className="bg-white rounded-[2.5rem] border border-slate-100 p-6 flex items-center space-x-4 shadow-sm active:scale-[0.98] transition-all"
+                className="bg-cream rounded-[2.5rem] border-2 border-orange-500/10 p-6 flex items-center space-x-4 shadow-sm active:scale-[0.98] hover:scale-[1.01] hover:border-orange-500/30 transition-all duration-300"
               >
-                <div className="h-12 w-12 bg-slate-50 rounded-2xl flex items-center justify-center shrink-0 border border-slate-100">
+                <div className="h-12 w-12 bg-white rounded-2xl flex items-center justify-center shrink-0 border border-orange-50">
                   <FileText className="h-6 w-6 text-slate-400" />
                 </div>
                 <div className="flex-1">
@@ -145,14 +145,14 @@ export default function DocumentCenter() {
         </section>
 
         <section className="pt-2 pb-10">
-            <div className="rounded-[2.5rem] bg-blue-50 border border-blue-100 p-6 flex flex-col items-center text-center space-y-3">
-                <div className="h-10 w-10 bg-white rounded-2xl shadow-sm flex items-center justify-center">
+            <div className="rounded-[2.5rem] bg-cream border-2 border-orange-500/10 p-6 flex flex-col items-center text-center space-y-3 shadow-md">
+                <div className="h-10 w-10 bg-white rounded-2xl shadow-sm flex items-center justify-center border border-orange-50">
                     <AlertCircle className="h-5 w-5 text-blue-500" />
                 </div>
                 <p className="text-[11px] text-blue-700 font-bold uppercase tracking-tight leading-relaxed max-w-[200px]">
                     Need help with your documents? Contact our support team.
                 </p>
-                <button className="text-[10px] font-black uppercase tracking-widest text-blue-600 bg-white border border-blue-100 px-6 py-2 rounded-full active:scale-95 transition-all">Get help</button>
+                <button className="text-[10px] font-black uppercase tracking-widest text-[#03cd8c] bg-white border border-[#03cd8c]/20 px-6 py-2 rounded-full active:scale-95 transition-all hover:bg-emerald-50">Get help</button>
             </div>
         </section>
       </main>

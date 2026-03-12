@@ -55,7 +55,6 @@ const TABS = [
   { id: "home", label: "Home", icon: Home, route: "/driver/dashboard/online" },
   { id: "jobs", label: "Jobs", icon: Briefcase, route: "/driver/jobs/list" },
   { id: "earnings", label: "Earnings", icon: DollarSign, route: "/driver/earnings/overview" },
-  { id: "safety", label: "Safety", icon: ShieldCheck, route: "/driver/safety/hub" },
   { id: "more", label: "More", icon: MoreHorizontal, route: "/driver/more" },
 ];
 
@@ -84,10 +83,8 @@ function getActiveTab(pathname: string): string {
   ) {
     return "earnings";
   }
-  if (pathname.startsWith("/driver/safety")) {
-    return "safety";
-  }
   if (
+    pathname.startsWith("/driver/safety") ||
     pathname.startsWith("/driver/more") ||
     pathname.startsWith("/driver/preferences") ||
     pathname.startsWith("/driver/help") ||

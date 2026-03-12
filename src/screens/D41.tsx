@@ -94,7 +94,7 @@ export default function LastTripSummaryPopupScreen() {
 
           {/* Last trip summary popup */}
           <div className="absolute inset-x-6 bottom-6">
-            <div className="rounded-[2.5rem] bg-white/90 backdrop-blur-xl shadow-2xl border border-slate-100 p-6 space-y-5">
+            <div className="rounded-[2.5rem] bg-[#fffdf5]/95 backdrop-blur-xl shadow-2xl border-2 border-orange-500/20 p-6 space-y-5">
               <div className="flex items-center justify-between">
                 <div className="flex flex-col items-start">
                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">
@@ -115,7 +115,7 @@ export default function LastTripSummaryPopupScreen() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+              <div className="flex items-center justify-between pt-2 border-t border-orange-500/10">
                 <div className="flex items-center space-x-4">
             <button
               onClick={() => navigate(-1)}
@@ -135,7 +135,7 @@ export default function LastTripSummaryPopupScreen() {
               <button
                 type="button"
                 onClick={() => navigate("/driver/history/rides")}
-                className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest border border-slate-200 text-slate-900 bg-white hover:bg-slate-50 active:scale-95 transition-all shadow-sm flex items-center justify-center"
+                className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest border-2 border-orange-500/10 text-slate-900 bg-cream hover:bg-slate-50 active:scale-95 transition-all shadow-sm flex items-center justify-center"
               >
                 View Trip Details
               </button>

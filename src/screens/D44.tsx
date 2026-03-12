@@ -47,7 +47,7 @@ function RequestCard({ job, onClick }: { job: any, onClick: (j: any) => void }) 
     <button
       type="button"
       onClick={() => onClick(job)}
-      className="w-full rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-2.5 active:scale-[0.98] transition-transform flex flex-col space-y-2 text-[11px] text-slate-600"
+      className="w-full rounded-2xl border-2 border-orange-500/10 bg-cream shadow-sm px-3 py-2.5 active:scale-[0.98] transition-all flex flex-col space-y-2 text-[11px] text-slate-600 hover:border-orange-500/30 hover:shadow-md hover:scale-[1.01] group"
     >
       <div className="flex items-center justify-between">
         <div className="flex flex-col items-start max-w-[200px]">
@@ -137,7 +137,7 @@ export default function RideRequestsListScreen() {
 
       {/* Filters Panel */}
       <section className="z-10 mt-4 px-6">
-        <div className="rounded-[1.5rem] border border-slate-100 bg-white p-4 shadow-sm">
+        <div className="rounded-[1.5rem] border-2 border-orange-500/10 bg-cream p-4 shadow-sm">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block">
@@ -217,7 +217,7 @@ export default function RideRequestsListScreen() {
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-24 space-y-6 overflow-y-auto scrollbar-hide">
-        <div className="rounded-2xl border border-slate-100 bg-white px-4 py-3 shadow-sm flex items-center justify-between">
+        <div className="rounded-2xl border-2 border-orange-500/10 bg-[#f0fff4]/50 px-4 py-3 shadow-sm flex items-center justify-between">
           <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
             Monitoring Window
           </span>
@@ -233,13 +233,13 @@ export default function RideRequestsListScreen() {
           ))}
 
           {filteredJobs.length === 0 && (
-            <div className="rounded-[2.5rem] border-2 border-dashed border-slate-100 bg-slate-50 px-6 py-16 flex flex-col items-center justify-center text-center">
-              <div className="w-16 h-16 rounded-3xl bg-white flex items-center justify-center mb-6 shadow-sm">
+            <div className="rounded-[2.5rem] border-2 border-dashed border-orange-200 bg-cream/50 px-6 py-16 flex flex-col items-center justify-center text-center">
+              <div className="w-16 h-16 rounded-3xl bg-white flex items-center justify-center mb-6 shadow-sm border border-orange-100">
                  <ListFilter className="h-8 w-8 text-slate-200" />
               </div>
-              <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Zero Intercepts</p>
+              <p className="text-sm font-black text-slate-900 uppercase tracking-tight">No Requests Found</p>
               <p className="text-[11px] text-slate-500 mt-2 font-bold uppercase tracking-tight leading-relaxed max-w-[200px]">
-                No mission parameters match current sector filters. Synchronize and await signal.
+                We couldn't find any ride requests matching your current filters. Please try a different category or wait for new requests.
               </p>
             </div>
           )}
@@ -248,29 +248,29 @@ export default function RideRequestsListScreen() {
         {/* Shuttle help hint */}
         {hasShuttleJob && (
           <section className="pt-2">
-            <div className="rounded-[2.5rem] border border-violet-100 bg-violet-50 p-6 flex flex-col items-start space-y-4 shadow-inner">
+            <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-[#f0fff4] p-6 flex flex-col items-start space-y-4 shadow-sm">
               <div className="flex items-center space-x-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm shrink-0">
-                  <HelpCircle className="h-6 w-6 text-violet-500" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm shrink-0 border border-orange-50">
+                  <HelpCircle className="h-6 w-6 text-[#03cd8c]" />
                 </div>
                 <div className="flex flex-col">
-                  <p className="font-black text-sm text-violet-900 uppercase tracking-tight">
-                    Shuttle Protocol
+                  <p className="font-black text-sm text-slate-900 uppercase tracking-tight">
+                    Shuttle Service
                   </p>
-                  <p className="text-[11px] text-violet-800/80 font-bold uppercase tracking-tight">
-                    Secondary Neural Link Required
+                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight">
+                    Separate App Required
                   </p>
                 </div>
               </div>
-              <p className="text-[11px] text-violet-800/80 leading-relaxed font-bold uppercase tracking-tight">
-                Shuttle operations require the dedicated School Shuttle environment. Establish link to proceed.
+              <p className="text-[11px] text-slate-600 leading-relaxed font-bold uppercase tracking-tight">
+                Shuttle operations require the dedicated School Shuttle app environment. Open the shuttle app to proceed.
               </p>
               <button
                 type="button"
                 onClick={() => navigate("/driver/help/shuttle-link")}
-                className="w-full rounded-full bg-violet-600 text-white py-4 text-[11px] font-black uppercase tracking-widest active:scale-95 transition-all shadow-xl shadow-violet-600/20"
+                className="w-full rounded-full bg-[#03cd8c] text-white py-4 text-[11px] font-black uppercase tracking-widest active:scale-95 transition-all shadow-xl shadow-emerald-600/20"
               >
-                Establish Link
+                Open Shuttle App
               </button>
             </div>
           </section>

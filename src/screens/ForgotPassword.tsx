@@ -18,7 +18,7 @@ export default function ForgotPassword() {
       <header className="mb-10">
         <button
           onClick={() => navigate(-1)}
-          className="h-12 w-12 bg-white rounded-2xl flex items-center justify-center shadow-sm border border-slate-100 active:scale-95 transition-all"
+          className="h-12 w-12 bg-cream rounded-2xl flex items-center justify-center shadow-md border-2 border-orange-500/10 active:scale-95 transition-all hover:border-orange-500/30"
         >
           <ArrowLeft className="h-6 w-6 text-slate-600" />
         </button>
@@ -47,7 +47,7 @@ export default function ForgotPassword() {
                 type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="block w-full pl-12 pr-4 py-4 bg-white border border-slate-100 rounded-2xl text-slate-900 font-bold placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#03cd8c]/20 focus:border-[#03cd8c] transition-all shadow-sm"
+                className="block w-full pl-12 pr-4 py-4 bg-cream border-2 border-orange-500/10 rounded-2xl text-slate-900 font-bold placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#03cd8c]/20 focus:border-[#03cd8c] transition-all shadow-sm"
                 placeholder="john@example.com"
                 required
               />

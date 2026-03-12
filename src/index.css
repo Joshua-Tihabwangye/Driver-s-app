@@ -7,10 +7,16 @@
    ────────────────────────────────────────────── */
 :root {
   --evz-green: #12c98c;
-  --evz-stage: #eef3f2;
-  --evz-surface: #ffffff;
-  --evz-surface-alt: #f5f8f7;
-  --evz-border: #dde5e4;
+  --evz-stage: #f8fafc;
+  /* Slightly cooler page background */
+  --evz-surface: #fffdf5;
+  /* Distinct Cream */
+  --evz-surface-alt: #fdf9e8;
+  /* Deeper cream for variety */
+  --evz-border: #f0ede4;
+  --evz-orange: #f77f00;
+  --evz-orange-soft: rgba(247, 127, 0, 0.1);
+  --evz-orange-border: rgba(247, 127, 0, 0.2);
   --evz-text: #1e293b;
   --evz-text-secondary: #64748b;
   --evz-card-dark-bg: #0b1e3a;
@@ -25,6 +31,19 @@
   --evz-stat-border: #e2e8f0;
   --evz-banner-blue: #00a3ff;
   --evz-overlay-bg: rgba(255, 255, 255, 0.95);
+}
+
+.bg-cream {
+  background-color: var(--evz-surface) !important;
+  border-color: var(--evz-orange-border) !important;
+}
+
+.border-orange-soft {
+  border-color: var(--evz-orange-border);
+}
+
+.border-orange-bright {
+  border-color: var(--evz-orange);
 }
 
 /* ──────────────────────────────────────────────
@@ -58,6 +77,7 @@
   width: 0;
   height: 0;
 }
+
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -85,7 +105,7 @@ body {
   padding: 0 !important;
 }
 
-.app-root .app-stage > .app-phone {
+.app-root .app-stage>.app-phone {
   width: 100% !important;
   height: 100% !important;
   border: 0 !important;
@@ -98,8 +118,8 @@ body {
    ────────────────────────────────────────────── */
 
 /* Stage background */
-.preview-root .screen-preview-host > .min-h-screen.flex.justify-center,
-.preview-root .screen-preview-host > div.app-stage {
+.preview-root .screen-preview-host>.min-h-screen.flex.justify-center,
+.preview-root .screen-preview-host>div.app-stage {
   background: var(--evz-stage) !important;
   padding-top: 16px !important;
   padding-bottom: 20px !important;
@@ -119,8 +139,8 @@ body {
    ────────────────────────────────────────────── */
 
 /* Stage / outer wrapper */
-.dark .preview-root .screen-preview-host > .min-h-screen.flex.justify-center,
-.dark .preview-root .screen-preview-host > div.app-stage,
+.dark .preview-root .screen-preview-host>.min-h-screen.flex.justify-center,
+.dark .preview-root .screen-preview-host>div.app-stage,
 .dark .app-stage {
   background: var(--evz-stage) !important;
 }
@@ -178,6 +198,7 @@ body {
 .dark .preview-root .screen-preview-host nav[class*="app-bottom-nav"] {
   background: #111827 !important;
 }
+
 .dark .preview-root .screen-preview-host nav.border-t.backdrop-blur.flex {
   background: #111827 !important;
   border-color: #1f2937 !important;
@@ -206,6 +227,7 @@ body {
   border: 1px solid #334155 !important;
   color: #e2e8f0 !important;
 }
+
 .dark [class*="bg-[#0b1e3a]"] :is(h1, h2, h3, p, span) {
   color: inherit !important;
 }
@@ -219,6 +241,7 @@ body {
 .dark [class*="bg-[#e6fff7]"] {
   background-color: #1e293b !important;
 }
+
 .dark [class*="bg-[#f0faf7]"],
 .dark [class*="bg-emerald-50"] {
   background-color: #1e293b !important;
@@ -233,6 +256,7 @@ body {
 .dark [class*="bg-red-50"] {
   background-color: #450a0a !important;
 }
+
 .dark [class*="bg-amber-50"] {
   background-color: #451a03 !important;
 }
@@ -241,19 +265,24 @@ body {
 .dark [class*="border-slate-100"] {
   border-color: #334155 !important;
 }
+
 .dark [class*="border-slate-200"] {
   border-color: #475569 !important;
 }
+
 .dark [class*="border-slate-50"] {
   border-color: #334155 !important;
 }
+
 .dark [class*="border-emerald-100"] {
   border-color: #065f46 !important;
 }
+
 .dark [class*="border-red-100"],
 .dark [class*="border-red-200"] {
   border-color: #7f1d1d !important;
 }
+
 .dark [class*="border-amber-100"] {
   border-color: #78350f !important;
 }
@@ -262,18 +291,23 @@ body {
 .dark [class*="text-slate-900"] {
   color: #e2e8f0 !important;
 }
+
 .dark [class*="text-slate-800"] {
   color: #cbd5e1 !important;
 }
+
 .dark [class*="text-slate-700"] {
   color: #cbd5e1 !important;
 }
+
 .dark [class*="text-slate-600"] {
   color: #cbd5e1 !important;
 }
+
 .dark [class*="text-slate-500"] {
   color: #cbd5e1 !important;
 }
+
 .dark [class*="text-slate-400"] {
   color: #e2e8f0 !important;
 }
@@ -301,15 +335,18 @@ body {
 .dark [class*="text-[#03cd8c]"] {
   color: #f8fafc !important;
 }
+
 .dark [class*="text-emerald-600"],
 .dark [class*="text-emerald-700"],
 .dark [class*="text-emerald-800"] {
   color: #f8fafc !important;
 }
+
 .dark [class*="text-red-600"],
 .dark [class*="text-red-700"] {
   color: #f8fafc !important;
 }
+
 .dark [class*="text-amber-600"],
 .dark [class*="text-amber-700"],
 .dark [class*="text-amber-800"] {
@@ -324,6 +361,7 @@ body {
   border-color: var(--evz-input-border) !important;
   color: var(--evz-text) !important;
 }
+
 .dark input::placeholder,
 .dark textarea::placeholder {
   color: #64748b !important;
@@ -371,12 +409,10 @@ body {
 
 /* Strict dark policy: make all text white for readability */
 .dark .app-root,
-.dark .app-root :is(
-  h1, h2, h3, h4, h5, h6,
+.dark .app-root :is(h1, h2, h3, h4, h5, h6,
   p, span, small, strong, em, b,
   label, a, li, td, th,
-  button, input, textarea, select
-) {
+  button, input, textarea, select) {
   color: #f8fafc !important;
 }
 

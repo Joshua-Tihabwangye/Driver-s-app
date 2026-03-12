@@ -91,8 +91,8 @@ export default function NotificationsCenter() {
           {NOTIFICATIONS.map((notif) => (
             <div
               key={notif.id}
-              className={`relative rounded-3xl p-5 border border-slate-100 transition-all active:scale-[0.98] ${
-                notif.unread ? "bg-white shadow-md ring-1 ring-[#03cd8c]/20" : "bg-slate-50/50"
+              className={`relative rounded-3xl p-5 border-2 transition-all active:scale-[0.98] shadow-sm hover:shadow-md hover:scale-[1.01] ${
+                notif.unread ? "bg-cream border-orange-500/20" : "bg-white border-slate-50"
               }`}
             >
               {notif.unread && (

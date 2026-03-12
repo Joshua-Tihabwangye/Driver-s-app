@@ -41,7 +41,7 @@ export default function Settings() {
         {/* App Settings */}
         <section className="space-y-4">
           <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-1">App Configuration</h2>
-          <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm divide-y divide-slate-50 overflow-hidden">
+          <div className="bg-cream rounded-[2.5rem] border-2 border-orange-500/10 shadow-sm divide-y divide-orange-500/5 overflow-hidden">
             <div className="flex items-center justify-between p-6">
               <div className="flex items-center space-x-4">
                 <div className="h-10 w-10 bg-blue-50 rounded-2xl flex items-center justify-center">
@@ -96,7 +96,7 @@ export default function Settings() {
         {/* Security & Data */}
         <section className="space-y-4">
           <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-1">Security & Privacy</h2>
-          <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm divide-y divide-slate-50 overflow-hidden">
+          <div className="bg-cream rounded-[2.5rem] border-2 border-orange-500/10 shadow-sm divide-y divide-orange-500/5 overflow-hidden">
             <div className="flex items-center justify-between p-6">
               <div className="flex items-center space-x-4">
                 <div className="h-10 w-10 bg-slate-50 rounded-2xl flex items-center justify-center font-black">
@@ -127,7 +127,7 @@ export default function Settings() {
 
         {/* Danger Zone */}
         <section className="pt-4 pb-10">
-          <button className="w-full rounded-full py-5 flex items-center justify-center space-x-3 bg-red-50 text-red-500 border border-red-100 active:scale-[0.98] transition-all">
+          <button className="w-full rounded-full py-5 flex items-center justify-center space-x-3 bg-red-50 text-red-500 border-2 border-red-100 active:scale-[0.98] transition-all hover:bg-red-100/30">
             <UserX className="h-5 w-5" />
             <span className="text-xs font-black uppercase tracking-widest">Delete My Account</span>
           </button>

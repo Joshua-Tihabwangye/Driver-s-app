@@ -163,10 +163,10 @@ export default function Profile() {
           <button
             type="button"
             onClick={() => navigate("/driver/documents")}
-            className="w-full rounded-2xl border border-blue-100 bg-blue-50/20 px-5 py-5 flex items-center justify-between group active:scale-[0.98] transition-all"
+            className="w-full rounded-2xl border-2 border-orange-500/10 bg-cream px-5 py-5 flex items-center justify-between group active:scale-[0.98] hover:scale-[1.01] hover:bg-cream hover:shadow-md hover:border-orange-500/30 transition-all duration-300"
           >
             <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center group-hover:bg-blue-500 transition-colors">
+              <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center group-hover:bg-blue-500 transition-colors border border-orange-50">
                 <FileText className="h-5 w-5 text-blue-500 group-hover:text-white" />
               </div>
               <div className="flex flex-col items-start text-left">
@@ -182,10 +182,10 @@ export default function Profile() {
           <button
             type="button"
             onClick={() => navigate("/driver/vehicles/manage")}
-            className="w-full rounded-2xl border border-slate-100 bg-white px-5 py-5 flex items-center justify-between group active:scale-[0.98] transition-all"
+            className="w-full rounded-2xl border-2 border-orange-500/10 bg-cream px-5 py-5 flex items-center justify-between group active:scale-[0.98] hover:scale-[1.01] hover:bg-cream hover:border-orange-500/30 hover:shadow-md transition-all duration-300"
           >
             <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 rounded-xl bg-slate-50 shadow-sm flex items-center justify-center group-hover:bg-slate-900 transition-colors">
+              <div className="w-10 h-10 rounded-xl bg-slate-50 shadow-sm flex items-center justify-center group-hover:bg-slate-900 transition-colors border border-orange-50/50">
                 <Car className="h-5 w-5 text-slate-500 group-hover:text-white" />
               </div>
               <div className="flex flex-col items-start text-left">
@@ -193,16 +193,16 @@ export default function Profile() {
                 <p className="text-[11px] text-slate-500 font-medium">Toyota Prius • UBB 123X</p>
               </div>
             </div>
-            <ChevronRight className="h-5 w-5 text-slate-300" />
+            <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-orange-500 transition-colors" />
           </button>
 
           <button
             type="button"
             onClick={() => navigate("/driver/preferences/identity")}
-            className="w-full rounded-2xl border border-emerald-100 bg-emerald-50/20 px-5 py-5 flex items-center justify-between group active:scale-[0.98] transition-all"
+            className="w-full rounded-2xl border-2 border-orange-500/10 bg-cream px-5 py-5 flex items-center justify-between group active:scale-[0.98] hover:scale-[1.01] hover:bg-cream hover:shadow-md hover:border-orange-500/30 transition-all duration-300"
           >
             <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center group-hover:bg-[#03cd8c] transition-colors">
+              <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center group-hover:bg-[#03cd8c] transition-colors border border-orange-50">
                 <ShieldCheck className="h-5 w-5 text-[#03cd8c] group-hover:text-white" />
               </div>
               <div className="flex flex-col items-start text-left">
