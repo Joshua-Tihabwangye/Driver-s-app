@@ -124,6 +124,10 @@ import OTPVerification from "./screens/OTPVerification";
 import NotificationsCenter from "./screens/NotificationsCenter";
 import RatingsAndFeedback from "./screens/RatingsAndFeedback";
 import Settings from "./screens/Settings";
+import SettingsLanguage from "./screens/SettingsLanguage";
+import SettingsPassword from "./screens/SettingsPassword";
+import SettingsPrivacy from "./screens/SettingsPrivacy";
+import SettingsDeleteAccount from "./screens/SettingsDeleteAccount";
 import DocumentCenter from "./screens/DocumentCenter";
 import DestinationFilter from "./screens/DestinationFilter";
 import TripDetails from "./screens/TripDetails";
@@ -264,6 +268,10 @@ const SCREENS = [
   { id: "NotificationsCenter", label: "Notifications", path: "/driver/notifications", Component: NotificationsCenter },
   { id: "Ratings", label: "Ratings & Reviews", path: "/driver/ratings", Component: RatingsAndFeedback },
   { id: "Settings", label: "Settings", path: "/driver/settings", Component: Settings },
+  { id: "SettingsLanguage", label: "Settings – Language", path: "/driver/settings/language", Component: SettingsLanguage },
+  { id: "SettingsPassword", label: "Settings – Password", path: "/driver/settings/password", Component: SettingsPassword },
+  { id: "SettingsPrivacy", label: "Settings – Privacy", path: "/driver/settings/privacy", Component: SettingsPrivacy },
+  { id: "SettingsDelete", label: "Settings – Delete Account", path: "/driver/settings/delete-account", Component: SettingsDeleteAccount },
   { id: "Documents", label: "Document Center", path: "/driver/documents", Component: DocumentCenter },
   { id: "DestinationFilter", label: "Destination Filter", path: "/driver/navigation/destination", Component: DestinationFilter },
   { id: "TripDetails", label: "Trip Details", path: "/driver/trip/:tripId/details", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/details`, Component: TripDetails },

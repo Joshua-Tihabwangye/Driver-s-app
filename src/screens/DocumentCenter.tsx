@@ -1,5 +1,6 @@
 import { FileText, ChevronLeft, CheckCircle2, AlertCircle, Clock, Upload, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState, ChangeEvent } from "react";
 
 const DOCUMENTS = [
   {
@@ -42,6 +43,31 @@ const DOCUMENTS = [
 
 export default function DocumentCenter() {
   const navigate = useNavigate();
+  const [docs, setDocs] = useState(DOCUMENTS);
+
+  const handleUpload = (docId: number, event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setDocs((prev) =>
+      prev.map((doc) =>
+        doc.id === docId
+          ? {
+              ...doc,
+              status: "uploaded",
+              expiry: `Uploaded: ${file.name}`,
+              statusColor: "text-emerald-500",
+              statusBg: "bg-emerald-50",
+              icon: CheckCircle2,
+            }
+          : doc
+      )
+    );
+  };
+
+  const triggerUpload = (docId: number) => {
+    const input = document.getElementById(`doc-upload-${docId}`) as HTMLInputElement | null;
+    if (input) input.click();
+  };
 
   return (
     <div className="flex flex-col h-full bg-[#f8fafc]">
@@ -117,7 +143,7 @@ export default function DocumentCenter() {
             <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Required Documents</h2>
           </div>
           <div className="space-y-3">
-            {DOCUMENTS.map((doc) => (
+            {docs.map((doc) => (
               <div
                 key={doc.id}
                 className="bg-cream rounded-[2.5rem] border-2 border-orange-500/10 p-6 flex items-center space-x-4 shadow-sm active:scale-[0.98] hover:scale-[1.01] hover:border-orange-500/30 transition-all duration-300"
@@ -136,9 +162,22 @@ export default function DocumentCenter() {
                   <p className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-tight">{doc.expiry}</p>
                 </div>
                 {doc.status !== "verified" ? (
-                  <button className="h-10 w-10 bg-emerald-50 rounded-xl flex items-center justify-center border border-emerald-100 active:scale-95 transition-all group">
+                  <>
+                    <input
+                      id={`doc-upload-${doc.id}`}
+                      type="file"
+                      accept="image/*,application/pdf"
+                      className="hidden"
+                      onChange={(event) => handleUpload(doc.id, event)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => triggerUpload(doc.id)}
+                      className="h-10 w-10 bg-emerald-50 rounded-xl flex items-center justify-center border border-emerald-100 active:scale-95 transition-all group"
+                    >
                     <Upload className="h-4 w-4 text-[#03cd8c] group-hover:scale-110 transition-transform" />
-                  </button>
+                    </button>
+                  </>
                 ) : (
                   <ChevronRight className="h-5 w-5 text-slate-200" />
                 )}

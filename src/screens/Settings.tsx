@@ -1,10 +1,11 @@
 import { Settings as SettingsIcon, ChevronLeft, Globe, Moon, Bell, Lock, Shield, ChevronRight, UserX } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useTheme } from "../context/ThemeContext";
 
 export default function Settings() {
   const navigate = useNavigate();
-  const [darkMode, setDarkMode] = useState(false);
+  const { isDark, toggleTheme } = useTheme();
   const [notifications, setNotifications] = useState(true);
 
   return (
@@ -43,7 +44,11 @@ export default function Settings() {
         <section className="space-y-4">
           <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-1">App Configuration</h2>
           <div className="bg-cream rounded-[2.5rem] border-2 border-orange-500/10 shadow-sm divide-y divide-orange-500/5 overflow-hidden">
-            <div className="flex items-center justify-between p-6 hover:bg-orange-50/30 transition-colors group cursor-pointer">
+            <button
+              type="button"
+              onClick={() => navigate("/driver/settings/language")}
+              className="flex w-full items-center justify-between p-6 hover:bg-orange-50/30 transition-colors group text-left"
+            >
               <div className="flex items-center space-x-4">
                 <div className="h-10 w-10 bg-orange-100/50 rounded-2xl flex items-center justify-center border border-orange-200/50">
                   <Globe className="h-5 w-5 text-orange-600" />
@@ -54,7 +59,7 @@ export default function Settings() {
                 </div>
               </div>
               <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-orange-500 transition-colors" />
-            </div>
+            </button>
 
             <div className="flex items-center justify-between p-6">
               <div className="flex items-center space-x-4">
@@ -67,10 +72,10 @@ export default function Settings() {
                 </div>
               </div>
               <button
-                onClick={() => setDarkMode(!darkMode)}
-                className={`w-12 h-6 rounded-full relative transition-colors ${darkMode ? "bg-orange-500" : "bg-slate-200"}`}
+                onClick={toggleTheme}
+                className={`w-12 h-6 rounded-full relative transition-colors ${isDark ? "bg-orange-500" : "bg-slate-200"}`}
               >
-                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${darkMode ? "left-7" : "left-1"} shadow-sm`} />
+                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${isDark ? "left-7" : "left-1"} shadow-sm`} />
               </button>
             </div>
 
@@ -98,7 +103,11 @@ export default function Settings() {
         <section className="space-y-4">
           <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-1">Security & Privacy</h2>
           <div className="bg-cream rounded-[2.5rem] border-2 border-orange-500/10 shadow-sm divide-y divide-orange-500/5 overflow-hidden">
-            <div className="flex items-center justify-between p-6">
+            <button
+              type="button"
+              onClick={() => navigate("/driver/settings/password")}
+              className="flex w-full items-center justify-between p-6 text-left"
+            >
               <div className="flex items-center space-x-4">
                 <div className="h-10 w-10 bg-slate-50 rounded-2xl flex items-center justify-center font-black">
                   <Lock className="h-5 w-5 text-slate-600" />
@@ -109,9 +118,13 @@ export default function Settings() {
                 </div>
               </div>
               <ChevronRight className="h-5 w-5 text-slate-300" />
-            </div>
+            </button>
 
-            <div className="flex items-center justify-between p-6">
+            <button
+              type="button"
+              onClick={() => navigate("/driver/settings/privacy")}
+              className="flex w-full items-center justify-between p-6 text-left"
+            >
               <div className="flex items-center space-x-4">
                 <div className="h-10 w-10 bg-slate-50 rounded-2xl flex items-center justify-center">
                   <Shield className="h-5 w-5 text-slate-600" />
@@ -122,13 +135,17 @@ export default function Settings() {
                 </div>
               </div>
               <ChevronRight className="h-5 w-5 text-slate-300" />
-            </div>
+            </button>
           </div>
         </section>
 
         {/* Danger Zone */}
         <section className="pt-4 pb-10">
-          <button className="w-full rounded-full py-5 flex items-center justify-center space-x-3 bg-red-50 text-red-500 border-2 border-red-100 active:scale-[0.98] transition-all hover:bg-red-100/30">
+          <button
+            type="button"
+            onClick={() => navigate("/driver/settings/delete-account")}
+            className="w-full rounded-full py-5 flex items-center justify-center space-x-3 bg-red-50 text-red-500 border-2 border-red-100 active:scale-[0.98] transition-all hover:bg-red-100/30"
+          >
             <UserX className="h-5 w-5" />
             <span className="text-xs font-black uppercase tracking-widest">Delete My Account</span>
           </button>
