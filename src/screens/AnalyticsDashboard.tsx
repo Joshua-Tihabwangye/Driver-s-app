@@ -184,19 +184,23 @@ export default function AnalyticsDashboard() {
             >
               <ChevronLeft className="h-5 w-5 text-white" />
             </button>
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
-              <TrendingUp className="h-5 w-5 text-white" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-100/70">
-                Analysis
-              </span>
-              <h1 className="text-base font-black text-white tracking-tight leading-tight">
-                Analytics
-              </h1>
+          </div>
+          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
+            <div className="flex items-center space-x-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+                <TrendingUp className="h-5 w-5 text-white" />
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-100/70 text-center">
+                  Analysis
+                </span>
+                <h1 className="text-base font-black text-white tracking-tight leading-tight text-center">
+                  Analytics
+                </h1>
+              </div>
             </div>
           </div>
-          <div className="flex bg-white/20 rounded-xl p-1 border border-white/30 backdrop-blur-sm">
+          <div className="flex bg-white/20 rounded-xl p-1 border border-white/30 backdrop-blur-sm z-20">
             {periods.map((p) => (
               <button
                 key={p}

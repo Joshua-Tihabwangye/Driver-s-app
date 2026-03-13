@@ -43,15 +43,22 @@ export default function D04RegistrationEvzoneDriverScreen() {
           }}
         />
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-90 transition-transform"
-          >
-            <ChevronLeft className="h-5 w-5 text-white" />
-          </button>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
-            <h1 className="text-base font-black text-white tracking-tight text-center">Driver Profile</h1>
+          <div className="flex items-center space-x-3">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-90 transition-transform"
+            >
+              <ChevronLeft className="h-5 w-5 text-white" />
+            </button>
+          </div>
+          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
+            <div className="flex items-center space-x-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+                <User className="h-5 w-5 text-white" />
+              </div>
+              <h1 className="text-base font-black text-white tracking-tight leading-tight text-center">Driver Profile</h1>
+            </div>
           </div>
           <div className="w-10" />
         </header>

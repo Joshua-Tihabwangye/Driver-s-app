@@ -107,14 +107,19 @@ export default function TripCompletionScreen({ initialJobType = "ride" }) {
             >
               <ChevronLeft className="h-5 w-5 text-white" />
             </button>
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
-              <CheckCircle2 className="h-5 w-5 text-white" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Review</span>
-              <p className="text-lg font-black text-white tracking-tight leading-tight">Trip Completed</p>
+          </div>
+          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
+            <div className="flex items-center space-x-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+                <CheckCircle2 className="h-5 w-5 text-white" />
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Review</span>
+                <p className="text-lg font-black text-white tracking-tight leading-tight text-center">Trip Completed</p>
+              </div>
             </div>
           </div>
+          <div className="w-11" />
         </header>
       </div>
 
