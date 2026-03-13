@@ -83,6 +83,13 @@
   scrollbar-width: none;
 }
 
+/* Ensure the icon + title block inside each phone header stays vertically centered */
+header > .pointer-events-none.absolute {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* ──────────────────────────────────────────────
    Font rendering
    ────────────────────────────────────────────── */

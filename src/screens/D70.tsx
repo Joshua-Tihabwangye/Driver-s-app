@@ -1,5 +1,6 @@
 import {
 AlertTriangle,
+ChevronLeft,
 LifeBuoy,
 MapPin,
 Phone,
@@ -71,13 +72,30 @@ export default function SafetyHubScreen() {
           }}
         />
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="w-9 h-9" />
-          <div className="w-9 h-9" />
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
-            <p className="text-center text-base font-black text-white tracking-tight leading-tight">
-              Safety Hub
-            </p>
+          <button
+            type="button"
+            onClick={() => navigate("/driver/more")}
+            className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white shadow-[0_10px_30px_rgba(3,205,140,0.35)] transition-all hover:border-white/40 active:scale-[0.97]"
+          >
+            <span className="absolute inset-0 rounded-full bg-white/10 blur-xl opacity-50" />
+            <ChevronLeft className="relative h-5 w-5 text-white" />
+          </button>
+          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
+            <div className="flex items-center space-x-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-white/10 shadow-lg shadow-emerald-500/40">
+                <ShieldCheck className="h-6 w-6 text-white" />
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">
+                  Safety
+                </span>
+                <p className="text-base font-black text-white tracking-tight leading-tight text-center">
+                  Safety Hub
+                </p>
+              </div>
+            </div>
           </div>
+          <div className="w-9 h-9" />
         </header>
       </div>
 

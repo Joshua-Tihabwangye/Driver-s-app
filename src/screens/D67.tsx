@@ -126,31 +126,36 @@ export default function ProofOfTripMainScreen() {
           }}
         />
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
             <button
               onClick={() => navigate(-1)}
               className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
             >
               <ChevronLeft className="h-5 w-5 text-white" />
             </button>
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md shadow-inner">
-              <ShieldCheck className="h-6 w-6 text-white" />
-            </div>
-            <div className="flex flex-col text-left">
-              <span className="text-[10px] uppercase tracking-[0.2em] font-black text-white/70">
-                Driver · Safety
-              </span>
-              <h1 className="text-xl font-black text-white leading-tight">
-                Trip Documentation
-              </h1>
-              <div className="mt-1 inline-flex items-center bg-white/20 backdrop-blur-md rounded-full px-3 py-0.5 border border-white/20">
-                <div className="h-1.5 w-1.5 rounded-full bg-white mr-2" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-white">
-                  {jobTypeLabelMap[jobType]}
+          </div>
+          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
+            <div className="flex items-center space-x-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+                <ShieldCheck className="h-5 w-5 text-white" />
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-[10px] uppercase tracking-[0.2em] font-black text-emerald-100/70 text-center">
+                  Driver · Safety
                 </span>
+                <p className="text-base font-black text-white tracking-tight leading-tight text-center">
+                  Trip Documentation
+                </p>
+                <div className="mt-1 inline-flex items-center bg-white/20 backdrop-blur-md rounded-full px-2.5 py-0.5 border border-white/20">
+                  <div className="h-1.5 w-1.5 rounded-full bg-white mr-1.5" />
+                  <span className="text-[8px] font-black uppercase tracking-widest text-white">
+                    {jobTypeLabelMap[jobType]}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
+          <div className="w-10" />
         </header>
       </div>
 
