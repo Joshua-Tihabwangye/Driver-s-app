@@ -9,6 +9,7 @@ import {
   Map,
   Phone,
   Settings as SettingsIcon,
+  SlidersHorizontal,
   Star,
   Bell,
   ShieldCheck,
@@ -139,6 +140,12 @@ export default function MoreMenu() {
         </MenuSection>
 
         <MenuSection title="App Preferences">
+          <MenuItem
+            icon={SlidersHorizontal}
+            label="Preferences"
+            description="Driver defaults and app behavior"
+            onClick={() => navigate("/driver/preferences")}
+          />
           <MenuItem
             icon={SettingsIcon}
             label="Settings"
