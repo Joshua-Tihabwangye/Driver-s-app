@@ -33,8 +33,6 @@ export default function CancelRideExtraCommentScreen() {
           className="absolute inset-0"
           style={{
             background: "linear-gradient(135deg, #f87171 0%, #ef4444 50%, #dc2626 100%)",
-            borderBottomLeftRadius: '40px',
-            borderBottomRightRadius: '40px',
           }}
         />
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">

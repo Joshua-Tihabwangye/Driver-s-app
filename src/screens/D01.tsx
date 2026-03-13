@@ -74,14 +74,12 @@ export default function DriverHomeScreen() {
 
   return (
     <div className="flex flex-col min-h-full bg-[#f8fafc]">
-      {/* Green curved header */}
+      {/* Green straight header */}
       <div className="relative shrink-0" style={{ minHeight: 90 }}>
         <div
           className="absolute inset-0"
           style={{
             background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
-            borderBottomLeftRadius: '40px',
-            borderBottomRightRadius: '40px',
           }}
         />
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
@@ -101,16 +99,19 @@ export default function DriverHomeScreen() {
                 <User className="h-5 w-5 text-white" />
                 <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-emerald-400 border-2 border-white animate-pulse" />
               </span>
-              <div className="flex flex-col">
-                <span className="text-[10px] uppercase font-black tracking-[0.1em] text-white/70">
-                  Super App
-                </span>
-                <span className="text-base font-black text-white tracking-tight">
-                  EVzone Dashboard
-                </span>
-              </div>
             </button>
           </div>
+          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
+            <div className="flex flex-col items-center">
+              <span className="text-[10px] uppercase font-black tracking-[0.1em] text-white/70">
+                Super App
+              </span>
+              <span className="text-base font-black text-white tracking-tight">
+                EVzone Dashboard
+              </span>
+            </div>
+          </div>
+          <div className="w-10" />
         </header>
       </div>
 

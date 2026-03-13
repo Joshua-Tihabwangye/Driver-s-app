@@ -58,8 +58,6 @@ export default function IdentityVerificationScreen() {
             background: isDark
                 ? "linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%)"
                 : "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
-            borderBottomLeftRadius: '40px',
-            borderBottomRightRadius: '40px',
           }}
         />
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
@@ -70,7 +68,9 @@ export default function IdentityVerificationScreen() {
           >
             <ChevronLeft className="h-5 w-5 text-white" />
           </button>
-          <h1 className="text-base font-black text-white tracking-tight">Identity</h1>
+          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
+            <h1 className="text-base font-black text-white tracking-tight text-center">Identity</h1>
+          </div>
           <button
             type="button"
             onClick={toggleTheme}

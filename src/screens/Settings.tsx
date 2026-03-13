@@ -14,8 +14,6 @@ export default function Settings() {
           className="absolute inset-0"
           style={{
             background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
-            borderBottomLeftRadius: '40px',
-            borderBottomRightRadius: '40px',
           }}
         />
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
@@ -29,11 +27,14 @@ export default function Settings() {
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
               <SettingsIcon className="h-5 w-5 text-white" />
             </div>
-            <div className="flex flex-col">
+          </div>
+          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
+            <div className="flex flex-col items-center">
               <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Preferences</span>
               <p className="text-base font-black text-white tracking-tight leading-tight">Settings</p>
             </div>
           </div>
+          <div className="w-10" />
         </header>
       </div>
 
