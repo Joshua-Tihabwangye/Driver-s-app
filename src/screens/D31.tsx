@@ -47,8 +47,6 @@ export default function OnlineMapDashboardScreen() {
           className="absolute inset-0"
           style={{
             background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
-            borderBottomLeftRadius: '40px',
-            borderBottomRightRadius: '40px',
           }}
         />
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">

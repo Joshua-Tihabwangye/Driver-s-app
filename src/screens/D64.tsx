@@ -32,14 +32,12 @@ export default function FollowMyRideSelectionScreen() {
 
   return (
     <div className="flex flex-col h-full bg-[#f8fafc]">
-      {/* Green curved header */}
+      {/*Straight header */}
       <div className="relative shrink-0" style={{ minHeight: 90 }}>
         <div
           className="absolute inset-0"
           style={{
             background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
-            borderBottomLeftRadius: '40px',
-            borderBottomRightRadius: '40px',
           }}
         />
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
@@ -49,9 +47,11 @@ export default function FollowMyRideSelectionScreen() {
           >
             <ChevronLeft className="h-5 w-5 text-white" />
           </button>
-          <div className="flex flex-col items-center">
-             <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Support</span>
-             <p className="text-lg font-black text-white tracking-tight leading-tight">Safety Hub</p>
+          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
+            <div className="flex flex-col items-center">
+               <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Support</span>
+               <p className="text-lg font-black text-white tracking-tight leading-tight">Safety Hub</p>
+            </div>
           </div>
           <div className="w-9" />
         </header>

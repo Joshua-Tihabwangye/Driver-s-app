@@ -46,8 +46,6 @@ export default function DocumentsVerifiedScreen() {
           className="absolute inset-0"
           style={{
             background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
-            borderBottomLeftRadius: '40px',
-            borderBottomRightRadius: '40px',
           }}
         />
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
@@ -58,8 +56,10 @@ export default function DocumentsVerifiedScreen() {
           >
             <ChevronLeft className="h-5 w-5 text-white" />
           </button>
-          <h1 className="text-base font-black text-white tracking-tight">Personal Verification</h1>
-          <div className="w-10" /> {/* Spacer */}
+          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
+            <h1 className="text-base font-black text-white tracking-tight text-center">Personal Verification</h1>
+          </div>
+          <div className="w-10" />
         </header>
       </div>
 
