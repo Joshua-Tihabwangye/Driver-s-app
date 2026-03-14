@@ -35,21 +35,21 @@ export default function OnlineMapViewScreen() {
           }}
         />
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-white" />
-            </button>
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
-              <Map className="h-5 w-5 text-white" />
-            </div>
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
-            <div className="flex flex-col items-center">
-              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-100/70">Navigation</span>
-              <p className="text-base font-black text-white tracking-tight leading-tight text-center">Map Explorer</p>
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
+          >
+            <ChevronLeft className="h-5 w-5 text-white" />
+          </button>
+          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
+            <div className="flex items-center space-x-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
+                <Map className="h-5 w-5 text-white" />
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-100/70">Navigation</span>
+                <p className="text-base font-black text-white tracking-tight leading-tight text-center">Map Explorer</p>
+              </div>
             </div>
           </div>
           <div className="inline-flex items-center rounded-full bg-white/20 backdrop-blur-md border border-white/30 px-3 py-1 text-[10px] font-black text-white uppercase tracking-widest shrink-0">
