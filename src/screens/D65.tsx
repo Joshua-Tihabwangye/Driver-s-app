@@ -99,10 +99,7 @@ export default function FollowMyRideScreen() {
              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-500">Contact</span>
              <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Trip Sharing</h2>
           </div>
-          <div className="h-10 w-10 bg-cream border-2 border-orange-500/10 rounded-2xl flex items-center justify-center text-orange-500">
-             <Users className="h-5 w-5" />
-          </div>
-        </div>
+</div>
 
         {/* Intro card */}
         <section className="rounded-[2.5rem] bg-slate-900 border border-slate-800 text-white p-6 space-y-4 shadow-2xl">

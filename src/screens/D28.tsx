@@ -84,10 +84,7 @@ export default function D28MapViewOnlineScreen() {
 
           {/* Driver marker */}
           <div className="absolute left-16 bottom-16 flex flex-col items-center group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#0b1e3a] border-2 border-white shadow-xl group-hover:scale-110 transition-transform">
-              <Navigation className="h-4 w-4 text-orange-500" />
-            </div>
-            <span className="mt-2 rounded-lg bg-[#0b1e3a]/90 backdrop-blur-sm px-2 py-0.5 text-[8px] font-black text-white uppercase tracking-[0.2em]">
+<span className="mt-2 rounded-lg bg-[#0b1e3a]/90 backdrop-blur-sm px-2 py-0.5 text-[8px] font-black text-white uppercase tracking-[0.2em]">
               LOCATION
             </span>
           </div>

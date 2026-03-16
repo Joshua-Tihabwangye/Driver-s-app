@@ -69,10 +69,7 @@ export default function CancelRideNoShowAlertScreen() {
         <section className="space-y-4">
           <div className="rounded-[2.5rem] border border-red-100 bg-red-50 p-6 space-y-4 shadow-xl shadow-red-500/5">
             <div className="flex items-center space-x-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm">
-                <AlertTriangle className="h-5 w-5 text-red-500" />
-              </div>
-              <div className="flex flex-col">
+<div className="flex flex-col">
                  <span className="text-[10px] tracking-[0.2em] font-black uppercase text-red-400">ABORT PROTOCOL</span>
                  <p className="text-sm font-black text-red-900 uppercase tracking-tight">Passenger no-show?</p>
               </div>
@@ -109,10 +106,7 @@ export default function CancelRideNoShowAlertScreen() {
           {/* Next steps info */}
           <div className="rounded-[2.5rem] border border-slate-100 bg-white p-6 flex flex-col space-y-4 shadow-xl shadow-slate-200/50">
             <div className="flex items-center space-x-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50">
-                <CheckCircle2 className="h-5 w-5 text-[#03cd8c]" />
-              </div>
-              <div className="flex flex-col">
+<div className="flex flex-col">
                  <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">CONSEQUENCE</span>
                  <p className="text-sm font-black text-slate-900 uppercase tracking-tight">What happens next</p>
               </div>

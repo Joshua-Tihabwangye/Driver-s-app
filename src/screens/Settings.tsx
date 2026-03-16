@@ -42,10 +42,7 @@ export default function Settings() {
               className="flex w-full items-center justify-between p-6 hover:bg-orange-50/30 transition-colors group text-left"
             >
               <div className="flex items-center space-x-4">
-                <div className="h-10 w-10 bg-orange-100/50 rounded-2xl flex items-center justify-center border border-orange-200/50">
-                  <Globe className="h-5 w-5 text-orange-600" />
-                </div>
-                <div>
+<div>
                   <h3 className="text-xs font-black text-slate-900 uppercase">App Language</h3>
                   <p className="text-[10px] text-slate-400 font-bold">English (UK)</p>
                 </div>
@@ -55,10 +52,7 @@ export default function Settings() {
 
             <div className="flex items-center justify-between p-6">
               <div className="flex items-center space-x-4">
-                <div className="h-10 w-10 bg-slate-900 rounded-2xl flex items-center justify-center shadow-lg shadow-slate-900/10">
-                  <Moon className="h-5 w-5 text-white" />
-                </div>
-                <div>
+<div>
                   <h3 className="text-xs font-black text-slate-900 uppercase">Dark Mode</h3>
                   <p className="text-[10px] text-slate-400 font-bold">Standard appearance</p>
                 </div>
@@ -73,10 +67,7 @@ export default function Settings() {
 
             <div className="flex items-center justify-between p-6">
               <div className="flex items-center space-x-4">
-                <div className="h-10 w-10 bg-orange-100/50 rounded-2xl flex items-center justify-center border border-orange-200/50">
-                  <Bell className="h-5 w-5 text-orange-600" />
-                </div>
-                <div>
+<div>
                   <h3 className="text-xs font-black text-slate-900 uppercase">Push Notifications</h3>
                   <p className="text-[10px] text-slate-400 font-bold">Ride & Service Alerts</p>
                 </div>
@@ -101,10 +92,7 @@ export default function Settings() {
               className="flex w-full items-center justify-between p-6 text-left"
             >
               <div className="flex items-center space-x-4">
-                <div className="h-10 w-10 bg-slate-50 rounded-2xl flex items-center justify-center font-black">
-                  <Lock className="h-5 w-5 text-slate-600" />
-                </div>
-                <div>
+<div>
                   <h3 className="text-xs font-black text-slate-900 uppercase">Change Password</h3>
                   <p className="text-[10px] text-slate-400 font-bold">Secure your account</p>
                 </div>
@@ -118,10 +106,7 @@ export default function Settings() {
               className="flex w-full items-center justify-between p-6 text-left"
             >
               <div className="flex items-center space-x-4">
-                <div className="h-10 w-10 bg-slate-50 rounded-2xl flex items-center justify-center">
-                  <Shield className="h-5 w-5 text-slate-600" />
-                </div>
-                <div>
+<div>
                   <h3 className="text-xs font-black text-slate-900 uppercase">Privacy Center</h3>
                   <p className="text-[10px] text-slate-400 font-bold">Manage your data</p>
                 </div>

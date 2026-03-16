@@ -217,10 +217,7 @@ export default function AnalyticsDashboard() {
             <div className="absolute top-0 right-0 w-32 h-32 bg-[#03cd8c]/20 rounded-full -mr-16 -mt-16 blur-2xl" />
             <div className="flex items-center justify-between relative">
               <div className="flex items-center space-x-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-orange-500 text-white shadow-lg shadow-orange-500/30">
-                  <TrendingUp className="h-6 w-6 stroke-[2.5px]" />
-                </div>
-                <div className="flex flex-col">
+<div className="flex flex-col">
                   <p className="text-[10px] tracking-[0.2em] font-bold uppercase text-orange-500">
                      Total Income
                   </p>

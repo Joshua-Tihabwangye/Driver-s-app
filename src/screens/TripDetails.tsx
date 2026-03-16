@@ -100,19 +100,13 @@ export default function TripDetails() {
 
            <div className="grid grid-cols-2 gap-4 pt-6 border-t border-slate-50">
               <div className="flex items-center space-x-3">
-                 <div className="h-10 w-10 bg-slate-50 rounded-2xl flex items-center justify-center">
-                    <Navigation className="h-5 w-5 text-slate-400" />
-                 </div>
-                 <div>
+<div>
                     <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Distance</p>
                     <p className="text-xs font-black text-slate-900">{trip.distance}</p>
                  </div>
               </div>
               <div className="flex items-center space-x-3">
-                 <div className="h-10 w-10 bg-slate-50 rounded-2xl flex items-center justify-center">
-                    <Clock className="h-5 w-5 text-slate-400" />
-                 </div>
-                 <div>
+<div>
                     <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Duration</p>
                     <p className="text-xs font-black text-slate-900">{trip.duration}</p>
                  </div>

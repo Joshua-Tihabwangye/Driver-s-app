@@ -216,10 +216,7 @@ export default function RideInProgressScreen() {
 
           <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-[#f0fff4]/50 p-6 flex flex-col space-y-4 shadow-sm hover:border-orange-500/30 transition-all">
             <div className="flex items-center space-x-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm border border-orange-50 text-orange-500">
-                <ShieldCheck className="h-5 w-5" />
-              </div>
-              <div className="flex flex-col">
+<div className="flex flex-col">
                  <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-500">Safety Support</span>
                  <p className="text-xs font-black text-slate-900 uppercase tracking-tight">Safety tools active</p>
               </div>

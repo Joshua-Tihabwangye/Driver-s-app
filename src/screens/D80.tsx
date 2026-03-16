@@ -78,10 +78,7 @@ export default function ActiveDeliveryRouteScreen() {
 
           {/* Next stop marker */}
           <div className="absolute right-12 top-16 flex flex-col items-center">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white border-2 border-[#03cd8c] shadow-xl">
-              <Package className="h-5 w-5 text-[#03cd8c]" />
-            </div>
-            <span className="mt-2 rounded-full bg-slate-900 px-3 py-1 text-[9px] font-black text-white uppercase tracking-widest border border-white/20">
+<span className="mt-2 rounded-full bg-slate-900 px-3 py-1 text-[9px] font-black text-white uppercase tracking-widest border border-white/20">
               Next Stop
             </span>
           </div>

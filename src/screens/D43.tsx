@@ -187,20 +187,14 @@ export default function IncomingRideRequestRichScreen() {
 
           {/* Pickup marker */}
           <div className="absolute left-10 top-12 flex flex-col items-center">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 border border-white/20 shadow-xl">
-              <MapPin className="h-5 w-5 text-[#03cd8c]" />
-            </div>
-            <span className="mt-2 rounded-full bg-slate-900 px-3 py-1 text-[10px] font-black text-white uppercase tracking-widest shadow-xl">
+<span className="mt-2 rounded-full bg-slate-900 px-3 py-1 text-[10px] font-black text-white uppercase tracking-widest shadow-xl">
               Pickup
             </span>
           </div>
 
           {/* Drop-off marker */}
           <div className="absolute right-12 bottom-12 flex flex-col items-center">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white border border-slate-100 shadow-xl">
-              <MapPin className="h-5 w-5 text-slate-900" />
-            </div>
-            <span className="mt-2 rounded-full bg-white px-3 py-1 text-[10px] font-black text-slate-900 uppercase tracking-widest shadow-xl">
+<span className="mt-2 rounded-full bg-white px-3 py-1 text-[10px] font-black text-slate-900 uppercase tracking-widest shadow-xl">
               Final
             </span>
           </div>

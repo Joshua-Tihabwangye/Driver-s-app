@@ -131,10 +131,7 @@ export default function ProofOfTripActiveTripScreen() {
 
           {/* Driver marker */}
           <div className="absolute left-[20%] bottom-[20%] flex flex-col items-center">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 shadow-xl border-2 border-white transform rotate-45">
-              <Navigation className="h-5 w-5 text-orange-500 transform -rotate-45" />
-            </div>
-          </div>
+</div>
 
           {/* Snapshot label */}
           <div className="absolute left-4 top-4 rounded-xl bg-slate-900/90 backdrop-blur-md px-3 py-1.5 text-[9px] font-black text-white uppercase tracking-widest border border-white/20 shadow-xl flex items-center">

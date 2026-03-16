@@ -64,10 +64,7 @@ export default function DocumentUnderReviewScreen() {
         <section className="rounded-[2.5rem] bg-white border border-slate-100 p-6 space-y-4 shadow-sm relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
           <div className="flex items-center space-x-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-50 border border-amber-100 shadow-inner">
-              <Hourglass className="h-5 w-5 text-amber-600 animate-pulse" />
-            </div>
-            <div className="flex flex-col">
+<div className="flex flex-col">
               <span className="inline-flex items-center rounded-lg bg-amber-100 px-2 py-0.5 text-[9px] font-black text-amber-700 w-fit uppercase tracking-wider">
                 In Review
               </span>

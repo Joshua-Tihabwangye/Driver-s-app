@@ -59,10 +59,7 @@ export default function QrScanConfirmationPopupScreen() {
           <div className="absolute inset-x-4 bottom-4">
             <div className="rounded-[2rem] bg-white/95 backdrop-blur-md shadow-2xl border border-white p-5 space-y-4">
               <div className="flex items-start space-x-4">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 shadow-inner">
-                  <CheckCircle2 className="h-6 w-6" />
-                </div>
-                <div className="flex-1 flex flex-col items-start min-w-0">
+<div className="flex-1 flex flex-col items-start min-w-0">
                   <span className="text-xs font-black text-slate-900 uppercase tracking-widest">
                     Code Scanned
                   </span>

@@ -69,19 +69,13 @@ export default function LastTripSummaryPopupScreen() {
 
           {/* Start and end markers */}
           <div className="absolute left-10 bottom-12 flex flex-col items-center">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 border border-white/20 shadow-xl">
-              <Car className="h-5 w-5 text-orange-500" />
-            </div>
-            <span className="mt-2 rounded-full bg-slate-900 px-3 py-1 text-[10px] font-black text-white uppercase tracking-widest shadow-xl">
+<span className="mt-2 rounded-full bg-slate-900 px-3 py-1 text-[10px] font-black text-white uppercase tracking-widest shadow-xl">
               Origin
             </span>
           </div>
 
           <div className="absolute right-12 top-12 flex flex-col items-center">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 border border-white/20 shadow-xl">
-              <DollarSign className="h-5 w-5 text-orange-500" />
-            </div>
-            <span className="mt-2 rounded-full bg-slate-900 px-3 py-1 text-[10px] font-black text-white uppercase tracking-widest shadow-xl">
+<span className="mt-2 rounded-full bg-slate-900 px-3 py-1 text-[10px] font-black text-white uppercase tracking-widest shadow-xl">
               Drop-off
             </span>
           </div>
