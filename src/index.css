@@ -155,12 +155,11 @@ body {
   padding-bottom: 20px !important;
 }
 
-/* Phone frame */
+/* Phone frame (transparent to allow open page composition) */
 .preview-root .screen-preview-host div[class*="w-[375px]"][class*="h-[812px]"] {
-  border-color: var(--evz-border) !important;
-  background: var(--evz-surface) !important;
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12) !important;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 /* ──────────────────────────────────────────────
@@ -175,11 +174,11 @@ body {
   background: var(--evz-stage) !important;
 }
 
-/* Phone frame */
+/* Phone frame (transparent to allow open layout) */
 .dark .preview-root .screen-preview-host div[class*="w-[375px]"][class*="h-[812px]"],
 .dark .app-phone {
-  background: var(--evz-surface) !important;
-  border-color: var(--evz-border) !important;
+  background: transparent !important;
+  border-color: transparent !important;
 }
 
 /* Header – darker green gradient */
@@ -196,10 +195,10 @@ body {
   background: linear-gradient(135deg, #0b1220 0%, #111827 45%, #1f2937 100%) !important;
 }
 
-/* Main content area */
+/* Main content area (transparent for open layout) */
 .dark .app-main,
 .dark .preview-root .screen-preview-host .app-main {
-  background: var(--evz-surface) !important;
+  background: transparent !important;
 }
 
 /* Core page wrappers with hardcoded light backgrounds */
@@ -219,7 +218,7 @@ body {
 .dark .app-root [style*="background-color: #f8fafc"],
 .dark .app-root [style*="background:#f1f5f9"],
 .dark .app-root [style*="background: #f1f5f9"] {
-  background: var(--evz-surface) !important;
+  background: transparent !important; /* Open layout instead of solid surface wrapper */
 }
 
 /* Bottom nav */

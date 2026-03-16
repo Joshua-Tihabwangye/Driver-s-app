@@ -14,7 +14,7 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex flex-col p-6">
+    <div className="min-h-screen  flex flex-col p-6">
       <header className="mb-10">
         <button
           onClick={() => navigate(-1)}

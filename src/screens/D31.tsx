@@ -145,7 +145,7 @@ export default function OnlineMapDashboardScreen() {
           <div className="px-1">
             <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Quick Actions</h2>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <QuickAction
               icon={Map}
               label="Map View"

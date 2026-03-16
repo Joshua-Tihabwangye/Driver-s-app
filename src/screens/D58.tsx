@@ -21,7 +21,7 @@ export default function CancelRideExtraCommentScreen() {
   const canSubmit = notes.trim().length > 0;
 
   return (
-    <div className="flex flex-col h-full bg-[#f8fafc]">
+    <div className="flex flex-col h-full ">
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }

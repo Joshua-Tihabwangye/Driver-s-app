@@ -18,7 +18,7 @@ import { useNavigate } from "react-router-dom";
 export default function CancelRideNoShowAlertScreen() {
   const navigate = useNavigate();
   return (
-    <div className="flex flex-col h-full bg-[#f8fafc]">
+    <div className="flex flex-col h-full ">
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }

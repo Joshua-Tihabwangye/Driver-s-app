@@ -96,7 +96,7 @@ export default function CashOutScreen() {
 
   if (step === "success") {
     return (
-      <div className="flex flex-col h-full bg-[#f8fafc]">
+      <div className="flex flex-col h-full ">
         <div className="flex-1 flex flex-col items-center justify-center px-8 text-center">
           <div className="h-20 w-20 rounded-full bg-[#d1fae5] flex items-center justify-center mb-6">
             <CheckCircle2 className="h-10 w-10 text-[#03cd8c]" />
@@ -141,7 +141,7 @@ export default function CashOutScreen() {
 
   if (step === "confirm") {
     return (
-      <div className="flex flex-col h-full bg-[#f8fafc]">
+      <div className="flex flex-col h-full ">
         <div className="relative" style={{ minHeight: 90 }}>
           
           <header className="relative z-10 flex items-center justify-between px-6 pt-5 pb-4">
@@ -228,7 +228,7 @@ export default function CashOutScreen() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-[#f8fafc]">
+    <div className="flex flex-col h-full ">
 
         {/* Green curved header */}
         <div className="relative" style={{ minHeight: 90 }}>

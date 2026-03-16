@@ -20,7 +20,7 @@ export default function ShuttleLinkInfoScreen() {
   };
 
   return (
-    <div className="flex flex-col min-h-full bg-[#f8fafc]">
+    <div className="flex flex-col min-h-full ">
       {/* Header aligned with shell design */}
       <div className="relative shrink-0" style={{ minHeight: 90 }}>
         

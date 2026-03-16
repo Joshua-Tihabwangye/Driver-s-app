@@ -59,7 +59,7 @@ export default function AppPhoneShell({ children }: AppPhoneShellProps) {
 
   return (
     <div
-      className="relative min-h-screen w-full flex flex-col"
+      className="relative min-h-screen w-full flex flex-col items-center"
       style={{ backgroundImage: stageBackground }}
     >
       <div
@@ -72,12 +72,18 @@ export default function AppPhoneShell({ children }: AppPhoneShellProps) {
           isDark ? "bg-blue-500/10" : "bg-blue-300/20"
         }`}
       />
-      <div
-        className={`relative isolate flex-1 flex flex-col w-full pb-[60px] ${
-          isDark ? "bg-transparent" : "bg-transparent"
-        }`}
+      
+      {/* Responsive layout wrapper */}
+      <div 
+        className="w-full h-full flex flex-col flex-1"
       >
-        {children}
+        <div
+          className={`relative isolate flex-1 flex flex-col w-full mx-auto pb-[60px] transition-all duration-300 md:max-w-3xl lg:max-w-5xl md:px-6 lg:px-8 ${
+            isDark ? "bg-transparent" : "bg-transparent"
+          }`}
+        >
+          {children}
+        </div>
       </div>
       <BottomNav isVisible={isVisible} />
     </div>

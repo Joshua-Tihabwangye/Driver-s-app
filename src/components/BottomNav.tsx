@@ -115,7 +115,7 @@ export default function BottomNav({ isVisible = true }: { isVisible?: boolean })
       style={{ bottom: 0 }}
     >
       <div
-        className={`mx-auto flex h-[60px] w-full max-w-[640px] items-center ${
+        className={`mx-auto flex h-[60px] w-full items-center transition-all duration-300 max-w-[640px] md:max-w-3xl lg:max-w-5xl md:px-6 lg:px-8 ${
           isDark
             ? "bg-[#020617]/98 border-t border-white/[0.04]"
             : "bg-white/95 border-t border-slate-100"
