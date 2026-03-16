@@ -34,25 +34,20 @@ export default function EmergencyAssistanceMapVariantScreen() {
     <div className="flex flex-col h-full bg-[#f8fafc]">
       {/* Green curved header */}
       <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        <div
-          className="absolute inset-0"
-          style={{
-            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
-          }}
-        />
+        
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
           <div className="flex items-center space-x-3">
             <button
               onClick={() => navigate(-1)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
             >
-              <ChevronLeft className="h-5 w-5 text-white" />
+              <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
             </button>
           </div>
           <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
             <div className="flex flex-col items-center">
-               <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Support</span>
-               <p className="text-lg font-black text-white tracking-tight leading-tight text-center">Safety Toolkit</p>
+               <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-500 dark:text-slate-400">Support</span>
+               <p className="text-lg font-black text-slate-900 dark:text-white tracking-tight leading-tight text-center">Safety Toolkit</p>
             </div>
           </div>
           <div className="w-9" />

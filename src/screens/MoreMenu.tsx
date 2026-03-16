@@ -51,21 +51,21 @@ function MenuItem({
     <button
       type="button"
       onClick={onClick}
-      className={`flex w-full items-center rounded-2xl border border-orange-500/5 bg-cream px-4 py-3 active:scale-[0.98] transition-all duration-200 group ${
-        variant === "danger" ? "hover:bg-red-50 hover:border-red-100" : "hover:border-orange-500/20 shadow-sm"
+      className={`flex w-full items-center rounded-2xl bg-cream dark:bg-slate-800 px-4 py-3 active:scale-[0.98] transition-all duration-200 group ${
+        variant === "danger" ? "hover:bg-red-50 dark:hover:bg-red-900/20" : "hover:bg-slate-50 dark:hover:bg-slate-700/50 shadow-sm"
       }`}
     >
       <div className={`flex h-9 w-9 items-center justify-center rounded-xl mr-4 shrink-0 transition-colors ${
-        variant === "danger" ? "bg-red-50 text-red-600" : "bg-white text-slate-500 group-hover:text-[#03cd8c] border border-orange-50"
+        variant === "danger" ? "bg-red-50 text-red-600 dark:bg-red-500/20 dark:text-red-400" : "bg-white text-slate-500 group-hover:text-[#03cd8c] dark:bg-orange-500/15 dark:text-orange-400 dark:group-hover:text-orange-300"
       }`}>
         <Icon className="h-4.5 w-4.5" />
       </div>
       <div className="flex-1 text-left">
-        <p className={`text-[13px] font-bold ${variant === "danger" ? "text-red-600" : "text-slate-800"} transition-colors`}>{label}</p>
-        <p className="text-[10px] text-slate-400 mt-0.5 line-clamp-1">{description}</p>
+        <p className={`text-[13px] font-bold ${variant === "danger" ? "text-red-600 dark:text-red-400" : "text-slate-800 dark:text-slate-200"} transition-colors`}>{label}</p>
+        <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 line-clamp-1">{description}</p>
       </div>
       <ChevronRight className={`h-4 w-4 ml-2 shrink-0 transition-colors ${
-        variant === "danger" ? "text-red-300" : "text-slate-300 group-hover:text-[#03cd8c]"
+        variant === "danger" ? "text-red-300 dark:text-red-500" : "text-slate-300 group-hover:text-[#03cd8c] dark:text-slate-600 dark:group-hover:text-orange-400"
       }`} />
     </button>
   );
@@ -77,17 +77,12 @@ export default function MoreMenu() {
   return (
     <div className="flex flex-col h-full bg-[#f8fafc]">
       <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        <div
-          className="absolute inset-0"
-          style={{
-            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
-          }}
-        />
+        
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
           <div className="w-9 h-9" />
           <div className="w-9 h-9" />
           <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
-            <p className="text-center text-base font-black text-white tracking-tight leading-tight">
+            <p className="text-center text-base font-black text-slate-900 dark:text-white tracking-tight leading-tight">
               More & Account
             </p>
           </div>
@@ -98,7 +93,7 @@ export default function MoreMenu() {
         <button
           type="button"
           onClick={() => navigate("/driver/profile")}
-          className="w-full flex items-center rounded-[2rem] border border-orange-500/10 bg-cream px-5 py-4 shadow-sm active:scale-[0.98] transition-all group"
+          className="w-full flex items-center rounded-[2rem] bg-cream dark:bg-slate-800 px-5 py-4 shadow-sm active:scale-[0.98] transition-all group"
         >
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#03cd8c] text-white text-lg font-bold mr-4 shrink-0 shadow-lg shadow-[#03cd8c]/20">
             JD

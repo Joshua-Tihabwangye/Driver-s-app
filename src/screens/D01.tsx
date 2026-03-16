@@ -76,19 +76,14 @@ export default function DriverHomeScreen() {
     <div className="flex flex-col min-h-full bg-[#f8fafc]">
       {/* Green straight header */}
       <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        <div
-          className="absolute inset-0"
-          style={{
-            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
-          }}
-        />
+        
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
           <div className="flex items-center space-x-3">
             <button
               onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
             >
-              <ChevronLeft className="h-5 w-5 text-white" />
+              <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
             </button>
           </div>
 
@@ -98,15 +93,15 @@ export default function DriverHomeScreen() {
               className="pointer-events-auto flex items-center space-x-3 text-left p-1 rounded-2xl active:scale-95 transition-transform"
               onClick={() => navigate("/driver/profile/edit")}
             >
-              <div className="relative inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
-                <User className="h-5 w-5 text-white" />
+              <div className="relative inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg">
+                <User className="h-5 w-5 text-slate-900 dark:text-white" />
                 <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-emerald-400 border-2 border-white animate-pulse" />
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-100/70">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
                   Protocol
                 </span>
-                <p className="text-base font-black text-white tracking-tight leading-tight">
+                <p className="text-base font-black text-slate-900 dark:text-white tracking-tight leading-tight">
                   Driver App
                 </p>
               </div>

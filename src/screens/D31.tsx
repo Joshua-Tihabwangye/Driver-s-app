@@ -49,15 +49,15 @@ export default function OnlineMapDashboardScreen() {
               onClick={() => navigate("/driver/more")}
               className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-200/50 dark:bg-white/10 backdrop-blur-md border border-slate-300/30 dark:border-white/10 shadow-sm active:scale-95 transition-transform"
             >
-              <ShieldCheck className="h-5 w-5 text-slate-800 dark:text-white" />
+              <ShieldCheck className="h-5 w-5 text-slate-800 dark:text-slate-900 dark:text-white" />
             </button>
           </div>
           <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
             <div className="flex items-center space-x-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-200/50 dark:bg-white/10 backdrop-blur-md border border-slate-300/30 dark:border-white/10 shadow-sm">
-                <ShieldCheck className="h-5 w-5 text-slate-800 dark:text-white" />
+                <ShieldCheck className="h-5 w-5 text-slate-800 dark:text-slate-900 dark:text-white" />
               </div>
-              <p className="text-center text-base font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+              <p className="text-center text-base font-black text-slate-900 dark:text-slate-900 dark:text-white tracking-tight leading-tight">
                 Online Dashboard
               </p>
             </div>
@@ -67,7 +67,7 @@ export default function OnlineMapDashboardScreen() {
             className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-200/50 dark:bg-white/10 backdrop-blur-md border border-slate-300/30 dark:border-white/10 shadow-sm active:scale-95 transition-transform group"
             title="Go Offline"
           >
-            <Power className="h-5 w-5 text-slate-800 dark:text-white group-hover:text-red-500 dark:group-hover:text-red-400 transition-colors" />
+            <Power className="h-5 w-5 text-slate-800 dark:text-slate-900 dark:text-white group-hover:text-red-500 dark:group-hover:text-red-400 transition-colors" />
           </button>
         </header>
       </div>

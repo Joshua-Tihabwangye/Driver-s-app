@@ -67,29 +67,24 @@ export default function PickedUpOrdersScreen() {
     <div className="flex flex-col min-h-full bg-[#f8fafc]">
       {/* Green curved header */}
       <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        <div
-          className="absolute inset-0"
-          style={{
-            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
-          }}
-        />
+        
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
           <button
             onClick={() => navigate(-1)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
           >
-            <ChevronLeft className="h-5 w-5 text-white" />
+            <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
           </button>
           <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
             <div className="flex items-center space-x-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md shadow-inner">
-                <Package className="h-6 w-6 text-white" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 shadow-inner">
+                <Package className="h-6 w-6 text-slate-900 dark:text-white" />
               </div>
               <div className="flex flex-col items-center">
-                <span className="text-[10px] uppercase tracking-[0.2em] font-black text-white/70">
+                <span className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-900 dark:text-white/70">
                   Driver · Deliveries
                 </span>
-                <h1 className="text-xl font-black text-white leading-tight">
+                <h1 className="text-xl font-black text-slate-900 dark:text-white leading-tight">
                   Picked Up Orders
                 </h1>
               </div>

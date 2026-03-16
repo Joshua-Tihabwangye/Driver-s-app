@@ -11,27 +11,19 @@ export default function Settings() {
   return (
     <div className="flex flex-col h-full bg-[#f8fafc]">
       <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        <div
-          className="absolute inset-0"
-          style={{
-            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
-          }}
-        />
+        
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
           <button
             onClick={() => navigate(-1)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
           >
-            <ChevronLeft className="h-5 w-5 text-white" />
+            <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
           </button>
           <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
             <div className="flex items-center space-x-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
-                <SettingsIcon className="h-5 w-5 text-white" />
-              </div>
               <div className="flex flex-col items-center">
-                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Preferences</span>
-                <p className="text-base font-black text-white tracking-tight leading-tight">Settings</p>
+                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-500 dark:text-slate-400">Preferences</span>
+                <p className="text-base font-black text-slate-900 dark:text-white tracking-tight leading-tight">Settings</p>
               </div>
             </div>
           </div>
@@ -43,7 +35,7 @@ export default function Settings() {
         {/* App Settings */}
         <section className="space-y-4">
           <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-1">App Configuration</h2>
-          <div className="bg-cream rounded-[2.5rem] border-2 border-orange-500/10 shadow-sm divide-y divide-orange-500/5 overflow-hidden">
+          <div className="bg-cream dark:bg-slate-800 rounded-[2.5rem] shadow-sm divide-y divide-slate-100 dark:divide-slate-700 overflow-hidden">
             <button
               type="button"
               onClick={() => navigate("/driver/settings/language")}
@@ -102,7 +94,7 @@ export default function Settings() {
         {/* Security & Data */}
         <section className="space-y-4">
           <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-1">Security & Privacy</h2>
-          <div className="bg-cream rounded-[2.5rem] border-2 border-orange-500/10 shadow-sm divide-y divide-orange-500/5 overflow-hidden">
+          <div className="bg-cream dark:bg-slate-800 rounded-[2.5rem] shadow-sm divide-y divide-slate-100 dark:divide-slate-700 overflow-hidden">
             <button
               type="button"
               onClick={() => navigate("/driver/settings/password")}

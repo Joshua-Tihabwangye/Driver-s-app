@@ -25,11 +25,11 @@ function BottomNavItem({ icon: Icon, label, active, onClick, isDark }: BottomNav
       className={`group relative mx-1 flex flex-1 flex-col items-center justify-center rounded-2xl px-1 py-2 transition-all duration-300 active:scale-95 ${
         active
           ? isDark
-            ? "bg-white/12 text-white"
-            : "bg-emerald-500/15 text-emerald-800"
+            ? "bg-orange-500/20 text-orange-400"
+            : "bg-[#03cd8c] text-white shadow-sm"
           : isDark
-            ? "text-slate-300 hover:bg-white/10"
-            : "text-slate-500 hover:bg-emerald-500/10 hover:text-emerald-700"
+            ? "bg-slate-800 text-slate-400 hover:bg-slate-700"
+            : "bg-white text-slate-500 hover:bg-slate-50 shadow-sm"
       }`}
       aria-label={label}
     >
@@ -37,8 +37,8 @@ function BottomNavItem({ icon: Icon, label, active, onClick, isDark }: BottomNav
         className={`mb-1 flex h-8 w-8 items-center justify-center rounded-full transition-all duration-300 ${
           active
             ? isDark
-              ? "bg-emerald-400/20 scale-110"
-              : "bg-emerald-500/20 scale-110"
+              ? "bg-orange-500/20 scale-110"
+              : "bg-white/20 scale-110"
             : "group-hover:scale-105"
         }`}
       >
@@ -48,7 +48,7 @@ function BottomNavItem({ icon: Icon, label, active, onClick, isDark }: BottomNav
         className={`text-[10px] tracking-tight transition-all duration-300 ${
           active
             ? "font-black opacity-100"
-            : "font-bold opacity-80 group-hover:opacity-100"
+            : "font-semibold opacity-80 group-hover:opacity-100"
         }`}
       >
         {label}
@@ -57,8 +57,8 @@ function BottomNavItem({ icon: Icon, label, active, onClick, isDark }: BottomNav
         className={`absolute bottom-1 h-1.5 w-1.5 rounded-full transition-all duration-500 ${
           active
             ? isDark
-              ? "bg-emerald-300 opacity-100 translate-y-0"
-              : "bg-emerald-600 opacity-100 translate-y-0"
+              ? "bg-orange-400 opacity-100 translate-y-0"
+              : "bg-white opacity-100 translate-y-0"
             : "opacity-0 translate-y-2"
         }`}
       />
@@ -128,7 +128,7 @@ export default function BottomNav({ isVisible = true }: { isVisible?: boolean })
 
   return (
     <nav
-      className={`absolute left-3 right-3 z-[2000] transition-all duration-500 transform ${
+      className={`fixed left-3 right-3 z-[2000] transition-all duration-500 transform ${
         isVisible ? "translate-y-0 opacity-100" : "translate-y-full opacity-0 pointer-events-none"
       }`}
       style={{ bottom: "max(12px, env(safe-area-inset-bottom))" }}
