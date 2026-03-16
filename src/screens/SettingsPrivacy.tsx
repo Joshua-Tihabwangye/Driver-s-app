@@ -8,7 +8,7 @@ export default function SettingsPrivacy() {
   const [personalization, setPersonalization] = useState(false);
 
   return (
-    <div className="flex flex-col h-full bg-[#f8fafc]">
+    <div className="flex flex-col h-full ">
       <div className="relative shrink-0" style={{ minHeight: 90 }}>
         
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">

@@ -51,7 +51,7 @@ export default function QrActiveCameraViewScreen() {
   }, []);
 
   return (
-    <div className="flex flex-col h-full bg-[#f8fafc]">
+    <div className="flex flex-col h-full ">
       {/* Local style: animate scan line */}
       <style>{`
         @keyframes qr-scan-move {

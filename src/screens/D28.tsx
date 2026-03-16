@@ -20,7 +20,7 @@ export default function D28MapViewOnlineScreen() {
       : "All jobs"; // default
 
   return (
-    <div className="flex flex-col min-h-full bg-[#f8fafc]">
+    <div className="flex flex-col min-h-full ">
       {/* Green curved header */}
       <div className="relative shrink-0" style={{ minHeight: 90 }}>
         

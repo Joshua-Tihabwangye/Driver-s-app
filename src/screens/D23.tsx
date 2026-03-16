@@ -13,7 +13,7 @@ export default function QuizPassedSuccessScreen() {
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col h-full bg-[#f8fafc]">
+    <div className="flex flex-col h-full ">
       {/* Hide scrollbar */}
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }

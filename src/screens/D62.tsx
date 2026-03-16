@@ -36,7 +36,7 @@ export default function EmergencyAssistanceTypeVariantScreen() {
   ];
 
   return (
-    <div className="flex flex-col h-full bg-[#f8fafc]">
+    <div className="flex flex-col h-full ">
       {/* Green curved header */}
       <div className="relative shrink-0" style={{ minHeight: 90 }}>
         

@@ -28,7 +28,7 @@ export default function WeeklyEarningsSummaryScreen() {
   const total = WEEK_DATA.reduce((acc, d) => acc + d.total, 0).toFixed(2);
 
   return (
-    <div className="flex flex-col h-full bg-[#f8fafc]">
+    <div className="flex flex-col h-full ">
       {/* Hide scrollbar */}
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }

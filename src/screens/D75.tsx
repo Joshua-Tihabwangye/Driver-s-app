@@ -59,7 +59,7 @@ export default function ListOfOrdersScreen() {
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col h-full bg-[#f8fafc]">
+    <div className="flex flex-col h-full ">
       {/* Green curved header */}
       <div className="relative shrink-0" style={{ minHeight: 90 }}>
         
@@ -90,7 +90,7 @@ export default function ListOfOrdersScreen() {
 
       <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         {/* Filter row */}
-        <section className="sticky top-0 bg-[#f8fafc]/80 backdrop-blur-md z-10 py-2 -mx-6 px-6">
+        <section className="sticky top-0 /80 backdrop-blur-md z-10 py-2 -mx-6 px-6">
           <div className="rounded-[2rem] border border-slate-100 bg-white p-4 flex items-center justify-between shadow-sm">
             <div className="flex flex-col items-start px-2">
               <span className="text-[10px] font-black uppercase tracking-widest text-[#03cd8c]">Active Filters</span>

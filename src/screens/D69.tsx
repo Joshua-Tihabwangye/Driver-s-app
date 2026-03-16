@@ -192,7 +192,7 @@ export default function RideHistoryScreen() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#f8fafc]">
+    <div className="flex flex-col h-full ">
       {/* Green curved header */}
       <div className="relative shrink-0" style={{ minHeight: 90 }}>
         
@@ -234,7 +234,7 @@ export default function RideHistoryScreen() {
         </section>
 
         {/* Job type filter bar */}
-        <section className="sticky top-0 bg-[#f8fafc]/80 backdrop-blur-md z-10 py-2 -mx-6 px-6">
+        <section className="sticky top-0 /80 backdrop-blur-md z-10 py-2 -mx-6 px-6">
           <div className="flex items-center space-x-2 overflow-x-auto no-scrollbar pb-1">
             {JOB_FILTERS.map((f) => (
               <button

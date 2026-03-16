@@ -48,7 +48,7 @@ export default function IdentityVerificationScreen() {
   const navigate = useNavigate();
 
   return (
-    <div className={`flex flex-col min-h-full transition-colors duration-300 ${isDark ? "bg-slate-950" : "bg-[#f8fafc]"}`}>
+    <div className={`flex flex-col min-h-full transition-colors duration-300 ${isDark ? "bg-slate-950" : ""}`}>
 
       {/* Green curved header */}
       <div className="relative shrink-0" style={{ minHeight: 90 }}>
