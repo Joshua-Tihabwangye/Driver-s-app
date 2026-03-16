@@ -383,7 +383,6 @@ body {
   color: #f8fafc !important;
 }
 
-/* ── Inputs ── */
 .dark input,
 .dark textarea,
 .dark select {
@@ -392,17 +391,24 @@ body {
   color: var(--evz-text) !important;
 }
 
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: var(--evz-orange) !important;
+  box-shadow: 0 0 0 1px var(--evz-orange) !important;
+  outline: none !important;
+}
+
 .dark input::placeholder,
 .dark textarea::placeholder {
   color: #64748b !important;
 }
 
-/* ── Buttons ── */
-
-/* Green primary buttons stay green but slightly adjusted */
+/* Green primary buttons become orange active buttons in dark mode */
 .dark [class*="bg-[#03cd8c]"] {
-  background-color: #1e293b !important;
-  border-color: #334155 !important;
+  background-color: var(--evz-orange) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
 }
 
 /* Blue primary buttons */
@@ -449,4 +455,15 @@ body {
 .dark .app-root :is(input, textarea, select)::placeholder {
   color: #e2e8f0 !important;
   opacity: 0.9;
+}
+
+/* ──────────────────────────────────────────────
+   Global UI Refactor: Soft Surfaces (No Frames)
+   ────────────────────────────────────────────── */
+button:not(.border-transparent),
+.rounded-xl:not(input):not(textarea):not(select),
+.rounded-2xl:not(input):not(textarea):not(select),
+.rounded-3xl:not(input):not(textarea):not(select),
+.rounded-\[2\.5rem\]:not(input):not(textarea):not(select) {
+  border-color: transparent !important;
 }

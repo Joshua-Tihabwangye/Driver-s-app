@@ -59,59 +59,27 @@ export default function AppPhoneShell({ children }: AppPhoneShellProps) {
 
   return (
     <div
-      className="fixed inset-0 w-full h-full overflow-hidden flex items-center justify-center"
+      className="relative min-h-screen w-full flex flex-col"
       style={{ backgroundImage: stageBackground }}
     >
       <div
-        className={`pointer-events-none absolute top-[-120px] right-[-80px] h-[320px] w-[320px] rounded-full blur-3xl ${
-          isDark ? "bg-emerald-400/20" : "bg-emerald-300/30"
+        className={`pointer-events-none fixed top-[10%] right-[-10%] h-[320px] w-[320px] rounded-full blur-3xl ${
+          isDark ? "bg-emerald-400/10" : "bg-emerald-300/20"
         }`}
       />
       <div
-        className={`pointer-events-none absolute bottom-[-150px] left-[-80px] h-[320px] w-[320px] rounded-full blur-3xl ${
-          isDark ? "bg-blue-500/20" : "bg-blue-300/30"
+        className={`pointer-events-none fixed bottom-[10%] left-[-10%] h-[320px] w-[320px] rounded-full blur-3xl ${
+          isDark ? "bg-blue-500/10" : "bg-blue-300/20"
         }`}
       />
       <div
-        className={`relative isolate flex flex-col overflow-hidden transition-all duration-500 ${
-          isPhoneView
-            ? `w-full h-full ${isDark ? "bg-[#04201a]" : "bg-[#f8fafc]"}`
-            : `rounded-[36px] shadow-[0_32px_120px_rgba(15,23,42,0.36)] ${
-                isDark
-                  ? "border-none bg-[#04201a]"
-                  : "border-none bg-[#f8fafc]"
-              }`
+        className={`relative isolate flex-1 flex flex-col w-full pb-[calc(88px+env(safe-area-inset-bottom))] ${
+          isDark ? "bg-transparent" : "bg-transparent"
         }`}
-        style={
-          isPhoneView
-            ? undefined
-            : { width: "min(96vw, 920px)", height: "min(88vh, 860px)" }
-        }
       >
-        {!isPhoneView && (
-          <>
-            <div
-              className={`pointer-events-none absolute left-1/2 top-3 h-7 w-36 -translate-x-1/2 rounded-full ${
-                isDark ? "bg-slate-700/80" : "bg-slate-200/95"
-              }`}
-            />
-            <div
-              className={`pointer-events-none absolute inset-x-0 top-0 h-20 ${
-                isDark
-                  ? "bg-gradient-to-b from-white/[0.06] to-transparent"
-                  : "bg-gradient-to-b from-white/60 to-transparent"
-              }`}
-            />
-          </>
-        )}
-        <div
-          className="app-shell-scroll flex-1 overflow-y-auto overflow-x-hidden pb-[calc(88px+env(safe-area-inset-bottom))]"
-          style={{ WebkitOverflowScrolling: "touch", minHeight: 0 }}
-        >
-          {children}
-        </div>
-        <BottomNav isVisible={isVisible} />
+        {children}
       </div>
+      <BottomNav isVisible={isVisible} />
     </div>
   );
 }

@@ -58,22 +58,17 @@ export default function BusinessVehiclesScreen() {
 
       {/* Green curved header */}
       <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        <div
-          className="absolute inset-0"
-          style={{
-            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
-          }}
-        />
+        
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-90 transition-transform"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-90 transition-transform"
           >
-            <ChevronLeft className="h-5 w-5 text-white" />
+            <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
           </button>
           <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
-            <h1 className="text-base font-black text-white tracking-tight text-center">Fleet Portal</h1>
+            <h1 className="text-base font-black text-slate-900 dark:text-white tracking-tight text-center">Fleet Portal</h1>
           </div>
           <div className="w-10" />
         </header>
