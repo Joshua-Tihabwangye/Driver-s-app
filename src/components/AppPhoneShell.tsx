@@ -53,21 +53,34 @@ export default function AppPhoneShell({ children }: AppPhoneShellProps) {
   }, []);
 
   const isVisible = true;
+  const stageBackground = isDark
+    ? "radial-gradient(1200px 520px at 85% -10%, rgba(16, 185, 129, 0.2), transparent 58%), radial-gradient(800px 480px at -8% 110%, rgba(30, 64, 175, 0.2), transparent 60%), linear-gradient(180deg, #020617 0%, #0b1120 100%)"
+    : "radial-gradient(1100px 500px at 88% -15%, rgba(16, 185, 129, 0.22), transparent 60%), radial-gradient(780px 460px at -10% 110%, rgba(59, 130, 246, 0.16), transparent 62%), linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%)";
 
   return (
     <div
-      className="fixed inset-0 w-full h-full flex items-center justify-center bg-[#020617]"
-      style={{
-        backgroundImage: "radial-gradient(circle at top right, #1E293B 0, #020617 100%)",
-      }}
+      className="fixed inset-0 w-full h-full overflow-hidden flex items-center justify-center"
+      style={{ backgroundImage: stageBackground }}
     >
       <div
-        className={`relative flex flex-col overflow-hidden shadow-2xl ${
+        className={`pointer-events-none absolute top-[-120px] right-[-80px] h-[320px] w-[320px] rounded-full blur-3xl ${
+          isDark ? "bg-emerald-400/20" : "bg-emerald-300/30"
+        }`}
+      />
+      <div
+        className={`pointer-events-none absolute bottom-[-150px] left-[-80px] h-[320px] w-[320px] rounded-full blur-3xl ${
+          isDark ? "bg-blue-500/20" : "bg-blue-300/30"
+        }`}
+      />
+      <div
+        className={`relative isolate flex flex-col overflow-hidden transition-all duration-500 ${
           isPhoneView
-            ? `w-full h-full sm:w-[410px] sm:h-[calc(100%-40px)] sm:max-h-[840px]
-               md:w-[430px] md:h-[calc(100%-60px)] md:max-h-[900px]
-               ${isDark ? "bg-slate-900" : "bg-white"}`
-            : `rounded-[36px] border ${isDark ? "border-white/10 bg-slate-900" : "border-slate-200 bg-white"}`
+            ? `w-full h-full ${isDark ? "bg-[#04201a]" : "bg-[#f8fafc]"}`
+            : `rounded-[36px] shadow-[0_32px_120px_rgba(15,23,42,0.36)] ${
+                isDark
+                  ? "border-none bg-[#04201a]"
+                  : "border-none bg-[#f8fafc]"
+              }`
         }`}
         style={
           isPhoneView
@@ -75,8 +88,24 @@ export default function AppPhoneShell({ children }: AppPhoneShellProps) {
             : { width: "min(96vw, 920px)", height: "min(88vh, 860px)" }
         }
       >
+        {!isPhoneView && (
+          <>
+            <div
+              className={`pointer-events-none absolute left-1/2 top-3 h-7 w-36 -translate-x-1/2 rounded-full ${
+                isDark ? "bg-slate-700/80" : "bg-slate-200/95"
+              }`}
+            />
+            <div
+              className={`pointer-events-none absolute inset-x-0 top-0 h-20 ${
+                isDark
+                  ? "bg-gradient-to-b from-white/[0.06] to-transparent"
+                  : "bg-gradient-to-b from-white/60 to-transparent"
+              }`}
+            />
+          </>
+        )}
         <div
-          className="flex-1 overflow-y-auto overflow-x-hidden pb-[70px]"
+          className="app-shell-scroll flex-1 overflow-y-auto overflow-x-hidden pb-[calc(88px+env(safe-area-inset-bottom))]"
           style={{ WebkitOverflowScrolling: "touch", minHeight: 0 }}
         >
           {children}

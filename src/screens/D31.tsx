@@ -35,53 +35,46 @@ export default function OnlineMapDashboardScreen() {
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col h-full bg-[#f8fafc]">
+    <div className="flex flex-col h-full bg-transparent">
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* Green curved header */}
+      {/* Header */}
       <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        <div
-          className="absolute inset-0"
-          style={{
-            background: "linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%)",
-          }}
-        />
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
           <div className="flex items-center space-x-3">
             <button
               onClick={() => navigate("/driver/more")}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-200/50 dark:bg-white/10 backdrop-blur-md border border-slate-300/30 dark:border-white/10 shadow-sm active:scale-95 transition-transform"
             >
-              <ShieldCheck className="h-5 w-5 text-white" />
+              <ShieldCheck className="h-5 w-5 text-slate-800 dark:text-white" />
             </button>
           </div>
           <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
             <div className="flex items-center space-x-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg">
-                <ShieldCheck className="h-5 w-5 text-white" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-200/50 dark:bg-white/10 backdrop-blur-md border border-slate-300/30 dark:border-white/10 shadow-sm">
+                <ShieldCheck className="h-5 w-5 text-slate-800 dark:text-white" />
               </div>
-              <p className="text-center text-base font-black text-white tracking-tight leading-tight">
+              <p className="text-center text-base font-black text-slate-900 dark:text-white tracking-tight leading-tight">
                 Online Dashboard
               </p>
             </div>
           </div>
           <button
             onClick={() => navigate("/driver/dashboard/offline")}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform group"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-200/50 dark:bg-white/10 backdrop-blur-md border border-slate-300/30 dark:border-white/10 shadow-sm active:scale-95 transition-transform group"
             title="Go Offline"
           >
-            <Power className="h-5 w-5 text-white group-hover:text-red-200 transition-colors" />
+            <Power className="h-5 w-5 text-slate-800 dark:text-white group-hover:text-red-500 dark:group-hover:text-red-400 transition-colors" />
           </button>
         </header>
       </div>
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-24 space-y-6 overflow-y-auto scrollbar-hide">
-        <section className="relative rounded-[2.5rem] bg-cream p-7 shadow-xl shadow-slate-200/50 border-2 border-orange-500/10 group transition-all duration-500 overflow-hidden">
-          <div className="absolute top-0 right-0 w-48 h-48 bg-orange-500/5 rounded-full -mr-20 -mt-20 transition-transform group-hover:scale-115" />
+        <section className="relative group transition-all duration-500 overflow-hidden">
           
           <div className="relative z-10 space-y-6">
             <div className="flex items-center justify-between">
@@ -90,26 +83,26 @@ export default function OnlineMapDashboardScreen() {
                   <Activity className="h-6 w-6 animate-pulse" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[10px] tracking-[0.3em] font-black uppercase text-slate-400">
+                  <span className="text-[10px] tracking-[0.3em] font-black uppercase text-slate-500 dark:text-slate-400">
                     STATUS
                   </span>
-                  <p className="text-base font-black text-slate-900 uppercase tracking-tight">You're Online</p>
+                  <p className="text-base font-black text-slate-900 dark:text-slate-100 uppercase tracking-tight">You're Online</p>
                 </div>
               </div>
               <div className="text-right">
-                 <span className="block text-[10px] uppercase font-black text-slate-400 tracking-[0.2em] mb-0.5">TIME ONLINE</span>
-                 <span className="text-sm font-black text-orange-600 bg-orange-50 px-2.5 py-1 rounded-lg">1h 12m</span>
+                 <span className="block text-[10px] uppercase font-black text-slate-500 dark:text-slate-400 tracking-[0.2em] mb-0.5">TIME ONLINE</span>
+                 <span className="text-sm font-black text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/10 px-2.5 py-1 rounded-lg">1h 12m</span>
               </div>
             </div>
             
-            <div className="pt-6 border-t border-orange-500/10 grid grid-cols-2 gap-8">
+            <div className="pt-6 border-t border-slate-200 dark:border-white/10 grid grid-cols-2 gap-8">
               <div className="flex flex-col space-y-1">
-                 <span className="text-[10px] uppercase font-black text-slate-400 tracking-[0.2em]">TODAY'S EARNINGS</span>
-                 <span className="text-2xl font-black text-slate-900 tracking-tight">$24.60</span>
+                 <span className="text-[10px] uppercase font-black text-slate-500 dark:text-slate-400 tracking-[0.2em]">TODAY'S EARNINGS</span>
+                 <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">$24.60</span>
               </div>
               <div className="flex flex-col space-y-1 text-right">
-                 <span className="text-[10px] uppercase font-black text-slate-400 tracking-[0.2em]">TRIPS</span>
-                 <span className="text-2xl font-black text-slate-900 tracking-tight">3</span>
+                 <span className="text-[10px] uppercase font-black text-slate-500 dark:text-slate-400 tracking-[0.2em]">TRIPS</span>
+                 <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">3</span>
               </div>
             </div>
           </div>
