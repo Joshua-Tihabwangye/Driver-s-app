@@ -22,27 +22,46 @@ function BottomNavItem({ icon: Icon, label, active, onClick, isDark }: BottomNav
     <button
       type="button"
       onClick={onClick}
-      className={`flex flex-col items-center justify-center flex-1 py-2 group relative transition-all duration-300 active:scale-95 hover:bg-white/10 rounded-xl mx-1 ${
+      className={`group relative mx-1 flex flex-1 flex-col items-center justify-center rounded-2xl px-1 py-2 transition-all duration-300 active:scale-95 ${
         active
-          ? "text-white"
-          : "text-white/70"
+          ? isDark
+            ? "bg-white/12 text-white"
+            : "bg-emerald-500/15 text-emerald-800"
+          : isDark
+            ? "text-slate-300 hover:bg-white/10"
+            : "text-slate-500 hover:bg-emerald-500/10 hover:text-emerald-700"
       }`}
+      aria-label={label}
     >
-      <div className={`mb-1 transition-all duration-300 ${active ? "scale-110" : "group-hover:scale-105"}`}>
-        <Icon strokeWidth={active ? 2.5 : 2} className="h-5 w-5" />
+      <div
+        className={`mb-1 flex h-8 w-8 items-center justify-center rounded-full transition-all duration-300 ${
+          active
+            ? isDark
+              ? "bg-emerald-400/20 scale-110"
+              : "bg-emerald-500/20 scale-110"
+            : "group-hover:scale-105"
+        }`}
+      >
+        <Icon strokeWidth={active ? 2.6 : 2.1} className="h-[18px] w-[18px]" />
       </div>
       <span
         className={`text-[10px] tracking-tight transition-all duration-300 ${
           active
             ? "font-black opacity-100"
-            : "font-bold opacity-70 group-hover:opacity-100"
+            : "font-bold opacity-80 group-hover:opacity-100"
         }`}
       >
         {label}
       </span>
-      <div className={`absolute bottom-1 w-1 h-1 rounded-full bg-white transition-all duration-500 ${
-        active ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
-      }`} />
+      <div
+        className={`absolute bottom-1 h-1.5 w-1.5 rounded-full transition-all duration-500 ${
+          active
+            ? isDark
+              ? "bg-emerald-300 opacity-100 translate-y-0"
+              : "bg-emerald-600 opacity-100 translate-y-0"
+            : "opacity-0 translate-y-2"
+        }`}
+      />
     </button>
   );
 }
@@ -108,12 +127,15 @@ export default function BottomNav({ isVisible = true }: { isVisible?: boolean })
   const active = getActiveTab(location.pathname);
 
   return (
-    <nav 
-      className={`absolute bottom-0 left-0 right-0 z-[2000] bg-[#03cd8c] border-t border-white/10 shadow-[0_-8px_24px_rgba(3,205,140,0.2)] transition-all duration-500 transform ${
+    <nav
+      className={`absolute left-3 right-3 z-[2000] transition-all duration-500 transform ${
         isVisible ? "translate-y-0 opacity-100" : "translate-y-full opacity-0 pointer-events-none"
       }`}
+      style={{ bottom: "max(12px, env(safe-area-inset-bottom))" }}
     >
-      <div className="mx-auto flex h-[70px] w-full max-w-[520px] px-2 items-center">
+      <div
+        className="mx-auto flex h-[72px] w-full max-w-[640px] items-center px-2"
+      >
         {TABS.map((tab) => (
           <BottomNavItem
             key={tab.id}
