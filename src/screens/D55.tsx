@@ -122,7 +122,7 @@ export default function RideInProgressScreen() {
       </section>
 
       {/* Content */}
-      <main className="flex-1 px-6 pt-4 pb-24 overflow-y-auto scrollbar-hide space-y-6">
+      <main className="flex-1 px-6 pt-4 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         <div className="px-1">
            <span className="text-[11px] font-black text-orange-500 uppercase tracking-widest">
              Job type: {jobTypeLabelMap[jobType]}

@@ -44,7 +44,7 @@ export default function SettingsPassword() {
         </header>
       </div>
 
-      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-6">
+      <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         <section className="rounded-[2.5rem] bg-white border border-slate-100 p-6 shadow-sm space-y-4">
           <label className="flex flex-col space-y-2">
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">

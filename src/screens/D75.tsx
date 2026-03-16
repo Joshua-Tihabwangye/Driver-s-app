@@ -88,7 +88,7 @@ export default function ListOfOrdersScreen() {
         </header>
       </div>
 
-      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-6">
+      <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         {/* Filter row */}
         <section className="sticky top-0 bg-[#f8fafc]/80 backdrop-blur-md z-10 py-2 -mx-6 px-6">
           <div className="rounded-[2rem] border border-slate-100 bg-white p-4 flex items-center justify-between shadow-sm">

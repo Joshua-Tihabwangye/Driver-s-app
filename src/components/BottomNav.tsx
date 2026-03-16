@@ -117,7 +117,7 @@ export default function BottomNav({ isVisible = true }: { isVisible?: boolean })
       <div
         className={`mx-auto flex h-[60px] w-full max-w-[640px] items-center ${
           isDark
-            ? "bg-[#0c1a14]/95 border-t border-white/5"
+            ? "bg-[#020617]/98 border-t border-white/[0.04]"
             : "bg-white/95 border-t border-slate-100"
         } backdrop-blur-xl`}
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}

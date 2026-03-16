@@ -99,7 +99,7 @@ export default function MyVehiclesScreen() {
       </div>
 
       {/* Content */}
-      <main className="flex-1 px-6 pt-6 pb-24 space-y-6">
+      <main className="flex-1 px-6 pt-6 pb-16 space-y-6">
 
         {/* EV-only banner (restored from original) */}
         <section className="rounded-[2.5rem] bg-[#f0fff4] border-2 border-orange-500/10 p-6 space-y-4 shadow-sm relative overflow-hidden group hover:border-orange-500/30 transition-all">

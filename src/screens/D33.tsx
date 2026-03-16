@@ -83,7 +83,7 @@ export default function EarningsStatsDashboardScreen() {
       </div>
 
       {/* Content */}
-      <main className="flex-1 px-6 pt-6 pb-24 space-y-6 overflow-y-auto scrollbar-hide">
+      <main className="flex-1 px-6 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
 
         {/* Welcome Banner */}
         <section className="rounded-[2.5rem] bg-[#00a3ff] p-6 flex items-center justify-between text-white relative h-28 overflow-hidden shadow-2xl shadow-blue-500/20 group hover:scale-[1.01] transition-transform duration-500">

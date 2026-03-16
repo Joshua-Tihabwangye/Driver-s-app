@@ -49,7 +49,7 @@ export default function TripDetails() {
         </header>
       </div>
 
-      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-6">
+      <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         {/* Simple Map Preview Placeholder */}
         <section className="rounded-[2.5rem] h-48 bg-slate-200 relative overflow-hidden shadow-inner border border-slate-100">
            <div className="absolute inset-0 opacity-40 bg-[radial-gradient(#94a3b8_1px,transparent_1px)] [background-size:16px_16px]" />

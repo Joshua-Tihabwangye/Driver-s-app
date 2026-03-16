@@ -47,7 +47,7 @@ export default function NavigationInProgressScreen() {
       </div>
 
       {/* Content */}
-      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide">
+      <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide">
         {/* Map container */}
         <button
           type="button"

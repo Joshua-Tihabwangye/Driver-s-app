@@ -45,7 +45,7 @@ export default function SettingsLanguage() {
         </header>
       </div>
 
-      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-6">
+      <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         <section className="rounded-[2.5rem] bg-cream border-2 border-orange-500/10 p-6 space-y-4 shadow-sm">
           <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
             Choose your default language

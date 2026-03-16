@@ -89,7 +89,7 @@ export default function MoreMenu() {
         </header>
       </div>
 
-      <main className="flex-1 px-6 pt-6 pb-24 space-y-6 overflow-y-auto scrollbar-hide">
+      <main className="flex-1 px-6 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
         <button
           type="button"
           onClick={() => navigate("/driver/profile")}

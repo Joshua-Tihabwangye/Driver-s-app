@@ -163,7 +163,7 @@ export default function CashOutScreen() {
           </header>
         </div>
 
-        <main className="flex-1 px-5 pt-6 pb-24 space-y-5 overflow-y-auto scrollbar-hide">
+        <main className="flex-1 px-5 pt-6 pb-16 space-y-5 overflow-y-auto scrollbar-hide">
             <div className="rounded-2xl bg-[#0b1e3a] p-5 text-white text-center space-y-2">
               <p className="text-[10px] uppercase tracking-[0.18em] text-[#a5f3fc]">Withdrawal Amount</p>
               <p className="text-3xl font-bold">UGX {amount}</p>
@@ -253,7 +253,7 @@ export default function CashOutScreen() {
         </div>
 
         {/* Content */}
-        <main className="flex-1 px-5 pt-4 pb-24 space-y-5 overflow-y-auto scrollbar-hide">
+        <main className="flex-1 px-5 pt-4 pb-16 space-y-5 overflow-y-auto scrollbar-hide">
 
           {/* Balance card */}
           <section className="rounded-2xl bg-[#0b1e3a] text-white p-5 space-y-1 text-center">

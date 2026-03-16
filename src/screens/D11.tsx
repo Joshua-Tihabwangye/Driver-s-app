@@ -69,7 +69,7 @@ export default function IdentityVerificationScreen() {
       </div>
 
       {/* Content */}
-      <main className="flex-1 px-6 pt-6 pb-24 space-y-6">
+      <main className="flex-1 px-6 pt-6 pb-16 space-y-6">
         {/* Selfie card */}
         <section className={`rounded-[2.5rem] border p-6 space-y-4 shadow-sm transition-colors duration-300 ${isDark ? "bg-slate-900/50 border-slate-800" : "bg-white border-slate-100"}`}>
           <div className="flex flex-col items-center">

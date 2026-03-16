@@ -197,7 +197,7 @@ export default function RideRequestIncomingScreen() {
       </div>
 
       {/* Content */}
-      <main className="flex-1 px-6 pt-6 pb-24 space-y-6 overflow-y-auto scrollbar-hide">
+      <main className="flex-1 px-6 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
         {/* Job type selector (for preview only) */}
         <section className="bg-slate-100/50 backdrop-blur-sm rounded-3xl p-2 border border-slate-100">
           <div className="flex flex-wrap gap-1.5 justify-center">

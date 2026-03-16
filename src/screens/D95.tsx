@@ -44,7 +44,7 @@ export default function QrGenericProcessingScreen() {
         </header>
       </div>
 
-      <main className="flex-1 px-6 pb-24 flex flex-col items-center justify-center space-y-12">
+      <main className="flex-1 px-6 pb-16 flex flex-col items-center justify-center space-y-12">
         {/* Processing indicator */}
         <section className="flex flex-col items-center space-y-8 pt-12">
           <div className="relative">

@@ -69,7 +69,7 @@ export default function OnlineMapDashboardScreen() {
       </div>
 
       {/* Content */}
-      <main className="flex-1 px-6 pt-6 pb-24 space-y-6 overflow-y-auto scrollbar-hide">
+      <main className="flex-1 px-6 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
         <section className="relative group transition-all duration-500 overflow-hidden">
           
           <div className="relative z-10 space-y-6">

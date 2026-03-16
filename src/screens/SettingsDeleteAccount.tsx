@@ -36,7 +36,7 @@ export default function SettingsDeleteAccount() {
         </header>
       </div>
 
-      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-6">
+      <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         <section className="rounded-[2.5rem] bg-white border border-red-100 p-6 shadow-sm space-y-4">
           <div className="flex items-center space-x-4">
             <div className="h-12 w-12 rounded-2xl bg-red-50 flex items-center justify-center">

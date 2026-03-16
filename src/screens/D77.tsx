@@ -94,7 +94,7 @@ export default function PickedUpOrdersScreen() {
         </header>
       </div>
 
-      <main className="flex-1 px-6 pt-6 pb-24 space-y-6">
+      <main className="flex-1 px-6 pt-6 pb-16 space-y-6">
         {/* Summary card */}
         <section className="rounded-[2.5rem] bg-emerald-50 border border-emerald-100 p-6 flex items-start space-x-4 text-[11px] text-emerald-700 shadow-sm">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white shadow-sm">

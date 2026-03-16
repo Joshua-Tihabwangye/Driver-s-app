@@ -116,7 +116,7 @@ export default function D29ActiveDashboardScreen() {
       </div>
 
       {/* Content */}
-      <main className="flex-1 px-6 pt-6 pb-24 space-y-6 overflow-y-auto scrollbar-hide">
+      <main className="flex-1 px-6 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
         {/* Today overview */}
         <section className="rounded-[2.5rem] bg-slate-900 text-white p-6 space-y-6 shadow-2xl shadow-slate-200 relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-40 h-40 bg-[#03cd8c]/10 rounded-full -mr-20 -mt-20 transition-transform group-hover:scale-110" />

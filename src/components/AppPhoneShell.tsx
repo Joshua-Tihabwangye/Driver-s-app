@@ -73,7 +73,7 @@ export default function AppPhoneShell({ children }: AppPhoneShellProps) {
         }`}
       />
       <div
-        className={`relative isolate flex-1 flex flex-col w-full pb-[calc(88px+env(safe-area-inset-bottom))] ${
+        className={`relative isolate flex-1 flex flex-col w-full pb-[60px] ${
           isDark ? "bg-transparent" : "bg-transparent"
         }`}
       >

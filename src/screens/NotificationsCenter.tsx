@@ -76,7 +76,7 @@ export default function NotificationsCenter() {
         </header>
       </div>
 
-      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-6">
+      <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         <div className="flex items-center justify-between px-1">
           <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Recent Updates</h2>
           <button className="text-[10px] font-black uppercase tracking-widest text-[#03cd8c]">Mark all read</button>

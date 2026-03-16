@@ -37,7 +37,7 @@ export default function DestinationFilter() {
         </header>
       </div>
 
-      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-8">
+      <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-8">
         {/* Search Bar */}
         <section className="space-y-4">
           <div className="relative group">

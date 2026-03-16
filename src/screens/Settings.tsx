@@ -31,7 +31,7 @@ export default function Settings() {
         </header>
       </div>
 
-      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-8">
+      <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-8">
         {/* App Settings */}
         <section className="space-y-4">
           <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-1">App Configuration</h2>

@@ -140,7 +140,7 @@ export default function PreferencesScreen() {
       </div>
 
       {/* Content */}
-      <main className="flex-1 px-6 pt-6 pb-24 space-y-8">
+      <main className="flex-1 px-6 pt-6 pb-16 space-y-8">
 
         {/* Areas section */}
         <section className="space-y-4">

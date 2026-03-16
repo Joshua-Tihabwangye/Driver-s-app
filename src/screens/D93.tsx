@@ -44,7 +44,7 @@ export default function QrProcessingStageScreen() {
         </header>
       </div>
 
-      <main className="flex-1 px-6 pb-24 overflow-y-auto scrollbar-hide flex flex-col items-center justify-center space-y-10">
+      <main className="flex-1 px-6 pb-16 overflow-y-auto scrollbar-hide flex flex-col items-center justify-center space-y-10">
         {/* Processing indicator */}
         <section className="flex flex-col items-center space-y-6 w-full pt-12">
           <div className="relative">
