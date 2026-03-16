@@ -157,7 +157,7 @@ export default function ListOfOrdersSelectTypeScreen() {
         </header>
       </div>
 
-      <main className="flex-1 px-6 pt-6 pb-24 space-y-6">
+      <main className="flex-1 px-6 pt-6 pb-16 space-y-6">
         {/* Type filter chips */}
         <section className="space-y-4">
           <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-2">

@@ -142,7 +142,7 @@ export default function WaitingForPassengerScreen() {
       </section>
 
       {/* Content */}
-      <main className="flex-1 px-6 pt-4 pb-24 space-y-6">
+      <main className="flex-1 px-6 pt-4 pb-16 space-y-6">
         <div className="px-1">
            <span className="text-[11px] font-black text-[#03cd8c] uppercase tracking-widest">
              Job type: {jobTypeLabelMap[jobType]}

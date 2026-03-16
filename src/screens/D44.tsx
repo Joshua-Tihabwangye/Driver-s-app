@@ -213,7 +213,7 @@ export default function RideRequestsListScreen() {
       </section>
 
       {/* Content */}
-      <main className="flex-1 px-6 pt-6 pb-24 space-y-6 overflow-y-auto scrollbar-hide">
+      <main className="flex-1 px-6 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
         <div className="rounded-2xl border-2 border-orange-500/10 bg-[#f0fff4]/50 px-4 py-3 shadow-sm flex items-center justify-between">
           <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
             Monitoring Window

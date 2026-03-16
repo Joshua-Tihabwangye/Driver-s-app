@@ -46,7 +46,7 @@ export default function D28MapViewOnlineScreen() {
       </div>
 
       {/* Content */}
-      <main className="flex-1 px-6 pt-6 pb-24 space-y-4">
+      <main className="flex-1 px-6 pt-6 pb-16 space-y-4">
         {/* Mode pill + status */}
         <section className="flex items-center justify-between">
           <div className="inline-flex items-center rounded-xl bg-slate-900 px-3 py-1.5 border border-slate-700 text-[10px] text-slate-400 uppercase tracking-widest font-black shadow-lg">

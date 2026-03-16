@@ -49,7 +49,7 @@ export default function ShuttleLinkInfoScreen() {
         </header>
       </div>
 
-      <main className="flex-1 px-6 pt-6 pb-24 space-y-6">
+      <main className="flex-1 px-6 pt-6 pb-16 space-y-6">
         {/* Intro */}
         <section className="rounded-[2.5rem] bg-slate-900 p-8 shadow-2xl flex items-start space-x-4">
            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#03cd8c]/10 border border-[#03cd8c]/20">

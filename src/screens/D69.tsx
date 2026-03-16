@@ -221,7 +221,7 @@ export default function RideHistoryScreen() {
         </header>
       </div>
 
-      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-6">
+      <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         {/* Info card */}
         <section className="rounded-[2rem] border-2 border-orange-500/10 bg-cream p-5 shadow-sm">
            <p className="font-black text-[10px] uppercase tracking-widest text-[#03cd8c] mb-2">

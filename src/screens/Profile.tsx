@@ -76,7 +76,7 @@ export default function Profile() {
         </header>
       </div>
 
-      <main className="flex-1 px-4 pt-6 pb-24 space-y-6 overflow-y-auto scrollbar-hide">
+      <main className="flex-1 px-4 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
         <div className="flex flex-col items-center pt-1 mb-2">
           <div className="relative group">
             <div className="flex h-28 w-28 items-center justify-center rounded-[2.5rem] bg-gradient-to-tr from-[#03cd8c] to-emerald-300 text-4xl font-bold text-white shadow-xl group-hover:rotate-3 transition-transform">

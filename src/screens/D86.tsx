@@ -46,7 +46,7 @@ export default function ConfirmCurrentLocationAsPickupScreen() {
         </header>
       </div>
 
-      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-6">
+      <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         {/* Map comparison card */}
         <section className="rounded-[2.5rem] border border-slate-100 bg-white shadow-xl shadow-slate-200/50 p-6 space-y-4">
           <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-2 leading-relaxed">

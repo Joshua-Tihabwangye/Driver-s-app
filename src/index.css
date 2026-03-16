@@ -361,15 +361,15 @@ body {
   border-color: #475569 !important;
 }
 
-/* Keep accent colors intact in dark mode */
-.dark [class*="text-[#03cd8c]"] {
-  color: #f8fafc !important;
+/* Keep green accent colors in dark mode – preserve them, do NOT override to white */
+.dark [class*="text-[#03cd8c]"]:not(nav *) {
+  color: #10b981 !important;
 }
 
-.dark [class*="text-emerald-600"],
-.dark [class*="text-emerald-700"],
-.dark [class*="text-emerald-800"] {
-  color: #f8fafc !important;
+.dark [class*="text-emerald-600"]:not(nav *),
+.dark [class*="text-emerald-700"]:not(nav *),
+.dark [class*="text-emerald-800"]:not(nav *) {
+  color: #34d399 !important;
 }
 
 .dark [class*="text-red-600"],
@@ -404,9 +404,9 @@ body {
   color: #64748b !important;
 }
 
-/* Green primary buttons become orange active buttons in dark mode */
-.dark [class*="bg-[#03cd8c]"] {
-  background-color: var(--evz-orange) !important;
+/* Green primary buttons become green in dark mode (keep green identity) */
+.dark [class*="bg-[#03cd8c]"]:not(nav *) {
+  background-color: #059669 !important;
   color: #ffffff !important;
   border-color: transparent !important;
 }
@@ -443,12 +443,17 @@ body {
   transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
-/* Strict dark policy: make all text white for readability */
+/* Strict dark policy: make most text white for readability, but preserve accent colors */
 .dark .app-root,
 .dark .app-root :is(h1, h2, h3, h4, h5, h6,
   p, span, small, strong, em, b,
   label, a, li, td, th,
-  button, input, textarea, select) {
+  input, textarea, select):not(nav *):not([class*="text-[#03cd8c]"]):not([class*="text-emerald"]):not([class*="text-orange"]):not([class*="text-amber"]):not([class*="text-red"]):not([class*="text-green"]) {
+  color: #f8fafc !important;
+}
+
+/* Buttons use inherited or accent color, not forced white */
+.dark .app-root button:not(nav *):not([class*="text-[#03cd8c]"]):not([class*="text-emerald"]):not([class*="text-slate"]):not([class*="text-orange"]):not([class*="text-red"]):not([class*="text-green"]) {
   color: #f8fafc !important;
 }
 
@@ -458,12 +463,12 @@ body {
 }
 
 /* ──────────────────────────────────────────────
-   Global UI Refactor: Soft Surfaces (No Frames)
+   Global UI Refactor: Soft Surfaces
    ────────────────────────────────────────────── */
-button:not(.border-transparent),
-.rounded-xl:not(input):not(textarea):not(select),
-.rounded-2xl:not(input):not(textarea):not(select),
-.rounded-3xl:not(input):not(textarea):not(select),
-.rounded-\[2\.5rem\]:not(input):not(textarea):not(select) {
+.dark button:not(nav button),
+.dark .rounded-2xl:not(input):not(textarea):not(select):not(nav *),
+.dark .rounded-3xl:not(input):not(textarea):not(select),
+.dark .rounded-\[2\.5rem\]:not(input):not(textarea):not(select) {
   border-color: transparent !important;
 }
+

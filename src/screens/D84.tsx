@@ -73,7 +73,7 @@ export default function PickYourDestinationScreen() {
         </header>
       </div>
 
-      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-6">
+      <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         {/* Search input */}
         <section className="space-y-4">
           <div className="flex items-center rounded-[2rem] bg-white px-6 py-4 border border-slate-100 shadow-xl shadow-slate-200/50">

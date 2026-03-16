@@ -88,7 +88,7 @@ export default function DocumentRejectedScreen() {
       </div>
 
       {/* Content */}
-      <main className="flex-1 px-6 pt-6 pb-24 space-y-6">
+      <main className="flex-1 px-6 pt-6 pb-16 space-y-6">
         {/* Rejection summary */}
         <section className="rounded-[2.5rem] bg-rose-50/50 border border-rose-100 p-6 space-y-4 shadow-sm relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/5 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />

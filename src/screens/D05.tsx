@@ -88,7 +88,7 @@ export default function DriverPersonalScreen() {
       </div>
 
       {/* Content */}
-      <main className="flex-1 px-6 pt-6 pb-24 space-y-6">
+      <main className="flex-1 px-6 pt-6 pb-16 space-y-6">
 
         {/* Top profile card */}
         <section className="rounded-[2.5rem] bg-cream border-2 border-orange-500/10 p-5 flex items-center space-x-4 shadow-sm hover:shadow-md hover:border-orange-500/30 transition-all">

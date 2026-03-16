@@ -75,7 +75,7 @@ export default function RegisterServicesScreen() {
       </div>
 
       {/* Content */}
-      <main className="flex-1 px-6 pt-6 pb-24 space-y-6">
+      <main className="flex-1 px-6 pt-6 pb-16 space-y-6">
         {/* Services grid – 3 columns */}
         <div className="grid grid-cols-3 gap-4">
           {services.map((service) => (

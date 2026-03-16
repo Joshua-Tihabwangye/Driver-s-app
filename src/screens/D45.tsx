@@ -54,7 +54,7 @@ export default function RideRequestsPromptScreen() {
       </div>
 
       {/* Content */}
-      <main className="flex-1 px-6 pt-6 pb-24 space-y-6 overflow-y-auto scrollbar-hide">
+      <main className="flex-1 px-6 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
         {/* Prompt card */}
         <section className="rounded-[2.5rem] border border-slate-100 bg-white p-6 flex flex-col items-start space-y-6 shadow-xl shadow-slate-200/50">
           <div className="flex items-center space-x-4">

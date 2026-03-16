@@ -65,7 +65,7 @@ export default function UploadImagePreferencesScreen() {
       </div>
 
       {/* Content */}
-      <main className="flex-1 px-6 pt-6 pb-24 space-y-6">
+      <main className="flex-1 px-6 pt-6 pb-16 space-y-6">
 
         {/* Image preview */}
         <section className="flex flex-col items-center py-6 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group">

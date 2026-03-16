@@ -126,7 +126,7 @@ export default function FaceCaptureScreen() {
       </div>
 
       {/* Content */}
-      <main className="flex-1 px-6 pt-6 pb-24 space-y-6">
+      <main className="flex-1 px-6 pt-6 pb-16 space-y-6">
 
         {/* Step indicator */}
         <section className="space-y-3">

@@ -113,7 +113,7 @@ export default function DocumentVerificationScreen() {
       </div>
 
       {/* Content */}
-      <main className="flex-1 px-6 pt-6 pb-24 space-y-6">
+      <main className="flex-1 px-6 pt-6 pb-16 space-y-6">
         {/* Intro banner */}
         <section className="rounded-[2.5rem] bg-cream border-2 border-orange-500/10 p-6 space-y-3 shadow-sm relative overflow-hidden group hover:border-orange-500/30 transition-all">
           <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/5 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />

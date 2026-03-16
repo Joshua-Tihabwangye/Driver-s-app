@@ -111,7 +111,7 @@ export default function NavigateToPickupScreen() {
       </section>
 
       {/* Content */}
-      <main className="flex-1 px-6 pt-4 pb-24 overflow-y-auto scrollbar-hide space-y-6">
+      <main className="flex-1 px-6 pt-4 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         {isAmbulance && (
           <div className="rounded-2xl bg-red-50 border border-red-100 px-4 py-3 flex items-center space-x-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-red-100/50 text-red-600 font-black text-xs">

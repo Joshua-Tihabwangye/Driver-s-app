@@ -82,7 +82,7 @@ export default function JobTypesLegendScreen() {
         </header>
       </div>
 
-      <main className="flex-1 px-6 pt-6 pb-24 space-y-6">
+      <main className="flex-1 px-6 pt-6 pb-16 space-y-6">
         {/* Intro */}
         <section className="rounded-[2rem] bg-slate-900 p-6 shadow-2xl">
            <p className="text-[11px] font-medium text-slate-400 leading-relaxed uppercase tracking-wider">

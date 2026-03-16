@@ -57,7 +57,7 @@ export default function D04RegistrationEvzoneDriverScreen() {
       </div>
 
       {/* Content */}
-      <main className="flex-1 px-6 pt-6 pb-24 space-y-6">
+      <main className="flex-1 px-6 pt-6 pb-16 space-y-6">
         {/* Profile photo + name */}
         <section className="flex flex-col items-center">
           <div className="relative mb-3">

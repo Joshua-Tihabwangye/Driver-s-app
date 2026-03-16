@@ -43,7 +43,7 @@ export default function QrScannedConfirmationIndicatorScreen() {
         </header>
       </div>
 
-      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide flex flex-col items-center justify-center space-y-8">
+      <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide flex flex-col items-center justify-center space-y-8">
         {/* Confirmation indicator */}
         <section className="flex flex-col items-center space-y-6 w-full">
           <div className="relative">

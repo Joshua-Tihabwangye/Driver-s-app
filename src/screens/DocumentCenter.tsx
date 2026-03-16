@@ -94,7 +94,7 @@ export default function DocumentCenter() {
         </header>
       </div>
 
-      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-8">
+      <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-8">
         {/* Status Summary */}
         <section className="bg-slate-900 rounded-[2.5rem] p-6 text-white flex items-center space-x-6 shadow-2xl">
           <div className="relative h-20 w-20 flex-shrink-0">

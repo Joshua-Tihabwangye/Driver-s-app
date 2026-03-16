@@ -45,7 +45,7 @@ export default function PickupConfirmedGenericScreen() {
         </header>
       </div>
 
-      <main className="flex-1 px-6 pt-6 pb-24 space-y-6">
+      <main className="flex-1 px-6 pt-6 pb-16 space-y-6">
         {/* Confirmation card */}
         <section className="relative rounded-[2.5rem] bg-slate-900 overflow-hidden p-8 shadow-2xl flex flex-col items-center text-center space-y-4">
           <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full -mr-16 -mt-16 blur-3xl" />

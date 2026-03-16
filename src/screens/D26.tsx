@@ -52,7 +52,7 @@ export default function OnlineMapViewScreen() {
       </div>
 
       {/* Content */}
-      <main className="flex-1 px-6 pt-6 pb-24 space-y-6 overflow-y-auto scrollbar-hide">
+      <main className="flex-1 px-6 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
         {/* Map container */}
         <section className="relative rounded-[2.5rem] overflow-hidden border border-slate-100 bg-slate-200 h-[380px] shadow-2xl shadow-slate-200">
           {/* Fake map background */}

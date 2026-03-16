@@ -46,7 +46,7 @@ export default function ActiveDeliveryRouteScreen() {
         </header>
       </div>
 
-      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-6">
+      <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         {/* Map container */}
         <button
           type="button"

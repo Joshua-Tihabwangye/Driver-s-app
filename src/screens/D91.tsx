@@ -93,7 +93,7 @@ export default function QrActiveCameraViewScreen() {
         </header>
       </div>
 
-      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-6">
+      <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         {/* Camera / scanner view */}
         <section className="relative rounded-[3rem] overflow-hidden border border-slate-100 bg-black h-[360px] shadow-2xl flex items-center justify-center">
           {/* Live camera */}

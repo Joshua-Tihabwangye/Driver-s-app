@@ -32,7 +32,7 @@ export default function About() {
         </header>
       </div>
 
-      <main className="flex-1 px-4 pt-6 pb-24 space-y-6 overflow-y-auto scrollbar-hide">
+      <main className="flex-1 px-4 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
         <section className="rounded-2xl bg-gradient-to-br from-[#0b1e3a] to-[#020617] p-8 text-center space-y-5 shadow-xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-[#03cd8c]/20 rounded-full -mr-16 -mt-16 blur-2xl" />
           <div className="flex justify-center relative">

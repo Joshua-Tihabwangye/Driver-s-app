@@ -53,7 +53,7 @@ export default function RatingsAndFeedback() {
         </header>
       </div>
 
-      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-8">
+      <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-8">
         {/* Main Rating Card */}
         <section className="bg-slate-900 rounded-[2.5rem] p-8 text-center text-white relative overflow-hidden shadow-2xl">
           <div className="absolute top-0 right-0 w-32 h-32 bg-[#03cd8c]/10 rounded-full -mr-16 -mt-16 blur-xl" />
