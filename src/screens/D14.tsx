@@ -105,10 +105,7 @@ export default function MyVehiclesScreen() {
         <section className="rounded-[2.5rem] bg-[#f0fff4] border-2 border-orange-500/10 p-6 space-y-4 shadow-sm relative overflow-hidden group hover:border-orange-500/30 transition-all">
           <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/5 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
           <div className="flex items-center space-x-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white border border-orange-50 text-orange-500 shadow-sm">
-              <Zap className="h-5 w-5" />
-            </div>
-            <div className="flex flex-col">
+<div className="flex flex-col">
               <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-500">EV-ONLY PLATFORM</span>
               <p className="text-sm font-black tracking-tight mt-0.5 text-slate-900">Strictly Electric Fleet</p>
             </div>

@@ -1,12 +1,11 @@
 import {
-Briefcase,
-DollarSign,
-Home,
-MoreHorizontal,
-ShieldCheck
+  Briefcase,
+  DollarSign,
+  Home,
+  MoreHorizontal,
 } from "lucide-react";
 import React from "react";
-import { useLocation,useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
 
 interface BottomNavItemProps {
@@ -22,46 +21,28 @@ function BottomNavItem({ icon: Icon, label, active, onClick, isDark }: BottomNav
     <button
       type="button"
       onClick={onClick}
-      className={`group relative mx-1 flex flex-1 flex-col items-center justify-center rounded-2xl px-1 py-2 transition-all duration-300 active:scale-95 ${
+      className={`flex flex-1 flex-col items-center justify-center py-2 transition-colors duration-200 active:scale-95 ${
         active
-          ? isDark
-            ? "bg-orange-500/20 text-orange-400"
-            : "bg-[#03cd8c] text-white shadow-sm"
+          ? "text-[#03cd8c]"
           : isDark
-            ? "bg-slate-800 text-slate-400 hover:bg-slate-700"
-            : "bg-white text-slate-500 hover:bg-slate-50 shadow-sm"
+            ? "text-slate-500 hover:text-slate-300"
+            : "text-slate-400 hover:text-slate-600"
       }`}
       aria-label={label}
     >
-      <div
-        className={`mb-1 flex h-8 w-8 items-center justify-center rounded-full transition-all duration-300 ${
-          active
-            ? isDark
-              ? "bg-orange-500/20 scale-110"
-              : "bg-white/20 scale-110"
-            : "group-hover:scale-105"
+      <Icon
+        strokeWidth={active ? 2.4 : 1.8}
+        className={`h-[22px] w-[22px] mb-1 transition-all duration-200 ${
+          active ? "scale-105" : ""
         }`}
-      >
-        <Icon strokeWidth={active ? 2.6 : 2.1} className="h-[18px] w-[18px]" />
-      </div>
+      />
       <span
-        className={`text-[10px] tracking-tight transition-all duration-300 ${
-          active
-            ? "font-black opacity-100"
-            : "font-semibold opacity-80 group-hover:opacity-100"
+        className={`text-[10px] leading-tight transition-all duration-200 ${
+          active ? "font-bold" : "font-medium"
         }`}
       >
         {label}
       </span>
-      <div
-        className={`absolute bottom-1 h-1.5 w-1.5 rounded-full transition-all duration-500 ${
-          active
-            ? isDark
-              ? "bg-orange-400 opacity-100 translate-y-0"
-              : "bg-white opacity-100 translate-y-0"
-            : "opacity-0 translate-y-2"
-        }`}
-      />
     </button>
   );
 }
@@ -128,13 +109,18 @@ export default function BottomNav({ isVisible = true }: { isVisible?: boolean })
 
   return (
     <nav
-      className={`fixed left-3 right-3 z-[2000] transition-all duration-500 transform ${
+      className={`fixed left-0 right-0 z-[2000] transition-all duration-500 transform ${
         isVisible ? "translate-y-0 opacity-100" : "translate-y-full opacity-0 pointer-events-none"
       }`}
-      style={{ bottom: "max(12px, env(safe-area-inset-bottom))" }}
+      style={{ bottom: 0 }}
     >
       <div
-        className="mx-auto flex h-[72px] w-full max-w-[640px] items-center px-2"
+        className={`mx-auto flex h-[60px] w-full max-w-[640px] items-center ${
+          isDark
+            ? "bg-[#0c1a14]/95 border-t border-white/5"
+            : "bg-white/95 border-t border-slate-100"
+        } backdrop-blur-xl`}
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         {TABS.map((tab) => (
           <BottomNavItem

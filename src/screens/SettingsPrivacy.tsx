@@ -38,10 +38,7 @@ export default function SettingsPrivacy() {
       <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-6">
         <section className="rounded-[2.5rem] bg-cream border-2 border-orange-500/10 p-6 space-y-4 shadow-sm">
           <div className="flex items-center space-x-4">
-            <div className="h-10 w-10 rounded-2xl bg-white border border-orange-50 flex items-center justify-center">
-              <UserCheck className="h-5 w-5 text-orange-500" />
-            </div>
-            <div>
+<div>
               <p className="text-xs font-black text-slate-900 uppercase tracking-widest">Data Permissions</p>
               <p className="text-[10px] text-slate-500 font-bold">Control how your data is used</p>
             </div>
@@ -80,10 +77,7 @@ export default function SettingsPrivacy() {
 
         <section className="rounded-[2.5rem] bg-white border border-slate-100 p-6 shadow-sm space-y-4">
           <div className="flex items-center space-x-4">
-            <div className="h-10 w-10 rounded-2xl bg-slate-50 flex items-center justify-center">
-              <FileText className="h-5 w-5 text-slate-500" />
-            </div>
-            <div>
+<div>
               <p className="text-xs font-black text-slate-900 uppercase tracking-widest">Privacy Summary</p>
               <p className="text-[10px] text-slate-500 font-bold">Review how your data is stored</p>
             </div>

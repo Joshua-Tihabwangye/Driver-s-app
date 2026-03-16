@@ -288,7 +288,7 @@ export default function App() {
       <button
         type="button"
         onClick={toggleTheme}
-        className="fixed left-6 bottom-32 z-[9999] h-11 w-11 rounded-2xl border border-white/70 bg-white/85 text-slate-700 shadow-lg backdrop-blur transition-all active:scale-95 dark:border-slate-600 dark:bg-slate-900/80 dark:text-amber-300"
+        className="fixed right-5 bottom-20 z-[9999] h-10 w-10 rounded-full bg-white/90 text-slate-600 shadow-lg backdrop-blur-lg transition-all active:scale-95 dark:bg-slate-800/90 dark:text-amber-300 dark:shadow-black/30"
         title={isDark ? "Light Mode" : "Dark Mode"}
       >
         {isDark ? <Sun size={20} /> : <Moon size={20} />}

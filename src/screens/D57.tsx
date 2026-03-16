@@ -64,10 +64,7 @@ export default function CancelRideReasonScreen() {
         {/* Info card */}
         <section className="rounded-[2.5rem] border border-slate-100 bg-slate-50/50 p-6 flex flex-col space-y-4">
           <div className="flex items-center space-x-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm">
-               <Info className="h-5 w-5 text-slate-400" />
-            </div>
-            <div className="flex flex-col">
+<div className="flex flex-col">
                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-red-500">Security</span>
                <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Select Reason</p>
             </div>

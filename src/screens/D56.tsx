@@ -212,10 +212,7 @@ export default function TripCompletionScreen({ initialJobType = "ride" }) {
 
           <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-cream p-6 flex flex-col space-y-4 hover:border-orange-500/30 transition-all duration-300 shadow-lg">
             <div className="flex items-center space-x-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm border border-orange-50">
-                 <Star className="h-5 w-5 text-[#03cd8c]" />
-              </div>
-              <div className="flex flex-col">
+<div className="flex flex-col">
                  <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">Rate Your Rider</span>
                  <p className="text-xs font-black text-slate-900 uppercase tracking-tight">How was this trip?</p>
               </div>

@@ -27,10 +27,7 @@ export default function DestinationFilter() {
           </div>
           <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
             <div className="flex items-center space-x-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg">
-                <Navigation2 className="h-5 w-5 text-slate-900 dark:text-white" />
-              </div>
-              <div className="flex flex-col items-center">
+<div className="flex flex-col items-center">
                 <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-500 dark:text-slate-400 text-center">Navigation</span>
                 <p className="text-base font-black text-slate-900 dark:text-white tracking-tight leading-tight text-center">Destination Filter</p>
               </div>
@@ -56,10 +53,7 @@ export default function DestinationFilter() {
             />
           </div>
           <div className="rounded-[2.5rem] bg-slate-900 p-6 text-white text-center space-y-2 shadow-xl shadow-slate-200">
-             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#03cd8c]/20 mx-auto mb-2 border border-[#03cd8c]/30">
-                <Navigation2 className="h-5 w-5 text-[#03cd8c]" />
-             </div>
-             <h3 className="text-xs font-black uppercase tracking-tight">Active Destination Mode</h3>
+<h3 className="text-xs font-black uppercase tracking-tight">Active Destination Mode</h3>
              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wide leading-relaxed">
                 When active, we'll only send you ride requests heading toward your destination.
              </p>

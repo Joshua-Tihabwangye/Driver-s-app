@@ -66,10 +66,7 @@ export default function WeeklyEarningsSummaryScreen() {
           <div className="absolute top-0 right-0 w-32 h-32 bg-[#03cd8c]/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110" />
           <div className="flex items-center justify-between relative z-10">
             <div className="flex items-center space-x-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#03cd8c] text-white shadow-xl shadow-emerald-500/20">
-                <LineChart className="h-5 w-5" />
-              </div>
-              <div className="flex flex-col">
+<div className="flex flex-col">
                 <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-500">
                   TOTAL EARNINGS
                 </span>

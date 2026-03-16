@@ -31,10 +31,7 @@ export default function PickupConfirmedGenericScreen() {
           </div>
           <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
             <div className="flex items-center space-x-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg">
-                <CheckCircle2 className="h-5 w-5 text-slate-900 dark:text-white" />
-              </div>
-              <div className="flex flex-col items-center">
+<div className="flex flex-col items-center">
                 <span className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-900 dark:text-white/70 text-center">
                   Driver · Deliveries
                 </span>

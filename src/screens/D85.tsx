@@ -52,10 +52,7 @@ export default function AlertPickUpConfirmationScreen() {
           <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="relative flex flex-col items-center">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 border-2 border-white shadow-xl">
-                <MapPin className="h-5 w-5 text-[#03cd8c]" />
-              </div>
-              <span className="mt-2 rounded-full bg-slate-900 px-3 py-1 text-[9px] font-black text-white uppercase tracking-widest border border-white/20">
+<span className="mt-2 rounded-full bg-slate-900 px-3 py-1 text-[9px] font-black text-white uppercase tracking-widest border border-white/20">
                 Burger Hub · Acacia Mall
               </span>
             </div>

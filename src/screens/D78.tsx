@@ -126,10 +126,7 @@ export default function RouteDetailsScreen() {
 
           {/* Driver marker */}
           <div className="absolute left-12 bottom-12 flex flex-col items-center">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 border-2 border-white shadow-xl">
-              <Navigation className="h-5 w-5 text-[#03cd8c]" />
-            </div>
-          </div>
+</div>
 
           {/* Start marker */}
           <div className="absolute left-10 top-18 flex flex-col items-center">

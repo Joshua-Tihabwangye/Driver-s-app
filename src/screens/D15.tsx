@@ -137,10 +137,7 @@ export default function VehiclesDetailScreen() {
                 className="flex items-center justify-between rounded-3xl border border-slate-100 bg-white px-4 py-4 shadow-sm active:scale-[0.98] transition-all"
               >
                 <div className="flex items-center space-x-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 shadow-sm shadow-emerald-500/10">
-                    <Zap className="h-5 w-5 text-[#03cd8c]" />
-                  </div>
-                  <div className="flex flex-col items-start">
+<div className="flex flex-col items-start">
                     <span className="text-xs font-black uppercase tracking-tight text-slate-900">
                       Charging Connector
                     </span>
@@ -158,10 +155,7 @@ export default function VehiclesDetailScreen() {
                 className="flex items-center justify-between rounded-3xl border border-slate-100 bg-white px-4 py-4 shadow-sm active:scale-[0.98] transition-all"
               >
                 <div className="flex items-center space-x-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50 shadow-sm shadow-blue-500/10">
-                    <Info className="h-5 w-5 text-blue-500" />
-                  </div>
-                  <div className="flex flex-col items-start">
+<div className="flex flex-col items-start">
                     <span className="text-xs font-black uppercase tracking-tight text-slate-900">
                       Verification Documents
                     </span>

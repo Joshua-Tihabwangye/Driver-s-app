@@ -53,21 +53,17 @@ export default function OnlineMapDashboardScreen() {
             </button>
           </div>
           <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <div className="flex items-center space-x-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-200/50 dark:bg-white/10 backdrop-blur-md border border-slate-300/30 dark:border-white/10 shadow-sm">
-                <ShieldCheck className="h-5 w-5 text-slate-800 dark:text-slate-900 dark:text-white" />
-              </div>
-              <p className="text-center text-base font-black text-slate-900 dark:text-slate-900 dark:text-white tracking-tight leading-tight">
-                Online Dashboard
-              </p>
-            </div>
+            <p className="text-center text-base font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+              Online Dashboard
+            </p>
           </div>
           <button
             onClick={() => navigate("/driver/dashboard/offline")}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-200/50 dark:bg-white/10 backdrop-blur-md border border-slate-300/30 dark:border-white/10 shadow-sm active:scale-95 transition-transform group"
+            className="inline-flex items-center gap-2 rounded-full bg-[#03cd8c]/15 dark:bg-emerald-500/15 px-3 py-2 active:scale-95 transition-all"
             title="Go Offline"
           >
-            <Power className="h-5 w-5 text-slate-800 dark:text-slate-900 dark:text-white group-hover:text-red-500 dark:group-hover:text-red-400 transition-colors" />
+            <span className="h-2 w-2 rounded-full bg-[#03cd8c] dark:bg-emerald-400 animate-pulse" />
+            <span className="text-[11px] font-bold text-[#03cd8c] dark:text-emerald-400 uppercase tracking-wide">Online</span>
           </button>
         </header>
       </div>
