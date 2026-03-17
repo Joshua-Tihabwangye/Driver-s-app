@@ -1,9 +1,9 @@
 import {
-CheckCircle2,
-ChevronLeft,
-Play
+  CheckCircle2,
+  Play
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D19 Info Session for Driver-Partners
 // Redesigned to match Screenshot 0.
@@ -26,7 +26,7 @@ function ModuleCard({ title, description, image, completed, onClick }) {
         </div>
         {/* Completion checkmark */}
         {completed && (
-          <div className="absolute top-1 right-1 h-4 w-4 rounded-full bg-[#03cd8c] flex items-center justify-center border border-white">
+          <div className="absolute top-1 right-1 h-4 w-4 rounded-full bg-orange-500 flex items-center justify-center border border-white">
             <CheckCircle2 className="h-2.5 w-2.5 text-white" />
           </div>
         )}
@@ -76,36 +76,25 @@ export default function InfoSessionListScreen() {
   return (
     <div className="flex flex-col min-h-full ">
 
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <button
-            onClick={() => navigate(-1)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-90 transition-transform"
-          >
-            <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-          </button>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
-            <h1 className="text-base font-black text-slate-900 dark:text-white tracking-tight text-center">Learning Hub</h1>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Learning" 
+        subtitle="Hub" 
+        onBack={() => navigate(-1)} 
+      />
 
       {/* Navy Progress Section */}
       <section className="bg-[#1c2b4d] px-8 pt-10 pb-12 shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-[#03cd8c]/5 rounded-full -mr-16 -mt-16" />
+        <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full -mr-16 -mt-16" />
         <h2 className="text-2xl font-black text-white mb-2 tracking-tight">Mastery Path</h2>
         <p className="text-xs font-medium text-slate-400 mb-6 uppercase tracking-widest">Onboarding Driver-Partners</p>
 
         <div className="space-y-3">
-          <div className="flex justify-between text-[10px] font-black text-emerald-400 uppercase tracking-widest">
+          <div className="flex justify-between text-[10px] font-black text-orange-400 uppercase tracking-widest">
             <span>Progress: 60%</span>
             <span>4 / 9 Modules</span>
           </div>
           <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
-            <div className="h-full bg-gradient-to-r from-[#03cd8c] to-[#a8e6cf] shadow-[0_0_15px_rgba(3,205,140,0.5)] transition-all duration-1000" style={{ width: '60%' }} />
+            <div className="h-full bg-gradient-to-r from-orange-500 to-orange-300 shadow-[0_0_15px_rgba(247,127,0,0.5)] transition-all duration-1000" style={{ width: '60%' }} />
           </div>
         </div>
       </section>

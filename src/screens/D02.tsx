@@ -9,6 +9,7 @@ Store,
 Wallet2
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D02 Register Services
 // Matches screenshot: green curved header, 3x2 service grid with colored icons,
@@ -17,8 +18,8 @@ import { useNavigate } from "react-router-dom";
 const services = [
   { key: "school", label: "School", icon: GraduationCap, color: "#2196F3" },
   { key: "seller", label: "Seller", icon: Store, color: "#f77f00" },
-  { key: "driver", label: "EVzone Driver", icon: Car, color: "#03cd8c" },
-  { key: "faith", label: "FaithHub", icon: Church, color: "#03cd8c" },
+  { key: "driver", label: "EVzone Driver", icon: Car, color: "#f77f00" },
+  { key: "faith", label: "FaithHub", icon: Church, color: "#2196F3" },
   { key: "charging", label: "EVzone Charging", icon: BatteryCharging, color: "#f77f00" },
   { key: "wallet", label: "Wallet Agent", icon: Wallet2, color: "#2196F3" },
 ];
@@ -56,23 +57,10 @@ export default function RegisterServicesScreen() {
 
   return (
     <div className="flex flex-col min-h-full ">
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-90 transition-transform"
-          >
-            <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-          </button>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
-            <h1 className="text-base font-black text-slate-900 dark:text-white tracking-tight text-center">Register Services</h1>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Register Services" 
+        onBack={() => navigate(-1)} 
+      />
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6">
@@ -96,8 +84,8 @@ export default function RegisterServicesScreen() {
           <div className="absolute -top-6 -right-6 w-24 h-24 bg-[#03cd8c]/10 rounded-full group-hover:scale-110 transition-transform duration-500" />
           
           <div className="flex justify-center relative z-10">
-            <div className="h-16 w-16 rounded-[1.5rem] bg-white flex items-center justify-center shadow-lg border border-emerald-50">
-              <Handshake className="h-8 w-8 text-[#03cd8c]" />
+            <div className="h-16 w-16 rounded-[1.5rem] bg-white flex items-center justify-center shadow-lg border border-orange-50">
+              <Handshake className="h-8 w-8 text-orange-500" />
             </div>
           </div>
           
@@ -111,7 +99,7 @@ export default function RegisterServicesScreen() {
           <button
             type="button"
             onClick={() => navigate("/driver/delivery/orders-dashboard")}
-            className="relative z-10 w-full rounded-2xl bg-[#03cd8c] py-4 text-sm font-black text-white shadow-lg shadow-emerald-500/20 hover:bg-[#02b77c] active:scale-[0.98] transition-all"
+            className="relative z-10 w-full rounded-2xl bg-orange-500 py-4 text-sm font-black text-white shadow-lg shadow-orange-500/20 hover:bg-orange-600 active:scale-[0.98] transition-all uppercase tracking-widest"
           >
             Register Now
           </button>

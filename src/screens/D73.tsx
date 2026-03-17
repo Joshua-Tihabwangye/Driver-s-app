@@ -4,6 +4,7 @@ ChevronLeft,
 Zap
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D73 Surge Pricing (v1)
 // Surge pricing / heatmap view showing high-demand zones and boost information.
@@ -33,33 +34,11 @@ export default function SurgePricingScreen() {
 
   return (
     <div className="flex flex-col h-full ">
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-            </button>
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <div className="flex items-center space-x-3">
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-900 dark:text-white/70 text-center">
-                  Driver · Earnings
-                </span>
-                <h1 className="text-base font-black text-slate-900 dark:text-white leading-tight text-center">
-                  Surge Pricing
-                </h1>
-              </div>
-            </div>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Surge Pricing" 
+        subtitle="Driver · Earnings" 
+        onBack={() => navigate(-1)} 
+      />
 
       <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         {/* Summary card */}
@@ -80,7 +59,7 @@ export default function SurgePricingScreen() {
             </div>
             <div className="flex flex-col items-end text-[10px] text-slate-400 font-bold uppercase tracking-widest text-right">
               <span className="inline-flex items-center">
-                <Activity className="h-3 w-3 mr-1 text-emerald-400" />
+                <Activity className="h-3 w-3 mr-1 text-orange-500" />
                 High Demand
               </span>
               <span>Next 45 min</span>
@@ -104,9 +83,9 @@ export default function SurgePricingScreen() {
           {/* Current location marker */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="relative flex items-center justify-center">
-              <div className="h-16 w-16 rounded-full bg-[#03cd8c]/10 animate-ping" />
-              <div className="absolute h-8 w-8 rounded-full bg-[#03cd8c]/30" />
-              <div className="absolute h-4 w-4 rounded-full bg-[#03cd8c] border-2 border-white shadow-lg" />
+              <div className="h-16 w-16 rounded-full bg-orange-500/10 animate-ping" />
+              <div className="absolute h-8 w-8 rounded-full bg-orange-500/30" />
+              <div className="absolute h-4 w-4 rounded-full bg-orange-500 border-2 border-white shadow-lg" />
             </div>
           </div>
 

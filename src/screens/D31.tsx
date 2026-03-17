@@ -5,15 +5,16 @@ import {
   Map,
   MapPin,
   Package,
-  ShieldCheck,
-  Power
+  ShieldCheck
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
+import { MOCK_DASHBOARD_STATS } from "../data/mockData";
 
 // EVzone Driver App – D31 Online Dashboard (Active Mode)
 // Restoration of the original design from Driver-s-app.
 
-function QuickAction({ icon: Icon, label, sub, onClick }) {
+function QuickAction({ icon: Icon, label, sub, onClick }: any) {
   return (
     <button
       type="button"
@@ -33,6 +34,7 @@ function QuickAction({ icon: Icon, label, sub, onClick }) {
 
 export default function OnlineMapDashboardScreen() {
   const navigate = useNavigate();
+  const { onlineTime, jobsToday, earningsToday } = MOCK_DASHBOARD_STATS;
 
   return (
     <div className="flex flex-col h-full bg-transparent">
@@ -41,35 +43,25 @@ export default function OnlineMapDashboardScreen() {
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* Header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3 flex-1">
-            <button
-              onClick={() => navigate("/driver/more")}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-200/50 dark:bg-white/10 backdrop-blur-md border border-slate-300/30 dark:border-white/10 shadow-sm active:scale-95 transition-transform shrink-0"
-            >
-              <ShieldCheck className="h-5 w-5 text-slate-800 dark:text-slate-900 dark:text-white" />
-            </button>
-            <p className="text-base font-black text-slate-900 dark:text-white tracking-tight leading-tight line-clamp-1">
-              Online Dashboard
-            </p>
-          </div>
+      <PageHeader 
+        title="Dashboard" 
+        subtitle="Online"
+        onBack={() => navigate("/driver/more")}
+        rightAction={
           <button
             onClick={() => navigate("/driver/dashboard/offline")}
-            className="inline-flex items-center gap-2 rounded-full bg-[#03cd8c]/15 dark:bg-emerald-500/15 px-3 py-2 active:scale-95 transition-all"
+            className="flex items-center gap-2 rounded-full bg-orange-500/15 px-3 py-2 active:scale-95 transition-all"
             title="Go Offline"
           >
-            <span className="h-2 w-2 rounded-full bg-[#03cd8c] dark:bg-emerald-400 animate-pulse" />
-            <span className="text-[11px] font-bold text-[#03cd8c] dark:text-emerald-400 uppercase tracking-wide">Online</span>
+            <span className="h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
+            <span className="text-[10px] font-bold text-orange-600 uppercase tracking-wide">Online</span>
           </button>
-        </header>
-      </div>
+        }
+      />
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
         <section className="relative group transition-all duration-500 overflow-hidden">
-          
           <div className="relative z-10 space-y-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
@@ -77,26 +69,26 @@ export default function OnlineMapDashboardScreen() {
                   <Activity className="h-6 w-6 animate-pulse" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[10px] tracking-[0.3em] font-black uppercase text-slate-500 dark:text-slate-400">
+                  <span className="text-[10px] tracking-[0.3em] font-black uppercase text-slate-500">
                     STATUS
                   </span>
-                  <p className="text-base font-black text-slate-900 dark:text-slate-100 uppercase tracking-tight">You're Online</p>
+                  <p className="text-base font-black text-slate-900 uppercase tracking-tight">You're Online</p>
                 </div>
               </div>
               <div className="text-right">
-                 <span className="block text-[10px] uppercase font-black text-slate-500 dark:text-slate-400 tracking-[0.2em] mb-0.5">TIME ONLINE</span>
-                 <span className="text-sm font-black text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/10 px-2.5 py-1 rounded-lg">1h 12m</span>
+                 <span className="block text-[10px] uppercase font-black text-slate-500 tracking-[0.2em] mb-0.5">TIME ONLINE</span>
+                 <span className="text-sm font-black text-orange-600 bg-orange-50 px-2.5 py-1 rounded-lg">{onlineTime}</span>
               </div>
             </div>
             
-            <div className="pt-6 border-t border-slate-200 dark:border-white/10 grid grid-cols-2 gap-8">
+            <div className="pt-6 border-t border-slate-200 grid grid-cols-2 gap-8">
               <div className="flex flex-col space-y-1">
-                 <span className="text-[10px] uppercase font-black text-slate-500 dark:text-slate-400 tracking-[0.2em]">TODAY'S EARNINGS</span>
-                 <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">$24.60</span>
+                 <span className="text-[10px] uppercase font-black text-slate-500 tracking-[0.2em]">TODAY'S EARNINGS</span>
+                 <span className="text-2xl font-black text-slate-900 tracking-tight">{earningsToday}</span>
               </div>
               <div className="flex flex-col space-y-1 text-right">
-                 <span className="text-[10px] uppercase font-black text-slate-500 dark:text-slate-400 tracking-[0.2em]">TRIPS</span>
-                 <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">3</span>
+                 <span className="text-[10px] uppercase font-black text-slate-500 tracking-[0.2em]">TRIPS</span>
+                 <span className="text-2xl font-black text-slate-900 tracking-tight">{jobsToday}</span>
               </div>
             </div>
           </div>
@@ -147,25 +139,25 @@ export default function OnlineMapDashboardScreen() {
             <QuickAction
               icon={Map}
               label="Map View"
-              sub="Navigate & Explore"
+              sub="Navigation"
               onClick={() => navigate("/driver/map/online")}
             />
             <QuickAction
               icon={Car}
-              label="Active Rides"
-              sub="Manage Trips"
-              onClick={() => navigate("/driver/dashboard/active")}
+              label="Requests"
+              sub="Manage Jobs"
+              onClick={() => navigate("/driver/jobs/list")}
             />
             <QuickAction
               icon={Package}
               label="Deliveries"
-              sub="Orders & Parcels"
-              onClick={() => navigate("/driver/delivery/orders-dashboard")}
+              sub="Package Orders"
+              onClick={() => navigate("/driver/jobs/list?category=delivery")}
             />
             <QuickAction
               icon={ShieldCheck}
               label="Safety"
-              sub="Emergency & Help"
+              sub="Help Center"
               onClick={() => navigate("/driver/safety/hub")}
             />
           </div>
@@ -186,7 +178,7 @@ export default function OnlineMapDashboardScreen() {
                 Earnings Forecast
               </p>
               <p className="text-[11px] text-slate-400 leading-relaxed font-bold uppercase tracking-tight">
-                Based on current demand, you could earn <span className="text-orange-600">$60.00–$75.00</span> today. Stay online to maximize earnings.
+                Based on current demand, you could earn <span className="text-orange-600">UGX 60,000–75,000</span> today. Stay online to maximize earnings.
               </p>
             </div>
           </button>

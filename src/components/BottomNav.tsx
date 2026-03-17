@@ -25,7 +25,7 @@ function BottomNavItem({ icon: Icon, label, active, onClick, isDark, badge }: Bo
       onClick={onClick}
       className={`flex flex-1 flex-col items-center justify-center py-2 transition-colors duration-200 active:scale-95 ${
         active
-          ? "text-[#03cd8c]"
+          ? "text-orange-500"
           : isDark
             ? "text-slate-500 hover:text-slate-300"
             : "text-slate-400 hover:text-slate-600"

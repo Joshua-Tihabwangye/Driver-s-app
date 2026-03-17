@@ -1,13 +1,13 @@
 import {
-AlertTriangle,
-Building2,
-Car,
-ChevronLeft,
-Info,
-ShieldCheck,
-Truck
+  AlertTriangle,
+  Building2,
+  Car,
+  Info,
+  ShieldCheck,
+  Truck
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D16 Business Vehicles
 // Business-owned / fleet vehicles assigned to the driver.
@@ -16,7 +16,7 @@ import { useNavigate } from "react-router-dom";
 function FleetVehicleCard({ icon: Icon, title, subtitle, tag, status, onClick }) {
   const statusTone =
     status === "Active"
-      ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+      ? "bg-orange-50 text-orange-700 border-orange-100"
       : status === "Maintenance"
         ? "bg-amber-50 text-amber-700 border-amber-100"
         : "bg-slate-50 text-slate-600 border-slate-200";
@@ -28,14 +28,14 @@ function FleetVehicleCard({ icon: Icon, title, subtitle, tag, status, onClick })
       className="w-full rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-3 shadow-sm active:scale-[0.97] transition-transform flex items-center justify-between"
     >
       <div className="flex items-center space-x-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e6fff7]">
-          <Icon className="h-5 w-5 text-[#03cd8c]" />
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-50">
+          <Icon className="h-5 w-5 text-orange-500" />
         </div>
         <div className="flex flex-col items-start text-left">
           <span className="text-xs font-semibold text-slate-900">{title}</span>
           <span className="text-[11px] text-slate-500">{subtitle}</span>
           {tag && (
-            <span className="mt-2 inline-flex items-center rounded-full bg-slate-900 px-2 py-0.5 text-[9px] font-black uppercase text-emerald-400 tracking-wider">
+            <span className="mt-2 inline-flex items-center rounded-full bg-slate-900 px-2 py-0.5 text-[9px] font-black uppercase text-orange-400 tracking-wider">
               {tag}
             </span>
           )}
@@ -56,32 +56,20 @@ export default function BusinessVehiclesScreen() {
   return (
     <div className="flex flex-col min-h-full ">
 
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-90 transition-transform"
-          >
-            <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-          </button>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
-            <h1 className="text-base font-black text-slate-900 dark:text-white tracking-tight text-center">Fleet Portal</h1>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Fleet" 
+        subtitle="Partner Portal" 
+        onBack={() => navigate(-1)} 
+      />
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6">
         {/* Company identity card */}
         <section className="rounded-[2.5rem] bg-[#0b1e3a] text-white p-6 space-y-4 shadow-xl relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
+          <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/10 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
           <div className="flex items-center space-x-3">
 <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-400">FLEET PARTNER</span>
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-400">FLEET PARTNER</span>
               <p className="text-sm font-black tracking-tight mt-0.5">GreenFleet Logistics · Kampala</p>
             </div>
           </div>

@@ -8,6 +8,7 @@ Package,
 Phone
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D83 Active Route with Expanded Stop Details (Messaging Shortcut) (v1)
 // Active route view with an expanded card for the next stop, including quick message/call actions.
@@ -28,33 +29,11 @@ export default function ActiveRouteExpandedStopDetailsScreen() {
 
   return (
     <div className="flex flex-col h-full ">
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-            </button>
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <div className="flex items-center space-x-3">
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-900 dark:text-white/70 text-center">
-                  Driver · Deliveries
-                </span>
-                <h1 className="text-base font-black text-slate-900 dark:text-white leading-tight text-center">
-                  Next Stop
-                </h1>
-              </div>
-            </div>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Next Stop" 
+        subtitle="Driver · Deliveries" 
+        onBack={() => navigate(-1)} 
+      />
 
       <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         {/* Map preview */}
@@ -67,7 +46,7 @@ export default function ActiveRouteExpandedStopDetailsScreen() {
               <path
                 d="M14 82 C 28 70, 40 64, 52 52 S 72 34, 86 20"
                 fill="none"
-                stroke="#03cd8c"
+                stroke="#f97316"
                 strokeWidth="3"
                 strokeLinecap="round"
                 strokeDasharray="6 4"
@@ -81,8 +60,8 @@ export default function ActiveRouteExpandedStopDetailsScreen() {
 
           {/* Next stop marker */}
           <div className="absolute right-12 top-16 flex flex-col items-center">
-            <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-white border-2 border-[#03cd8c] shadow-lg">
-              <Package className="h-4 w-4 text-[#03cd8c]" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-white border-2 border-orange-500 shadow-lg">
+              <Package className="h-4 w-4 text-orange-500" />
             </div>
           </div>
         </section>
@@ -92,7 +71,7 @@ export default function ActiveRouteExpandedStopDetailsScreen() {
           <div className="rounded-[2.5rem] border border-slate-100 bg-white p-6 shadow-xl shadow-slate-200/50 flex flex-col space-y-6">
             <div className="flex items-start justify-between">
               <div className="flex flex-col items-start px-2">
-                <span className="text-[10px] font-black uppercase tracking-widest text-[#03cd8c] mb-1">
+                <span className="text-[10px] font-black uppercase tracking-widest text-orange-500 mb-1">
                   Active Delivery
                 </span>
                 <span className="text-lg font-black text-slate-900 leading-tight">
@@ -103,7 +82,7 @@ export default function ActiveRouteExpandedStopDetailsScreen() {
                 </span>
               </div>
               <div className="flex flex-col items-end text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-                <span className="inline-flex items-center mb-1 text-[#03cd8c]">
+                <span className="inline-flex items-center mb-1 text-orange-500">
                   <Clock className="h-4 w-4 mr-1.5" />
                   {nextStop.etaTime}
                 </span>
@@ -120,7 +99,7 @@ export default function ActiveRouteExpandedStopDetailsScreen() {
                   {nextStop.contactName}
                 </span>
                 <span className="inline-flex items-center text-[10px] text-slate-500 mt-1 font-bold">
-                  <Phone className="h-4 w-4 mr-1.5 text-[#03cd8c]" />
+                  <Phone className="h-4 w-4 mr-1.5 text-orange-500" />
                   {nextStop.contactPhone}
                 </span>
               </div>
@@ -134,7 +113,7 @@ export default function ActiveRouteExpandedStopDetailsScreen() {
                 <button className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 border border-slate-100 shadow-lg shadow-slate-200/50 text-slate-900 active:scale-90 transition-transform">
                   <MessageCircle className="h-6 w-6" />
                 </button>
-                <button className="flex h-14 w-14 items-center justify-center rounded-[1.25rem] bg-emerald-50 border border-emerald-100 shadow-xl shadow-emerald-200/50 text-white active:scale-90 transition-transform">
+                <button className="flex h-14 w-14 items-center justify-center rounded-[1.25rem] bg-orange-50 border border-orange-100 shadow-xl shadow-orange-200/50 text-orange-500 active:scale-90 transition-transform">
                   <Phone className="h-7 w-7" />
                 </button>
               </div>

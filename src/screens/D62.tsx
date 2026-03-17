@@ -11,6 +11,7 @@ X
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D62 Driver – Emergency Assistance Screen (v3)
 // Redesigned to match the high-fidelity form layout with category selection and text area.
@@ -37,27 +38,11 @@ export default function EmergencyAssistanceTypeVariantScreen() {
 
   return (
     <div className="flex flex-col h-full ">
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-            </button>
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <div className="flex flex-col items-center">
-               <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-500 dark:text-slate-400">Secure</span>
-               <p className="text-lg font-black text-slate-900 dark:text-white tracking-tight leading-tight text-center">Emergency SOS</p>
-            </div>
-          </div>
-          <div className="w-9" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Emergency SOS" 
+        subtitle="Secure" 
+        onBack={() => navigate(-1)} 
+      />
 
       {/* Content Area */}
       <main className="flex-1 flex flex-col p-6 relative overflow-y-auto scrollbar-hide space-y-8">
@@ -77,9 +62,9 @@ export default function EmergencyAssistanceTypeVariantScreen() {
         </div>
 
         {/* Guidance card */}
-        <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-[#f0fff4]/50 p-6 flex items-start space-x-4 shadow-sm">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm flex-shrink-0 border border-emerald-50">
-            <ShieldCheck className="h-6 w-6 text-emerald-500" />
+        <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-cream p-6 flex items-start space-x-4 shadow-sm">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm flex-shrink-0 border border-orange-50">
+            <ShieldCheck className="h-6 w-6 text-orange-500" />
           </div>
           <div className="flex-1">
             <p className="font-extrabold text-[11px] text-slate-900 uppercase tracking-tight mb-1">Tell us what kind of help you need</p>

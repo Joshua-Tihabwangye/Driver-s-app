@@ -8,6 +8,7 @@ Phone
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D47 Driver App – Navigate to Pick-Up Location (v2)
 // Navigate-to-pickup view with job type awareness and special variants for
@@ -61,29 +62,11 @@ export default function NavigateToPickupScreen() {
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-            </button>
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <div className="flex items-center space-x-3">
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-500 dark:text-slate-400 text-nowrap">Driver · {jobTypeLabelMap[jobType]}</span>
-                <p className="text-base font-black text-slate-900 dark:text-white tracking-tight leading-tight text-center">Navigate to pickup</p>
-              </div>
-            </div>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Navigate to pickup" 
+        subtitle={`Driver · ${jobTypeLabelMap[jobType]}`} 
+        onBack={() => navigate(-1)} 
+      />
 
       {/* Job type switcher for preview purposes */}
       <section className="px-6 pt-4 pb-2">
@@ -137,7 +120,7 @@ export default function NavigateToPickupScreen() {
               <path
                 d="M20 80 C 30 70, 45 60, 65 40 S 80 25, 85 20"
                 fill="none"
-                stroke="#03cd8c"
+                stroke="#f97316"
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeDasharray="4 2"
@@ -148,14 +131,14 @@ export default function NavigateToPickupScreen() {
           {/* Driver marker (bottom) */}
           <div className="absolute left-7 bottom-10 flex flex-col items-center">
             <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/90 border border-white">
-              <Navigation className="h-3.5 w-3.5 text-[#03cd8c]" />
+              <Navigation className="h-3.5 w-3.5 text-orange-500" />
             </div>
           </div>
 
           {/* Pickup marker (top) */}
           <div className="absolute right-9 top-9 flex flex-col items-center">
             <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/90 border border-white shadow-lg">
-              <MapPin className="h-3.5 w-3.5 text-[#03cd8c]" />
+              <MapPin className="h-3.5 w-3.5 text-orange-500" />
             </div>
           </div>
 

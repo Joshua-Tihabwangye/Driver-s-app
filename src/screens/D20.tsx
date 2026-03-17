@@ -1,10 +1,11 @@
 import {
-ChevronLeft,
-ChevronRight,
-Play
+  ChevronLeft,
+  ChevronRight,
+  Play
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D20 Preferences – Driver Info Tutorial (Lesson View)
 // Redesigned to match Screenshot 1.
@@ -18,22 +19,11 @@ export default function DriverLessonDetailScreen() {
   return (
     <div className="flex flex-col min-h-full ">
 
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <button
-            onClick={() => navigate(-1)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-90 transition-transform"
-          >
-            <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-          </button>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
-            <h1 className="text-base font-black text-slate-900 dark:text-white tracking-tight text-center">Session</h1>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Session" 
+        subtitle="Training Lesson" 
+        onBack={() => navigate(-1)} 
+      />
 
       {/* Video Hero Section */}
       <section className="relative w-full h-[260px] bg-slate-900 group cursor-pointer overflow-hidden">
@@ -45,12 +35,12 @@ export default function DriverLessonDetailScreen() {
         {/* Center Play Button Overlay */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/90 shadow-2xl backdrop-blur-md group-hover:scale-110 group-active:scale-95 transition-all">
-            <Play className="h-8 w-8 fill-[#03cd8c] text-[#03cd8c] ml-1" />
+            <Play className="h-8 w-8 fill-orange-500 text-orange-500 ml-1" />
           </div>
         </div>
         <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between">
            <span className="text-[10px] font-black uppercase tracking-widest text-white/60 bg-black/20 backdrop-blur-md px-3 py-1.5 rounded-full">Lesson 04</span>
-           <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 backdrop-blur-md px-3 py-1.5 rounded-full border border-emerald-500/20">HD Ready</span>
+           <span className="text-[10px] font-black uppercase tracking-widest text-orange-400 bg-orange-500/10 backdrop-blur-md px-3 py-1.5 rounded-full border border-orange-500/20">HD Ready</span>
         </div>
       </section>
 
@@ -79,14 +69,14 @@ export default function DriverLessonDetailScreen() {
             {[1, 2, 3, 4, 5].map((d) => (
               <div
                 key={d}
-                className={`h-2 w-2 rounded-full transition-all duration-300 ${d === page ? 'bg-[#03cd8c] w-6 shadow-[0_0_10px_rgba(3,205,140,0.5)]' : 'bg-slate-200'}`}
+                className={`h-2 w-2 rounded-full transition-all duration-300 ${d === page ? 'bg-orange-500 w-6 shadow-[0_0_10px_rgba(247,127,0,0.5)]' : 'bg-slate-200'}`}
               />
             ))}
           </div>
 
           <button
             onClick={() => navigate("/driver/training/quiz")}
-            className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#03cd8c] text-white shadow-xl shadow-emerald-500/20 active:scale-90 transition-all"
+            className="flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-500 text-white shadow-xl shadow-orange-500/20 active:scale-90 transition-all"
           >
             <ChevronRight className="h-6 w-6" />
           </button>

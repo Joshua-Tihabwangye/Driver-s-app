@@ -8,6 +8,7 @@ User
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D03 Registration (profile page)
 // New design: green curved header, profile photo, info rows, accordions, green bottom nav.
@@ -23,7 +24,7 @@ function Input({ label, type = "text", value, onChange, placeholder }) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-[13px] text-slate-900 placeholder:text-slate-400 focus:border-[#03cd8c] focus:outline-none focus:ring-1 focus:ring-[#03cd8c]"
+        className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-[13px] text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
       />
     </label>
   );
@@ -61,7 +62,7 @@ function AccordionCard({ icon: Icon, title, description, cta, iconColor, borderC
           <button
             type="button"
             onClick={() => onNavigate(path)}
-            className="inline-flex items-center rounded-full border border-[#03cd8c] px-3 py-1 text-[11px] font-semibold text-[#03cd8c]"
+            className="inline-flex items-center rounded-full border border-orange-500 px-3 py-1 text-[11px] font-semibold text-orange-500"
           >
             Open
           </button>
@@ -100,30 +101,17 @@ export default function RegistrationScreen() {
 
   return (
     <div className="flex flex-col min-h-full ">
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-90 transition-transform"
-          >
-            <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-          </button>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
-            <h1 className="text-base font-black text-slate-900 dark:text-white tracking-tight text-center">Registration</h1>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Registration" 
+        onBack={() => navigate(-1)} 
+      />
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6">
         {/* Profile photo + name */}
         <section className="flex flex-col items-center">
           <div className="relative mb-3 group">
-            <div className="h-24 w-24 rounded-[2rem] bg-slate-100 border-[4px] border-[#03cd8c] flex items-center justify-center overflow-hidden shadow-xl shadow-emerald-100 group-hover:scale-105 transition-transform duration-300">
+            <div className="h-24 w-24 rounded-[2rem] bg-slate-100 border-[4px] border-orange-500 flex items-center justify-center overflow-hidden shadow-xl shadow-orange-100 group-hover:scale-105 transition-transform duration-300">
               <User className="h-12 w-12 text-slate-400" />
             </div>
             <button
@@ -160,12 +148,12 @@ export default function RegistrationScreen() {
         </section>
 
         {/* Divider */}
-        <div className="h-1 w-12 bg-[#03cd8c]/20 mx-auto rounded-full" />
+        <div className="h-1 w-12 bg-orange-500/20 mx-auto rounded-full" />
 
         {/* Personal Info heading + form fields */}
         <section className="space-y-4">
           <div className="px-1">
-            <h3 className="text-sm font-black text-[#03cd8c] uppercase tracking-widest">Personal Info</h3>
+            <h3 className="text-sm font-black text-orange-500 uppercase tracking-widest">Personal Info</h3>
             <p className="text-[11px] text-slate-400 font-medium leading-relaxed mt-0.5">
               Let's get started by setting up your profile
             </p>
@@ -219,7 +207,7 @@ export default function RegistrationScreen() {
             title="General ID"
             description="Adding your identification Documents helps us ensure the security of our platform and verify your identity."
             cta="Upload or update an official ID document so we can verify your identity and protect your account."
-            iconColor="#03cd8c"
+            iconColor="#f97316"
             borderColor="#d6ebe6"
             path="/driver/preferences/identity"
             onNavigate={handleAccordionNavigate}
@@ -243,7 +231,7 @@ export default function RegistrationScreen() {
             disabled={!isValid}
             onClick={handleNext}
             className={`w-full rounded-2xl py-4 text-sm font-black tracking-tight shadow-lg transition-all active:scale-[0.98] ${isValid
-                ? "bg-[#03cd8c] text-white shadow-emerald-500/20 hover:bg-[#02b77c]"
+                ? "bg-orange-500 text-white shadow-orange-500/20 hover:bg-orange-600"
                 : "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200 shadow-none"
               }`}
           >

@@ -9,6 +9,7 @@ User
 } from "lucide-react";
 import { useEffect,useState } from "react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D42 Driver App – Ride Request Incoming (v2)
 // Full-screen incoming job request with timer, pickup/drop details, accept/decline actions
@@ -172,29 +173,11 @@ export default function RideRequestIncomingScreen() {
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-            </button>
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <div className="flex items-center space-x-3">
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-500 dark:text-slate-400">Driver</span>
-                <p className="text-base font-black text-slate-900 dark:text-white tracking-tight leading-tight text-center">Ride Request</p>
-              </div>
-            </div>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Ride Request" 
+        subtitle="Driver" 
+        onBack={() => navigate(-1)} 
+      />
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
@@ -208,7 +191,7 @@ export default function RideRequestIncomingScreen() {
                 onClick={() => setJobType(type)}
                 className={`rounded-full px-3 py-1 border text-[9px] font-black uppercase tracking-wider transition-all ${
                   jobType === type
-                    ? "bg-[#03cd8c] border-[#03cd8c] text-white shadow-md shadow-[#03cd8c]/20"
+                    ? "bg-orange-500 border-orange-500 text-white shadow-md shadow-orange-500/20"
                     : "bg-white border-slate-200 text-slate-400 hover:border-slate-300"
                 }`}
               >
@@ -220,7 +203,7 @@ export default function RideRequestIncomingScreen() {
 
         {/* Request card */}
         <section className="rounded-[2.5rem] bg-slate-900 text-white p-6 space-y-6 shadow-2xl relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#03cd8c]/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110" />
+          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110" />
           
           <div className="flex items-start justify-between relative z-10">
             <div className="flex items-center space-x-4">
@@ -230,7 +213,7 @@ export default function RideRequestIncomingScreen() {
             >
               <ChevronLeft className="h-5 w-5 text-white" />
             </button>
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#03cd8c] text-slate-900 shadow-xl shadow-emerald-500/20">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500 text-slate-900 shadow-xl shadow-orange-500/20">
                 <User className="h-6 w-6" />
               </div>
               <div className="flex flex-col">
@@ -250,7 +233,7 @@ export default function RideRequestIncomingScreen() {
               </div>
             </div>
             <div className="flex flex-col items-end">
-              <span className={`text-[11px] font-black uppercase tracking-widest ${isAmbulance ? "text-red-400" : "text-[#03cd8c]"}`}>
+              <span className={`text-[11px] font-black uppercase tracking-widest ${isAmbulance ? "text-red-400" : "text-orange-500"}`}>
                 {rightLine1}
               </span>
               <span className="text-[10px] text-slate-500 font-bold uppercase tracking-tight mt-1">
@@ -261,7 +244,7 @@ export default function RideRequestIncomingScreen() {
 
           <div className="space-y-4 pt-2 relative z-10 border-t border-white/5">
             <div className="flex items-start space-x-4">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-[#03cd8c]">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-orange-500/10 text-orange-500">
                 <MapPin className="h-4 w-4" />
               </div>
               <div className="flex flex-col">

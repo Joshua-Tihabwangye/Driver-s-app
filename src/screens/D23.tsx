@@ -1,8 +1,8 @@
 import {
-ChevronLeft,
-Star
+  Star
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D23 Preferences – Quiz Passed Confirmation
 // Redesigned to match Screenshot 4.
@@ -20,23 +20,11 @@ export default function QuizPassedSuccessScreen() {
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-90 transition-transform"
-          >
-            <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-          </button>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
-            <h1 className="text-base font-black text-slate-900 dark:text-white tracking-tight text-center">Success</h1>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Success" 
+        subtitle="Quiz Passed" 
+        onBack={() => navigate(-1)} 
+      />
 
       {/* Content */}
       <main className="flex-1 px-8 pt-12 pb-12 flex flex-col items-center overflow-y-auto scrollbar-hide">
@@ -49,7 +37,7 @@ export default function QuizPassedSuccessScreen() {
               <Star className="h-16 w-16 text-white fill-white drop-shadow-lg" />
             </div>
             {/* Decorative particles */}
-            <div className="absolute -top-2 -right-2 h-6 w-6 bg-emerald-400 rounded-full border-4 border-white shadow-lg animate-bounce" />
+            <div className="absolute -top-2 -right-2 h-6 w-6 bg-orange-400 rounded-full border-4 border-white shadow-lg animate-bounce" />
             <div className="absolute -bottom-4 -left-4 h-8 w-8 bg-blue-400 rounded-2xl border-4 border-white shadow-lg animate-pulse" />
           </div>
         </div>

@@ -1,7 +1,6 @@
 import {
 Bike,
 Car,
-ChevronLeft,
 ChevronRight,
 Info,
 Truck,
@@ -9,6 +8,7 @@ Zap
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D15 Vehicles (v1)
 // Redesigned with Green curved header and bottom nav.
@@ -21,12 +21,12 @@ function VehicleTypeChip({ icon: Icon, label, active, onClick }) {
       type="button"
       onClick={onClick}
       className={`flex flex-col items-center justify-center flex-1 rounded-2xl border px-3 py-3 text-xs font-semibold transition-colors active:scale-[0.97] ${active
-        ? "border-[#03cd8c] bg-[#e6fff7] text-slate-900"
+        ? "border-orange-500 bg-orange-50 text-slate-900"
         : "border-slate-100 bg-slate-50 text-slate-600 hover:border-slate-200"
         }`}
     >
       <div className="mb-1 flex h-8 w-8 items-center justify-center rounded-full bg-white">
-        <Icon className="h-4 w-4 text-[#03cd8c]" />
+        <Icon className={`h-4 w-4 ${active ? "text-orange-500" : "text-slate-400"}`} />
       </div>
       <span>{label}</span>
     </button>
@@ -40,7 +40,7 @@ function InputRow({ label, placeholder }) {
       <input
         type="text"
         placeholder={placeholder}
-        className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-[13px] text-slate-900 placeholder:text-slate-400 focus:border-[#03cd8c] focus:outline-none focus:ring-1 focus:ring-[#03cd8c]"
+        className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-[13px] text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
       />
     </label>
   );
@@ -52,23 +52,11 @@ export default function VehiclesDetailScreen() {
 
   return (
     <div className="flex flex-col min-h-full ">
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-90 transition-transform"
-          >
-            <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-          </button>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
-            <h1 className="text-base font-black text-slate-900 dark:text-white tracking-tight text-center">Vehicle Details</h1>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Vehicle" 
+        subtitle="General Details" 
+        onBack={() => navigate(-1)} 
+      />
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6">
@@ -184,7 +172,7 @@ export default function VehiclesDetailScreen() {
           <button
             type="button"
             onClick={() => navigate("/driver/vehicles")}
-            className="w-full rounded-2xl bg-[#03cd8c] py-4 text-sm font-black text-white shadow-xl shadow-emerald-500/20 hover:bg-[#02b77c] active:scale-[0.98] transition-all uppercase tracking-widest"
+            className="w-full rounded-2xl bg-orange-500 py-4 text-sm font-black text-white shadow-xl shadow-orange-500/20 hover:bg-orange-600 active:scale-[0.98] transition-all uppercase tracking-widest"
           >
             Save Vehicle Details
           </button>

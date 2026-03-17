@@ -11,6 +11,7 @@ ShieldCheck
 } from "lucide-react";
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D101 Job Types & Icons Legend (v2)
 // Help drivers understand all job types, icons & colors.
@@ -54,33 +55,11 @@ export default function JobTypesLegendScreen() {
 
   return (
     <div className="flex flex-col min-h-full ">
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-            </button>
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <div className="flex items-center space-x-3">
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-900 dark:text-white/70 text-center">
-                  Driver Knowledge
-                </span>
-                <h1 className="text-base font-black text-slate-900 dark:text-white leading-tight text-center">
-                  Job Types & Icons
-                </h1>
-              </div>
-            </div>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Job Types & Icons" 
+        subtitle="Driver Knowledge" 
+        onBack={() => navigate(-1)} 
+      />
 
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6">
         {/* Intro */}
@@ -95,10 +74,10 @@ export default function JobTypesLegendScreen() {
         <section className="space-y-4">
           <LegendCard
             icon={Car}
-            title="Ride (Green)"
+            title="Ride (Orange)"
             description="Standard passenger trips for riders using EVzone."
-            bgClass="border-emerald-100 bg-white"
-            iconBgClass="bg-emerald-50 text-emerald-600"
+            bgClass="border-orange-100 bg-white"
+            iconBgClass="bg-orange-50 text-orange-600"
           />
           <LegendCard
             icon={Package}
@@ -147,8 +126,8 @@ export default function JobTypesLegendScreen() {
         </section>
 
         {/* Footer info */}
-        <section className="rounded-[2rem] bg-emerald-50/50 border border-emerald-100/50 p-6">
-           <p className="text-[11px] font-medium text-emerald-800 leading-relaxed">
+        <section className="rounded-[2rem] bg-orange-50/50 border border-orange-100/50 p-6">
+           <p className="text-[11px] font-medium text-orange-800 leading-relaxed">
              Safety tools (SOS & Toolkit) are available on all job types. Shuttle 
              cards automatically launch the specialized app for manifests.
            </p>

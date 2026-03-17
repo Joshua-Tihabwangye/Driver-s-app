@@ -7,6 +7,7 @@ MapPin,
 Package
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D74 Orders to Delivery (v1)
 // Dashboard-style view for orders transitioning from "to pick up" to "to deliver" for the driver.
@@ -28,7 +29,7 @@ function OrderRow({ id, pickup, dropoff, eta, status, onClick }) {
   const isEnRoute = status === "En route";
 
   const toneClasses = isReady
-    ? "border-emerald-100 bg-emerald-50 text-emerald-700"
+    ? "border-orange-200 bg-orange-50 text-orange-700"
     : isEnRoute
     ? "border-amber-100 bg-amber-50 text-amber-700"
     : "border-slate-100 bg-white text-slate-700";
@@ -57,7 +58,7 @@ function OrderRow({ id, pickup, dropoff, eta, status, onClick }) {
           {eta}
         </span>
         {isReady && (
-          <span className="mt-0.5 inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-medium text-emerald-700">
+          <span className="mt-0.5 inline-flex items-center rounded-full bg-orange-100 px-2 py-0.5 text-[9px] font-medium text-orange-700">
             <CheckCircle2 className="h-3 w-3 mr-1" />
             Pick up now
           </span>
@@ -72,34 +73,11 @@ export default function OrdersToDeliveryScreen() {
 
   return (
     <div className="flex flex-col h-full ">
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <button
-            onClick={() => navigate(-1)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
-          >
-            <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-          </button>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <div className="flex items-center space-x-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 shadow-inner">
-                <Package className="h-6 w-6 text-slate-900 dark:text-white" />
-              </div>
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-900 dark:text-white/70">
-                  Driver · Deliveries
-                </span>
-                <h1 className="text-xl font-black text-slate-900 dark:text-white leading-tight">
-                  Delivery Manager
-                </h1>
-              </div>
-            </div>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Delivery Manager" 
+        subtitle="Driver · Deliveries" 
+        onBack={() => navigate(-1)} 
+      />
 
       <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         {/* Stats row */}

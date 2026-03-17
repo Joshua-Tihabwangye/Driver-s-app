@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D36 Driver App – Search Screen (v2)
 // Generic search across locations, jobs, and riders.
@@ -62,10 +63,10 @@ function JobTypeChip({ type, active, onClick }) {
 
   const colorMap = {
     all: "border-slate-200 bg-white text-slate-600",
-    ride: "border-emerald-200 bg-emerald-50 text-emerald-700",
+    ride: "border-orange-200 bg-orange-50 text-orange-700",
     delivery: "border-blue-200 bg-blue-50 text-blue-700",
-    rental: "border-teal-200 bg-teal-50 text-teal-700",
-    tour: "border-orange-200 bg-orange-50 text-orange-700",
+    rental: "border-sky-200 bg-sky-50 text-sky-700",
+    tour: "border-amber-200 bg-amber-50 text-amber-700",
     ambulance: "border-red-200 bg-red-50 text-red-700",
     shuttle: "border-violet-200 bg-violet-50 text-violet-700"
 };
@@ -220,29 +221,11 @@ export default function DriverSearchScreen() {
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-            </button>
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <div className="flex items-center space-x-3">
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-100/70">Search</span>
-                <p className="text-base font-black text-slate-900 dark:text-white tracking-tight leading-tight text-center">Global Search</p>
-              </div>
-            </div>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Global Search" 
+        subtitle="Search" 
+        onBack={() => navigate(-1)} 
+      />
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">

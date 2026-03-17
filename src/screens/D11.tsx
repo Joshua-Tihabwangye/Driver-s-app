@@ -10,6 +10,7 @@ User
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D11 Preferences – Identity Verification
 // Green curved header design. ALL original functionality preserved:
@@ -50,30 +51,18 @@ export default function IdentityVerificationScreen() {
   return (
     <div className={`flex flex-col min-h-full transition-colors duration-300 ${isDark ? "bg-slate-950" : ""}`}>
 
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-90 transition-transform"
-          >
-            <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-          </button>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
-            <h1 className="text-base font-black text-slate-900 dark:text-white tracking-tight text-center">Identity</h1>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Identity" 
+        subtitle="Verification" 
+        onBack={() => navigate(-1)} 
+      />
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6">
         {/* Selfie card */}
         <section className={`rounded-[2.5rem] border p-6 space-y-4 shadow-sm transition-colors duration-300 ${isDark ? "bg-slate-900/50 border-slate-800" : "bg-white border-slate-100"}`}>
           <div className="flex flex-col items-center">
-            <div className={`h-24 w-24 rounded-full border-[6px] flex items-center justify-center overflow-hidden mb-4 shadow-xl transition-all ${isDark ? "bg-slate-800 border-emerald-500/30" : "bg-slate-50 border-emerald-500/10"}`}>
+            <div className={`h-24 w-24 rounded-full border-[6px] flex items-center justify-center overflow-hidden mb-4 shadow-xl transition-all ${isDark ? "bg-slate-800 border-orange-500/30" : "bg-slate-50 border-orange-500/10"}`}>
               <User className={`h-12 w-12 ${isDark ? "text-slate-500" : "text-slate-300"}`} />
             </div>
             <p className={`text-[11px] font-medium text-center leading-relaxed max-w-[200px] ${isDark ? "text-slate-400" : "text-slate-500"}`}>
@@ -94,10 +83,10 @@ export default function IdentityVerificationScreen() {
             </div>
             <div className="flex flex-col items-start">
               <span className={`text-xs font-black uppercase tracking-wider ${isDark ? "text-slate-100" : "text-slate-900"}`}>Authentication Selfie</span>
-              <span className={`text-[10px] font-black uppercase text-emerald-500 ${isDark ? "text-emerald-400" : "text-emerald-500"}`}>VERIFIED</span>
+              <span className={`text-[10px] font-black uppercase text-orange-500 ${isDark ? "text-orange-400" : "text-orange-500"}`}>VERIFIED</span>
             </div>
           </div>
-          <CheckCircle2 className={`h-6 w-6 ${isDark ? "text-emerald-500" : "text-[#03cd8c]"}`} />
+          <CheckCircle2 className={`h-6 w-6 ${isDark ? "text-orange-500" : "text-orange-500"}`} />
         </button>
 
         {/* Document rows */}
@@ -138,8 +127,8 @@ export default function IdentityVerificationScreen() {
             type="button"
             onClick={() => navigate("/driver/preferences")}
             className={`w-full rounded-2xl py-4 text-sm font-black shadow-xl transition-all uppercase tracking-widest ${isDark
-                ? "bg-emerald-600 text-white shadow-emerald-900/40 hover:bg-emerald-500"
-                : "bg-[#03cd8c] text-white shadow-emerald-500/20 hover:bg-[#02b77c]"
+                ? "bg-orange-600 text-white shadow-orange-900/40 hover:bg-orange-500"
+                : "bg-orange-500 text-white shadow-orange-500/20 hover:bg-orange-600"
               }`}
           >
             Save Preferences

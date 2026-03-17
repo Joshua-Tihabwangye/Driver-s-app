@@ -5,6 +5,7 @@ Map,
 Navigation
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D79 Route Details Screen (v1)
 // Variant of route details with a stronger focus on high-level summary + compact stop list.
@@ -57,45 +58,22 @@ export default function RouteDetailsScreenV2() {
 
   return (
     <div className="flex flex-col h-full ">
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <button
-            onClick={() => navigate(-1)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
-          >
-            <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-          </button>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <div className="flex items-center space-x-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 shadow-inner">
-                <Map className="h-6 w-6 text-slate-900 dark:text-white" />
-              </div>
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-900 dark:text-white/70">
-                  Driver · Deliveries
-                </span>
-                <h1 className="text-xl font-black text-slate-900 dark:text-white leading-tight">
-                  Route Summary
-                </h1>
-              </div>
-            </div>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Route Summary" 
+        subtitle="Driver · Deliveries" 
+        onBack={() => navigate(-1)} 
+      />
 
       <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         {/* Summary card */}
         <section className="rounded-[2.5rem] bg-slate-900 border border-slate-800 text-white p-6 space-y-4 shadow-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/20 backdrop-blur-md text-[#03cd8c]">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500/20 backdrop-blur-md text-orange-500">
                 <Navigation className="h-6 w-6" />
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] tracking-[0.2em] uppercase font-black text-[#03cd8c]">
+                <span className="text-[10px] tracking-[0.2em] uppercase font-black text-orange-500">
                   Multi-stop Route
                 </span>
                 <p className="text-sm font-bold">4 stops · 2/2 Complete</p>
@@ -130,7 +108,7 @@ export default function RouteDetailsScreenV2() {
               <path
                 d="M12 82 C 26 70, 40 64, 52 52 S 72 34, 86 20"
                 fill="none"
-                stroke="#03cd8c"
+                stroke="#f97316"
                 strokeWidth="3"
                 strokeLinecap="round"
                 strokeDasharray="6 4"
@@ -163,7 +141,7 @@ export default function RouteDetailsScreenV2() {
                   </span>
                 </div>
                 <div className="flex flex-col items-end text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-                  <span className="inline-flex items-center mb-1 text-[#03cd8c]">
+                  <span className="inline-flex items-center mb-1 text-orange-500">
                     <Clock className="h-3.5 w-3.5 mr-1" />
                     {s.eta}
                   </span>

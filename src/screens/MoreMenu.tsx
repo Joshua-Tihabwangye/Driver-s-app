@@ -7,7 +7,6 @@ import {
   ListChecks,
   LogOut,
   Map,
-  Phone,
   Settings as SettingsIcon,
   SlidersHorizontal,
   Star,
@@ -16,6 +15,7 @@ import {
 } from "lucide-react";
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 function MenuSection({
   title,
@@ -75,19 +75,12 @@ export default function MoreMenu() {
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col h-full ">
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="w-9 h-9" />
-          <div className="w-9 h-9" />
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
-            <p className="text-center text-base font-black text-slate-900 dark:text-white tracking-tight leading-tight">
-              More & Account
-            </p>
-          </div>
-        </header>
-      </div>
+    <div className="flex flex-col h-full bg-transparent">
+      <PageHeader 
+        title="More & Account" 
+        subtitle="Menu" 
+        onBack={() => navigate(-1)} 
+      />
 
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
         <button
@@ -95,14 +88,14 @@ export default function MoreMenu() {
           onClick={() => navigate("/driver/profile")}
           className="w-full flex items-center rounded-[2rem] bg-cream dark:bg-slate-800 px-5 py-4 shadow-sm active:scale-[0.98] transition-all group"
         >
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#03cd8c] text-white text-lg font-bold mr-4 shrink-0 shadow-lg shadow-[#03cd8c]/20">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500 text-white text-lg font-bold mr-4 shrink-0 shadow-lg shadow-orange-500/20">
             JD
           </div>
           <div className="flex-1 text-left">
             <p className="text-[15px] font-black text-slate-900">
               John Driver
             </p>
-            <p className="text-[11px] text-slate-400 font-bold">+256 700 123 456</p>
+            <p className="text-[11px] text-slate-400 font-bold uppercase tracking-tight">+256 700 123 456</p>
           </div>
           <ChevronRight className="h-5 w-5 text-slate-300 ml-2 shrink-0" />
         </button>

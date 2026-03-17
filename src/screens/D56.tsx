@@ -7,6 +7,7 @@ Star
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D56 Driver – Arrived / Trip Completion Screen (v3)
 // Trip completion screen now accepts an optional initialJobType prop so it can be
@@ -91,32 +92,11 @@ export default function TripCompletionScreen({ initialJobType = "ride" }) {
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 110 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-10 pb-6">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-            </button>
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <div className="flex items-center space-x-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg">
-                <CheckCircle2 className="h-5 w-5 text-slate-900 dark:text-white" />
-              </div>
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-500 dark:text-slate-400">Review</span>
-                <p className="text-lg font-black text-slate-900 dark:text-white tracking-tight leading-tight text-center">Trip Completed</p>
-              </div>
-            </div>
-          </div>
-          <div className="w-11" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Trip Completed" 
+        subtitle="Review" 
+        onBack={() => navigate(-1)} 
+      />
 
       {/* Trip Switcher (Preview) */}
       <section className="px-6 pt-4 pb-2">
@@ -153,17 +133,17 @@ export default function TripCompletionScreen({ initialJobType = "ride" }) {
         <section className="rounded-[2.5rem] bg-slate-900 border border-slate-800 text-white p-6 space-y-6 shadow-2xl">
           <div className="flex items-start justify-between">
             <div className="flex flex-col space-y-1">
-              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">{summaryLabel}</span>
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-200">{summaryLabel}</span>
               <p className="text-sm font-black uppercase tracking-tight">{routeLine}</p>
             </div>
             <div className="flex flex-col items-end space-y-1">
                {!isAmbulance && (
-                <span className="text-base font-black text-emerald-400 uppercase tracking-tight">
+                <span className="text-base font-black text-orange-500 uppercase tracking-tight">
                   ${rightTop}
                 </span>
                )}
                {isAmbulance && (
-                <span className="text-sm font-black text-emerald-400 uppercase tracking-tight">
+                <span className="text-sm font-black text-orange-500 uppercase tracking-tight">
                   {rightTop}
                 </span>
                )}

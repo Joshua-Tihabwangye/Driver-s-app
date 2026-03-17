@@ -1,12 +1,12 @@
 import {
-CheckCircle2,
-ChevronLeft,
-Info,
-Package,
-ShieldCheck,
-XCircle
+  CheckCircle2,
+  Info,
+  Package,
+  ShieldCheck,
+  XCircle
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D17 Vehicle Accessories
 // Accessories required / recommended for rides & deliveries.
@@ -27,9 +27,9 @@ function AccessoryRow({ icon: Icon, name, detail, status }) {
           chipDot: "bg-red-500"
 }
         : {
-          chipBg: "bg-emerald-50",
-          chipText: "text-emerald-700",
-          chipDot: "bg-emerald-500"
+          chipBg: "bg-orange-50",
+          chipText: "text-orange-700",
+          chipDot: "bg-orange-500"
 };
 
   const IconRight = status === "Available" ? CheckCircle2 : status === "Missing" ? XCircle : Info;
@@ -53,7 +53,7 @@ function AccessoryRow({ icon: Icon, name, detail, status }) {
       </div>
       <IconRight
         className={`h-4 w-4 flex-shrink-0 ${status === "Available"
-            ? "text-emerald-600"
+            ? "text-orange-600"
             : status === "Missing"
               ? "text-red-500"
               : "text-slate-400"
@@ -69,32 +69,20 @@ export default function VehicleAccessoriesScreen() {
   return (
     <div className="flex flex-col min-h-full ">
 
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-90 transition-transform"
-          >
-            <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-          </button>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
-            <h1 className="text-base font-black text-slate-900 dark:text-white tracking-tight text-center">Equipment</h1>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Equipment" 
+        subtitle="Safety Inventory" 
+        onBack={() => navigate(-1)} 
+      />
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6">
         {/* Compliance identity card */}
         <section className="rounded-[2.5rem] bg-[#0b1e3a] text-white p-6 space-y-4 shadow-xl relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
+          <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/10 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
           <div className="flex items-center space-x-3">
 <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-400">COMPLIANCE CENTER</span>
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-400">COMPLIANCE CENTER</span>
               <p className="text-sm font-black tracking-tight mt-0.5">Asset & Safety Audit</p>
             </div>
           </div>
@@ -147,7 +135,7 @@ export default function VehicleAccessoriesScreen() {
           <button
             type="button"
             onClick={() => navigate("/driver/vehicles/demo-vehicle")}
-            className="w-full rounded-2xl bg-[#03cd8c] py-4 text-sm font-black text-white shadow-xl shadow-emerald-500/20 hover:bg-[#02b77c] active:scale-[0.98] transition-all uppercase tracking-widest"
+            className="w-full rounded-2xl bg-orange-500 py-4 text-sm font-black text-white shadow-xl shadow-orange-500/20 hover:bg-orange-600 active:scale-[0.98] transition-all uppercase tracking-widest"
           >
             Update Inventory
           </button>

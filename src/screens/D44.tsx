@@ -1,37 +1,19 @@
 import {
   ArrowRight,
-  ChevronLeft,
   HelpCircle,
-  ListFilter,
   MapPin,
   Package
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useJobs } from "../context/JobsContext";
+import PageHeader from "../components/PageHeader";
+import StatusChip from "../components/StatusChip";
+import EmptyState from "../components/EmptyState";
+import { JOB_FILTERS, PERIOD_OPTIONS, getYearOptions, JOB_DETAIL_ROUTES } from "../data/constants";
 
 // EVzone Driver App – D44 Unified Job Requests
 // Shows ONLY pending/unattended jobs, sorted by request time.
-
-const JOB_FILTERS = [
-  { key: "all", label: "All" },
-  { key: "ride", label: "Ride" },
-  { key: "delivery", label: "Delivery" },
-  { key: "rental", label: "Rental" },
-  { key: "shuttle", label: "Shuttle" },
-  { key: "tour", label: "Tour" },
-  { key: "ambulance", label: "Ambulance" },
-];
-
-function JobTypePill({ jobType }) {
-  const base = "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium border";
-  if (jobType === "ambulance") return <span className={`${base} bg-red-50 border-red-100 text-red-600`}>Ambulance</span>;
-  if (jobType === "rental") return <span className={`${base} bg-emerald-50 border-emerald-100 text-emerald-600`}>Rental</span>;
-  if (jobType === "tour") return <span className={`${base} bg-sky-50 border-sky-100 text-sky-600`}>Tour</span>;
-  if (jobType === "shuttle") return <span className={`${base} bg-violet-50 border-violet-100 text-violet-600`}>Shuttle</span>;
-  if (jobType === "delivery") return <span className={`${base} bg-blue-50 border-blue-100 text-blue-600`}>Delivery</span>;
-  return <span className={`${base} bg-slate-100 border-slate-200 text-slate-600`}>Ride</span>;
-}
 
 function RequestCard({ job, onClick }: { job: any, onClick: (j: any) => void }) {
   const { from, to, distance, duration, fare, jobType, itemType, id, requestedAt } = job;
@@ -87,7 +69,7 @@ function RequestCard({ job, onClick }: { job: any, onClick: (j: any) => void }) 
           <MapPin className="h-3 w-3 mr-1 text-slate-400" />
           {distance} · {duration}
         </span>
-        <JobTypePill jobType={jobType} />
+        <StatusChip jobType={jobType} />
       </div>
     </button>
   );
@@ -103,7 +85,7 @@ export default function RideRequestsListScreen() {
   const [selectedQuarter, setSelectedQuarter] = useState("Q1");
   const navigate = useNavigate();
   const { pendingJobs, attendJob } = useJobs();
-  const yearOptions = Array.from({ length: 7 }, (_, i) => String(new Date().getFullYear() - i));
+  const yearOptions = getYearOptions();
 
   useEffect(() => {
     const queryCategory = searchParams.get("category");
@@ -119,24 +101,14 @@ export default function RideRequestsListScreen() {
 
   const filteredJobs = filter === "all" ? pendingJobs : pendingJobs.filter((job) => job.jobType === filter);
   const hasShuttleJob = filteredJobs.some((j) => j.jobType === "shuttle");
-  const periodLabel = {
-    day: "Today",
-    week: "This Week",
-    month: "This Month",
-    quarter: `${selectedQuarter} ${selectedYear}`,
-    year: selectedYear,
-  }[period];
+  const periodLabel = PERIOD_OPTIONS.find(p => p.key === period)?.label || "Today";
+  
+  const displayPeriodLabel = period === "quarter" ? `${selectedQuarter} ${selectedYear}` : period === "year" ? selectedYear : periodLabel;
 
   const handleCardClick = (job: any) => {
     attendJob(job.id);
-    const routes: Record<string, string> = {
-      shuttle: "/driver/help/shuttle-link",
-      delivery: "/driver/delivery/route/demo-route/active",
-      rental: "/driver/rental/job/demo-job",
-      tour: "/driver/tour/demo-tour/today",
-      ambulance: "/driver/ambulance/job/demo-job/status",
-    };
-    navigate(routes[job.jobType] || "/driver/jobs/incoming");
+    const route = JOB_DETAIL_ROUTES[job.jobType] || JOB_DETAIL_ROUTES.default;
+    navigate(route);
   };
 
   return (
@@ -148,27 +120,7 @@ export default function RideRequestsListScreen() {
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* Header — bell icon removed */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-            </button>
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <div className="flex items-center space-x-3">
-              <p className="text-center text-base font-black text-slate-900 dark:text-white tracking-tight leading-tight">
-                Requests
-              </p>
-            </div>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader title="Requests" />
 
       {/* Filters Panel */}
       <section className="z-10 mt-2 px-6">
@@ -181,7 +133,7 @@ export default function RideRequestsListScreen() {
               <select
                 value={filter}
                 onChange={(e) => handleFilterChange(e.target.value)}
-                className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-2.5 text-[11px] font-black uppercase tracking-wide text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#03cd8c]/30"
+                className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-2.5 text-[11px] font-black uppercase tracking-wide text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30"
               >
                 {JOB_FILTERS.map((f) => (
                   <option key={f.key} value={f.key}>
@@ -198,13 +150,11 @@ export default function RideRequestsListScreen() {
               <select
                 value={period}
                 onChange={(e) => setPeriod(e.target.value)}
-                className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-2.5 text-[11px] font-black uppercase tracking-wide text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#03cd8c]/30"
+                className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-2.5 text-[11px] font-black uppercase tracking-wide text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30"
               >
-                <option value="day">Day</option>
-                <option value="week">Week</option>
-                <option value="month">Month</option>
-                <option value="quarter">Quarter</option>
-                <option value="year">Year</option>
+                {PERIOD_OPTIONS.map(p => (
+                   <option key={p.key} value={p.key}>{p.label}</option>
+                ))}
               </select>
             </div>
           </div>
@@ -218,7 +168,7 @@ export default function RideRequestsListScreen() {
                 <select
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(e.target.value)}
-                  className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-2.5 text-[11px] font-black uppercase tracking-wide text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#03cd8c]/30"
+                  className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-2.5 text-[11px] font-black uppercase tracking-wide text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30"
                 >
                   {yearOptions.map((y) => (
                     <option key={y} value={y}>
@@ -236,7 +186,7 @@ export default function RideRequestsListScreen() {
                   <select
                     value={selectedQuarter}
                     onChange={(e) => setSelectedQuarter(e.target.value)}
-                    className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-2.5 text-[11px] font-black uppercase tracking-wide text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#03cd8c]/30"
+                    className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-2.5 text-[11px] font-black uppercase tracking-wide text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30"
                   >
                     <option value="Q1">Q1</option>
                     <option value="Q2">Q2</option>
@@ -256,8 +206,8 @@ export default function RideRequestsListScreen() {
           <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
             Monitoring Window
           </span>
-          <span className="text-[11px] font-black uppercase tracking-widest text-[#03cd8c]">
-            {periodLabel}
+          <span className="text-[11px] font-black uppercase tracking-widest text-orange-500">
+            {displayPeriodLabel}
           </span>
         </div>
 
@@ -268,15 +218,10 @@ export default function RideRequestsListScreen() {
           ))}
 
           {filteredJobs.length === 0 && (
-            <div className="rounded-[2.5rem] border-2 border-dashed border-orange-200 bg-cream/50 px-6 py-16 flex flex-col items-center justify-center text-center">
-              <div className="w-16 h-16 rounded-3xl bg-white flex items-center justify-center mb-6 shadow-sm border border-orange-100">
-                 <ListFilter className="h-8 w-8 text-slate-200" />
-              </div>
-              <p className="text-sm font-black text-slate-900 uppercase tracking-tight">No Requests Found</p>
-              <p className="text-[11px] text-slate-500 mt-2 font-bold uppercase tracking-tight leading-relaxed max-w-[200px]">
-                We couldn't find any ride requests matching your current filters. Please try a different category or wait for new requests.
-              </p>
-            </div>
+            <EmptyState 
+              title="No Requests Found" 
+              description="We couldn't find any ride requests matching your current filters. Please try a different category or wait for new requests." 
+            />
           )}
         </section>
 
@@ -286,7 +231,7 @@ export default function RideRequestsListScreen() {
             <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-[#f0fff4] p-6 flex flex-col items-start space-y-4 shadow-sm">
               <div className="flex items-center space-x-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm shrink-0 border border-orange-50">
-                  <HelpCircle className="h-6 w-6 text-[#03cd8c]" />
+                  <HelpCircle className="h-6 w-6 text-orange-500" />
                 </div>
                 <div className="flex flex-col">
                   <p className="font-black text-sm text-slate-900 uppercase tracking-tight">
@@ -303,7 +248,7 @@ export default function RideRequestsListScreen() {
               <button
                 type="button"
                 onClick={() => navigate("/driver/help/shuttle-link")}
-                className="w-full rounded-full bg-[#03cd8c] text-white py-4 text-[11px] font-black uppercase tracking-widest active:scale-95 transition-all shadow-xl shadow-emerald-600/20"
+                className="w-full rounded-full bg-orange-500 text-white py-4 text-[11px] font-black uppercase tracking-widest active:scale-95 transition-all shadow-xl shadow-emerald-600/20"
               >
                 Open Shuttle App
               </button>

@@ -1,10 +1,10 @@
 import {
-Car,
-CheckCircle2,
-ChevronLeft,
-PlayCircle
+  Car,
+  CheckCircle2,
+  PlayCircle
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D18 Preferences – Intro to Driving
 // Redesigned to match Screenshot 4.
@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 function Bullet({ children }) {
   return (
     <li className="flex items-start space-x-2 text-[11px] text-slate-500">
-      <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-[#03cd8c]" />
+      <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-orange-500" />
       <span>{children}</span>
     </li>
   );
@@ -27,38 +27,26 @@ export default function IntroEvzoneRideScreen() {
   return (
     <div className="flex flex-col min-h-full ">
 
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-90 transition-transform"
-          >
-            <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-          </button>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
-            <h1 className="text-base font-black text-slate-900 dark:text-white tracking-tight text-center">Training</h1>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Training" 
+        subtitle="Intro to Driving" 
+        onBack={() => navigate(-1)} 
+      />
 
       {/* Content */}
       <main className="flex-1 flex flex-col">
 
         {/* Hero Section - Light Green with Car Illustration */}
-        <section className="bg-emerald-50 w-full pt-16 pb-20 flex items-center justify-center px-6 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-48 h-48 bg-[#03cd8c]/5 rounded-full -mr-16 -mt-16 animate-pulse" />
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#03cd8c]/5 rounded-full -ml-12 -mb-12" />
+        <section className="bg-orange-50 w-full pt-16 pb-20 flex items-center justify-center px-6 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-orange-500/5 rounded-full -mr-16 -mt-16 animate-pulse" />
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-orange-500/5 rounded-full -ml-12 -mb-12" />
           <div className="relative w-full max-w-[240px]">
             {/* Car Illustration Mockup */}
-            <div className="relative bg-white rounded-[3rem] h-48 w-full flex items-center justify-center shadow-2xl shadow-emerald-500/10 border-4 border-emerald-100/20 group">
+            <div className="relative bg-white rounded-[3rem] h-48 w-full flex items-center justify-center shadow-2xl shadow-orange-500/10 border-4 border-orange-100/20 group">
               <Car className="h-32 w-32 text-[#1c2b4d] transition-transform group-hover:scale-110 duration-500" />
               {/* Cloud/Stylized elements */}
-              <div className="absolute top-4 right-6 h-4 w-12 bg-emerald-50 rounded-full" />
-              <div className="absolute top-12 left-10 h-3 w-16 bg-emerald-50 rounded-full" />
+              <div className="absolute top-4 right-6 h-4 w-12 bg-orange-50 rounded-full" />
+              <div className="absolute top-12 left-10 h-3 w-16 bg-orange-50 rounded-full" />
             </div>
           </div>
         </section>

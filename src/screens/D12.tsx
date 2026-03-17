@@ -8,6 +8,7 @@ SunMedium
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D12 Face Capture
 // Redesigned UI (green curved header, square capture frame, navy CTA)
@@ -36,7 +37,7 @@ function StepPill({ index, label, active }) {
   return (
     <div
       className={`flex-1 min-w-0 rounded-full px-2 py-1 flex items-center justify-center text-[10px] font-medium ${active
-        ? "bg-[#03cd8c] text-slate-900"
+        ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20"
         : "bg-slate-100 text-slate-500"
         }`}
     >
@@ -48,9 +49,9 @@ function StepPill({ index, label, active }) {
 }
 
 function DirectionIcon({ step }) {
-  if (step === 1) return <Circle className="h-4 w-4 text-[#03cd8c]" />;
-  if (step === 2) return <ArrowLeft className="h-4 w-4 text-[#03cd8c]" />;
-  return <ArrowRight className="h-4 w-4 text-[#03cd8c]" />;
+  if (step === 1) return <Circle className="h-4 w-4 text-orange-500" />;
+  if (step === 2) return <ArrowLeft className="h-4 w-4 text-orange-500" />;
+  return <ArrowRight className="h-4 w-4 text-orange-500" />;
 }
 
 const headFrames = {
@@ -107,23 +108,11 @@ export default function FaceCaptureScreen() {
 
   return (
     <div className="flex flex-col min-h-full ">
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-90 transition-transform"
-          >
-            <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-          </button>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
-            <h1 className="text-base font-black text-slate-900 dark:text-white tracking-tight text-center">Identity</h1>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Identity" 
+        subtitle="Face Capture" 
+        onBack={() => navigate(-1)} 
+      />
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6">
@@ -132,7 +121,7 @@ export default function FaceCaptureScreen() {
         <section className="space-y-3">
           <div className="flex items-center justify-between px-1">
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Step {step} of 3</span>
-            <span className="text-[10px] font-black uppercase tracking-widest text-[#03cd8c]">{stepTitle}</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-orange-500">{stepTitle}</span>
           </div>
           <div className="flex items-center space-x-2">
             <StepPill index={1} label="Front" active={step === 1} />
@@ -143,8 +132,8 @@ export default function FaceCaptureScreen() {
 
         {/* Camera preview with head illustration + direction icon */}
         <section className="flex flex-col items-center py-4 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#03cd8c]/5 rounded-full -mr-16 -mt-16" />
-          <div className="relative flex h-48 w-48 items-center justify-center rounded-full bg-slate-900 border-[6px] border-[#03cd8c]/20 shadow-2xl">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full -mr-16 -mt-16" />
+          <div className="relative flex h-48 w-48 items-center justify-center rounded-full bg-slate-900 border-[6px] border-orange-500/20 shadow-2xl">
             <div
               className={`flex h-32 w-32 items-center justify-center rounded-full bg-slate-800 transform transition-transform duration-500 ease-out pointer-events-none ${faceOffsetClass}`}
             >
@@ -152,7 +141,7 @@ export default function FaceCaptureScreen() {
             </div>
 
             {/* Direction icon */}
-            <div className="absolute top-3 right-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 border border-[#03cd8c] shadow-lg">
+            <div className="absolute top-3 right-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 border border-orange-500 shadow-lg">
               <DirectionIcon step={step} />
             </div>
 

@@ -9,6 +9,7 @@ X
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D60 Driver – Emergency Assistance Screen (v3)
 // Redesigned to match the high-fidelity layout with green header, map, and grid categories.
@@ -32,27 +33,11 @@ export default function EmergencyAssistanceMapVariantScreen() {
 
   return (
     <div className="flex flex-col h-full ">
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-            </button>
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <div className="flex flex-col items-center">
-               <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-500 dark:text-slate-400">Support</span>
-               <p className="text-lg font-black text-slate-900 dark:text-white tracking-tight leading-tight text-center">Safety Toolkit</p>
-            </div>
-          </div>
-          <div className="w-9" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Safety Toolkit" 
+        subtitle="Support" 
+        onBack={() => navigate(-1)} 
+      />
 
       {/* Content Area */}
       <main className="flex-1 flex flex-col p-6 relative overflow-y-auto scrollbar-hide space-y-8">

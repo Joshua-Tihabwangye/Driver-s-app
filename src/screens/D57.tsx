@@ -5,6 +5,7 @@ Info
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D57 Driver – Cancel Ride Reason Screen (v1)
 // Screen for selecting a reason when cancelling a ride (non no-show cases as well).
@@ -35,29 +36,11 @@ export default function CancelRideReasonScreen() {
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-            </button>
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <div className="flex items-center space-x-3">
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-red-100/70">Action</span>
-                <p className="text-lg font-black text-slate-900 dark:text-white tracking-tight leading-tight text-center">Cancel Ride</p>
-              </div>
-            </div>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Cancel Ride" 
+        subtitle="Action" 
+        onBack={() => navigate(-1)} 
+      />
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-6">
@@ -82,8 +65,8 @@ export default function CancelRideReasonScreen() {
               type="button"
               onClick={() => setSelectedReason(r)}
               className={`w-full rounded-[1.5rem] border px-6 py-4 text-left text-[11px] font-black uppercase tracking-widest flex items-center justify-between active:scale-[0.98] transition-all ${
-                selectedReason === r
-                  ? "border-[#03cd8c] bg-emerald-50 text-slate-900 shadow-lg shadow-emerald-500/5"
+              selectedReason === r
+                  ? "border-orange-500 bg-orange-50 text-slate-900 shadow-lg shadow-orange-500/5"
                   : "border-slate-100 bg-white text-slate-400"
               }`}
             >
@@ -107,7 +90,7 @@ export default function CancelRideReasonScreen() {
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Add any extra context..."
-            className="w-full rounded-[2rem] border-2 border-slate-50 bg-white px-6 py-5 text-[11px] font-bold text-slate-900 placeholder:text-slate-300 focus:border-[#03cd8c] focus:outline-none transition-all shadow-sm"
+            className="w-full rounded-[2rem] border-2 border-slate-50 bg-white px-6 py-5 text-[11px] font-bold text-slate-900 placeholder:text-slate-300 focus:border-orange-500 focus:outline-none transition-all shadow-sm"
           />
         </section>
 

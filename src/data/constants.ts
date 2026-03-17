@@ -54,6 +54,16 @@ export const JOB_CATEGORY_STYLES: Record<JobCategory, { bg: string; border: stri
   shuttle: { bg: "bg-violet-50", border: "border-violet-100", text: "text-violet-600", label: "Shuttle" },
   ambulance: { bg: "bg-red-50", border: "border-red-100", text: "text-red-600", label: "Ambulance" },
 };
+// ── Generic Status Styles ─────────────────────────────────
+export const GENERIC_STATUS_STYLES: Record<string, { bg: string; border: string; text: string; label: string }> = {
+  online: { bg: "bg-emerald-50", border: "border-emerald-100", text: "text-emerald-600", label: "Online" },
+  offline: { bg: "bg-slate-100", border: "border-slate-200", text: "text-slate-500", label: "Offline" },
+  approved: { bg: "bg-emerald-50", border: "border-emerald-100", text: "text-emerald-600", label: "Approved" },
+  verified: { bg: "bg-emerald-50", border: "border-emerald-100", text: "text-emerald-600", label: "Verified" },
+  pending: { bg: "bg-amber-50", border: "border-amber-100", text: "text-amber-600", label: "Pending" },
+  review: { bg: "bg-orange-50", border: "border-orange-100", text: "text-orange-600", label: "Review" },
+  missing: { bg: "bg-red-50", border: "border-red-100", text: "text-red-600", label: "Missing" },
+};
 
 // ── App Branding ──────────────────────────────────────────
 export const APP_NAME = "EVzone Driver";

@@ -9,6 +9,7 @@ Package,
 Phone
 } from "lucide-react";
 import { useNavigate,useParams } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D81 Active Route with Stop Contact Screen (v1)
 // Active route view with per-stop contact details and quick actions.
@@ -30,7 +31,7 @@ function StopContactRow({
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-50">
-            <MapPin className="h-4 w-4 text-[#03cd8c]" />
+            <MapPin className="h-4 w-4 text-orange-500" />
           </div>
           <div className="flex flex-col items-start">
             <span className="text-xs font-semibold text-slate-900">
@@ -116,33 +117,11 @@ export default function ActiveRouteWithStopContactScreen() {
 
   return (
     <div className="flex flex-col min-h-full ">
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-            </button>
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <div className="flex items-center space-x-3">
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-900 dark:text-white/70 text-center">
-                  Driver · Deliveries
-                </span>
-                <h1 className="text-base font-black text-slate-900 dark:text-white leading-tight text-center">
-                  Stop Contacts
-                </h1>
-              </div>
-            </div>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Stop Contacts" 
+        subtitle="Driver · Deliveries" 
+        onBack={() => navigate(-1)} 
+      />
 
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6">
         {/* Map preview */}
@@ -159,7 +138,7 @@ export default function ActiveRouteWithStopContactScreen() {
               <path
                 d="M14 82 C 28 70, 40 64, 52 52 S 72 34, 86 20"
                 fill="none"
-                stroke="#03cd8c"
+                stroke="#f97316"
                 strokeWidth="3"
                 strokeLinecap="round"
                 strokeDasharray="6 4"
@@ -173,8 +152,8 @@ export default function ActiveRouteWithStopContactScreen() {
 
           {/* Pickup marker */}
           <div className="absolute left-10 top-18 flex flex-col items-center">
-            <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-white border-2 border-[#03cd8c] shadow-lg">
-              <Package className="h-4 w-4 text-[#03cd8c]" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-white border-2 border-orange-500 shadow-lg">
+              <Package className="h-4 w-4 text-orange-500" />
             </div>
           </div>
         </button>
