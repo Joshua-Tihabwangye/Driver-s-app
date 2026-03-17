@@ -7,6 +7,7 @@ Clock,
 Map
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D98 Tour – Today’s Schedule Screen (v1)
 // Daily schedule for a multi-day tour.
@@ -53,7 +54,7 @@ function SegmentRow({ segment, onClick }) {
 
   const statusClasses =
     status === "completed"
-      ? "bg-emerald-50 border-emerald-100 text-emerald-700"
+      ? "bg-orange-50 border-orange-100 text-orange-700"
       : status === "in-progress"
       ? "bg-blue-50 border-blue-100 text-blue-700"
       : "bg-slate-50 border-slate-100 text-slate-500";
@@ -103,47 +104,28 @@ export default function TourTodayScheduleScreen() {
 
   return (
     <div className="flex flex-col min-h-full ">
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-            </button>
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <div className="flex items-center space-x-3">
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-900 dark:text-white/70 text-center">
-                  Driver · Tour
-                </span>
-                <h1 className="text-base font-black text-slate-900 dark:text-white leading-tight text-center">
-                  Today's Schedule
-                </h1>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center rounded-2xl bg-white/20 px-4 py-1.5 backdrop-blur-md border border-white/20">
-             <span className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-widest">
+      <PageHeader 
+        title="Today's Schedule" 
+        subtitle="Driver · Tour" 
+        onBack={() => navigate(-1)} 
+        rightAction={
+          <div className="flex items-center rounded-2xl bg-orange-500/10 px-4 py-1.5 backdrop-blur-md border border-orange-500/20">
+             <span className="text-[10px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-widest">
                Day 2 of 5
              </span>
           </div>
-        </header>
-      </div>
+        }
+      />
 
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6">
         {/* Summary card */}
         <section className="relative rounded-[2.5rem] bg-slate-900 overflow-hidden p-8 shadow-2xl space-y-6">
           <div className="flex items-center space-x-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#03cd8c] text-slate-900">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500 text-white">
               <CalendarDays className="h-6 w-6" />
             </div>
             <div className="flex-1">
-               <span className="text-[10px] font-black text-[#03cd8c] uppercase tracking-[0.2em]">
+               <span className="text-[10px] font-black text-orange-500 uppercase tracking-[0.2em]">
                  Tour Highlights
                </span>
                <p className="text-lg font-black text-white">
@@ -159,7 +141,7 @@ export default function TourTodayScheduleScreen() {
              </div>
              <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-[#03cd8c] transition-all duration-500"
+                  className="h-full bg-orange-500 transition-all duration-500"
                   style={{ width: `${progressPercent}%` }}
                 />
              </div>
@@ -183,8 +165,8 @@ export default function TourTodayScheduleScreen() {
         </section>
 
         {/* Info box */}
-        <section className="rounded-[2rem] bg-emerald-50/50 border border-emerald-100/50 p-6">
-           <p className="text-[11px] font-medium text-emerald-800 leading-relaxed text-center">
+        <section className="rounded-[2rem] bg-orange-50/50 border border-orange-100/50 p-6">
+           <p className="text-[11px] font-medium text-orange-800 leading-relaxed text-center">
              Follow today's segments in order to keep guests on time. Tapping a 
              segment will open specific navigation.
            </p>

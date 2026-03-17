@@ -5,6 +5,7 @@ MapPin,
 QrCode
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D90 Scan QR Code – Instruction Popup (v1)
 // Early instruction popup explaining how to scan the QR code, shown over the scanner view.
@@ -16,33 +17,11 @@ export default function QrScanInstructionPopupScreen() {
 
   return (
     <div className="flex flex-col h-full ">
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-            </button>
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <div className="flex items-center space-x-3">
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-900 dark:text-white/70 text-center">
-                  Driver · Deliveries
-                </span>
-                <h1 className="text-base font-black text-slate-900 dark:text-white leading-tight text-center">
-                  Scan QR Code
-                </h1>
-              </div>
-            </div>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Scan QR Code" 
+        subtitle="Driver · Deliveries" 
+        onBack={() => navigate(-1)} 
+      />
 
       <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide">
         {/* Camera / scanner view */}
@@ -50,7 +29,7 @@ export default function QrScanInstructionPopupScreen() {
           <div className="absolute inset-0 bg-slate-900/90" />
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="relative flex h-56 w-56 items-center justify-center">
-              <div className="absolute inset-0 border-2 border-emerald-500/20 rounded-2xl" />
+               <div className="absolute inset-0 border-2 border-orange-500/20 rounded-2xl" />
             </div>
           </div>
 
@@ -79,7 +58,7 @@ export default function QrScanInstructionPopupScreen() {
                   "Vibration signals success"
                 ].map((item, i) => (
                   <li key={i} className="flex items-center space-x-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-orange-400" />
                     <span>{item}</span>
                   </li>
                 ))}
@@ -87,7 +66,7 @@ export default function QrScanInstructionPopupScreen() {
 
               <div className="pt-2 flex items-center justify-between border-t border-slate-100">
                 <div className="inline-flex items-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                  <MapPin className="h-3.5 w-3.5 mr-1.5 text-emerald-500" />
+                  <MapPin className="h-3.5 w-3.5 mr-1.5 text-orange-500" />
                   Acacia Mall
                 </div>
                 <button 

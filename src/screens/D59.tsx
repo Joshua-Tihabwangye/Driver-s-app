@@ -8,6 +8,7 @@ Phone,
 ShieldCheck
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D59 Driver – Safety Toolkit Screen (v2)
 // Central hub for safety tools: SOS, follow ride, incident reporting, help.
@@ -28,29 +29,11 @@ export default function SafetyToolkitScreen() {
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-            </button>
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <div className="flex items-center space-x-3">
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-500 dark:text-slate-400">Protocol</span>
-                <p className="text-base font-black text-slate-900 dark:text-white tracking-tight leading-tight text-center">Safety toolkit</p>
-              </div>
-            </div>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Safety toolkit" 
+        subtitle="Protocol" 
+        onBack={() => navigate(-1)} 
+      />
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-6">
@@ -63,11 +46,11 @@ export default function SafetyToolkitScreen() {
             >
               <ChevronLeft className="h-5 w-5 text-white" />
             </button>
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#03cd8c] text-white shadow-lg shadow-emerald-500/20">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500 text-white shadow-lg shadow-orange-500/20">
               <ShieldCheck className="h-6 w-6" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/70">Safety first</span>
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-200">Safety first</span>
               <p className="text-sm font-black uppercase tracking-tight leading-tight">Emergency protocol enabled</p>
             </div>
           </div>
@@ -130,8 +113,8 @@ export default function SafetyToolkitScreen() {
                  className="w-full flex items-center justify-between rounded-[1.5rem] border border-slate-100 bg-white px-6 py-5 shadow-sm active:scale-[0.98] transition-all group"
                >
                  <div className="flex items-center space-x-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-50 group-hover:bg-[#03cd8c]/10 transition-colors">
-                       <tool.icon className="h-5 w-5 text-slate-700 group-hover:text-[#03cd8c] transition-colors" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-50 group-hover:bg-orange-500/10 transition-colors">
+                       <tool.icon className="h-5 w-5 text-slate-700 group-hover:text-orange-500 transition-colors" />
                     </div>
                     <div className="flex flex-col text-left">
                        <span className="text-xs font-black text-slate-900 uppercase tracking-tight leading-tight">{tool.title}</span>

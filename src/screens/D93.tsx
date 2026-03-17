@@ -5,6 +5,7 @@ Loader2,
 QrCode
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D93 QR Code – Processing Stage (v1)
 // Screen showing the processing state after scanning a QR code, while verifying with backend.
@@ -16,41 +17,19 @@ export default function QrProcessingStageScreen() {
 
   return (
     <div className="flex flex-col h-full ">
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-            </button>
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <div className="flex items-center space-x-3">
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-900 dark:text-white/70 text-center">
-                  Driver · Account
-                </span>
-                <h1 className="text-base font-black text-slate-900 dark:text-white leading-tight text-center">
-                  Document Rejected
-                </h1>
-              </div>
-            </div>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Verifying Code" 
+        subtitle="Driver · Account" 
+        onBack={() => navigate(-1)} 
+      />
 
       <main className="flex-1 px-6 pb-16 overflow-y-auto scrollbar-hide flex flex-col items-center justify-center space-y-10">
         {/* Processing indicator */}
         <section className="flex flex-col items-center space-y-6 w-full pt-12">
           <div className="relative">
-            <div className="absolute inset-0 rounded-full border-4 border-emerald-100 animate-spin-slow" />
-            <div className="flex h-32 w-32 items-center justify-center rounded-full bg-white border border-slate-100 shadow-xl shadow-emerald-100">
-              <Loader2 className="h-12 w-12 text-[#03cd8c] animate-spin" />
+            <div className="absolute inset-0 rounded-full border-4 border-orange-100 animate-spin-slow" />
+            <div className="flex h-32 w-32 items-center justify-center rounded-full bg-white border border-slate-100 shadow-xl shadow-orange-100">
+              <Loader2 className="h-12 w-12 text-orange-500 animate-spin" />
             </div>
           </div>
           <div className="flex flex-col items-center text-center space-y-2">
@@ -66,7 +45,7 @@ export default function QrProcessingStageScreen() {
         {/* Info note */}
         <section className="w-full max-w-[300px] flex flex-col space-y-6">
           <div className="rounded-[2rem] bg-slate-900 p-6 shadow-2xl space-y-4">
-            <div className="flex items-center space-x-3 text-[#03cd8c]">
+            <div className="flex items-center space-x-3 text-orange-500">
               <Info className="h-5 w-5" />
               <span className="text-[10px] font-black uppercase tracking-widest text-white">
                 Important Stay Put

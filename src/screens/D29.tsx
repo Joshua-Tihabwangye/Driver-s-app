@@ -1,63 +1,37 @@
 import {
-Activity,
-Ambulance,
-Briefcase,
-Car,
-ChevronLeft,
-Clock,
-DollarSign,
-Map,
-Package,
-TrendingUp
+  Activity,
+  Ambulance,
+  Briefcase,
+  Car,
+  Clock,
+  DollarSign,
+  Map,
+  Package,
+  TrendingUp
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import MetricCard from "../components/MetricCard";
+import PageHeader from "../components/PageHeader";
+import { MOCK_DASHBOARD_STATS } from "../data/mockData";
 
 // EVzone Driver App – D29 Driver App – Active Dashboard (Online Mode)
-// Online dashboard showing time online, rides, earnings and a job mix breakdown.
+// Performance dashboard showing online time, trips, earnings and job mix.
 
-
-function MetricCard({ label, value, sub, icon: Icon, onClick }) {
-  const clickableStyles = onClick
-    ? "active:scale-[0.98] transition-all cursor-pointer hover:border-[#03cd8c]/30"
-    : "";
-
+function JobMixPill({ icon: Icon, label, value, onClick }: { icon: any; label: string; value: string | number; onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`flex flex-col rounded-2xl bg-cream px-4 py-4 shadow-sm border-2 border-orange-500/10 flex-1 min-w-[0] group hover:scale-[1.02] hover:shadow-md hover:border-orange-500/30 transition-all duration-300 ${clickableStyles}`}
-    >
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight truncate">{label}</span>
-        {Icon && (
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-50 text-slate-400 group-hover:bg-[#03cd8c]/10 group-hover:text-[#03cd8c] transition-colors">
-            <Icon className="h-3.5 w-3.5" />
-          </div>
-        )}
-      </div>
-      <span className="text-base font-black text-slate-900 tracking-tight truncate">{value}</span>
-      {sub && (
-        <span className="mt-1.5 text-[9px] text-slate-400 font-medium leading-tight">{sub}</span>
-      )}
-    </button>
-  );
-}
-
-function JobMixPill({ icon: Icon, label, value, colorClass, onClick }: { icon: any; label: string; value: string; colorClass: string; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex flex-col items-start rounded-2xl border-2 border-orange-500/10 px-4 py-4 text-left active:scale-[0.98] transition-all group hover:shadow-md bg-cream hover:scale-[1.01] hover:border-orange-500/30 ${colorClass}`}
+      className={`flex flex-col items-start rounded-2xl border-2 border-orange-500/10 px-4 py-4 text-left active:scale-[0.98] transition-all group hover:shadow-md bg-cream hover:scale-[1.01] hover:border-orange-500/30`}
     >
       <div className="flex items-center space-x-3 mb-3">
-        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white shadow-sm border border-orange-50 group-hover:scale-110 transition-transform">
-          <Icon className="h-4 w-4" />
+        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white dark:bg-slate-700 shadow-sm border border-orange-50 group-hover:scale-110 transition-transform">
+          <Icon className="h-4 w-4 text-orange-500" />
         </div>
-        <span className="text-[11px] font-black text-slate-900 uppercase tracking-wider">{label}</span>
+        <span className="text-[11px] font-black text-slate-900 dark:text-slate-200 uppercase tracking-wider">{label}</span>
       </div>
       <div className="flex items-center justify-between w-full">
-         <span className="text-xl font-black text-slate-900 tracking-tighter">{value}</span>
+         <span className="text-xl font-black text-slate-900 dark:text-slate-100 tracking-tighter">{value}</span>
           <div className="p-1 bg-orange-500/10 rounded-full">
             <TrendingUp className="h-3 w-3 text-orange-600" />
           </div>
@@ -68,68 +42,26 @@ function JobMixPill({ icon: Icon, label, value, colorClass, onClick }: { icon: a
 
 export default function D29ActiveDashboardScreen() {
   const navigate = useNavigate();
-
-  const onlineTime = "3h 24m";
-  const jobsToday = 12;
-  const earningsToday = "$84.60";
-
-  const jobMix = {
-    ride: 7,
-    delivery: 3,
-    rental: 1,
-    tour: 1,
-    ambulance: 0
-};
-
+  const { onlineTime, jobsToday, earningsToday, jobMix } = MOCK_DASHBOARD_STATS;
   const totalJobs = jobMix.ride + jobMix.delivery + jobMix.rental + jobMix.tour + jobMix.ambulance;
 
   return (
-    <div className="flex flex-col h-full ">
-      {/* Hide scrollbar */}
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
-
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-            </button>
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <div className="flex items-center space-x-3">
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-100/70">Performance</span>
-                <p className="text-base font-black text-slate-900 dark:text-white tracking-tight leading-tight text-center">Dashboard</p>
-              </div>
-            </div>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+    <div className="flex flex-col h-full bg-transparent">
+      <PageHeader 
+        title="Performance" 
+        subtitle="Dashboard" 
+        onBack={() => navigate(-1)} 
+      />
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
-        {/* Today overview */}
-        <section className="rounded-[2.5rem] bg-slate-900 text-white p-6 space-y-6 shadow-2xl shadow-slate-200 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-40 h-40 bg-[#03cd8c]/10 rounded-full -mr-20 -mt-20 transition-transform group-hover:scale-110" />
+        {/* Today overview summary */}
+        <section className="rounded-[2.5rem] bg-slate-900 text-white p-6 space-y-6 shadow-2xl relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-orange-500/10 rounded-full -mr-20 -mt-20 transition-transform group-hover:scale-110" />
           
           <div className="flex items-center justify-between relative z-10">
             <div className="flex items-center space-x-4">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-white" />
-            </button>
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#03cd8c] text-white shadow-xl shadow-emerald-500/20">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-500 text-white shadow-xl shadow-orange-500/20">
                 <Clock className="h-7 w-7" />
               </div>
               <div className="flex flex-col">
@@ -153,7 +85,7 @@ export default function D29ActiveDashboardScreen() {
           </div>
         </section>
 
-        {/* Key stats */}
+        {/* Key stats grid */}
         <section className="space-y-4">
           <div className="px-1">
             <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Key Metrics</h2>
@@ -168,7 +100,7 @@ export default function D29ActiveDashboardScreen() {
             />
             <MetricCard
               label="Trips"
-              value={`${jobsToday}`}
+              value={jobsToday}
               sub="Completed Today"
               icon={Activity}
               onClick={() => navigate("/driver/history/rides")}
@@ -194,8 +126,8 @@ export default function D29ActiveDashboardScreen() {
         <section className="space-y-4 pb-8">
           <div className="flex items-center justify-between px-1">
             <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Job Types</h2>
-            <div className="bg-slate-100 px-3 py-1 rounded-lg">
-               <span className="text-[10px] font-black text-slate-600 uppercase">{totalJobs} TOTAL</span>
+            <div className="bg-orange-500/10 px-3 py-1 rounded-lg">
+               <span className="text-[10px] font-black text-orange-600 uppercase tracking-tight">{totalJobs} TOTAL</span>
             </div>
           </div>
           
@@ -203,29 +135,25 @@ export default function D29ActiveDashboardScreen() {
             <JobMixPill
               icon={Car}
               label="Rides"
-              value={`${jobMix.ride}`}
-              colorClass="border-emerald-50"
+              value={jobMix.ride}
               onClick={() => navigate("/driver/jobs/list")}
             />
             <JobMixPill
               icon={Package}
               label="Cargo"
-              value={`${jobMix.delivery}`}
-              colorClass="border-blue-50"
-              onClick={() => navigate("/driver/delivery/orders")}
+              value={jobMix.delivery}
+              onClick={() => navigate("/driver/jobs/list?category=delivery")}
             />
             <JobMixPill
               icon={Briefcase}
               label="Rentals"
-              value={`${jobMix.rental}`}
-              colorClass="border-teal-50"
+              value={jobMix.rental}
               onClick={() => navigate("/driver/rental/job/demo-job")}
             />
             <JobMixPill
               icon={Map}
               label="Tours"
-              value={`${jobMix.tour}`}
-              colorClass="border-orange-50"
+              value={jobMix.tour}
               onClick={() => navigate("/driver/tour/demo-tour/today")}
             />
           </div>
@@ -233,12 +161,11 @@ export default function D29ActiveDashboardScreen() {
           <JobMixPill
             icon={Ambulance}
             label="Emergency"
-            value={`${jobMix.ambulance}`}
-            colorClass="border-red-50"
+            value={jobMix.ambulance}
             onClick={() => navigate("/driver/ambulance/job/demo-job/status")}
           />
 
-          <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100 shadow-inner">
+          <div className="bg-cream p-5 rounded-3xl border-2 border-orange-500/10 shadow-sm">
              <p className="text-[10px] text-slate-400 leading-relaxed font-bold uppercase tracking-tight">
                 SYSTEM NOTICE: Specialized jobs (Emergency/VIP) are restricted to high-trust driver profiles. Maintain 4.9+ rating for continued access.
              </p>

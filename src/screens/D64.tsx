@@ -9,6 +9,7 @@ X
 } from "lucide-react";
 import React,{ useState } from "react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D64 Driver – Follow My Ride Selection (v3)
 // Redesigned to match high-fidelity screenshots with map background and contact modal.
@@ -33,29 +34,11 @@ export default function FollowMyRideSelectionScreen() {
 
   return (
     <div className="flex flex-col h-full ">
-      {/*Straight header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-            </button>
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <div className="flex items-center space-x-3">
-              <div className="flex flex-col items-center">
-                 <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-500 dark:text-slate-400">Support</span>
-                 <p className="text-lg font-black text-slate-900 dark:text-white tracking-tight leading-tight text-center">Safety Hub</p>
-              </div>
-            </div>
-          </div>
-          <div className="w-9" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Safety Hub" 
+        subtitle="Support" 
+        onBack={() => navigate(-1)} 
+      />
 
       {/* Map Background (Simulated) */}
       <div className="flex-1 relative bg-[#e5e5e5] overflow-hidden">
@@ -71,7 +54,7 @@ export default function FollowMyRideSelectionScreen() {
              <div className="h-6 w-6 bg-slate-100 rounded-lg animate-pulse" />
           </div>
           <div className="h-12 px-6 bg-slate-900 rounded-full shadow-2xl flex items-center space-x-3 border border-slate-800">
-            <div className="h-3 w-3 bg-[#03cd8c] rounded-full animate-pulse" />
+            <div className="h-3 w-3 bg-orange-500 rounded-full animate-pulse" />
             <span className="text-white text-[10px] font-black uppercase tracking-[0.2em]">UGX 0.00</span>
           </div>
           <div className="h-12 w-12 bg-white/90 backdrop-blur-md rounded-2xl shadow-xl flex items-center justify-center border border-white">
@@ -81,10 +64,10 @@ export default function FollowMyRideSelectionScreen() {
 
         {/* Vehicle Marker */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-          <div className="h-32 w-32 rounded-full bg-[#03cd8c]/10 flex items-center justify-center animate-pulse">
-            <div className="h-24 w-24 rounded-full bg-[#03cd8c]/20 flex items-center justify-center">
+          <div className="h-32 w-32 rounded-full bg-orange-500/10 flex items-center justify-center animate-pulse">
+            <div className="h-24 w-24 rounded-full bg-orange-500/20 flex items-center justify-center">
               <div className="h-16 w-16 bg-slate-900 rounded-full border-4 border-white flex items-center justify-center shadow-2xl">
-                <div className="h-8 w-4 bg-[#03cd8c] rounded-sm relative">
+                <div className="h-8 w-4 bg-orange-500 rounded-sm relative">
                   <div className="absolute inset-x-0 top-0 h-2 bg-white/50 rounded-t-sm" />
                   <div className="absolute inset-x-0 bottom-0 h-1.5 bg-red-400 rounded-b-xs" />
                 </div>

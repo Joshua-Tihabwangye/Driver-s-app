@@ -8,6 +8,7 @@ IdCard,
 Info
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D08 Driver Personal – Document Under Review
 // Green curved header design. ALL original functionality preserved:
@@ -40,23 +41,11 @@ export default function DocumentUnderReviewScreen() {
   return (
     <div className="flex flex-col min-h-full ">
 
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-90 transition-transform"
-          >
-            <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-          </button>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
-            <h1 className="text-base font-black text-slate-900 dark:text-white tracking-tight text-center">Personal Verification</h1>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Personal Verification" 
+        subtitle="Review Status" 
+        onBack={() => navigate(-1)} 
+      />
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6">
@@ -138,7 +127,7 @@ export default function DocumentUnderReviewScreen() {
           <button
             type="button"
             onClick={() => navigate("/driver/onboarding/profile")}
-            className="w-full rounded-2xl py-4 text-xs font-black text-[#03cd8c] bg-white border border-[#03cd8c]/20 shadow-sm hover:bg-emerald-50 active:scale-95 transition-all uppercase tracking-widest"
+            className="w-full rounded-2xl py-4 text-xs font-black text-orange-500 bg-white border border-orange-500/20 shadow-sm hover:bg-orange-50 active:scale-95 transition-all uppercase tracking-widest"
           >
              Return to Profile
           </button>

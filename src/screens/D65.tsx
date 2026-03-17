@@ -9,6 +9,7 @@ Users
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D65 Driver – Follow My Ride Screen (v1)
 // Screen for selecting contacts who can follow the driver’s live trip.
@@ -68,27 +69,11 @@ export default function FollowMyRideScreen() {
 
   return (
     <div className="flex flex-col h-full ">
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-            </button>
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <div className="flex flex-col items-center">
-               <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-500 dark:text-slate-400">Support</span>
-               <p className="text-lg font-black text-slate-900 dark:text-white tracking-tight leading-tight text-center">Safety Features</p>
-            </div>
-          </div>
-          <div className="w-9" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Safety Features" 
+        subtitle="Support" 
+        onBack={() => navigate(-1)} 
+      />
 
       {/* Content Area */}
       <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-8">
@@ -104,11 +89,11 @@ export default function FollowMyRideScreen() {
         {/* Intro card */}
         <section className="rounded-[2.5rem] bg-slate-900 border border-slate-800 text-white p-6 space-y-4 shadow-2xl">
             <div className="flex items-center space-x-4 text-left">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#03cd8c] text-white shadow-lg shadow-emerald-500/20">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500 text-white shadow-lg shadow-orange-500/20">
                 <MapPin className="h-6 w-6" />
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-100/80">Live Now</span>
+                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-200">Live Now</span>
                 <p className="text-sm font-black uppercase tracking-tight">Trip Tracking</p>
               </div>
             </div>

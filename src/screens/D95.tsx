@@ -5,6 +5,7 @@ Loader2,
 QrCode
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D95 QR Code – Processing Screen (marketing processing) (v1)
 // Generic marketing-style processing screen after scanning a QR code.
@@ -16,41 +17,19 @@ export default function QrGenericProcessingScreen() {
 
   return (
     <div className="flex flex-col min-h-full ">
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-            </button>
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <div className="flex items-center space-x-3">
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-500 dark:text-slate-400 text-center">
-                  Driver · Account
-                </span>
-                <h1 className="text-base font-black text-slate-900 dark:text-white leading-tight text-center">
-                  Document Verified
-                </h1>
-              </div>
-            </div>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Document Verified" 
+        subtitle="Driver · Account" 
+        onBack={() => navigate(-1)} 
+      />
 
       <main className="flex-1 px-6 pb-16 flex flex-col items-center justify-center space-y-12">
         {/* Processing indicator */}
         <section className="flex flex-col items-center space-y-8 pt-12">
           <div className="relative">
-            <div className="absolute inset-0 rounded-full border-4 border-emerald-100 animate-spin-slow" />
-            <div className="flex h-36 w-36 items-center justify-center rounded-full bg-white shadow-2xl shadow-emerald-100 border border-slate-50">
-              <Loader2 className="h-16 w-16 text-[#03cd8c] animate-spin" />
+            <div className="absolute inset-0 rounded-full border-4 border-orange-100 animate-spin-slow" />
+            <div className="flex h-36 w-36 items-center justify-center rounded-full bg-white shadow-2xl shadow-orange-100 border border-slate-50">
+              <Loader2 className="h-16 w-16 text-orange-500 animate-spin" />
             </div>
           </div>
           <div className="flex flex-col items-center text-center space-y-3">

@@ -1,11 +1,11 @@
 import {
-CheckCircle2,
-ChevronLeft,
-Info,
-Plus,
-Zap
+  CheckCircle2,
+  Info,
+  Plus,
+  Zap
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D14 My Vehicles
 // Redesigned with green curved header and vehicle image cards.
@@ -22,12 +22,12 @@ function VehicleCard({ image, brand, model, badge, primary, onClick }) {
         <h3 className="text-sm font-bold text-slate-900 truncate w-full uppercase">{brand}</h3>
         <p className="text-[11px] text-slate-500 font-medium uppercase truncate w-full">{model}</p>
         {primary && (
-          <span className="mt-1 inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
+          <span className="mt-1 inline-flex items-center rounded-full bg-orange-50 px-2 py-0.5 text-[10px] font-medium text-orange-700">
             <CheckCircle2 className="mr-1 h-3 w-3" /> Primary vehicle
           </span>
         )}
         {badge && (
-          <span className="mt-1 inline-flex items-center rounded-full bg-slate-900 px-2 py-0.5 text-[10px] font-medium text-emerald-400">
+          <span className="mt-1 inline-flex items-center rounded-full bg-slate-900 px-2 py-0.5 text-[10px] font-medium text-orange-400">
             <Zap className="mr-1 h-3 w-3" />
             {badge}
           </span>
@@ -80,29 +80,17 @@ export default function MyVehiclesScreen() {
   return (
     <div className="flex flex-col min-h-full ">
 
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-90 transition-transform"
-          >
-            <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-          </button>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
-            <h1 className="text-base font-black text-slate-900 dark:text-white tracking-tight text-center">Garage</h1>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Garage" 
+        subtitle="My Vehicles" 
+        onBack={() => navigate(-1)} 
+      />
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6">
 
         {/* EV-only banner (restored from original) */}
-        <section className="rounded-[2.5rem] bg-[#f0fff4] border-2 border-orange-500/10 p-6 space-y-4 shadow-sm relative overflow-hidden group hover:border-orange-500/30 transition-all">
+        <section className="rounded-[2.5rem] bg-orange-50 border-2 border-orange-500/10 p-6 space-y-4 shadow-sm relative overflow-hidden group hover:border-orange-500/30 transition-all">
           <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/5 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
           <div className="flex items-center space-x-3">
 <div className="flex flex-col">
@@ -137,8 +125,7 @@ export default function MyVehiclesScreen() {
            </div>
         </section>
 
-        {/* Info card (restored from original) */}
-        <section className="rounded-3xl border-2 border-orange-500/10 bg-[#f0fff4]/50 p-5 flex items-start space-x-3 shadow-sm">
+        <section className="rounded-3xl border-2 border-orange-500/10 bg-slate-50 p-5 flex items-start space-x-3 shadow-sm">
           <div className="mt-0.5 bg-white p-1.5 rounded-xl border border-orange-50 shadow-sm">
             <Info className="h-4 w-4 text-orange-500" />
           </div>

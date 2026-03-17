@@ -1,7 +1,5 @@
-import {
-ChevronLeft
-} from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D24 Preferences – Content Completion Screen
 // Redesigned to match Screenshot 0.
@@ -19,37 +17,25 @@ export default function ContentCompletionScreen() {
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-90 transition-transform"
-          >
-            <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-          </button>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
-            <h1 className="text-base font-black text-slate-900 dark:text-white tracking-tight text-center">Complete</h1>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Complete" 
+        subtitle="Training Finished" 
+        onBack={() => navigate(-1)} 
+      />
 
       {/* Content */}
       <main className="flex-1 px-8 pt-10 pb-12 flex flex-col items-center overflow-y-auto scrollbar-hide">
 
         {/* Illustration Section */}
         <div className="w-full mb-12 mt-4 relative group">
-          <div className="absolute inset-0 bg-emerald-400/5 rounded-full blur-3xl group-hover:bg-emerald-400/10 transition-all duration-1000" />
+          <div className="absolute inset-0 bg-orange-400/5 rounded-full blur-3xl group-hover:bg-orange-400/10 transition-all duration-1000" />
           <svg viewBox="0 0 400 300" className="w-full h-auto drop-shadow-2xl relative z-10">
             {/* Background clouds/mountains */}
             <path d="M50,150 Q100,100 150,150 T250,150 T350,150" fill="none" stroke="#f1f5f9" strokeWidth="2" />
 
             {/* Car Body */}
-            <rect x="100" y="160" width="200" height="60" rx="30" fill="#03cd8c" />
-            <path d="M120,160 Q150,100 250,100 L280,160 Z" fill="#03cd8c" opacity="0.8" />
+            <rect x="100" y="160" width="200" height="60" rx="30" fill="#f97316" />
+            <path d="M120,160 Q150,100 250,100 L280,160 Z" fill="#f97316" opacity="0.8" />
 
             {/* Windows */}
             <path d="M140,155 Q160,115 200,115 L200,155 Z" fill="#f8fafc" />
@@ -83,7 +69,7 @@ export default function ContentCompletionScreen() {
           <button
             type="button"
             onClick={() => navigate("/driver/training/info-session")}
-            className="w-full rounded-2xl bg-[#03cd8c] py-5 text-sm font-black text-white shadow-2xl shadow-emerald-500/20 hover:bg-[#02b77c] active:scale-[0.98] transition-all uppercase tracking-widest"
+            className="w-full rounded-2xl bg-orange-500 py-5 text-sm font-black text-white shadow-2xl shadow-orange-500/20 hover:bg-orange-600 active:scale-[0.98] transition-all uppercase tracking-widest"
           >
             Review Insights
           </button>

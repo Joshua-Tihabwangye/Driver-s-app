@@ -7,6 +7,7 @@ Volume2
 } from "lucide-react";
 import { useEffect,useState } from "react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D63 Driver – Emergency Calling Screen (v4)
 // Redesigned to match the high-fidelity orbit animation with avatars and swipe-to-cancel slider.
@@ -45,27 +46,11 @@ export default function EmergencyCallingScreen() {
 
   return (
     <div className="flex flex-col h-full ">
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-            </button>
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <div className="flex flex-col items-center">
-               <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-500 dark:text-slate-400">Secure</span>
-               <p className="text-lg font-black text-slate-900 dark:text-white tracking-tight leading-tight text-center">Emergency SOS</p>
-            </div>
-          </div>
-          <div className="w-9" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Emergency SOS" 
+        subtitle="Secure" 
+        onBack={() => navigate(-1)} 
+      />
 
       {/* Content Area */}
       <main className="flex-1 flex flex-col p-8 relative items-center text-center overflow-y-auto scrollbar-hide">
@@ -151,7 +136,7 @@ export default function EmergencyCallingScreen() {
 
         {/* Swipe Slider */}
         <div className="w-full pb-12">
-          <div className="relative h-20 bg-emerald-50/50 rounded-full p-2 border-2 border-slate-100 overflow-hidden group">
+          <div className="relative h-20 bg-orange-50 rounded-full p-2 border-2 border-slate-100 overflow-hidden group">
             <div
               className={`flex items-center justify-center w-full h-full text-orange-800 font-extrabold text-[12px] uppercase tracking-[0.2em] transition-opacity duration-300 ${isSwiped ? 'opacity-0' : 'opacity-100'}`}
             >

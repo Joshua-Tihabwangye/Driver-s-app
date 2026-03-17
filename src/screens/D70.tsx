@@ -8,6 +8,7 @@ Share2,
 ShieldCheck
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D70 Safety Hub
 // Compact Safety Hub overview screen that links into Safety Toolkit, SOS, and Follow/Share ride flows.
@@ -36,7 +37,7 @@ function HubTile({
     <button
       type="button"
       onClick={onClick}
-      className={`flex items-start space-x-3 rounded-2xl border ${border} ${bg} px-4 py-4 shadow-sm active:scale-[0.98] transition-all w-full text-left group hover:border-[#03cd8c]/30`}
+      className={`flex items-start space-x-3 rounded-2xl border ${border} ${bg} px-4 py-4 shadow-sm active:scale-[0.98] transition-all w-full text-left group hover:border-orange-500/30`}
     >
       <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${tone === "warning" ? "bg-red-500 shadow-lg shadow-red-500/20" : "bg-white border border-orange-50 shadow-sm"} group-hover:bg-orange-500 transition-colors`}>
         <Icon className={`h-5 w-5 ${tone === "warning" ? "text-white" : "text-orange-500 group-hover:text-white"}`} />
@@ -63,36 +64,11 @@ export default function SafetyHubScreen() {
 
   return (
     <div className="flex flex-col h-full ">
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <button
-            type="button"
-            onClick={() => navigate("/driver/more")}
-            className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-white/10 text-slate-900 dark:text-white shadow-[0_10px_30px_rgba(3,205,140,0.35)] transition-all hover:border-white/40 active:scale-[0.97]"
-          >
-            <span className="absolute inset-0 rounded-full bg-white/10 blur-xl opacity-50" />
-            <ChevronLeft className="relative h-5 w-5 text-slate-900 dark:text-white" />
-          </button>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <div className="flex items-center space-x-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full border border-slate-200 dark:border-slate-700 bg-white/10 shadow-lg shadow-emerald-500/40">
-                <ShieldCheck className="h-6 w-6 text-slate-900 dark:text-white" />
-              </div>
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-500 dark:text-slate-400">
-                  Safety
-                </span>
-                <p className="text-base font-black text-slate-900 dark:text-white tracking-tight leading-tight text-center">
-                  Safety Hub
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="w-9 h-9" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Safety Hub" 
+        subtitle="Safety" 
+        onBack={() => navigate("/driver/more")} 
+      />
 
       <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         {/* Intro card */}

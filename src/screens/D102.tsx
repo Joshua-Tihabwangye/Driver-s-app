@@ -5,6 +5,7 @@ ExternalLink,
 MapPin
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D102 Shuttle Link Info Screen (v1)
 // Optional info screen explaining that School shuttle runs are handled in the
@@ -21,39 +22,17 @@ export default function ShuttleLinkInfoScreen() {
 
   return (
     <div className="flex flex-col min-h-full ">
-      {/* Header aligned with shell design */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-            </button>
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <div className="flex items-center space-x-3">
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-900 dark:text-white/70 text-center">
-                  Driver · Shuttle Link
-                </span>
-                <h1 className="text-base font-black text-slate-900 dark:text-white leading-tight text-center">
-                  Shuttle Runs
-                </h1>
-              </div>
-            </div>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Shuttle Runs" 
+        subtitle="Driver · Shuttle Link" 
+        onBack={() => navigate(-1)} 
+      />
 
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6">
         {/* Intro */}
         <section className="rounded-[2.5rem] bg-slate-900 p-8 shadow-2xl flex items-start space-x-4">
-           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#03cd8c]/10 border border-[#03cd8c]/20">
-              <Bus className="h-6 w-6 text-[#03cd8c]" />
+           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-orange-500/10 border border-orange-500/20">
+              <Bus className="h-6 w-6 text-orange-500" />
            </div>
            <div>
               <p className="text-sm font-black text-white uppercase tracking-widest mb-1">
@@ -108,7 +87,7 @@ export default function ShuttleLinkInfoScreen() {
         <section className="space-y-4 pb-8">
           <button
             onClick={handleOpenShuttleApp}
-            className="w-full rounded-[2rem] bg-[#03cd8c] px-6 py-5 text-[11px] font-black uppercase tracking-widest text-slate-900 shadow-xl shadow-emerald-100 flex items-center justify-center space-x-2 active:scale-[0.98] transition-all"
+            className="w-full rounded-[2rem] bg-orange-500 px-6 py-5 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-orange-100 flex items-center justify-center space-x-2 active:scale-[0.98] transition-all"
           >
             <span>Open Shuttle App</span>
             <ExternalLink className="h-4 w-4" />

@@ -1,12 +1,13 @@
 import {
-CheckCircle2,
-ChevronLeft,
-Info,
-Play,
-XCircle
+  CheckCircle2,
+  ChevronLeft,
+  Info,
+  Play,
+  XCircle
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D21 Preferences – Driver Info Session Quiz (Initial State)
 // Redesigned to match Screenshot 2.
@@ -76,22 +77,11 @@ export default function DriverQuizInitialScreen() {
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <button
-            onClick={() => navigate(-1)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-90 transition-transform"
-          >
-            <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-          </button>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
-            <h1 className="text-base font-black text-slate-900 dark:text-white tracking-tight text-center">Quiz</h1>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Quiz" 
+        subtitle="Knowledge Check" 
+        onBack={() => navigate(-1)} 
+      />
 
       {/* Video Hero Section */}
       <section className="relative w-full h-[220px] bg-slate-900 border-b border-slate-100 group cursor-pointer overflow-hidden">
@@ -102,7 +92,7 @@ export default function DriverQuizInitialScreen() {
         />
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/90 backdrop-blur-md group-hover:scale-110 shadow-2xl transition-all">
-            <Play className="h-7 w-7 fill-[#03cd8c] text-[#03cd8c] ml-1" />
+            <Play className="h-7 w-7 fill-orange-500 text-orange-500 ml-1" />
           </div>
         </div>
       </section>
@@ -111,8 +101,8 @@ export default function DriverQuizInitialScreen() {
       <main className="flex-1 px-6 pt-8 pb-12 flex flex-col overflow-y-auto scrollbar-hide">
         <div className="space-y-6">
           <div className="px-2">
-            <div className="flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-[#03cd8c] mb-2">
-               <span className="bg-emerald-50 px-2 py-1 rounded-md">Step 01 / 03</span>
+            <div className="flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-orange-500 mb-2">
+               <span className="bg-orange-50 px-2 py-1 rounded-md">Step 01 / 03</span>
             </div>
             <h2 className="text-xl font-black text-slate-900 leading-tight tracking-tight">
               {quizQuestion.question}
@@ -176,7 +166,7 @@ export default function DriverQuizInitialScreen() {
                 disabled={selected === null}
                 onClick={handleSubmit}
                 className={`flex-1 ml-4 py-4 rounded-2xl text-sm font-black uppercase tracking-widest shadow-xl transition-all active:scale-95 ${selected !== null
-                  ? "bg-[#03cd8c] text-white shadow-emerald-500/20"
+                  ? "bg-orange-500 text-white shadow-orange-500/20"
                   : "bg-slate-100 text-slate-300 cursor-not-allowed"
                   }`}
               >
@@ -194,7 +184,7 @@ export default function DriverQuizInitialScreen() {
               <button
                 type="button"
                 onClick={() => navigate("/driver/training/quiz/answer")}
-                className="flex-1 rounded-2xl py-4 text-xs font-black uppercase tracking-widest shadow-xl bg-[#03cd8c] text-white shadow-emerald-500/20 hover:bg-[#02b77c] transition-all"
+                className="flex-1 rounded-2xl py-4 text-xs font-black uppercase tracking-widest shadow-xl bg-orange-500 text-white shadow-orange-500/20 hover:bg-orange-600 transition-all"
               >
                 Next Step
               </button>

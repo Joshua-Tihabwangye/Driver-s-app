@@ -8,6 +8,7 @@ Navigation
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D68 Proof of Trip Status – Active Trip View (v2)
 // In-trip view focused on capturing proof (photos + notes) while the trip is active,
@@ -53,39 +54,11 @@ export default function ProofOfTripActiveTripScreen() {
 
   return (
     <div className="flex flex-col h-full ">
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-            </button>
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <div className="flex items-center space-x-3">
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-500 dark:text-slate-400 text-center">
-                  Driver · Safety
-                </span>
-                <p className="text-base font-black text-slate-900 dark:text-white tracking-tight leading-tight text-center">
-                  Active Documentation
-                </p>
-                <div className="mt-1 inline-flex items-center bg-white dark:bg-slate-800 rounded-full px-2.5 py-0.5 border border-white/20">
-                  <div className="h-1.5 w-1.5 rounded-full bg-white mr-1.5" />
-                  <span className="text-[8px] font-black uppercase tracking-widest text-slate-900 dark:text-white">
-                    {jobTypeLabelMap[jobType]}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Active Documentation" 
+        subtitle="Driver · Safety" 
+        onBack={() => navigate(-1)} 
+      />
 
       <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         {/* Job type preview switcher */}

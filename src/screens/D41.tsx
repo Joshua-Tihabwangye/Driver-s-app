@@ -7,6 +7,7 @@ Map,
 Star
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D41 Driver App – Last Trip Summary Popup (v1)
 // Map view with a small summary popup for the last completed trip.
@@ -22,29 +23,11 @@ export default function LastTripSummaryPopupScreen() {
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-            </button>
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <div className="flex items-center space-x-3">
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-100/70">Driver</span>
-                <p className="text-base font-black text-slate-900 dark:text-white tracking-tight leading-tight text-center">Last Trip</p>
-              </div>
-            </div>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Last Trip" 
+        subtitle="Driver" 
+        onBack={() => navigate(-1)} 
+      />
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
@@ -99,7 +82,7 @@ export default function LastTripSummaryPopupScreen() {
                   <span className="text-xl font-black text-slate-900 tracking-tighter">
                     $6.80
                   </span>
-                  <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mt-0.5">EARNED</span>
+                  <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest mt-0.5">EARNED</span>
                 </div>
               </div>
 

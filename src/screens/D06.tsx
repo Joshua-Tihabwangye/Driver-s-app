@@ -16,6 +16,7 @@ Truck
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D06 Preferences
 // New design: green curved header, toggleable Areas/Services/Requirements cards, green nav.
@@ -29,8 +30,8 @@ function AreaCard({ icon: Icon, label, color, active, onClick }) {
       type="button"
       onClick={onClick}
       className={`flex flex-col items-center justify-center rounded-2xl py-3 px-2 transition-all active:scale-[0.96] ${active
-          ? "bg-[#03cd8c] text-white shadow-md"
-          : "bg-white border border-slate-100 text-slate-700 shadow-[0_1px_4px_rgba(0,0,0,0.04)]"
+          ? "bg-orange-500 text-white shadow-md shadow-orange-500/20"
+          : "bg-white border border-slate-100 text-slate-700 shadow-[0_1px_4px_rgba(0,0,0,0.04)] hover:border-orange-500/30"
         }`}
     >
       <Icon className={`h-6 w-6 mb-1.5 ${active ? "text-white" : ""}`} style={!active ? { color } : {}} />
@@ -45,8 +46,8 @@ function ServiceChip({ icon: Icon, label, color, active, onClick }) {
       type="button"
       onClick={onClick}
       className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium transition-all active:scale-[0.96] ${active
-          ? "bg-[#03cd8c] text-white"
-          : "bg-white border border-slate-200 text-slate-700"
+          ? "bg-orange-500 text-white"
+          : "bg-white border border-slate-200 text-slate-700 hover:border-orange-500/30"
         }`}
     >
       <Icon className="h-3.5 w-3.5" style={!active ? { color } : {}} />
@@ -61,8 +62,8 @@ function RequirementCard({ icon: Icon, label, color, active, onClick }) {
       type="button"
       onClick={onClick}
       className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 transition-all active:scale-[0.98] ${active
-          ? "bg-[#03cd8c] text-white"
-          : "bg-white border border-slate-100 text-slate-700 shadow-[0_1px_4px_rgba(0,0,0,0.04)]"
+          ? "bg-orange-500 text-white"
+          : "bg-white border border-slate-100 text-slate-700 shadow-[0_1px_4px_rgba(0,0,0,0.04)] hover:border-orange-500/30"
         }`}
     >
       <Icon className={`h-4 w-4 flex-shrink-0 ${active ? "text-white" : ""}`} style={!active ? { color } : {}} />
@@ -76,32 +77,32 @@ export default function PreferencesScreen() {
 
   // Toggleable state for areas
   const [areas, setAreas] = useState([
-    { icon: Building2, label: "Down Town", color: "#03cd8c", active: true },
+    { icon: Building2, label: "Down Town", color: "#f97316", active: true },
     { icon: Building2, label: "City Center", color: "#2196F3", active: false },
-    { icon: Building2, label: "Suburbs", color: "#03cd8c", active: false },
+    { icon: Building2, label: "Suburbs", color: "#f97316", active: false },
     { icon: Building2, label: "Gated Community", color: "#f77f00", active: false },
-    { icon: Building2, label: "Country Side", color: "#03cd8c", active: true },
+    { icon: Building2, label: "Country Side", color: "#f97316", active: true },
     { icon: Building2, label: "Hospitals", color: "#2196F3", active: false },
     { icon: MapPin, label: "Beachfront", color: "#f77f00", active: false },
   ]);
 
   // Toggleable state for services
   const [services, setServices] = useState([
-    { icon: Truck, label: "Airport Rides", color: "#03cd8c", active: true },
+    { icon: Truck, label: "Airport Rides", color: "#f97316", active: true },
     { icon: GraduationCap, label: "Tourist drives", color: "#f77f00", active: false },
     { icon: Ambulance, label: "Ambulance driver", color: "#ef4444", active: true },
     { icon: Bus, label: "Taxi services", color: "#2196F3", active: false },
-    { icon: Car, label: "Motorcycle rides", color: "#03cd8c", active: false },
+    { icon: Car, label: "Motorcycle rides", color: "#f97316", active: false },
     { icon: Package, label: "Logistics", color: "#f77f00", active: false },
     { icon: Plane, label: "Inter-City", color: "#2196F3", active: false },
   ]);
 
   // Toggleable state for requirements
   const [requirements, setRequirements] = useState([
-    { icon: ShoppingCart, label: "Shopping & Errands", color: "#03cd8c", active: true },
+    { icon: ShoppingCart, label: "Shopping & Errands", color: "#f97316", active: true },
     { icon: Briefcase, label: "Ride sharing", color: "#f77f00", active: false },
     { icon: Clock, label: "Long Distance", color: "#2196F3", active: false },
-    { icon: ShoppingCart, label: "Shopping Partner", color: "#03cd8c", active: true },
+    { icon: ShoppingCart, label: "Shopping Partner", color: "#f97316", active: true },
     { icon: Car, label: "Surge", color: "#ef4444", active: false },
     { icon: Bus, label: "Ride sharing", color: "#f77f00", active: false },
   ]);
@@ -121,23 +122,11 @@ export default function PreferencesScreen() {
   return (
     <div className="flex flex-col min-h-full ">
 
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-90 transition-transform"
-          >
-            <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-          </button>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
-            <h1 className="text-base font-black text-slate-900 dark:text-white tracking-tight text-center">Preferences</h1>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Preferences" 
+        subtitle="Settings" 
+        onBack={() => navigate(-1)} 
+      />
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 space-y-8">
@@ -146,14 +135,14 @@ export default function PreferencesScreen() {
         <section className="space-y-4">
           <div className="flex items-center justify-between px-1">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 bg-emerald-50 rounded-lg">
-                <MapPin className="h-4 w-4 text-[#03cd8c]" />
+              <div className="p-1.5 bg-orange-50 rounded-lg">
+                <MapPin className="h-4 w-4 text-orange-500" />
               </div>
               <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Target Areas</h2>
             </div>
             <button
               type="button"
-              className="text-[11px] font-black text-[#03cd8c] uppercase tracking-widest"
+              className="text-[11px] font-black text-orange-500 uppercase tracking-widest"
               onClick={() => navigate("/driver/map/settings")}
             >
               Manage
@@ -202,7 +191,7 @@ export default function PreferencesScreen() {
           <button
             type="button"
             onClick={() => navigate("/driver/dashboard/online")}
-            className="w-full rounded-2xl bg-[#03cd8c] py-4 text-sm font-black text-white shadow-xl shadow-emerald-500/20 hover:bg-[#02b77c] active:scale-[0.98] transition-all uppercase tracking-widest"
+            className="w-full rounded-2xl bg-orange-500 py-4 text-sm font-black text-white shadow-xl shadow-orange-500/20 hover:bg-orange-600 active:scale-[0.98] transition-all uppercase tracking-widest"
           >
             Save Preferences
           </button>

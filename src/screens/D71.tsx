@@ -8,6 +8,7 @@ Phone,
 ShieldCheck
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D71 Safety Hub (Expanded View) (v1)
 // Expanded Safety Hub with more detailed sections for policies, training, and reporting.
@@ -39,34 +40,11 @@ export default function SafetyHubExpandedScreen() {
 
   return (
     <div className="flex flex-col h-full ">
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <button
-            onClick={() => navigate(-1)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
-          >
-            <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-          </button>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <div className="flex items-center space-x-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 shadow-inner">
-                <ShieldCheck className="h-6 w-6 text-slate-900 dark:text-white" />
-              </div>
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-900 dark:text-white/70">
-                  Driver · Safety
-                </span>
-                <h1 className="text-xl font-black text-slate-900 dark:text-white leading-tight">
-                  Safety Hub
-                </h1>
-              </div>
-            </div>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Safety Hub" 
+        subtitle="Driver · Safety" 
+        onBack={() => navigate(-1)} 
+      />
 
       <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         {/* Intro card */}

@@ -8,6 +8,7 @@ Phone
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D50 Driver App – Arrived at Pickup Point (v2)
 // State after the driver marks "I've arrived" at the pickup location, with
@@ -85,29 +86,11 @@ export default function ArrivedAtPickupScreen() {
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-            </button>
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <div className="flex items-center space-x-3">
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-500 dark:text-slate-400">Driver</span>
-                <p className="text-base font-black text-slate-900 dark:text-white tracking-tight leading-tight text-center">{headerTitle}</p>
-              </div>
-            </div>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title={headerTitle} 
+        subtitle="Driver" 
+        onBack={() => navigate(-1)} 
+      />
 
       {/* Job type switcher for preview purposes */}
       <section className="px-6 pt-4 pb-2">
@@ -146,7 +129,7 @@ export default function ArrivedAtPickupScreen() {
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="relative flex flex-col items-center">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 shadow-xl border-2 border-white">
-                <MapPin className="h-4 w-4 text-[#03cd8c]" />
+                <MapPin className="h-4 w-4 text-orange-500" />
               </div>
               <span className="mt-3 rounded-full bg-slate-900/80 px-3 py-1 text-[9px] font-black text-white uppercase tracking-widest backdrop-blur-sm border border-white/10">
                 Docking Point

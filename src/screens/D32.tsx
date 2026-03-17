@@ -6,6 +6,7 @@ Map,
 XCircle
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – D32 Driver App – Searching for Ride (v1)
 // Map view showing searching state while the system looks for a ride request.
@@ -22,29 +23,11 @@ export default function SearchingForRideScreen() {
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* Green curved header */}
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-            </button>
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <div className="flex items-center space-x-3">
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-500 dark:text-slate-400">Searching</span>
-                <p className="text-base font-black text-slate-900 dark:text-white tracking-tight leading-tight text-center">Finding Ride</p>
-              </div>
-            </div>
-          </div>
-          <div className="w-10" />
-        </header>
-      </div>
+      <PageHeader 
+        title="Finding Ride" 
+        subtitle="Searching" 
+        onBack={() => navigate(-1)} 
+      />
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
@@ -55,9 +38,9 @@ export default function SearchingForRideScreen() {
           {/* Center marker */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="relative flex items-center justify-center">
-              <div className="h-20 w-20 rounded-full bg-[#03cd8c]/10 animate-ping" />
-              <div className="absolute h-12 w-12 rounded-full bg-[#03cd8c]/20" />
-              <div className="absolute h-4 w-4 rounded-full bg-[#03cd8c] border-4 border-white shadow-xl" />
+              <div className="h-20 w-20 rounded-full bg-orange-500/10 animate-ping" />
+              <div className="absolute h-12 w-12 rounded-full bg-orange-500/20" />
+              <div className="absolute h-4 w-4 rounded-full bg-orange-500 border-4 border-white shadow-xl" />
             </div>
           </div>
 
