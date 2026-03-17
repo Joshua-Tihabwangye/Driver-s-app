@@ -6,28 +6,37 @@
    CSS Custom Properties – Light (default)
    ────────────────────────────────────────────── */
 :root {
-  --evz-green: #12c98c;
-  --evz-green-dim: #059669;
+  /* Brand Core */
+  --evz-brand-green: #12c98c;
+  --evz-brand-green-dim: #059669;
+  --evz-brand-green-soft: rgba(18, 201, 140, 0.08);
+  --evz-brand-green-border: rgba(18, 201, 140, 0.15);
+
+  --evz-brand-orange: #f77f00;
+  --evz-brand-orange-dim: #ea580c;
+  --evz-brand-orange-soft: rgba(247, 127, 0, 0.1);
+  --evz-brand-orange-border: rgba(247, 127, 0, 0.15);
+
+  /* Semantic UI Map */
+  --evz-green: var(--evz-brand-green);
+  --evz-green-dim: var(--evz-brand-green-dim);
+  --evz-orange: var(--evz-brand-orange);
+  --evz-orange-dim: var(--evz-brand-orange-dim);
+
+  /* Surfaces & Borders */
   --evz-stage: #f8fafc;
-  --evz-surface: #fffdf5;
-  --evz-surface-alt: #fdf9e8;
-  --evz-border: #f0ede4;
-  --evz-orange: #f77f00;
-  --evz-orange-soft: rgba(247, 127, 0, 0.1);
-  --evz-orange-border: rgba(247, 127, 0, 0.2);
-  --evz-text: #1e293b;
+  --evz-surface: #ffffff;
+  --evz-surface-alt: #f1f5f9;
+  --evz-border: #e2e8f0;
+  --evz-text: #0f172a;
   --evz-text-secondary: #64748b;
-  --evz-card-dark-bg: #0b1e3a;
-  --evz-card-dark-text: #ffffff;
-  --evz-card-dark-border: transparent;
+
   --evz-input-bg: #ffffff;
-  --evz-input-border: #dde5e4;
-  --evz-header-bg: linear-gradient(135deg, #a8e6cf 0%, #03cd8c 50%, #02b77c 100%);
-  --evz-nav-bg: #03cd8c;
-  --evz-chart-bg: #f1f5f9;
-  --evz-stat-bg: #ffffff;
-  --evz-stat-border: #e2e8f0;
-  --evz-banner-blue: #00a3ff;
+  --evz-input-border: #e2e8f0;
+  --evz-header-bg: linear-gradient(135deg, #a8e6cf 0%, #12c98c 50%, #059669 100%);
+  --evz-nav-bg: #ffffff;
+  --evz-nav-border: #e2e8f0;
+
   --evz-overlay-bg: rgba(255, 255, 255, 0.95);
 }
 
@@ -48,29 +57,38 @@
    CSS Custom Properties – Dark
    ────────────────────────────────────────────── */
 .dark {
-  --evz-green: #10b981;
-  --evz-green-dim: #059669;
-  --evz-stage: #0f172a;
-  --evz-surface: #1e293b;
-  --evz-surface-alt: #263348;
+  /* Brand Core */
+  --evz-brand-green: #10b981;
+  --evz-brand-green-dim: #059669;
+  --evz-brand-green-soft: rgba(16, 185, 129, 0.1);
+  --evz-brand-green-border: rgba(16, 185, 129, 0.2);
+
+  --evz-brand-orange: #f97316;
+  --evz-brand-orange-dim: #ea580c;
+  --evz-brand-orange-soft: rgba(249, 115, 22, 0.15);
+  --evz-brand-orange-border: rgba(249, 115, 22, 0.2);
+
+  /* Semantic UI Map */
+  --evz-green: var(--evz-brand-green);
+  --evz-green-dim: var(--evz-brand-green-dim);
+  --evz-orange: var(--evz-brand-orange);
+  --evz-orange-dim: var(--evz-brand-orange-dim);
+
+  /* Surfaces & Borders */
+  --evz-stage: #020617;
+  --evz-surface: #0f172a;
+  --evz-surface-alt: #1e293b;
   --evz-border: #334155;
-  --evz-orange: #fb923c;
-  --evz-orange-soft: rgba(251, 146, 60, 0.15);
-  --evz-orange-border: rgba(251, 146, 60, 0.25);
-  --evz-text: #e2e8f0;
+  --evz-text: #f1f5f9;
   --evz-text-secondary: #94a3b8;
-  --evz-card-dark-bg: #0f172a;
-  --evz-card-dark-text: #e2e8f0;
-  --evz-card-dark-border: #334155;
-  --evz-input-bg: #263348;
-  --evz-input-border: #475569;
-  --evz-header-bg: linear-gradient(135deg, #0b1220 0%, #111827 45%, #1f2937 100%);
-  --evz-nav-bg: #111827;
-  --evz-chart-bg: #263348;
-  --evz-stat-bg: #263348;
-  --evz-stat-border: #334155;
-  --evz-banner-blue: #0369a1;
-  --evz-overlay-bg: rgba(30, 41, 59, 0.95);
+
+  --evz-input-bg: #1e293b;
+  --evz-input-border: #334155;
+  --evz-header-bg: linear-gradient(135deg, #020617 0%, #0f172a 50%, #1e293b 100%);
+  --evz-nav-bg: #020617;
+  --evz-nav-border: #1e293b;
+
+  --evz-overlay-bg: rgba(2, 6, 23, 0.95);
 }
 
 /* ──────────────────────────────────────────────
@@ -86,11 +104,23 @@
   scrollbar-width: none;
 }
 
-/* Ensure the icon + title block inside each phone header stays vertically centered */
-header > .pointer-events-none.absolute {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* ──────────────────────────────────────────────
+   Frame Utilities (Opt-in)
+   ────────────────────────────────────────────── */
+.evz-frame-green {
+  border: 1px solid var(--evz-brand-green-border) !important;
+}
+
+.evz-frame-orange {
+  border: 1px solid var(--evz-brand-orange-border) !important;
+}
+
+.evz-shadow {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
+}
+
+.dark .evz-shadow {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2) !important;
 }
 
 /* ──────────────────────────────────────────────
@@ -588,5 +618,5 @@ body {
 .dark .rounded-2xl:not(input):not(textarea):not(select):not(nav *),
 .dark .rounded-3xl:not(input):not(textarea):not(select),
 .dark .rounded-\[2\.5rem\]:not(input):not(textarea):not(select) {
-  border-color: rgba(251, 146, 60, 0.15) !important;
+  border-color: rgba(255, 255, 255, 0.05) !important;
 }

@@ -62,7 +62,7 @@ export default function IdentityVerificationScreen() {
         {/* Selfie card */}
         <section className={`rounded-[2.5rem] border p-6 space-y-4 shadow-sm transition-colors duration-300 ${isDark ? "bg-slate-900/50 border-slate-800" : "bg-white border-slate-100"}`}>
           <div className="flex flex-col items-center">
-            <div className={`h-24 w-24 rounded-full border-[6px] flex items-center justify-center overflow-hidden mb-4 shadow-xl transition-all ${isDark ? "bg-slate-800 border-orange-500/30" : "bg-slate-50 border-orange-500/10"}`}>
+            <div className={`h-24 w-24 rounded-full border-[6px] flex items-center justify-center overflow-hidden mb-4 shadow-xl transition-all ${isDark ? "bg-slate-800 border-emerald-500/20" : "bg-slate-50 border-emerald-500/10"}`}>
               <User className={`h-12 w-12 ${isDark ? "text-slate-500" : "text-slate-300"}`} />
             </div>
             <p className={`text-[11px] font-medium text-center leading-relaxed max-w-[200px] ${isDark ? "text-slate-400" : "text-slate-500"}`}>
@@ -75,7 +75,7 @@ export default function IdentityVerificationScreen() {
         <button
           type="button"
           onClick={() => navigate("/driver/preferences/identity/face-capture")}
-          className={`flex w-full items-center justify-between rounded-3xl border px-4 py-4 shadow-sm active:scale-[0.98] transition-all ${isDark ? "bg-slate-900/50 border-slate-800" : "bg-white border-slate-100"}`}
+          className={`flex w-full items-center justify-between rounded-3xl bg-white dark:bg-slate-900/50 px-4 py-4 shadow-sm active:scale-[0.98] transition-all`}
         >
           <div className="flex items-center space-x-4">
             <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${isDark ? "bg-slate-800" : "bg-slate-50"}`}>
@@ -83,10 +83,10 @@ export default function IdentityVerificationScreen() {
             </div>
             <div className="flex flex-col items-start">
               <span className={`text-xs font-black uppercase tracking-wider ${isDark ? "text-slate-100" : "text-slate-900"}`}>Authentication Selfie</span>
-              <span className={`text-[10px] font-black uppercase text-orange-500 ${isDark ? "text-orange-400" : "text-orange-500"}`}>VERIFIED</span>
+              <span className={`text-[10px] font-black uppercase text-emerald-500`}>VERIFIED</span>
             </div>
           </div>
-          <CheckCircle2 className={`h-6 w-6 ${isDark ? "text-orange-500" : "text-orange-500"}`} />
+          <CheckCircle2 className={`h-6 w-6 text-emerald-500`} />
         </button>
 
         {/* Document rows */}

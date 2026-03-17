@@ -47,10 +47,10 @@ export const JOB_HISTORY_ROUTES: Record<JobCategory | "default", string> = {
 
 // ── Job Category Color Map ───────────────────────────────
 export const JOB_CATEGORY_STYLES: Record<JobCategory, { bg: string; border: string; text: string; label: string }> = {
-  ride: { bg: "bg-slate-100", border: "border-slate-200", text: "text-slate-600", label: "Ride" },
-  delivery: { bg: "bg-blue-50", border: "border-blue-100", text: "text-blue-600", label: "Delivery" },
-  rental: { bg: "bg-emerald-50", border: "border-emerald-100", text: "text-emerald-600", label: "Rental" },
-  tour: { bg: "bg-sky-50", border: "border-sky-100", text: "text-sky-600", label: "Tour" },
+  ride: { bg: "bg-orange-50", border: "border-orange-100", text: "text-orange-700", label: "Ride" },
+  delivery: { bg: "bg-orange-50", border: "border-orange-100", text: "text-orange-700", label: "Delivery" },
+  rental: { bg: "bg-emerald-50", border: "border-emerald-100", text: "text-emerald-700", label: "Rental" },
+  tour: { bg: "bg-emerald-50", border: "border-emerald-100", text: "text-emerald-700", label: "Tour" },
   shuttle: { bg: "bg-violet-50", border: "border-violet-100", text: "text-violet-600", label: "Shuttle" },
   ambulance: { bg: "bg-red-50", border: "border-red-100", text: "text-red-600", label: "Ambulance" },
 };

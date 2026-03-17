@@ -51,7 +51,7 @@ function RequestCard({ job, onClick }: { job: any, onClick: (j: any) => void }) 
           <span className="text-sm font-bold text-slate-900 flex items-center">
             {fare !== "Shuttle" && fare !== "Tour" && fare !== "—" ? `$${fare}` : fare}
           </span>
-          <span className="text-[9px] text-orange-500 font-bold mt-0.5">{timeAgo()}</span>
+          <span className="text-[9px] text-emerald-500 font-bold mt-0.5">{timeAgo()}</span>
         </div>
       </div>
       
@@ -206,7 +206,7 @@ export default function RideRequestsListScreen() {
           <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
             Monitoring Window
           </span>
-          <span className="text-[11px] font-black uppercase tracking-widest text-orange-500">
+          <span className="text-[11px] font-black uppercase tracking-widest text-emerald-500">
             {displayPeriodLabel}
           </span>
         </div>
@@ -230,8 +230,8 @@ export default function RideRequestsListScreen() {
           <section className="pt-2">
             <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-[#f0fff4] p-6 flex flex-col items-start space-y-4 shadow-sm">
               <div className="flex items-center space-x-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm shrink-0 border border-orange-50">
-                  <HelpCircle className="h-6 w-6 text-orange-500" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm shrink-0 border border-emerald-50">
+                  <HelpCircle className="h-6 w-6 text-emerald-500" />
                 </div>
                 <div className="flex flex-col">
                   <p className="font-black text-sm text-slate-900 uppercase tracking-tight">
@@ -248,7 +248,7 @@ export default function RideRequestsListScreen() {
               <button
                 type="button"
                 onClick={() => navigate("/driver/help/shuttle-link")}
-                className="w-full rounded-full bg-orange-500 text-white py-4 text-[11px] font-black uppercase tracking-widest active:scale-95 transition-all shadow-xl shadow-emerald-600/20"
+                className="w-full rounded-full bg-emerald-500 text-white py-4 text-[11px] font-black uppercase tracking-widest active:scale-95 transition-all shadow-xl shadow-emerald-600/20"
               >
                 Open Shuttle App
               </button>

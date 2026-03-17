@@ -29,7 +29,7 @@ function StationRow({ name, value, total }: any) {
       <div className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider group-hover:text-slate-500">Location</div>
       <div className="text-[12px] text-slate-800 dark:text-slate-100 font-black uppercase tracking-tight">{name}</div>
       <div className="h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full bg-orange-500`} style={{ width: `${percentage}%` }} />
+        <div className={`h-full rounded-full bg-emerald-500`} style={{ width: `${percentage}%` }} />
       </div>
       <div className="flex justify-end text-[10px] font-bold text-slate-400">{percentage.toFixed(0)}%</div>
     </div>
@@ -49,7 +49,7 @@ export default function EarningsStatsDashboardScreen() {
 
         {/* Welcome Banner */}
         <section className="rounded-[2.5rem] bg-slate-900 p-6 flex items-center justify-between text-white relative h-28 overflow-hidden shadow-2xl group hover:scale-[1.01] transition-transform duration-500">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-125 duration-700" />
+          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-125 duration-700" />
           <div className="z-10 space-y-1">
             <h2 className="text-lg font-black tracking-tight uppercase">Performance</h2>
             <p className="text-[10px] text-white/80 max-w-[180px] leading-tight font-bold uppercase tracking-wide">
@@ -57,14 +57,14 @@ export default function EarningsStatsDashboardScreen() {
             </p>
           </div>
           <div className="relative h-20 w-20 flex-shrink-0 z-10 opacity-20">
-             <WalletIcon className="h-full w-full text-orange-500" />
+             <WalletIcon className="h-full w-full text-emerald-500" />
           </div>
         </section>
 
         {/* Wallet Card */}
         <section className="rounded-[2.5rem] bg-slate-900 p-6 flex items-center space-x-4 shadow-2xl border border-white/5">
           <div className="h-14 w-14 flex items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md border border-white/10">
-            <WalletIcon className="h-7 w-7 text-orange-400" />
+            <WalletIcon className="h-7 w-7 text-emerald-400" />
           </div>
           <div className="flex-1">
             <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">WALLET BALANCE</span>
