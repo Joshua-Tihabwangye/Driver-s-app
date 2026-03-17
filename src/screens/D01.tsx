@@ -44,10 +44,10 @@ function ServiceCard({ icon: Icon, title, subtitle, onClick }: any) {
     <button
       type="button"
       onClick={onClick}
-      className="flex items-center rounded-2xl bg-white px-3 py-3 shadow-[0_2px_12px_rgba(0,0,0,0.06)] active:scale-[0.98] transition-transform text-left border border-slate-50 hover:border-orange-500/20"
+      className="flex items-center rounded-2xl bg-white px-3 py-3 shadow-md active:scale-[0.98] transition-transform text-left hover:border-emerald-500/30"
     >
-      <div className="mr-3 flex h-9 w-9 items-center justify-center rounded-full bg-orange-50">
-        <Icon className="h-4 w-4 text-orange-500" />
+      <div className={`mr-3 flex h-9 w-9 items-center justify-center rounded-full ${title.includes("Driver") ? "bg-emerald-50" : "bg-orange-50"}`}>
+        <Icon className={`h-4 w-4 ${title.includes("Driver") ? "text-emerald-500" : "text-orange-500"}`} />
       </div>
       <div className="flex flex-col items-start overflow-hidden">
         <span className="text-xs font-semibold text-slate-900 truncate w-full">{title}</span>
@@ -118,7 +118,7 @@ export default function DriverHomeScreen() {
             <h2 className="text-sm font-black text-slate-900 tracking-tight uppercase">
               EVzone Services
             </h2>
-            <span className="text-[10px] uppercase font-black text-orange-500 tracking-widest">Digital Hub</span>
+            <span className="text-[10px] uppercase font-black text-emerald-500 tracking-widest">Digital Hub</span>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -140,17 +140,17 @@ export default function DriverHomeScreen() {
         <section className="space-y-4">
           <div className="flex items-center justify-between px-1">
             <h2 className="text-sm font-black text-slate-900 tracking-tight uppercase">School Portal</h2>
-            <div className="h-1.5 w-12 bg-orange-100 rounded-full" />
+            <div className="h-1.5 w-12 bg-emerald-100 rounded-full" />
           </div>
 
           <button
             type="button"
             onClick={() => navigate("/driver/safety/hub/expanded")}
-            className="w-full rounded-[2rem] border border-slate-100 bg-white p-5 flex items-center justify-between shadow-sm hover:shadow-md active:scale-[0.98] transition-all group"
+            className="w-full rounded-[2rem] bg-white p-5 flex items-center justify-between shadow-sm hover:shadow-md active:scale-[0.98] transition-all group"
           >
             <div className="flex items-center space-x-4 text-left">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 group-hover:bg-orange-500 transition-colors">
-                <GraduationCap className="h-6 w-6 text-orange-500 group-hover:text-white transition-colors" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 group-hover:bg-emerald-500 transition-colors">
+                <GraduationCap className="h-6 w-6 text-emerald-500 group-hover:text-white transition-colors" />
               </div>
               <div className="flex flex-col">
                 <span className="text-sm font-black text-slate-900">

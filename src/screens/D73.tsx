@@ -49,7 +49,7 @@ export default function SurgePricingScreen() {
                 <Zap className="h-6 w-6" />
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] tracking-[0.2em] uppercase font-black text-amber-500">
+                <span className="text-[10px] tracking-[0.2em] uppercase font-black text-emerald-500">
                   Surge Now
                 </span>
                 <p className="text-sm font-bold">
@@ -59,7 +59,7 @@ export default function SurgePricingScreen() {
             </div>
             <div className="flex flex-col items-end text-[10px] text-slate-400 font-bold uppercase tracking-widest text-right">
               <span className="inline-flex items-center">
-                <Activity className="h-3 w-3 mr-1 text-orange-500" />
+                <Activity className="h-3 w-3 mr-1 text-emerald-500" />
                 High Demand
               </span>
               <span>Next 45 min</span>

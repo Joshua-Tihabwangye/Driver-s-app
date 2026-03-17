@@ -29,8 +29,8 @@ export default function MetricCard({
       type="button"
       onClick={onClick}
       disabled={!onClick}
-      className={`flex flex-col rounded-2xl bg-cream dark:bg-slate-800 px-4 py-4 shadow-sm border-2 border-orange-500/10 flex-1 min-w-[0] group hover:scale-[1.02] hover:shadow-md hover:border-orange-500/30 transition-all duration-300 ${clickableStyles} ${
-        variant === "active" ? "border-orange-500 bg-[#fffdf5] dark:bg-orange-950/10" : ""
+      className={`flex flex-col rounded-2xl bg-white dark:bg-slate-800 px-4 py-4 shadow-sm border border-slate-100 dark:border-slate-700 flex-1 min-w-[0] group hover:scale-[1.02] hover:shadow-md hover:border-emerald-500/20 transition-all duration-300 ${clickableStyles} ${
+        variant === "active" ? "border-emerald-500 bg-emerald-50/10 dark:bg-emerald-950/20" : ""
       }`}
     >
       <div className="flex items-center justify-between mb-2 w-full text-left">
@@ -38,7 +38,7 @@ export default function MetricCard({
           {label}
         </span>
         {Icon && (
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white dark:bg-slate-700 text-slate-400 group-hover:bg-orange-50 group-hover:text-orange-500 dark:group-hover:bg-orange-900/20 transition-colors shadow-sm">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white dark:bg-slate-700 text-slate-400 group-hover:bg-emerald-50 group-hover:text-emerald-500 dark:group-hover:bg-emerald-900/20 transition-colors shadow-sm border border-emerald-500/10">
             <Icon className="h-3.5 w-3.5" />
           </div>
         )}

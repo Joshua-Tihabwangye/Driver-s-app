@@ -31,7 +31,7 @@ function StatusChip({ label, active, onClick }) {
       onClick={onClick}
       className={`rounded-full px-3 py-1 text-[11px] font-medium border active:scale-[0.97] transition-transform ${
         active
-          ? "bg-orange-500 text-white border-orange-500"
+          ? "bg-emerald-500 text-white border-emerald-500"
           : "bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300"
       }`}
     >
@@ -64,7 +64,7 @@ export default function RentalJobOverviewScreen() {
         <section className="relative rounded-[2.5rem] bg-slate-900 overflow-hidden p-8 shadow-2xl space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex flex-col items-start">
-               <span className="text-[10px] font-black text-orange-500 uppercase tracking-[0.2em] mb-1">
+               <span className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em] mb-1">
                  Rental Window
                </span>
                <p className="text-lg font-black text-white">
@@ -155,14 +155,14 @@ export default function RentalJobOverviewScreen() {
                    <p className="text-sm font-black text-slate-900">
                      +256 700 000 111
                    </p>
-                   <button className="h-8 w-8 flex items-center justify-center rounded-full bg-orange-50 text-orange-600">
+                   <button className="h-8 w-8 flex items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
                       <Phone className="h-4 w-4" />
                    </button>
                 </div>
              </div>
 
              <div className="flex items-start space-x-4 pt-2 border-t border-slate-50">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-orange-500">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-emerald-500">
                   <FileText className="h-5 w-5" />
                 </div>
                 <div className="flex-1">
@@ -179,7 +179,7 @@ export default function RentalJobOverviewScreen() {
         <section className="space-y-3 pb-8">
           <button
             onClick={() => navigate("/driver/trip/demo-trip/navigation")}
-            className="w-full rounded-[2rem] bg-orange-500 px-6 py-5 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-orange-100 active:scale-[0.98] transition-all"
+            className="w-full rounded-[2rem] bg-emerald-500 px-6 py-5 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-emerald-500/20 active:scale-[0.98] transition-all"
           >
             Start Navigation
           </button>

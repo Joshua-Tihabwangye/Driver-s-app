@@ -47,11 +47,11 @@ export default function RideRequestsPromptScreen() {
             >
               <ChevronLeft className="h-5 w-5 text-white" />
             </button>
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-orange-50 text-orange-500 shadow-sm">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 border border-emerald-500/10 text-emerald-500 shadow-sm">
               <ListFilter className="h-6 w-6" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">MISSION ADVISORY</span>
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-emerald-500">MISSION ADVISORY</span>
               <p className="text-sm font-black text-slate-900 uppercase tracking-tight mt-0.5">Interactive Job Matrix</p>
             </div>
           </div>
