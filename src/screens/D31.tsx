@@ -46,15 +46,15 @@ export default function OnlineMapDashboardScreen() {
       <PageHeader 
         title="Dashboard" 
         subtitle="Online"
-        onBack={() => navigate("/driver/more")}
+        hideBack={true}
         rightAction={
           <button
             onClick={() => navigate("/driver/dashboard/offline")}
-            className="flex items-center gap-2 rounded-full bg-orange-500/15 px-3 py-2 active:scale-95 transition-all"
+            className="flex items-center gap-2 rounded-full bg-brand-active/15 px-3 py-2 active:scale-95 transition-all"
             title="Go Offline"
           >
-            <span className="h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
-            <span className="text-[10px] font-bold text-orange-600 uppercase tracking-wide">Online</span>
+            <span className="h-2 w-2 rounded-full bg-brand-active animate-pulse" />
+            <span className="text-[10px] font-bold text-brand-active uppercase tracking-wide">Online</span>
           </button>
         }
       />
@@ -65,7 +65,7 @@ export default function OnlineMapDashboardScreen() {
           <div className="relative z-10 space-y-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <div className="h-12 w-12 flex items-center justify-center rounded-2xl bg-orange-500 text-white shadow-xl shadow-orange-500/30">
+                <div className="h-12 w-12 flex items-center justify-center rounded-2xl bg-brand-active text-white shadow-xl shadow-brand-active/30">
                   <Activity className="h-6 w-6 animate-pulse" />
                 </div>
                 <div className="flex flex-col">
@@ -77,7 +77,7 @@ export default function OnlineMapDashboardScreen() {
               </div>
               <div className="text-right">
                  <span className="block text-[10px] uppercase font-black text-slate-500 tracking-[0.2em] mb-0.5">TIME ONLINE</span>
-                 <span className="text-sm font-black text-orange-600 bg-orange-50 px-2.5 py-1 rounded-lg">{onlineTime}</span>
+                 <span className="text-sm font-black text-brand-active bg-brand-active/10 px-2.5 py-1 rounded-lg">{onlineTime}</span>
               </div>
             </div>
             

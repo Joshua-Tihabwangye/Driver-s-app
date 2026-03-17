@@ -25,10 +25,8 @@ function BottomNavItem({ icon: Icon, label, active, onClick, isDark, badge }: Bo
       onClick={onClick}
       className={`flex flex-1 flex-col items-center justify-center py-2 transition-colors duration-200 active:scale-95 ${
         active
-          ? "text-[#10b981]"
-          : isDark
-            ? "text-slate-500 hover:text-slate-300"
-            : "text-slate-400 hover:text-slate-600"
+          ? "text-brand-active"
+          : "text-brand-inactive hover:text-slate-600 dark:hover:text-slate-300"
       }`}
       aria-label={label}
     >
@@ -41,7 +39,7 @@ function BottomNavItem({ icon: Icon, label, active, onClick, isDark, badge }: Bo
         />
         {badge != null && badge > 0 && (
           <span className={`absolute -top-1.5 -right-2.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-[9px] font-black text-white shadow-lg animate-pulse ${
-            active ? "bg-[#10b981] shadow-emerald-500/30" : "bg-orange-500 shadow-orange-500/30"
+            active ? "bg-brand-active shadow-emerald-500/30" : "bg-brand-secondary shadow-orange-500/30"
           }`}>
             {badge > 99 ? "99+" : badge}
           </span>
@@ -127,11 +125,7 @@ export default function BottomNav({ isVisible = true }: { isVisible?: boolean })
       style={{ bottom: 0 }}
     >
       <div
-        className={`flex h-[60px] w-full items-center transition-all duration-300 ${
-          isDark
-            ? "bg-[#020617] border-t border-white/[0.04]"
-            : "bg-white border-t border-slate-100"
-        } backdrop-blur-xl`}
+        className={`flex h-[60px] w-full items-center transition-all duration-300 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-white/[0.04] backdrop-blur-xl`}
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         {TABS.map((tab) => (

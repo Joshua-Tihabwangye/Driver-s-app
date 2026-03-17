@@ -40,32 +40,37 @@ function MenuItem({
   description,
   onClick,
   variant = "default",
+  themeColor,
 }: {
   icon: React.ElementType;
   label: string;
   description: string;
   onClick: () => void;
   variant?: "default" | "danger";
+  themeColor?: "green" | "orange";
 }) {
+  const isGreen = themeColor === "green";
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`flex w-full items-center rounded-2xl bg-cream dark:bg-slate-800 px-4 py-3 active:scale-[0.98] transition-all duration-200 group ${
-        variant === "danger" ? "hover:bg-red-50 dark:hover:bg-red-900/20" : "hover:bg-slate-50 dark:hover:bg-slate-700/50 shadow-sm"
+      className={`flex w-full items-center rounded-2xl px-4 py-3 active:scale-[0.98] transition-all duration-200 group list-item-refined ${
+        variant === "danger" ? "hover:bg-red-50 dark:hover:bg-red-900/20 !border-red-500/10 hover:!border-red-500/30" : "shadow-sm"
       }`}
     >
       <div className={`flex h-9 w-9 items-center justify-center rounded-xl mr-4 shrink-0 transition-colors ${
-        variant === "danger" ? "bg-red-50 text-red-600 dark:bg-red-500/20 dark:text-red-400" : "bg-orange-50 text-orange-500 group-hover:text-orange-600 dark:bg-orange-500/15 dark:text-orange-400 dark:group-hover:text-orange-300"
+        variant === "danger" 
+          ? "bg-red-50 text-red-600 dark:bg-red-500/20 dark:text-red-400" 
+          : "bg-brand-active/10 text-brand-active group-hover:bg-brand-active group-hover:text-white"
       }`}>
         <Icon className="h-4.5 w-4.5" />
       </div>
       <div className="flex-1 text-left">
-        <p className={`text-[13px] font-bold ${variant === "danger" ? "text-red-600 dark:text-red-400" : "text-slate-800 dark:text-slate-200"} transition-colors`}>{label}</p>
-        <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 line-clamp-1">{description}</p>
+        <p className={`text-[13px] transition-colors list-title ${variant === "danger" ? "font-bold text-red-600 dark:text-red-400" : "font-medium"}`}>{label}</p>
+        <p className="text-[10px] mt-0.5 line-clamp-1 list-desc">{description}</p>
       </div>
       <ChevronRight className={`h-4 w-4 ml-2 shrink-0 transition-colors ${
-        variant === "danger" ? "text-red-300 dark:text-red-500" : "text-slate-300 group-hover:text-orange-500 dark:text-slate-600 dark:group-hover:text-orange-400"
+        variant === "danger" ? "text-red-300 dark:text-red-500" : "text-brand-inactive group-hover:text-brand-secondary"
       }`} />
     </button>
   );
@@ -79,7 +84,7 @@ export default function MoreMenu() {
       <PageHeader 
         title="More & Account" 
         subtitle="Menu" 
-        onBack={() => navigate(-1)} 
+        hideBack={true} 
       />
 
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
@@ -88,7 +93,7 @@ export default function MoreMenu() {
           onClick={() => navigate("/driver/profile")}
           className="w-full flex items-center rounded-[2rem] bg-cream dark:bg-slate-800 px-5 py-4 shadow-sm active:scale-[0.98] transition-all group"
         >
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500 text-white text-lg font-bold mr-4 shrink-0 shadow-lg shadow-orange-500/20">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-active text-white text-lg font-bold mr-4 shrink-0 shadow-lg shadow-brand-active/20">
             JD
           </div>
           <div className="flex-1 text-left">
@@ -133,12 +138,14 @@ export default function MoreMenu() {
             label="Preferences"
             description="Driver defaults and app behavior"
             onClick={() => navigate("/driver/preferences")}
+            themeColor="green"
           />
           <MenuItem
             icon={SettingsIcon}
             label="Settings"
             description="App theme, language and privacy"
             onClick={() => navigate("/driver/settings")}
+            themeColor="green"
           />
           <MenuItem
             icon={Bell}
@@ -160,18 +167,21 @@ export default function MoreMenu() {
             label="Safety Hub"
             description="Emergency tools and safety settings"
             onClick={() => navigate("/driver/safety/hub")}
+            themeColor="green"
           />
           <MenuItem
             icon={HelpCircle}
             label="Help & Support"
             description="Contact us and read FAQs"
             onClick={() => navigate("/driver/help")}
+            themeColor="green"
           />
           <MenuItem
             icon={Info}
             label="About EVzone"
             description="Version, mission and legal"
             onClick={() => navigate("/driver/about")}
+            themeColor="green"
           />
         </MenuSection>
 

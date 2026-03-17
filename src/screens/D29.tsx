@@ -22,13 +22,13 @@ function JobMixPill({ icon: Icon, label, value, onClick }: { icon: any; label: s
     <button
       type="button"
       onClick={onClick}
-      className={`flex flex-col items-start rounded-2xl border-2 border-orange-500/10 px-4 py-4 text-left active:scale-[0.98] transition-all group hover:shadow-md bg-cream hover:scale-[1.01] hover:border-orange-500/30`}
+      className={`flex flex-col items-start rounded-2xl border border-brand-active/10 px-4 py-4 text-left active:scale-[0.98] transition-all group list-item-refined hover:scale-[1.01]`}
     >
       <div className="flex items-center space-x-3 mb-3">
-        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white dark:bg-slate-700 shadow-sm border border-orange-50 group-hover:scale-110 transition-transform">
-          <Icon className="h-4 w-4 text-orange-500" />
+        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white dark:bg-slate-700 shadow-sm border border-brand-active/10 group-hover:scale-110 transition-transform">
+          <Icon className="h-4 w-4 text-brand-active" />
         </div>
-        <span className="text-[11px] font-black text-slate-900 dark:text-slate-200 uppercase tracking-wider">{label}</span>
+        <span className="text-[11px] font-medium transition-colors list-title uppercase tracking-wider">{label}</span>
       </div>
       <div className="flex items-center justify-between w-full">
          <span className="text-xl font-black text-slate-900 dark:text-slate-100 tracking-tighter">{value}</span>
@@ -57,11 +57,11 @@ export default function D29ActiveDashboardScreen() {
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
         {/* Today overview summary */}
         <section className="rounded-[2.5rem] bg-slate-900 text-white p-6 space-y-6 shadow-2xl relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-40 h-40 bg-orange-500/10 rounded-full -mr-20 -mt-20 transition-transform group-hover:scale-110" />
+          <div className="absolute top-0 right-0 w-40 h-40 bg-brand-active/10 rounded-full -mr-20 -mt-20 transition-transform group-hover:scale-110" />
           
           <div className="flex items-center justify-between relative z-10">
             <div className="flex items-center space-x-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-500 text-white shadow-xl shadow-orange-500/20">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-active text-white shadow-xl shadow-brand-active/20">
                 <Clock className="h-7 w-7" />
               </div>
               <div className="flex flex-col">
@@ -76,11 +76,11 @@ export default function D29ActiveDashboardScreen() {
           <div className="pt-6 border-t border-slate-800 grid grid-cols-2 gap-4 relative z-10">
             <div className="flex flex-col space-y-1">
                <span className="text-[10px] uppercase font-black text-slate-600 tracking-widest">Trips</span>
-               <span className="text-lg font-black text-white tracking-tight">{jobsToday}</span>
+               <span className="text-lg font-medium text-white tracking-tight">{jobsToday}</span>
             </div>
             <div className="flex flex-col space-y-1 text-right">
                <span className="text-[10px] uppercase font-black text-slate-600 tracking-widest">Earnings Today</span>
-               <span className="text-lg font-black text-orange-400 tracking-tight">{earningsToday}</span>
+               <span className="text-lg font-medium text-brand-secondary tracking-tight">{earningsToday}</span>
             </div>
           </div>
         </section>
@@ -126,8 +126,8 @@ export default function D29ActiveDashboardScreen() {
         <section className="space-y-4 pb-8">
           <div className="flex items-center justify-between px-1">
             <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Job Types</h2>
-            <div className="bg-orange-500/10 px-3 py-1 rounded-lg">
-               <span className="text-[10px] font-black text-orange-600 uppercase tracking-tight">{totalJobs} TOTAL</span>
+            <div className="bg-brand-active/10 px-3 py-1 rounded-lg">
+               <span className="text-[10px] font-black text-brand-active uppercase tracking-tight">{totalJobs} TOTAL</span>
             </div>
           </div>
           

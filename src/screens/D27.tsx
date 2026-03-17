@@ -19,17 +19,17 @@ function IssueRow({ title, text, type, onClick }: any) {
     <button
       type="button"
       onClick={onClick}
-      className={`flex items-start space-x-4 rounded-2xl border-2 border-orange-500/10 bg-cream px-4 py-4 text-left w-full active:scale-[0.98] hover:scale-[1.01] transition-all group hover:shadow-md hover:border-orange-500/30`}
+      className={`flex items-start space-x-4 rounded-2xl border border-brand-active/10 bg-white dark:bg-slate-800 px-4 py-4 text-left w-full active:scale-[0.98] transition-all group list-item-refined hover:scale-[1.01]`}
     >
-      <div className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white dark:bg-slate-700 shadow-sm ${color}`}>
+      <div className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-700 shadow-sm ${color}`}>
         <Icon className="h-5 w-5" />
       </div>
-      <div className="flex-1 text-slate-700">
-        <p className="font-bold text-xs text-slate-900 dark:text-slate-200 mb-1 flex items-center justify-between">
+      <div className="flex-1">
+        <p className="font-medium text-xs text-slate-900 dark:text-slate-200 mb-1 flex items-center justify-between list-title">
           <span>{title}</span>
-          <ChevronRight className="h-3.5 w-3.5 text-slate-300" />
+          <ChevronRight className="h-3.5 w-3.5 text-slate-300 group-hover:text-brand-secondary" />
         </p>
-        <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium">{text}</p>
+        <p className="text-[11px] leading-relaxed list-desc">{text}</p>
       </div>
     </button>
   );
@@ -43,7 +43,7 @@ export default function OfflineDashboardScreen() {
       <PageHeader 
         title="Offline" 
         subtitle="Driver Status" 
-        onBack={() => navigate(-1)} 
+        hideBack={true} 
       />
 
       {/* Content */}
@@ -65,7 +65,7 @@ export default function OfflineDashboardScreen() {
           <button
             type="button"
             onClick={() => navigate("/driver/dashboard/online")}
-            className="relative z-10 w-full rounded-2xl bg-orange-500 py-4 text-xs font-black text-white hover:bg-orange-600 active:scale-95 transition-all shadow-xl shadow-orange-500/20 uppercase tracking-widest"
+            className="relative z-10 w-full rounded-2xl bg-brand-active py-4 text-xs font-black text-slate-900 hover:bg-brand-active/90 active:scale-95 transition-all shadow-xl shadow-brand-active/20 uppercase tracking-widest"
           >
             Go Online
           </button>

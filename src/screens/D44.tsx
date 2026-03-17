@@ -31,16 +31,16 @@ function RequestCard({ job, onClick }: { job: any, onClick: (j: any) => void }) 
     <button
       type="button"
       onClick={() => onClick(job)}
-      className="w-full rounded-2xl border-2 border-orange-500/10 bg-cream shadow-sm px-3 py-2.5 active:scale-[0.98] transition-all flex flex-col space-y-2 text-[11px] text-slate-600 hover:border-orange-500/30 hover:shadow-md hover:scale-[1.01] group"
+      className="w-full rounded-2xl px-3 py-2.5 active:scale-[0.98] transition-all flex flex-col space-y-2 text-[11px] list-item-refined group"
     >
       <div className="flex items-center justify-between">
         <div className="flex flex-col items-start max-w-[200px]">
           {jobType === "delivery" ? (
-            <span className="text-xs font-bold text-slate-900 flex items-center">
+            <span className="text-xs font-medium flex items-center list-title">
               #{id} · {itemType}
             </span>
           ) : (
-            <span className="text-xs font-bold text-slate-900 flex items-center">
+            <span className="text-xs font-medium flex items-center list-title">
               {from}
               <ArrowRight className="h-3 w-3 mx-1.5 text-slate-300" />
               <span className="truncate">{to}</span>
@@ -48,7 +48,7 @@ function RequestCard({ job, onClick }: { job: any, onClick: (j: any) => void }) 
           )}
         </div>
         <div className="flex flex-col items-end">
-          <span className="text-sm font-bold text-slate-900 flex items-center">
+          <span className="text-sm font-medium text-slate-900 dark:text-white flex items-center">
             {fare !== "Shuttle" && fare !== "Tour" && fare !== "—" ? `$${fare}` : fare}
           </span>
           <span className="text-[9px] text-emerald-500 font-bold mt-0.5">{timeAgo()}</span>
@@ -64,8 +64,8 @@ function RequestCard({ job, onClick }: { job: any, onClick: (j: any) => void }) 
         </div>
       )}
 
-      <div className="flex items-center justify-between pt-1 border-t border-slate-50">
-        <span className="text-slate-500 font-medium flex items-center">
+      <div className="flex items-center justify-between pt-1 border-t border-slate-50 dark:border-slate-700/50">
+        <span className="font-normal flex items-center list-desc">
           <MapPin className="h-3 w-3 mr-1 text-slate-400" />
           {distance} · {duration}
         </span>
@@ -120,7 +120,7 @@ export default function RideRequestsListScreen() {
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <PageHeader title="Requests" />
+      <PageHeader title="Requests" hideBack={true} />
 
       {/* Filters Panel */}
       <section className="z-10 mt-2 px-6">

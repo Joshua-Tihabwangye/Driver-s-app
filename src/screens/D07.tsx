@@ -36,19 +36,19 @@ function DocItem({
     <button
       type="button"
       onClick={onClick}
-      className={`flex w-full items-center justify-between rounded-2xl border-2 bg-cream px-3 py-2.5 shadow-sm active:scale-[0.97] transition-all hover:scale-[1.01] ${emphasise ? "border-orange-500 shadow-orange-100/50" : "border-orange-500/10 hover:border-orange-500/30"
+      className={`flex w-full items-center justify-between rounded-2xl border-2 bg-cream px-3 py-2.5 shadow-sm active:scale-[0.97] transition-all hover:scale-[1.01] ${emphasise ? "border-brand-secondary shadow-orange-100/50" : "border-brand-secondary/10 hover:border-brand-secondary/30"
         }`}
     >
       <div className="flex items-center space-x-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white border border-orange-50">
-          <Icon className="h-4 w-4 text-orange-500" />
+        <div className={`flex h-9 w-9 items-center justify-center rounded-full bg-white dark:bg-slate-800 border ${emphasise ? "border-brand-secondary/20" : "border-brand-inactive/20"}`}>
+          <Icon className={`h-4 w-4 ${emphasise ? "text-brand-secondary" : "text-brand-inactive"}`} />
         </div>
         <div className="flex flex-col items-start">
           <span className="text-xs font-semibold text-slate-900">{title}</span>
           <span className="text-[11px] text-slate-500">{subtitle}</span>
           {emphasise && (
             <span className="mt-1 inline-flex items-center text-[10px] text-slate-500">
-              <Info className="mr-1 h-3 w-3 text-[#f77f00]" />
+              <Info className="mr-1 h-3 w-3 text-brand-secondary" />
               Make sure all text is clear and not cut off.
             </span>
           )}
@@ -104,13 +104,13 @@ export default function DocumentVerificationScreen() {
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6">
         {/* Intro banner */}
-        <section className="rounded-[2.5rem] bg-cream border-2 border-orange-500/10 p-6 space-y-3 shadow-sm relative overflow-hidden group hover:border-orange-500/30 transition-all">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/5 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
+        <section className="rounded-[2.5rem] bg-cream dark:bg-slate-900 border-2 border-brand-active/10 p-6 space-y-3 shadow-sm relative overflow-hidden group hover:border-brand-active/30 transition-all">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-brand-active/10 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
           <div className="flex items-center gap-2">
-            <div className="p-1 bg-white border border-orange-50 rounded-lg">
-                <ShieldCheck className="h-4 w-4 text-orange-500" />
+            <div className="p-1 bg-white dark:bg-slate-800 border border-brand-active/20 rounded-lg">
+                <ShieldCheck className="h-4 w-4 text-brand-active" />
             </div>
-            <p className="text-[10px] tracking-[0.2em] uppercase text-orange-500 font-black">
+            <p className="text-[10px] tracking-[0.2em] uppercase text-brand-active font-black">
               Verify Account
             </p>
           </div>
@@ -184,9 +184,9 @@ export default function DocumentVerificationScreen() {
         </div>
 
         {/* Helper text */}
-        <section className="rounded-3xl border-2 border-orange-500/10 bg-[#f0fff4]/50 p-5 flex items-start space-x-3 shadow-sm">
-          <div className="mt-0.5 bg-white p-1.5 rounded-xl border border-orange-50 shadow-sm">
-            <Info className="h-4 w-4 text-orange-500" />
+        <section className="rounded-3xl border-2 border-brand-active/10 bg-brand-active/5 dark:bg-brand-active/10 p-5 flex items-start space-x-3 shadow-sm">
+          <div className="mt-0.5 bg-white dark:bg-slate-800 p-1.5 rounded-xl border border-brand-active/20 shadow-sm">
+            <Info className="h-4 w-4 text-brand-active" />
           </div>
           <div className="flex-1 text-[11px] text-slate-600/80 space-y-1.5">
             <p className="font-black text-xs text-slate-900 uppercase tracking-tight">
@@ -201,13 +201,13 @@ export default function DocumentVerificationScreen() {
         </section>
 
         {/* Continue button */}
-        <section className="pt-4 pb-12">
+         <section className="pt-4 pb-12">
           <button
             type="button"
             onClick={() =>
               navigate("/driver/onboarding/profile/documents/review")
             }
-            className="w-full rounded-2xl bg-orange-500 py-4 text-sm font-black text-white shadow-xl shadow-orange-500/20 hover:bg-orange-600 active:scale-[0.98] transition-all uppercase tracking-widest"
+            className="w-full rounded-2xl bg-brand-secondary text-white py-4 text-sm font-black shadow-xl shadow-brand-secondary/20 hover:bg-brand-secondary/90 active:scale-[0.98] transition-all uppercase tracking-widest"
           >
             Submit for Review
           </button>

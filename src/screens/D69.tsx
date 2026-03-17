@@ -37,13 +37,13 @@ function TripRow({ job, onClick }: any) {
     <button
       type="button"
       onClick={onClick}
-      className="w-full rounded-2xl border-2 border-slate-100 bg-white dark:bg-slate-900 shadow-sm px-3 py-2.5 active:scale-[0.98] transition-all flex items-center justify-between text-[11px] text-slate-600 hover:border-emerald-500/30 hover:shadow-md group"
+      className="w-full rounded-2xl px-3 py-2.5 active:scale-[0.98] transition-all flex items-center justify-between text-[11px] list-item-refined group"
     >
       <div className="flex flex-col items-start max-w-[200px]">
-        <span className="text-sm font-bold text-slate-900 leading-tight group-hover:text-orange-500 transition-all">
+        <span className="text-sm font-medium leading-tight list-title">
           {from} → {to}
         </span>
-        <span className="text-[11px] text-slate-500 mt-1">
+        <span className="text-[11px] mt-1 list-desc">
           {date} · {time}
         </span>
         <div className="mt-2 flex items-center space-x-2">
@@ -55,7 +55,7 @@ function TripRow({ job, onClick }: any) {
         </div>
       </div>
       <div className="flex flex-col items-end">
-        <span className="text-[15px] font-black text-slate-900">
+        <span className="text-[15px] font-medium text-slate-900 dark:text-white">
           {amount !== "—" ? `$${amount}` : "—"}
         </span>
         <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Done</span>

@@ -15,7 +15,7 @@ import { MOCK_WALLET_BALANCE, MOCK_WEEKLY_TOTAL, MOCK_EARNINGS } from "../data/m
 function StationRow({ name, value, total }: any) {
   const percentage = Math.min((value / total) * 100, 100);
   return (
-    <div className="rounded-2xl border-2 border-orange-500/10 bg-cream p-3.5 space-y-2 shadow-sm hover:shadow-md hover:scale-[1.01] hover:border-orange-500/30 transition-all duration-300 group">
+    <div className="rounded-2xl border-2 border-brand-secondary/10 bg-cream dark:bg-slate-800 p-3.5 space-y-2 shadow-sm hover:shadow-md hover:scale-[1.01] hover:border-brand-secondary/30 transition-all duration-300 group">
       <div className="flex justify-between text-[11px] font-medium">
         <div className="flex flex-col">
           <span className="text-slate-400 dark:text-slate-500 group-hover:text-slate-500 transition-colors">Total Riders</span>
@@ -23,13 +23,13 @@ function StationRow({ name, value, total }: any) {
         </div>
         <div className="flex flex-col items-end">
           <span className="text-slate-400 dark:text-slate-500 group-hover:text-slate-500 transition-colors">Total Earnings</span>
-          <span className="text-orange-500 font-bold">UGX 4,200</span>
+           <span className="text-brand-secondary font-bold">UGX 4,200</span>
         </div>
       </div>
       <div className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider group-hover:text-slate-500">Location</div>
       <div className="text-[12px] text-slate-800 dark:text-slate-100 font-black uppercase tracking-tight">{name}</div>
       <div className="h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full bg-emerald-500`} style={{ width: `${percentage}%` }} />
+         <div className={`h-full rounded-full bg-brand-active`} style={{ width: `${percentage}%` }} />
       </div>
       <div className="flex justify-end text-[10px] font-bold text-slate-400">{percentage.toFixed(0)}%</div>
     </div>
@@ -42,14 +42,14 @@ export default function EarningsStatsDashboardScreen() {
 
   return (
     <div className="flex flex-col h-full bg-transparent">
-      <PageHeader title="Earnings" subtitle="Overview" onBack={() => navigate(-1)} />
+      <PageHeader title="Earnings" subtitle="Overview" hideBack={true} />
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
 
         {/* Welcome Banner */}
-        <section className="rounded-[2.5rem] bg-slate-900 p-6 flex items-center justify-between text-white relative h-28 overflow-hidden shadow-2xl group hover:scale-[1.01] transition-transform duration-500">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-125 duration-700" />
+        <section className="rounded-[2.5rem] bg-slate-900 border border-slate-800 p-6 flex items-center justify-between text-white relative h-28 overflow-hidden shadow-2xl group hover:scale-[1.01] transition-transform duration-500">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-brand-active/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-125 duration-700" />
           <div className="z-10 space-y-1">
             <h2 className="text-lg font-black tracking-tight uppercase">Performance</h2>
             <p className="text-[10px] text-white/80 max-w-[180px] leading-tight font-bold uppercase tracking-wide">
@@ -57,42 +57,42 @@ export default function EarningsStatsDashboardScreen() {
             </p>
           </div>
           <div className="relative h-20 w-20 flex-shrink-0 z-10 opacity-20">
-             <WalletIcon className="h-full w-full text-emerald-500" />
+             <WalletIcon className="h-full w-full text-brand-active" />
           </div>
         </section>
 
         {/* Wallet Card */}
         <section className="rounded-[2.5rem] bg-slate-900 p-6 flex items-center space-x-4 shadow-2xl border border-white/5">
           <div className="h-14 w-14 flex items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md border border-white/10">
-            <WalletIcon className="h-7 w-7 text-emerald-400" />
+             <WalletIcon className="h-7 w-7 text-brand-active" />
           </div>
           <div className="flex-1">
             <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">WALLET BALANCE</span>
             <div className="text-xl font-black text-white tracking-tight">UGX {MOCK_WALLET_BALANCE.toLocaleString()}</div>
           </div>
-          <button 
+           <button 
             type="button" 
             onClick={() => navigate("/driver/earnings/cashout")} 
-            className="rounded-2xl bg-orange-500 px-5 py-3 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-orange-500/20 active:scale-95 transition-all"
+            className="rounded-2xl bg-brand-secondary px-5 py-3 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-brand-secondary/20 active:scale-95 transition-all"
           >
             CASH OUT
           </button>
         </section>
 
         {/* Earnings Chart */}
-        <section className="rounded-[2.5rem] border-2 border-orange-500/10 bg-cream p-6 space-y-6 shadow-sm hover:border-orange-500/30 transition-all">
+        <section className="rounded-[2.5rem] border-2 border-brand-active/10 bg-cream dark:bg-slate-900 p-6 space-y-6 shadow-sm hover:border-brand-active/30 transition-all">
           <div className="flex items-center justify-between text-slate-400">
             <span className="text-[11px] font-black uppercase tracking-widest">Weekly: 11-17 MAR</span>
           </div>
           <div className="text-center space-y-1">
-            <div className="text-2xl font-black text-orange-500 tracking-tighter uppercase">UGX {latestEarning.amount.toLocaleString()}</div>
+            <div className="text-2xl font-black text-brand-active tracking-tighter uppercase">UGX {latestEarning.amount.toLocaleString()}</div>
             <div className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-tight">Weekly Total: UGX {MOCK_WEEKLY_TOTAL.toLocaleString()}</div>
           </div>
           <div className="flex items-end justify-between h-32 px-2 pt-4">
             {MOCK_EARNINGS.slice().reverse().map((e, i) => (
               <div key={e.id} className="flex flex-col items-center space-y-3">
                 <div
-                  className={`w-4 rounded-full ${i === 6 ? 'bg-orange-500 shadow-lg shadow-orange-500/30' : 'bg-slate-200 dark:bg-slate-700'} relative transition-all`}
+                   className={`w-4 rounded-full ${i === 6 ? 'bg-brand-active shadow-lg shadow-brand-active/30' : 'bg-slate-200 dark:bg-slate-700'} relative transition-all`}
                   style={{ height: `${(e.amount / 20000) * 120}px` }}
                 >
                   {i === 6 && (
@@ -108,7 +108,7 @@ export default function EarningsStatsDashboardScreen() {
         </section>
 
         {/* Ride Banner */}
-        <section className="rounded-[2.5rem] bg-orange-500 p-6 flex items-center justify-between text-white overflow-hidden shadow-2xl shadow-orange-500/20 relative group hover:scale-[1.01] transition-transform">
+        <section className="rounded-[2.5rem] bg-brand-secondary p-6 flex items-center justify-between text-white overflow-hidden shadow-2xl shadow-brand-secondary/20 relative group hover:scale-[1.01] transition-transform">
           <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
           <div className="z-10 space-y-4">
             <div className="space-y-1">
@@ -119,8 +119,7 @@ export default function EarningsStatsDashboardScreen() {
             </div>
             <button 
               type="button" 
-              onClick={() => navigate("/driver/jobs/list")} 
-              className="rounded-full bg-white text-orange-500 px-6 py-2 text-[10px] font-black uppercase tracking-widest shadow-xl active:scale-95 transition-all"
+              onClick={() => navigate("/driver/jobs/list")}               className="rounded-full bg-white text-brand-secondary px-6 py-2 text-[10px] font-black uppercase tracking-widest shadow-xl active:scale-95 transition-all"
             >
               VIEW RIDES
             </button>

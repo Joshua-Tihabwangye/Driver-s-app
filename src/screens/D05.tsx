@@ -26,17 +26,17 @@ function DocRow({ icon: Icon, title, description, statusLabel, color, onClick }:
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center justify-between rounded-2xl border-2 border-orange-500/10 bg-cream shadow-sm px-3 py-2.5 active:scale-[0.97] hover:border-orange-500/30 hover:scale-[1.01] transition-all"
+      className={`flex w-full items-center justify-between rounded-2xl border-2 bg-cream shadow-sm px-3 py-2.5 active:scale-[0.97] hover:scale-[1.01] transition-all ${statusLabel === "Verified" ? "border-brand-active/10 hover:border-brand-active/30" : "border-brand-secondary/10 hover:border-brand-secondary/30"}`}
     >
       <div className="flex items-center space-x-3">
         <div
-          className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50"
+          className={`flex h-10 w-10 items-center justify-center rounded-xl ${statusLabel === "Verified" ? "bg-brand-active/10" : "bg-brand-secondary/10"}`}
         >
-          <Icon className="h-5 w-5 text-orange-500" />
+          <Icon className={`h-5 w-5 ${statusLabel === "Verified" ? "text-brand-active" : "text-brand-secondary"}`} />
         </div>
         <div className="flex flex-col items-start">
-          <span className="text-xs font-semibold text-slate-900">{title}</span>
-          <span className="text-[11px] text-slate-500">{description}</span>
+          <span className="text-xs font-semibold text-slate-900 dark:text-white">{title}</span>
+          <span className="text-[11px] text-brand-inactive">{description}</span>
         </div>
       </div>
       <StatusChip status={statusLabel.toLowerCase() as any} />
@@ -60,12 +60,12 @@ export default function DriverPersonalScreen() {
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
 
         {/* Top profile card */}
-        <section className="rounded-[2.5rem] bg-cream border-2 border-orange-500/10 p-5 flex items-center space-x-4 shadow-sm hover:shadow-md hover:border-orange-500/30 transition-all">
+        <section className={`rounded-[2.5rem] bg-cream border-2 border-brand-active/10 p-5 flex items-center space-x-4 shadow-sm hover:shadow-md hover:border-brand-active/30 transition-all dark:bg-slate-900`}>
           <div className="relative">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white border border-orange-50">
-              <User className="h-7 w-7 text-orange-500" />
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-brand-active/20">
+              <User className="h-7 w-7 text-brand-active" />
             </div>
-            <span className="absolute -bottom-1 -right-1 inline-flex items-center rounded-lg bg-orange-500 px-1.5 py-0.5 text-[8px] font-black text-white shadow-lg uppercase tracking-tighter">
+            <span className="absolute -bottom-1 -right-1 inline-flex items-center rounded-lg bg-brand-active px-1.5 py-0.5 text-[8px] font-black text-white shadow-lg uppercase tracking-tighter">
               EV Zone
             </span>
           </div>
@@ -197,13 +197,13 @@ export default function DriverPersonalScreen() {
         <section className="rounded-[2.5rem] bg-slate-900 p-6 flex items-center justify-between text-white shadow-2xl">
           <div className="space-y-3">
             <div>
-              <span className="text-[10px] font-black uppercase text-orange-500 tracking-[0.2em]">Training Hub</span>
+              <span className="text-[10px] font-black uppercase text-brand-active tracking-[0.2em]">Training Hub</span>
               <h4 className="text-base font-black tracking-tight mt-1">2 of 4 Completed</h4>
             </div>
             <button
               type="button"
               onClick={() => navigate("/driver/training/intro")}
-              className="inline-flex items-center rounded-xl bg-orange-500 px-4 py-2.5 text-[11px] font-black text-white hover:bg-orange-600 transition-colors uppercase tracking-widest"
+              className="inline-flex items-center rounded-xl bg-brand-active px-4 py-2.5 text-[11px] font-black text-white hover:bg-brand-active/90 transition-colors uppercase tracking-widest"
             >
               Resume Track
             </button>
@@ -220,7 +220,7 @@ export default function DriverPersonalScreen() {
                 r="16"
               />
               <circle
-                className="text-orange-500"
+                className="text-brand-active"
                 stroke="currentColor"
                 strokeWidth="4"
                 strokeLinecap="round"

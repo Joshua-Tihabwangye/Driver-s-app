@@ -44,10 +44,10 @@ function ServiceCard({ icon: Icon, title, subtitle, onClick }: any) {
     <button
       type="button"
       onClick={onClick}
-      className="flex items-center rounded-2xl bg-white px-3 py-3 shadow-md active:scale-[0.98] transition-transform text-left hover:border-emerald-500/30"
+      className={`flex items-center rounded-2xl bg-white dark:bg-slate-800 px-3 py-3 shadow-md active:scale-[0.98] transition-transform text-left border border-transparent hover:border-brand-active/20`}
     >
-      <div className={`mr-3 flex h-9 w-9 items-center justify-center rounded-full ${title.includes("Driver") ? "bg-emerald-50" : "bg-orange-50"}`}>
-        <Icon className={`h-4 w-4 ${title.includes("Driver") ? "text-emerald-500" : "text-orange-500"}`} />
+      <div className={`mr-3 flex h-9 w-9 items-center justify-center rounded-full ${["EVzone Driver", "School"].includes(title) ? "bg-brand-active/10" : "bg-brand-secondary/10"}`}>
+        <Icon className={`h-4 w-4 ${["EVzone Driver", "School"].includes(title) ? "text-brand-active" : "text-brand-secondary"}`} />
       </div>
       <div className="flex flex-col items-start overflow-hidden">
         <span className="text-xs font-semibold text-slate-900 truncate w-full">{title}</span>
@@ -72,15 +72,15 @@ export default function DriverHomeScreen() {
       <PageHeader 
         title="Protocol" 
         subtitle="Driver App" 
-        onBack={() => navigate(-1)}
+        hideBack={true}
         rightAction={
           <button
             onClick={() => navigate("/driver/profile")}
             className="flex items-center space-x-2"
           >
-             <div className="relative inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white border border-slate-200 shadow-sm">
-                <User className="h-5 w-5 text-slate-900" />
-                <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-orange-500 border-2 border-white animate-pulse" />
+              <div className="relative inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
+                <User className="h-5 w-5 text-slate-900 dark:text-slate-100" />
+                <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-brand-active border-2 border-white dark:border-slate-800 animate-pulse" />
               </div>
           </button>
         }
@@ -90,11 +90,11 @@ export default function DriverHomeScreen() {
       <main className="flex-1 px-6 pt-6 pb-20 space-y-6">
         {/* Reminder card */}
         <section className="rounded-[2.5rem] bg-slate-900 text-white p-7 space-y-4 shadow-2xl shadow-slate-200 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-500">
-            <Bell className="h-24 w-24" />
+          <div className="z-10 bg-brand-active/20 absolute top-0 right-0 p-6 opacity-20 group-hover:scale-110 transition-transform duration-500 rounded-bl-[4rem]">
+            <Bell className="h-24 w-24 text-brand-active" />
           </div>
           <div className="relative z-10">
-            <p className="text-[10px] uppercase tracking-[0.2em] text-orange-400 font-black mb-1">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-brand-secondary font-black mb-1">
               Primary Alert
             </p>
             <h2 className="text-2xl font-black tracking-tight mb-2">Student Bus Fees</h2>
@@ -105,7 +105,7 @@ export default function DriverHomeScreen() {
             <button
               type="button"
               onClick={() => navigate("/driver/dashboard/required-actions")}
-              className="mt-6 w-full py-4 rounded-2xl bg-orange-500 text-white text-xs font-black shadow-lg shadow-orange-500/20 active:scale-95 transition-all uppercase tracking-widest"
+              className="mt-6 w-full py-4 rounded-2xl bg-brand-secondary text-white text-xs font-black shadow-lg shadow-brand-secondary/20 active:scale-95 transition-all uppercase tracking-widest"
             >
               RESOLVE NOW
             </button>
@@ -139,24 +139,24 @@ export default function DriverHomeScreen() {
         {/* School section */}
         <section className="space-y-4">
           <div className="flex items-center justify-between px-1">
-            <h2 className="text-sm font-black text-slate-900 tracking-tight uppercase">School Portal</h2>
-            <div className="h-1.5 w-12 bg-emerald-100 rounded-full" />
+            <h2 className="text-sm font-black text-slate-900 dark:text-white tracking-tight uppercase">School Portal</h2>
+            <div className="h-1.5 w-12 bg-brand-active/20 rounded-full" />
           </div>
 
           <button
             type="button"
             onClick={() => navigate("/driver/safety/hub/expanded")}
-            className="w-full rounded-[2rem] bg-white p-5 flex items-center justify-between shadow-sm hover:shadow-md active:scale-[0.98] transition-all group"
+            className="w-full rounded-[2rem] bg-white dark:bg-slate-800 p-5 flex items-center justify-between shadow-sm hover:shadow-md active:scale-[0.98] transition-all group border border-transparent hover:border-brand-active/20"
           >
             <div className="flex items-center space-x-4 text-left">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 group-hover:bg-emerald-500 transition-colors">
-                <GraduationCap className="h-6 w-6 text-emerald-500 group-hover:text-white transition-colors" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-active/10 group-hover:bg-brand-active transition-colors">
+                <GraduationCap className="h-6 w-6 text-brand-active group-hover:text-white transition-colors" />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-black text-slate-900">
+                <span className="text-sm font-black text-slate-900 dark:text-white">
                   Parent Access
                 </span>
-                <span className="text-[11px] text-slate-400 font-medium">
+                <span className="text-[11px] text-brand-inactive font-medium">
                   Track buses & manage fees
                 </span>
               </div>

@@ -110,8 +110,8 @@ export default function TripCompletionScreen({ initialJobType = "ride" }) {
                 onClick={() => setJobType(type)}
                 className={`rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-widest border-2 transition-all ${
                   jobType === type
-                    ? "bg-orange-500 text-white border-orange-500 shadow-md"
-                    : "bg-white text-slate-400 border-orange-500/5 hover:border-orange-500/20"
+                    ? "bg-brand-secondary text-white border-brand-secondary shadow-md"
+                    : "bg-white text-brand-inactive border-brand-secondary/5 hover:border-brand-secondary/20"
                 }`}
               >
                 {jobTypeLabelMap[type]}
@@ -124,7 +124,7 @@ export default function TripCompletionScreen({ initialJobType = "ride" }) {
       {/* Content */}
       <main className="flex-1 px-6 pt-4 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         <div className="px-2">
-           <span className="text-[11px] font-black text-orange-500 uppercase tracking-[0.2em]">
+           <span className="text-[11px] font-black text-brand-active uppercase tracking-[0.2em]">
              Service: {jobTypeLabelMap[jobType]}
            </span>
         </div>
@@ -133,17 +133,17 @@ export default function TripCompletionScreen({ initialJobType = "ride" }) {
         <section className="rounded-[2.5rem] bg-slate-900 border border-slate-800 text-white p-6 space-y-6 shadow-2xl">
           <div className="flex items-start justify-between">
             <div className="flex flex-col space-y-1">
-              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-200">{summaryLabel}</span>
+               <span className="text-[10px] tracking-[0.2em] font-black uppercase text-brand-active/50">{summaryLabel}</span>
               <p className="text-sm font-black uppercase tracking-tight">{routeLine}</p>
             </div>
             <div className="flex flex-col items-end space-y-1">
                {!isAmbulance && (
-                <span className="text-base font-black text-orange-500 uppercase tracking-tight">
+                <span className="text-base font-black text-brand-secondary uppercase tracking-tight">
                   ${rightTop}
                 </span>
                )}
                {isAmbulance && (
-                <span className="text-sm font-black text-orange-500 uppercase tracking-tight">
+                <span className="text-sm font-black text-brand-secondary uppercase tracking-tight">
                   {rightTop}
                 </span>
                )}
@@ -171,7 +171,7 @@ export default function TripCompletionScreen({ initialJobType = "ride" }) {
 
         {/* Payment & rating info */}
         <section className="space-y-4">
-          <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-cream p-6 space-y-6 shadow-xl shadow-slate-200/50">
+          <div className="rounded-[2.5rem] border-2 border-brand-secondary/10 bg-cream p-6 space-y-6 shadow-xl shadow-slate-200/50">
             <div className="flex items-center justify-between">
               <div className="flex flex-col space-y-1">
                 <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">{paymentTitle}</span>
@@ -182,7 +182,7 @@ export default function TripCompletionScreen({ initialJobType = "ride" }) {
                 <div className="flex flex-col items-end space-y-1">
                   <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">Rider Rating</span>
                   <div className="flex items-center space-x-1">
-                    <Star className="h-4 w-4 text-amber-400 fill-amber-400" />
+                    <Star className="h-4 w-4 text-brand-highlight fill-brand-highlight" />
                     <span className="text-sm font-black text-slate-900">5.0</span>
                   </div>
                 </div>
@@ -190,7 +190,7 @@ export default function TripCompletionScreen({ initialJobType = "ride" }) {
             </div>
           </div>
 
-          <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-cream p-6 flex flex-col space-y-4 hover:border-orange-500/30 transition-all duration-300 shadow-lg">
+          <div className="rounded-[2.5rem] border-2 border-brand-secondary/10 bg-cream p-6 flex flex-col space-y-4 hover:border-brand-secondary/30 transition-all duration-300 shadow-lg">
             <div className="flex items-center space-x-3">
 <div className="flex flex-col">
                  <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">Rate Your Rider</span>
@@ -201,7 +201,7 @@ export default function TripCompletionScreen({ initialJobType = "ride" }) {
               <div className="flex items-center justify-center space-x-3 py-2">
                 {[1, 2, 3, 4, 5].map((s) => (
                   <button key={s} type="button" className="active:scale-110 transition-transform">
-                    <Star className="h-8 w-8 text-amber-400 fill-amber-400" />
+                    <Star className="h-8 w-8 text-brand-highlight fill-brand-highlight" />
                   </button>
                 ))}
               </div>
@@ -218,14 +218,14 @@ export default function TripCompletionScreen({ initialJobType = "ride" }) {
              <button
                type="button"
                onClick={() => navigate("/driver/dashboard/online")}
-               className="w-full rounded-full py-4.5 text-[11px] font-black uppercase tracking-widest bg-orange-500 text-white shadow-xl shadow-orange-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all"
+               className="w-full rounded-full py-4.5 text-[11px] font-black uppercase tracking-widest bg-brand-active text-white shadow-xl shadow-brand-active/30 hover:scale-[1.02] active:scale-[0.98] transition-all"
              >
                Go back online
              </button>
              <button
                type="button"
                onClick={() => navigate("/driver/history/rides")}
-               className="w-full rounded-full py-4.5 text-[11px] font-black uppercase tracking-widest border-2 border-orange-500/10 bg-cream text-slate-500 hover:border-orange-500/30 transition-all flex items-center justify-center space-x-2"
+               className="w-full rounded-full py-4.5 text-[11px] font-black uppercase tracking-widest border-2 border-brand-secondary/10 bg-cream text-brand-inactive hover:border-brand-secondary/30 transition-all flex items-center justify-center space-x-2"
              >
                <span>View Trip Details</span>
              </button>
