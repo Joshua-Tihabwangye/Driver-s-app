@@ -9,10 +9,19 @@ export default {
     extend: {
       colors: {
         evzone: {
-          green: "#03CD8C",
-          orange: "#F77F00",
-          navy: "#0f172a",
+          green: "var(--evz-brand-green)",
+          orange: "var(--evz-brand-orange)",
+          navy: "var(--evz-navy)",
         },
+        brand: {
+          primary: "var(--evz-brand-green)",
+          secondary: "var(--evz-brand-orange)",
+          active: "var(--evz-active)",
+          inactive: "var(--evz-inactive)",
+          highlight: "var(--evz-highlight)",
+          success: "var(--evz-success)",
+          warning: "var(--evz-warning)",
+        }
       },
       borderRadius: {
         phone: "24px",

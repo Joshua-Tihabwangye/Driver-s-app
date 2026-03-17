@@ -191,8 +191,8 @@ export default function RideRequestIncomingScreen() {
                 onClick={() => setJobType(type)}
                 className={`rounded-full px-3 py-1 border text-[9px] font-black uppercase tracking-wider transition-all ${
                   jobType === type
-                    ? "bg-orange-500 border-orange-500 text-white shadow-md shadow-orange-500/20"
-                    : "bg-white border-slate-200 text-slate-400 hover:border-slate-300"
+                    ? "bg-brand-secondary border-brand-secondary text-white shadow-md shadow-brand-secondary/20"
+                    : "bg-white border-slate-200 text-brand-inactive hover:border-slate-300"
                 }`}
               >
                 {type}
@@ -203,7 +203,7 @@ export default function RideRequestIncomingScreen() {
 
         {/* Request card */}
         <section className="rounded-[2.5rem] bg-slate-900 text-white p-6 space-y-6 shadow-2xl relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110" />
+          <div className="absolute top-0 right-0 w-32 h-32 bg-brand-active/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110" />
           
           <div className="flex items-start justify-between relative z-10">
             <div className="flex items-center space-x-4">
@@ -213,7 +213,7 @@ export default function RideRequestIncomingScreen() {
             >
               <ChevronLeft className="h-5 w-5 text-white" />
             </button>
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500 text-slate-900 shadow-xl shadow-orange-500/20">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-active text-slate-900 shadow-xl shadow-brand-active/20">
                 <User className="h-6 w-6" />
               </div>
               <div className="flex flex-col">
@@ -233,7 +233,7 @@ export default function RideRequestIncomingScreen() {
               </div>
             </div>
             <div className="flex flex-col items-end">
-              <span className={`text-[11px] font-black uppercase tracking-widest ${isAmbulance ? "text-red-400" : "text-orange-500"}`}>
+              <span className={`text-[11px] font-medium uppercase tracking-widest ${isAmbulance ? "text-red-400" : "text-brand-active"}`}>
                 {rightLine1}
               </span>
               <span className="text-[10px] text-slate-500 font-bold uppercase tracking-tight mt-1">
@@ -244,7 +244,7 @@ export default function RideRequestIncomingScreen() {
 
           <div className="space-y-4 pt-2 relative z-10 border-t border-white/5">
             <div className="flex items-start space-x-4">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-orange-500/10 text-orange-500">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-brand-active/10 text-brand-active">
                 <MapPin className="h-4 w-4" />
               </div>
               <div className="flex flex-col">
@@ -300,7 +300,7 @@ export default function RideRequestIncomingScreen() {
               <button
                 type="button"
                 onClick={handleDecline}
-                className="flex-[0.4] rounded-full py-5 text-[11px] font-black uppercase tracking-widest border-2 border-orange-500/10 text-slate-500 bg-cream hover:bg-slate-50 active:scale-95 transition-all flex items-center justify-center hover:border-orange-500/30 shadow-sm"
+                className="flex-[0.4] rounded-full py-5 text-[11px] font-black uppercase tracking-widest border border-brand-active/10 text-brand-inactive bg-white dark:bg-slate-800 hover:bg-slate-50 transition-all flex items-center justify-center hover:border-brand-active/30 shadow-sm"
               >
                 Decline
               </button>

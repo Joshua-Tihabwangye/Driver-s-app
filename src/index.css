@@ -31,6 +31,15 @@
   --evz-text: #0f172a;
   --evz-text-secondary: #64748b;
 
+  --evz-navy: #0f172a;
+
+  /* Semantic UI Roles */
+  --evz-active: var(--evz-brand-green);
+  --evz-inactive: #94a3b8;
+  --evz-highlight: var(--evz-brand-orange);
+  --evz-success: var(--evz-brand-green);
+  --evz-warning: var(--evz-brand-orange);
+
   --evz-input-bg: #ffffff;
   --evz-input-border: #e2e8f0;
   --evz-header-bg: linear-gradient(135deg, #a8e6cf 0%, #12c98c 50%, #059669 100%);
@@ -47,6 +56,47 @@
 
 .border-orange-soft {
   border-color: var(--evz-orange-border);
+}
+
+/* ──────────────────────────────────────────────
+   Refined List Item Utility
+   ────────────────────────────────────────────── */
+.list-item-refined {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid var(--evz-brand-green-border);
+  background-color: var(--evz-surface);
+  border-radius: 1rem;
+}
+
+.list-item-refined:hover {
+  border-color: var(--evz-brand-green);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  transform: scale(1.005);
+}
+
+.list-item-refined .list-title {
+  color: var(--evz-text);
+  transition: color 0.3s ease;
+}
+
+.list-item-refined:hover .list-title {
+  color: var(--evz-brand-orange);
+}
+
+.list-item-refined .list-desc {
+  color: var(--evz-text-secondary);
+  font-weight: 400;
+}
+
+/* ──────────────────────────────────────────────
+   Card Typography Refinement
+   ────────────────────────────────────────────── */
+.card-title-refined {
+  @apply font-medium text-slate-900 dark:text-white tracking-tight;
+}
+
+.card-desc-refined {
+  @apply font-normal text-slate-500 dark:text-slate-400;
 }
 
 .border-orange-bright {
@@ -81,6 +131,15 @@
   --evz-border: #334155;
   --evz-text: #f1f5f9;
   --evz-text-secondary: #94a3b8;
+
+  --evz-navy: #020617;
+
+  /* Semantic UI Roles */
+  --evz-active: var(--evz-brand-green);
+  --evz-inactive: #4b5563;
+  --evz-highlight: var(--evz-brand-orange);
+  --evz-success: var(--evz-brand-green);
+  --evz-warning: var(--evz-brand-orange);
 
   --evz-input-bg: #1e293b;
   --evz-input-border: #334155;

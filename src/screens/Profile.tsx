@@ -58,7 +58,7 @@ export default function Profile() {
             type="button"
             onClick={() => (isEditing ? handleSave() : setIsEditing(true))}
             className={`flex items-center rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all active:scale-[0.97] shadow-sm ${
-              isEditing ? "bg-[#03cd8c] text-slate-900 dark:text-white shadow-[#03cd8c]/20" : "bg-slate-900/80 text-slate-900 dark:text-white shadow-slate-900/20"
+              isEditing ? "bg-brand-active text-white shadow-brand-active/20" : "bg-brand-inactive/20 text-brand-inactive shadow-brand-inactive/10"
             }`}
           >
             {isEditing ? (
@@ -79,11 +79,11 @@ export default function Profile() {
       <main className="flex-1 px-4 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
         <div className="flex flex-col items-center pt-1 mb-2">
           <div className="relative group">
-            <div className="flex h-28 w-28 items-center justify-center rounded-[2.5rem] bg-gradient-to-tr from-[#03cd8c] to-emerald-300 text-4xl font-bold text-white shadow-xl group-hover:rotate-3 transition-transform">
+            <div className="flex h-28 w-28 items-center justify-center rounded-[2.5rem] bg-gradient-to-tr from-brand-active to-emerald-300 text-4xl font-bold text-white shadow-xl group-hover:rotate-3 transition-transform">
               JD
             </div>
-            <div className="absolute -top-1 -right-1 bg-white p-1.5 rounded-full shadow-md">
-              <ShieldCheck className="h-5 w-5 text-[#03cd8c] fill-[#03cd8c]/10" />
+            <div className="absolute -top-1 -right-1 bg-white dark:bg-slate-800 p-1.5 rounded-full shadow-md">
+              <ShieldCheck className="h-5 w-5 text-brand-active fill-brand-active/10" />
             </div>
             <button
               type="button"
@@ -93,23 +93,23 @@ export default function Profile() {
             </button>
           </div>
           <h2 className="mt-5 text-xl font-bold text-slate-900">{profile.name}</h2>
-          <div className="flex items-center space-x-1.5 mt-1.5 bg-orange-50 px-3 py-1 rounded-full border border-orange-100">
-            <Star className="h-3.5 w-3.5 text-orange-500 fill-orange-500" />
-            <span className="text-xs font-bold text-slate-700 tracking-tight">4.92 Rating</span>
-            <span className="text-[10px] text-slate-400 font-medium ml-1">(324 Total Trips)</span>
+          <div className="flex items-center space-x-1.5 mt-1.5 bg-brand-secondary/10 px-3 py-1 rounded-full border border-brand-secondary/20">
+            <Star className="h-3.5 w-3.5 text-brand-secondary fill-brand-secondary" />
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-300 tracking-tight">4.92 Rating</span>
+            <span className="text-[10px] text-brand-inactive font-medium ml-1">(324 Total Trips)</span>
           </div>
         </div>
 
         <div className="grid grid-cols-3 gap-3">
           {[
-            { label: "Total KM", value: "2.4k", icon: Car, color: "#f97316" },
-            { label: "On Time", value: "98%", icon: Star, color: "#f97316" },
-            { label: "City", value: "Kampala", icon: MapPin, color: "#f97316" },
+            { label: "Total KM", value: "2.4k", icon: Car, color: "var(--evz-brand-orange)" },
+            { label: "On Time", value: "98%", icon: Star, color: "var(--evz-brand-green)" },
+            { label: "City", value: "Kampala", icon: MapPin, color: "var(--evz-brand-orange)" },
           ].map((stat) => (
-            <div key={stat.label} className="flex flex-col items-center rounded-2xl border-2 border-orange-500/10 bg-cream px-1 py-4 shadow-sm">
+            <div key={stat.label} className={`flex flex-col items-center rounded-2xl border-2 bg-cream dark:bg-slate-800 px-1 py-4 shadow-sm ${stat.color.includes('green') ? 'border-brand-active/10' : 'border-brand-secondary/10'}`}>
               <stat.icon className="h-4 w-4 mb-2" style={{ color: stat.color }} />
-              <span className="text-sm font-bold text-slate-900 tracking-tight">{stat.value}</span>
-              <span className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">{stat.label}</span>
+              <span className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">{stat.value}</span>
+              <span className="text-[9px] font-bold text-brand-inactive uppercase mt-0.5">{stat.label}</span>
             </div>
           ))}
         </div>
@@ -125,14 +125,14 @@ export default function Profile() {
             ].map((field) => (
               <div
                 key={field.key}
-                className={`rounded-2xl border-2 transition-all duration-300 ${isEditing ? "bg-[#fffdf5] border-orange-500/30 shadow-md" : "bg-cream border-orange-500/10 shadow-sm"} px-5 py-4`}
+                className={`rounded-2xl border-2 transition-all duration-300 ${isEditing ? "bg-white dark:bg-slate-800 border-brand-secondary/30 shadow-md" : "bg-cream dark:bg-slate-900 border-brand-secondary/10 shadow-sm"} px-5 py-4`}
               >
                 <div className="flex items-center justify-between mb-1">
                   <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest flex items-center">
                     <field.icon className="h-3 w-3 mr-1.5" />
                     {field.label}
                   </label>
-                  {isEditing && <span className="text-[8px] bg-[#03cd8c]/10 text-[#03cd8c] px-1.5 py-0.5 rounded font-bold">EDITABLE</span>}
+                  {isEditing && <span className="text-[8px] bg-brand-active/10 text-brand-active px-1.5 py-0.5 rounded font-bold">EDITABLE</span>}
                 </div>
                 {isEditing ? (
                   <input
@@ -166,7 +166,7 @@ export default function Profile() {
                 <p className="text-[11px] text-slate-500 font-medium">Manage your compliance items</p>
               </div>
             </div>
-            <div className="bg-amber-400 rounded-full px-2.5 py-1">
+            <div className="bg-brand-secondary rounded-full px-2.5 py-1">
               <span className="text-[9px] font-bold text-white uppercase">Attention</span>
             </div>
           </button>
@@ -185,24 +185,23 @@ export default function Profile() {
                 <p className="text-[11px] text-slate-500 font-medium">Toyota Prius • UBB 123X</p>
               </div>
             </div>
-            <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-orange-500 transition-colors" />
+            <ChevronRight className="h-5 w-5 text-brand-inactive group-hover:text-brand-secondary transition-colors" />
           </button>
 
           <button
             type="button"
             onClick={() => navigate("/driver/preferences/identity")}
-            className="w-full rounded-2xl border-2 border-orange-500/10 bg-cream px-5 py-5 flex items-center justify-between group active:scale-[0.98] hover:scale-[1.01] hover:bg-cream hover:shadow-md hover:border-orange-500/30 transition-all duration-300"
           >
             <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center group-hover:bg-[#03cd8c] transition-colors border border-orange-50">
-                <ShieldCheck className="h-5 w-5 text-[#03cd8c] group-hover:text-white" />
+              <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center group-hover:bg-brand-active transition-colors border border-brand-active/20">
+                <ShieldCheck className="h-5 w-5 text-brand-active group-hover:text-white" />
               </div>
               <div className="flex flex-col items-start text-left">
                 <p className="text-sm font-bold text-slate-800">Identity Verification</p>
                 <p className="text-[11px] text-slate-500 font-medium">Verify your face and documents</p>
               </div>
             </div>
-            <div className="bg-[#03cd8c] rounded-full px-2.5 py-1">
+            <div className="bg-brand-active rounded-full px-2.5 py-1">
               <span className="text-[9px] font-bold text-white uppercase">Active</span>
             </div>
           </button>

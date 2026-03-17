@@ -45,7 +45,7 @@ export default function NavigationInProgressScreen() {
               <path
                 d="M15 80 C 30 70, 45 60, 55 50 S 75 30, 85 20"
                 fill="none"
-                stroke="#f97316"
+                stroke="var(--brand-active)"
                 strokeWidth="2.2"
                 strokeLinecap="round"
                 strokeDasharray="5 3"
@@ -55,7 +55,7 @@ export default function NavigationInProgressScreen() {
 
           <div className="absolute top-4 left-4">
              <div className="bg-slate-900/40 backdrop-blur-md rounded-full px-4 py-2 flex items-center space-x-2 border border-white/10">
-                <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+                <div className="w-2 h-2 rounded-full bg-brand-active animate-pulse" />
                 <span className="text-[10px] font-black text-white uppercase tracking-widest">Active Trajectory</span>
              </div>
           </div>
@@ -63,14 +63,14 @@ export default function NavigationInProgressScreen() {
           {/* Driver marker (moving) */}
           <div className="absolute left-16 bottom-22 flex flex-col items-center">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900/90 border border-white shadow-lg">
-              <Navigation className="h-4 w-4 text-orange-500" />
+              <Navigation className="h-4 w-4 text-brand-active" />
             </div>
           </div>
 
           {/* Drop-off marker */}
           <div className="absolute right-9 top-9 flex flex-col items-center">
             <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/90 border border-white shadow-lg">
-              <MapPin className="h-3.5 w-3.5 text-orange-500" />
+              <MapPin className="h-3.5 w-3.5 text-brand-active" />
             </div>
             <span className="mt-2 rounded-full bg-slate-900/80 px-3 py-1 text-[9px] font-black text-white uppercase tracking-widest backdrop-blur-sm border border-white/10">
               Terminal
@@ -87,7 +87,7 @@ export default function NavigationInProgressScreen() {
           >
             <div className="flex flex-col space-y-1">
               <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">DESTINATION VECTOR</span>
-              <p className="text-sm font-black text-slate-900 uppercase tracking-tight leading-tight">
+              <p className="text-sm font-medium text-slate-900 dark:text-white uppercase tracking-tight leading-tight">
                 To · Bugolobi
               </p>
               <p className="text-[11px] text-slate-500 font-bold uppercase tracking-tight">
