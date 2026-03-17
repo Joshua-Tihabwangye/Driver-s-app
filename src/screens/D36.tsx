@@ -190,7 +190,7 @@ export default function DriverSearchScreen() {
 
   const jobRouteMap = {
     ride: "/driver/jobs/incoming",
-    delivery: "/driver/delivery/orders",
+    delivery: "/driver/jobs/list?category=delivery",
     rental: "/driver/rental/job/demo-job",
     tour: "/driver/trip/demo-trip/navigation",
     ambulance: "/driver/ambulance/incoming",

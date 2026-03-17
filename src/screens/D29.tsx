@@ -212,7 +212,7 @@ export default function D29ActiveDashboardScreen() {
               label="Cargo"
               value={`${jobMix.delivery}`}
               colorClass="border-blue-50"
-              onClick={() => navigate("/driver/delivery/orders")}
+              onClick={() => navigate("/driver/jobs/list?category=delivery")}
             />
             <JobMixPill
               icon={Briefcase}

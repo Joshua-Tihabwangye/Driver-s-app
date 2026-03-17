@@ -56,7 +56,7 @@ function MenuItem({
       }`}
     >
       <div className={`flex h-9 w-9 items-center justify-center rounded-xl mr-4 shrink-0 transition-colors ${
-        variant === "danger" ? "bg-red-50 text-red-600 dark:bg-red-500/20 dark:text-red-400" : "bg-white text-slate-500 group-hover:text-[#03cd8c] dark:bg-orange-500/15 dark:text-orange-400 dark:group-hover:text-orange-300"
+        variant === "danger" ? "bg-red-50 text-red-600 dark:bg-red-500/20 dark:text-red-400" : "bg-orange-50 text-orange-500 group-hover:text-orange-600 dark:bg-orange-500/15 dark:text-orange-400 dark:group-hover:text-orange-300"
       }`}>
         <Icon className="h-4.5 w-4.5" />
       </div>
@@ -65,7 +65,7 @@ function MenuItem({
         <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 line-clamp-1">{description}</p>
       </div>
       <ChevronRight className={`h-4 w-4 ml-2 shrink-0 transition-colors ${
-        variant === "danger" ? "text-red-300 dark:text-red-500" : "text-slate-300 group-hover:text-[#03cd8c] dark:text-slate-600 dark:group-hover:text-orange-400"
+        variant === "danger" ? "text-red-300 dark:text-red-500" : "text-slate-300 group-hover:text-orange-500 dark:text-slate-600 dark:group-hover:text-orange-400"
       }`} />
     </button>
   );

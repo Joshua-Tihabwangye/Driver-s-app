@@ -87,8 +87,6 @@ import D71Screen from "./screens/D71.jsx";
 import D72Screen from "./screens/D72.jsx";
 import D73Screen from "./screens/D73.jsx";
 import D74Screen from "./screens/D74.jsx";
-import D75Screen from "./screens/D75.jsx";
-import D76Screen from "./screens/D76.jsx";
 import D77Screen from "./screens/D77.jsx";
 import D78Screen from "./screens/D78.jsx";
 import D79Screen from "./screens/D79.jsx";
@@ -226,8 +224,6 @@ const SCREENS = [
   // Surge & delivery order dashboards (§3.11)
   { id: "D73", label: "Surge Pricing", path: "/driver/surge/map", Component: D73Screen },
   { id: "D74", label: "Orders to Delivery", path: "/driver/delivery/orders-dashboard", Component: D74Screen },
-  { id: "D75", label: "List of Orders", path: "/driver/delivery/orders", Component: D75Screen },
-  { id: "D76", label: "Select Order Type", path: "/driver/delivery/orders/filter", Component: D76Screen },
   { id: "D77", label: "Picked-Up Orders", path: "/driver/delivery/orders/picked-up", Component: D77Screen },
   // Routes & delivery flows (§3.12)
   { id: "D78", label: "Route Details", path: "/driver/delivery/route/:routeId", previewPath: `/driver/delivery/route/${SAMPLE_IDS.route}`, Component: D78Screen },

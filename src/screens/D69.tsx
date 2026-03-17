@@ -5,9 +5,10 @@ History as HistoryIcon
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useJobs } from "../context/JobsContext";
 
 // EVzone Driver App – D69 Driver – Ride History
-// Ride / Job history list with job type chips and filters.
+// Shows ONLY attended/completed jobs from the centralized context.
 
 const JOB_FILTERS = [
   { key: "all", label: "All" },
@@ -18,80 +19,6 @@ const JOB_FILTERS = [
   { key: "tour", label: "Tour" },
   { key: "ambulance", label: "Ambulance" },
 ];
-
-const TRIPS = [
-  {
-    id: "t1",
-    from: "Acacia Mall",
-    to: "Bugolobi",
-    date: "Today",
-    time: "18:10",
-    amount: "7.20",
-    hasProof: true,
-    jobType: "ride"
-},
-  {
-    id: "t2",
-    from: "City Centre",
-    to: "Ntinda",
-    date: "Today",
-    time: "16:45",
-    amount: "5.40",
-    hasProof: false,
-    jobType: "ride"
-},
-  {
-    id: "t3",
-    from: "Burger Hub, Acacia Mall",
-    to: "Kira Road",
-    date: "Yesterday",
-    time: "13:25",
-    amount: "3.80",
-    hasProof: true,
-    jobType: "delivery"
-},
-  {
-    id: "t4",
-    from: "City Hotel",
-    to: "Rental day",
-    date: "Yesterday",
-    time: "09:00–17:10",
-    amount: "64.80",
-    hasProof: true,
-    jobType: "rental"
-},
-  {
-    id: "t5",
-    from: "Airport",
-    to: "Safari Lodge",
-    date: "2 days ago",
-    time: "08:30–16:40",
-    amount: "45.00",
-    hasProof: true,
-    jobType: "tour"
-},
-  {
-    id: "t6",
-    from: "School XYZ",
-    to: "Morning route",
-    date: "3 days ago",
-    time: "07:00–08:30",
-    amount: "—",
-    hasProof: false,
-    jobType: "shuttle"
-},
-  {
-    id: "t7",
-    from: "Patient location",
-    to: "City Hospital",
-    date: "Last week",
-    time: "18:10–18:40",
-    amount: "—",
-    hasProof: true,
-    jobType: "ambulance"
-},
-];
-
 
 function JobTypeChip({ jobType }) {
   const base =
@@ -139,7 +66,26 @@ function JobTypeChip({ jobType }) {
   );
 }
 
-function TripRow({ from, to, date, time, amount, hasProof, jobType, onClick }: any) {
+function formatDate(ts: number): string {
+  const diff = Date.now() - ts;
+  const hours = diff / 3_600_000;
+  if (hours < 24) return "Today";
+  if (hours < 48) return "Yesterday";
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} days ago`;
+  return "Last week";
+}
+
+function formatTime(ts: number): string {
+  const d = new Date(ts);
+  return d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
+}
+
+function TripRow({ job, onClick }: any) {
+  const { from, to, fare, jobType, requestedAt } = job;
+  const date = formatDate(requestedAt);
+  const time = formatTime(requestedAt);
+  const amount = fare;
   return (
     <button
       type="button"
@@ -155,19 +101,17 @@ function TripRow({ from, to, date, time, amount, hasProof, jobType, onClick }: a
         </span>
         <div className="mt-2 flex items-center space-x-2">
             <JobTypeChip jobType={jobType} />
-            {hasProof && (
-                <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-bold text-emerald-700">
-                    <CheckCircle2 className="h-3 w-3 mr-1" />
-                    Proof
-                </span>
-            )}
+            <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-bold text-emerald-700">
+                <CheckCircle2 className="h-3 w-3 mr-1" />
+                Completed
+            </span>
         </div>
       </div>
       <div className="flex flex-col items-end">
         <span className="text-[15px] font-black text-slate-900">
           {amount !== "—" ? `$${amount}` : "—"}
         </span>
-        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Completed</span>
+        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Done</span>
       </div>
     </button>
   );
@@ -176,16 +120,17 @@ function TripRow({ from, to, date, time, amount, hasProof, jobType, onClick }: a
 export default function RideHistoryScreen() {
   const [filter, setFilter] = useState("all");
   const navigate = useNavigate();
+  const { attendedJobs } = useJobs();
 
   const filteredTrips =
     filter === "all"
-      ? TRIPS
-      : TRIPS.filter((trip) => trip.jobType === filter);
+      ? attendedJobs
+      : attendedJobs.filter((job) => job.jobType === filter);
 
   const tripRoutes = {
     ride: "/driver/trip/demo-trip/proof",
     delivery: "/driver/delivery/route/demo-route/details",
-    rental: "/driver/rental/job/demo-job/status",
+    rental: "/driver/rental/job/demo-job",
     tour: "/driver/tour/demo-tour/today",
     shuttle: "/driver/help/shuttle-link",
     ambulance: "/driver/ambulance/job/demo-job/status"
@@ -212,7 +157,7 @@ export default function RideHistoryScreen() {
                   Driver
                 </span>
                 <p className="text-base font-black text-slate-900 dark:text-white tracking-tight leading-tight text-center">
-                  Ride History
+                  Job History
                 </p>
               </div>
             </div>
@@ -225,11 +170,11 @@ export default function RideHistoryScreen() {
         {/* Info card */}
         <section className="rounded-[2rem] border-2 border-orange-500/10 bg-cream p-5 shadow-sm">
            <p className="font-black text-[10px] uppercase tracking-widest text-[#03cd8c] mb-2">
-            Trips & Proof
+            Completed Jobs
           </p>
           <p className="text-[11px] font-medium text-slate-500 leading-relaxed">
-            Trips with photos or notes captured via Proof-of-trip are marked
-            here. Open any trip to see route, job type and attached proof.
+            All jobs you have attended to appear here. Open any entry to see
+            route details, job type, and attached proof.
           </p>
         </section>
 
@@ -253,13 +198,13 @@ export default function RideHistoryScreen() {
           </div>
         </section>
 
-        {/* Ride / job list */}
+        {/* Job list */}
         <section className="space-y-3">
-          {filteredTrips.map((trip) => (
+          {filteredTrips.map((job) => (
             <TripRow
-              key={trip.id}
-              {...trip}
-              onClick={() => navigate(tripRoutes[trip.jobType] || "/driver/trip/demo-trip/proof")}
+              key={job.id}
+              job={job}
+              onClick={() => navigate(tripRoutes[job.jobType] || "/driver/trip/demo-trip/proof")}
             />
           ))}
 

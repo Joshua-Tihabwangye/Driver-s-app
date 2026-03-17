@@ -1,15 +1,17 @@
 import {
-ArrowRight,
-Bell,
-HelpCircle,
-ListFilter,
-MapPin
+  ArrowRight,
+  ChevronLeft,
+  HelpCircle,
+  ListFilter,
+  MapPin,
+  Package
 } from "lucide-react";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useJobs } from "../context/JobsContext";
 
-// EVzone Driver App – D44 Ride Requests
-// List of available job requests with a job-type filter bar and job type pill per card.
+// EVzone Driver App – D44 Unified Job Requests
+// Shows ONLY pending/unattended jobs, sorted by request time.
 
 const JOB_FILTERS = [
   { key: "all", label: "All" },
@@ -19,16 +21,6 @@ const JOB_FILTERS = [
   { key: "shuttle", label: "Shuttle" },
   { key: "tour", label: "Tour" },
   { key: "ambulance", label: "Ambulance" },
-];
-
-const JOBS = [
-  { id: "3241", from: "Acacia Mall", to: "Kansanga", distance: "5.2 km", duration: "14 min", fare: "4.90", jobType: "ride" },
-  { id: "3242", from: "City Centre", to: "Ntinda", distance: "7.8 km", duration: "19 min", fare: "6.40", jobType: "ride" },
-  { id: "3243", from: "Lugogo Mall", to: "Naguru", distance: "3.4 km", duration: "10 min", fare: "3.70", jobType: "delivery" },
-  { id: "3244", from: "City Hotel", to: "City / On-call", distance: "—", duration: "09:00–18:00", fare: "45.00", jobType: "rental" },
-  { id: "3245", from: "Airport", to: "Safari Lodge", distance: "42 km", duration: "Day 2 of 5", fare: "Tour", jobType: "tour" },
-  { id: "3246", from: "Near Acacia Road", to: "City Hospital", distance: "3.1 km", duration: "8 min", fare: "—", jobType: "ambulance" },
-  { id: "3247", from: "School XYZ", to: "Morning route", distance: "—", duration: "07:00–08:30", fare: "Shuttle", jobType: "shuttle" },
 ];
 
 function JobTypePill({ jobType }) {
@@ -42,7 +34,17 @@ function JobTypePill({ jobType }) {
 }
 
 function RequestCard({ job, onClick }: { job: any, onClick: (j: any) => void }) {
-  const { from, to, distance, duration, fare, jobType } = job;
+  const { from, to, distance, duration, fare, jobType, itemType, id, requestedAt } = job;
+
+  const timeAgo = () => {
+    const diff = Date.now() - requestedAt;
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return "Just now";
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    return `${hrs}h ago`;
+  };
+
   return (
     <button
       type="button"
@@ -51,18 +53,35 @@ function RequestCard({ job, onClick }: { job: any, onClick: (j: any) => void }) 
     >
       <div className="flex items-center justify-between">
         <div className="flex flex-col items-start max-w-[200px]">
-          <span className="text-xs font-bold text-slate-900 flex items-center">
-            {from}
-            <ArrowRight className="h-3 w-3 mx-1.5 text-slate-300" />
-            <span className="truncate">{to}</span>
-          </span>
+          {jobType === "delivery" ? (
+            <span className="text-xs font-bold text-slate-900 flex items-center">
+              #{id} · {itemType}
+            </span>
+          ) : (
+            <span className="text-xs font-bold text-slate-900 flex items-center">
+              {from}
+              <ArrowRight className="h-3 w-3 mx-1.5 text-slate-300" />
+              <span className="truncate">{to}</span>
+            </span>
+          )}
         </div>
         <div className="flex flex-col items-end">
           <span className="text-sm font-bold text-slate-900 flex items-center">
             {fare !== "Shuttle" && fare !== "Tour" && fare !== "—" ? `$${fare}` : fare}
           </span>
+          <span className="text-[9px] text-orange-500 font-bold mt-0.5">{timeAgo()}</span>
         </div>
       </div>
+      
+      {jobType === "delivery" && (
+        <div className="flex items-center justify-between">
+          <span className="inline-flex items-center truncate max-w-[220px]">
+            <Package className="h-3 w-3 mr-1" />
+            {from} → {to}
+          </span>
+        </div>
+      )}
+
       <div className="flex items-center justify-between pt-1 border-t border-slate-50">
         <span className="text-slate-500 font-medium flex items-center">
           <MapPin className="h-3 w-3 mr-1 text-slate-400" />
@@ -75,14 +94,30 @@ function RequestCard({ job, onClick }: { job: any, onClick: (j: any) => void }) 
 }
 
 export default function RideRequestsListScreen() {
-  const [filter, setFilter] = useState("all");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const defaultCategory = searchParams.get("category") || "all";
+
+  const [filter, setFilter] = useState(defaultCategory);
   const [period, setPeriod] = useState("day");
   const [selectedYear, setSelectedYear] = useState(String(new Date().getFullYear()));
   const [selectedQuarter, setSelectedQuarter] = useState("Q1");
   const navigate = useNavigate();
+  const { pendingJobs, attendJob } = useJobs();
   const yearOptions = Array.from({ length: 7 }, (_, i) => String(new Date().getFullYear() - i));
 
-  const filteredJobs = filter === "all" ? JOBS : JOBS.filter((job) => job.jobType === filter);
+  useEffect(() => {
+    const queryCategory = searchParams.get("category");
+    if (queryCategory && queryCategory !== filter) {
+      setFilter(queryCategory);
+    }
+  }, [searchParams]);
+
+  const handleFilterChange = (newFilter: string) => {
+    setFilter(newFilter);
+    setSearchParams(newFilter === "all" ? {} : { category: newFilter }, { replace: true });
+  };
+
+  const filteredJobs = filter === "all" ? pendingJobs : pendingJobs.filter((job) => job.jobType === filter);
   const hasShuttleJob = filteredJobs.some((j) => j.jobType === "shuttle");
   const periodLabel = {
     day: "Today",
@@ -93,9 +128,10 @@ export default function RideRequestsListScreen() {
   }[period];
 
   const handleCardClick = (job: any) => {
+    attendJob(job.id);
     const routes: Record<string, string> = {
       shuttle: "/driver/help/shuttle-link",
-      delivery: "/driver/delivery/orders",
+      delivery: "/driver/delivery/route/demo-route/active",
       rental: "/driver/rental/job/demo-job",
       tour: "/driver/tour/demo-tour/today",
       ambulance: "/driver/ambulance/job/demo-job/status",
@@ -112,13 +148,15 @@ export default function RideRequestsListScreen() {
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* Green curved header */}
+      {/* Header — bell icon removed */}
       <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
           <div className="flex items-center space-x-3">
-            <button type="button" className="relative inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white shadow-lg active:scale-95 transition-transform">
-              <Bell className="h-5 w-5" />
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
+            >
+              <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
             </button>
           </div>
           <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
@@ -133,8 +171,8 @@ export default function RideRequestsListScreen() {
       </div>
 
       {/* Filters Panel */}
-      <section className="z-10 mt-4 px-6">
-        <div className="rounded-[1.5rem] border-2 border-orange-500/10 bg-cream p-4 shadow-sm">
+      <section className="z-10 mt-2 px-6">
+        <div className="rounded-[1.5rem] border-2 border-orange-500/10 bg-cream p-4 shadow-sm mt-1">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block">
@@ -142,7 +180,7 @@ export default function RideRequestsListScreen() {
               </label>
               <select
                 value={filter}
-                onChange={(e) => setFilter(e.target.value)}
+                onChange={(e) => handleFilterChange(e.target.value)}
                 className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-2.5 text-[11px] font-black uppercase tracking-wide text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#03cd8c]/30"
               >
                 {JOB_FILTERS.map((f) => (
@@ -152,7 +190,7 @@ export default function RideRequestsListScreen() {
                 ))}
               </select>
             </div>
-
+            
             <div className="space-y-1">
               <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block">
                 Period

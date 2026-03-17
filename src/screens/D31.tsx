@@ -44,16 +44,14 @@ export default function OnlineMapDashboardScreen() {
       {/* Header */}
       <div className="relative shrink-0" style={{ minHeight: 90 }}>
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-3 flex-1">
             <button
               onClick={() => navigate("/driver/more")}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-200/50 dark:bg-white/10 backdrop-blur-md border border-slate-300/30 dark:border-white/10 shadow-sm active:scale-95 transition-transform"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-200/50 dark:bg-white/10 backdrop-blur-md border border-slate-300/30 dark:border-white/10 shadow-sm active:scale-95 transition-transform shrink-0"
             >
               <ShieldCheck className="h-5 w-5 text-slate-800 dark:text-slate-900 dark:text-white" />
             </button>
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-            <p className="text-center text-base font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+            <p className="text-base font-black text-slate-900 dark:text-white tracking-tight leading-tight line-clamp-1">
               Online Dashboard
             </p>
           </div>

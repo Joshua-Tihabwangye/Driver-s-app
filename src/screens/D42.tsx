@@ -155,7 +155,7 @@ export default function RideRequestIncomingScreen() {
     } else if (jobType === "tour") {
       navigate("/driver/tour/demo-tour/today");
     } else if (jobType === "delivery") {
-      navigate("/driver/delivery/orders");
+      navigate("/driver/jobs/list?category=delivery");
     } else {
       navigate("/driver/trip/demo-trip/navigate-to-pickup");
     }

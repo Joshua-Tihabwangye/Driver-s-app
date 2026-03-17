@@ -163,7 +163,7 @@ export default function EarningsStatsDashboardScreen() {
             </div>
             <button 
               type="button" 
-              onClick={() => navigate("/driver/delivery/orders")} 
+              onClick={() => navigate("/driver/jobs/list?category=delivery")} 
               className="rounded-full bg-white text-[#00a3ff] px-6 py-2 text-[10px] font-black uppercase tracking-widest shadow-xl active:scale-95 transition-all"
             >
               VIEW RIDES

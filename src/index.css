@@ -7,12 +7,10 @@
    ────────────────────────────────────────────── */
 :root {
   --evz-green: #12c98c;
+  --evz-green-dim: #059669;
   --evz-stage: #f8fafc;
-  /* Slightly cooler page background */
   --evz-surface: #fffdf5;
-  /* Distinct Cream */
   --evz-surface-alt: #fdf9e8;
-  /* Deeper cream for variety */
   --evz-border: #f0ede4;
   --evz-orange: #f77f00;
   --evz-orange-soft: rgba(247, 127, 0, 0.1);
@@ -50,10 +48,15 @@
    CSS Custom Properties – Dark
    ────────────────────────────────────────────── */
 .dark {
+  --evz-green: #10b981;
+  --evz-green-dim: #059669;
   --evz-stage: #0f172a;
   --evz-surface: #1e293b;
   --evz-surface-alt: #263348;
   --evz-border: #334155;
+  --evz-orange: #fb923c;
+  --evz-orange-soft: rgba(251, 146, 60, 0.15);
+  --evz-orange-border: rgba(251, 146, 60, 0.25);
   --evz-text: #e2e8f0;
   --evz-text-secondary: #94a3b8;
   --evz-card-dark-bg: #0f172a;
@@ -218,7 +221,7 @@ body {
 .dark .app-root [style*="background-color: #f8fafc"],
 .dark .app-root [style*="background:#f1f5f9"],
 .dark .app-root [style*="background: #f1f5f9"] {
-  background: transparent !important; /* Open layout instead of solid surface wrapper */
+  background: transparent !important;
 }
 
 /* Bottom nav */
@@ -250,6 +253,12 @@ body {
   background-color: var(--evz-surface-alt) !important;
 }
 
+/* bg-cream dark override — proper dark surface with visible border */
+.dark .bg-cream {
+  background-color: var(--evz-surface) !important;
+  border-color: var(--evz-orange-border) !important;
+}
+
 /* Dark info cards (navy cards) – slightly darker in dark mode */
 .dark [class*="bg-[#0b1e3a]"] {
   background-color: #0f172a !important;
@@ -261,33 +270,54 @@ body {
   color: inherit !important;
 }
 
-/* Blue banner cards */
+/* Blue banner cards → dark surface with green glow */
 .dark [class*="bg-[#00a3ff]"] {
   background-color: #1e293b !important;
+  border: 1px solid rgba(16, 185, 129, 0.2) !important;
 }
 
 /* Emerald/green light backgrounds */
 .dark [class*="bg-[#e6fff7]"] {
-  background-color: #1e293b !important;
+  background-color: rgba(16, 185, 129, 0.08) !important;
 }
 
 .dark [class*="bg-[#f0faf7]"],
 .dark [class*="bg-emerald-50"] {
-  background-color: #1e293b !important;
+  background-color: rgba(16, 185, 129, 0.1) !important;
+}
+
+/* bg-[#f0fff4] — green tinted surfaces */
+.dark [class*="bg-[#f0fff4]"] {
+  background-color: rgba(16, 185, 129, 0.08) !important;
 }
 
 /* Blue light backgrounds */
 .dark [class*="bg-blue-50"] {
-  background-color: #1e3a5f !important;
+  background-color: rgba(59, 130, 246, 0.12) !important;
 }
 
 /* Red/amber light backgrounds */
 .dark [class*="bg-red-50"] {
-  background-color: #450a0a !important;
+  background-color: rgba(239, 68, 68, 0.1) !important;
 }
 
 .dark [class*="bg-amber-50"] {
-  background-color: #451a03 !important;
+  background-color: rgba(245, 158, 11, 0.1) !important;
+}
+
+/* Violet light backgrounds */
+.dark [class*="bg-violet-50"] {
+  background-color: rgba(139, 92, 246, 0.1) !important;
+}
+
+/* Sky light backgrounds */
+.dark [class*="bg-sky-50"] {
+  background-color: rgba(14, 165, 233, 0.1) !important;
+}
+
+/* Orange light backgrounds */
+.dark [class*="bg-orange-50"] {
+  background-color: rgba(251, 146, 60, 0.1) !important;
 }
 
 /* ── Borders ── */
@@ -303,26 +333,63 @@ body {
   border-color: #334155 !important;
 }
 
+/* Orange borders — visible in dark mode */
+.dark [class*="border-orange-500/10"] {
+  border-color: rgba(251, 146, 60, 0.2) !important;
+}
+
+.dark [class*="border-orange-200"] {
+  border-color: rgba(251, 146, 60, 0.3) !important;
+}
+
+.dark [class*="border-orange-100"] {
+  border-color: rgba(251, 146, 60, 0.2) !important;
+}
+
 .dark [class*="border-emerald-100"] {
-  border-color: #065f46 !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+.dark [class*="border-emerald-200"] {
+  border-color: rgba(16, 185, 129, 0.3) !important;
 }
 
 .dark [class*="border-red-100"],
 .dark [class*="border-red-200"] {
-  border-color: #7f1d1d !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
 }
 
 .dark [class*="border-amber-100"] {
-  border-color: #78350f !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
+.dark [class*="border-blue-100"],
+.dark [class*="border-blue-200"] {
+  border-color: rgba(59, 130, 246, 0.3) !important;
+}
+
+.dark [class*="border-violet-100"],
+.dark [class*="border-violet-200"] {
+  border-color: rgba(139, 92, 246, 0.3) !important;
+}
+
+.dark [class*="border-sky-100"],
+.dark [class*="border-sky-200"] {
+  border-color: rgba(14, 165, 233, 0.3) !important;
+}
+
+/* Dashed borders — visible in dark mode */
+.dark [class*="border-dashed"] {
+  border-color: #475569 !important;
 }
 
 /* ── Text colors ── */
 .dark [class*="text-slate-900"] {
-  color: #e2e8f0 !important;
+  color: #f1f5f9 !important;
 }
 
 .dark [class*="text-slate-800"] {
-  color: #cbd5e1 !important;
+  color: #e2e8f0 !important;
 }
 
 .dark [class*="text-slate-700"] {
@@ -330,15 +397,15 @@ body {
 }
 
 .dark [class*="text-slate-600"] {
-  color: #cbd5e1 !important;
+  color: #94a3b8 !important;
 }
 
 .dark [class*="text-slate-500"] {
-  color: #cbd5e1 !important;
+  color: #94a3b8 !important;
 }
 
 .dark [class*="text-slate-400"] {
-  color: #e2e8f0 !important;
+  color: #64748b !important;
 }
 
 .dark [class*="text-gray-900"],
@@ -360,9 +427,11 @@ body {
   border-color: #475569 !important;
 }
 
-/* Keep green accent colors in dark mode – preserve them, do NOT override to white */
+/* ── Accent text colors preserved in dark ── */
+
+/* Green accent – brighter for visibility */
 .dark [class*="text-[#03cd8c]"]:not(nav *) {
-  color: #10b981 !important;
+  color: #34d399 !important;
 }
 
 .dark [class*="text-emerald-600"]:not(nav *),
@@ -371,17 +440,47 @@ body {
   color: #34d399 !important;
 }
 
+/* Red accent — readable on dark red bg */
 .dark [class*="text-red-600"],
 .dark [class*="text-red-700"] {
-  color: #f8fafc !important;
+  color: #fca5a5 !important;
 }
 
+/* Amber accent — readable on dark amber bg */
 .dark [class*="text-amber-600"],
 .dark [class*="text-amber-700"],
 .dark [class*="text-amber-800"] {
-  color: #f8fafc !important;
+  color: #fcd34d !important;
 }
 
+/* Blue accent */
+.dark [class*="text-blue-600"],
+.dark [class*="text-blue-700"] {
+  color: #93c5fd !important;
+}
+
+/* Violet accent */
+.dark [class*="text-violet-600"],
+.dark [class*="text-violet-700"] {
+  color: #c4b5fd !important;
+}
+
+/* Sky accent */
+.dark [class*="text-sky-600"],
+.dark [class*="text-sky-700"] {
+  color: #7dd3fc !important;
+}
+
+/* Orange accent text — visible */
+.dark [class*="text-orange-500"] {
+  color: #fb923c !important;
+}
+
+.dark [class*="text-orange-600"] {
+  color: #fb923c !important;
+}
+
+/* ── Inputs ── */
 .dark input,
 .dark textarea,
 .dark select {
@@ -393,8 +492,8 @@ body {
 .dark input:focus,
 .dark textarea:focus,
 .dark select:focus {
-  border-color: var(--evz-orange) !important;
-  box-shadow: 0 0 0 1px var(--evz-orange) !important;
+  border-color: var(--evz-green) !important;
+  box-shadow: 0 0 0 1px var(--evz-green) !important;
   outline: none !important;
 }
 
@@ -403,23 +502,39 @@ body {
   color: #64748b !important;
 }
 
-/* Green primary buttons become green in dark mode (keep green identity) */
+/* ── Buttons ── */
+
+/* Green primary buttons — keep green with white text */
 .dark [class*="bg-[#03cd8c]"]:not(nav *) {
-  background-color: #059669 !important;
+  background-color: var(--evz-green-dim) !important;
   color: #ffffff !important;
   border-color: transparent !important;
 }
 
-/* Blue primary buttons */
+/* Blue primary buttons → dark surface with green border */
 .dark button[class*="bg-[#00a3ff]"] {
-  background-color: #1e293b !important;
-  border-color: #334155 !important;
+  background-color: var(--evz-surface) !important;
+  border: 1px solid rgba(16, 185, 129, 0.3) !important;
+  color: #e2e8f0 !important;
 }
 
 /* Outline/secondary buttons */
 .dark button[class*="bg-white"][class*="border"] {
   background-color: var(--evz-surface-alt) !important;
   border-color: var(--evz-border) !important;
+  color: #e2e8f0 !important;
+}
+
+/* Orange buttons */
+.dark [class*="bg-orange-500"] {
+  background-color: #ea580c !important;
+  color: #ffffff !important;
+}
+
+/* Slate-900 dark cards (used in some stat sections) */
+.dark [class*="bg-slate-900"]:not(nav *) {
+  background-color: #0f172a !important;
+  border: 1px solid rgba(16, 185, 129, 0.15) !important;
 }
 
 /* ── Charts & progress bars ── */
@@ -429,7 +544,7 @@ body {
 
 /* ── Shadows ── */
 .dark .app-root [class*="shadow"] {
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.16) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25) !important;
 }
 
 /* ── Supervisor preview header (App.tsx) ── */
@@ -442,32 +557,36 @@ body {
   transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
-/* Strict dark policy: make most text white for readability, but preserve accent colors */
+/* ── Global text readability in dark mode ── */
+/* Make primary text white for readability, but preserve accent colors */
 .dark .app-root,
 .dark .app-root :is(h1, h2, h3, h4, h5, h6,
   p, span, small, strong, em, b,
-  label, a, li, td, th,
-  input, textarea, select):not(nav *):not([class*="text-[#03cd8c]"]):not([class*="text-emerald"]):not([class*="text-orange"]):not([class*="text-amber"]):not([class*="text-red"]):not([class*="text-green"]) {
-  color: #f8fafc !important;
+  label, a, li, td, th):not(nav *):not([class*="text-[#03cd8c]"]):not([class*="text-emerald"]):not([class*="text-orange"]):not([class*="text-amber"]):not([class*="text-red"]):not([class*="text-green"]):not([class*="text-blue"]):not([class*="text-violet"]):not([class*="text-sky"]):not([class*="text-slate-"]) {
+  color: #f1f5f9 !important;
 }
 
 /* Buttons use inherited or accent color, not forced white */
-.dark .app-root button:not(nav *):not([class*="text-[#03cd8c]"]):not([class*="text-emerald"]):not([class*="text-slate"]):not([class*="text-orange"]):not([class*="text-red"]):not([class*="text-green"]) {
-  color: #f8fafc !important;
+.dark .app-root button:not(nav *):not([class*="text-[#03cd8c]"]):not([class*="text-emerald"]):not([class*="text-orange"]):not([class*="text-red"]):not([class*="text-green"]):not([class*="text-blue"]):not([class*="text-slate-"]) {
+  color: #f1f5f9 !important;
+}
+
+/* Select/input text always readable */
+.dark .app-root :is(input, textarea, select) {
+  color: #e2e8f0 !important;
 }
 
 .dark .app-root :is(input, textarea, select)::placeholder {
-  color: #e2e8f0 !important;
-  opacity: 0.9;
+  color: #64748b !important;
+  opacity: 1;
 }
 
 /* ──────────────────────────────────────────────
-   Global UI Refactor: Soft Surfaces
+   Global UI Refactor: Dark Mode Borders
    ────────────────────────────────────────────── */
 .dark button:not(nav button),
 .dark .rounded-2xl:not(input):not(textarea):not(select):not(nav *),
 .dark .rounded-3xl:not(input):not(textarea):not(select),
 .dark .rounded-\[2\.5rem\]:not(input):not(textarea):not(select) {
-  border-color: transparent !important;
+  border-color: rgba(251, 146, 60, 0.15) !important;
 }
-

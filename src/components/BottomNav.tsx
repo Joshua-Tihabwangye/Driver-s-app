@@ -7,6 +7,7 @@ import {
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
+import { useJobs } from "../context/JobsContext";
 
 interface BottomNavItemProps {
   icon: React.ElementType;
@@ -14,9 +15,10 @@ interface BottomNavItemProps {
   active: boolean;
   onClick: () => void;
   isDark: boolean;
+  badge?: number;
 }
 
-function BottomNavItem({ icon: Icon, label, active, onClick, isDark }: BottomNavItemProps) {
+function BottomNavItem({ icon: Icon, label, active, onClick, isDark, badge }: BottomNavItemProps) {
   return (
     <button
       type="button"
@@ -30,12 +32,19 @@ function BottomNavItem({ icon: Icon, label, active, onClick, isDark }: BottomNav
       }`}
       aria-label={label}
     >
-      <Icon
-        strokeWidth={active ? 2.4 : 1.8}
-        className={`h-[22px] w-[22px] mb-1 transition-all duration-200 ${
-          active ? "scale-105" : ""
-        }`}
-      />
+      <div className="relative">
+        <Icon
+          strokeWidth={active ? 2.4 : 1.8}
+          className={`h-[22px] w-[22px] mb-1 transition-all duration-200 ${
+            active ? "scale-105" : ""
+          }`}
+        />
+        {badge != null && badge > 0 && (
+          <span className="absolute -top-1.5 -right-2.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-orange-500 px-1 text-[9px] font-black text-white shadow-lg shadow-orange-500/30 animate-pulse">
+            {badge > 99 ? "99+" : badge}
+          </span>
+        )}
+      </div>
       <span
         className={`text-[10px] leading-tight transition-all duration-200 ${
           active ? "font-bold" : "font-medium"
@@ -105,6 +114,7 @@ export default function BottomNav({ isVisible = true }: { isVisible?: boolean })
   const navigate = useNavigate();
   const location = useLocation();
   const { isDark } = useTheme();
+  const { pendingCount } = useJobs();
   const active = getActiveTab(location.pathname);
 
   return (
@@ -130,6 +140,7 @@ export default function BottomNav({ isVisible = true }: { isVisible?: boolean })
             active={active === tab.id}
             onClick={() => navigate(tab.route)}
             isDark={isDark}
+            badge={tab.id === "jobs" ? pendingCount : undefined}
           />
         ))}
       </div>
