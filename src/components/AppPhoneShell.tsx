@@ -78,7 +78,7 @@ export default function AppPhoneShell({ children }: AppPhoneShellProps) {
         className="w-full h-full flex flex-col flex-1"
       >
         <div
-          className={`relative isolate flex-1 flex flex-col w-full mx-auto pb-[60px] transition-all duration-300 md:max-w-3xl lg:max-w-5xl md:px-6 lg:px-8 ${
+          className={`relative isolate flex-1 flex flex-col w-full mx-auto pb-[60px] transition-all duration-300 md:max-w-3xl lg:max-w-5xl md:px-6 lg:px-8 overflow-y-auto scrollbar-hide evz-page-scroll ${
             isDark ? "bg-transparent" : "bg-transparent"
           }`}
         >

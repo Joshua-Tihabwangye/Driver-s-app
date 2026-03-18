@@ -24,7 +24,15 @@ export default {
         }
       },
       borderRadius: {
-        phone: "24px",
+        phone: "14px",
+        sm: "4px",
+        DEFAULT: "6px",
+        md: "6px",
+        lg: "8px",
+        xl: "10px",
+        '2xl': '10px',
+        '3xl': '12px',
+        'full': '9999px',
       },
     },
   },

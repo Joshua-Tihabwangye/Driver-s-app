@@ -7,12 +7,14 @@ import {
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import OfflineConfirmModal from "../components/OfflineConfirmModal";
 
 // EVzone Driver App – D26 Driver App – Online Map View
 // Map-centric view for active drivers scanning for requests.
 
 export default function OnlineMapViewScreen() {
   const [zoom, setZoom] = useState(12);
+  const [showOfflineModal, setShowOfflineModal] = useState(false);
   const navigate = useNavigate();
 
   return (
@@ -95,12 +97,19 @@ export default function OnlineMapViewScreen() {
           </div>
           <button
             type="button"
-            onClick={() => navigate("/driver/dashboard/offline")}
-            className="rounded-xl border-2 border-slate-100 dark:border-slate-700 px-4 py-2 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest hover:border-orange-500/20 hover:text-orange-500 transition-all"
+            onClick={() => setShowOfflineModal(true)}
+            className="rounded-lg border border-[var(--evz-brand-green-border)] px-4 py-2 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest hover:border-amber-500/30 hover:text-amber-500 transition-all flex items-center gap-2"
           >
+            <Wifi className="h-3.5 w-3.5" />
             Go Offline
           </button>
         </section>
+
+        <OfflineConfirmModal
+          isOpen={showOfflineModal}
+          onConfirm={() => { setShowOfflineModal(false); navigate("/driver/dashboard/offline"); }}
+          onCancel={() => setShowOfflineModal(false)}
+        />
       </main>
     </div>
   );

@@ -29,7 +29,7 @@ export default function MetricCard({
       type="button"
       onClick={onClick}
       disabled={!onClick}
-      className={`flex flex-col rounded-2xl bg-white dark:bg-slate-800 px-4 py-4 shadow-sm border border-slate-100 dark:border-slate-700 flex-1 min-w-[0] group hover:scale-[1.02] hover:shadow-md hover:border-brand-active/20 transition-all duration-300 ${clickableStyles} ${
+      className={`flex flex-col rounded-2xl bg-white dark:bg-slate-800 px-4 py-4 shadow-sm border border-[var(--evz-brand-green-border)] flex-1 min-w-[0] group hover:scale-[1.02] hover:shadow-md hover:border-brand-active/30 transition-all duration-300 ${clickableStyles} ${
         variant === "active" ? "border-brand-active bg-brand-active/10 dark:bg-brand-active/20" : ""
       }`}
     >

@@ -15,7 +15,7 @@ export default function EmptyState({
   description?: string;
 }) {
   return (
-    <div className="rounded-[2.5rem] border-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 px-6 py-16 flex flex-col items-center justify-center text-center">
+    <div className="rounded-2xl border border-dashed border-[var(--evz-brand-green-border)] bg-slate-50 dark:bg-slate-800/50 px-6 py-16 flex flex-col items-center justify-center text-center">
       <div className="h-16 w-16 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center mb-4">
         <Icon className="h-8 w-8 text-slate-300 dark:text-slate-500" />
       </div>

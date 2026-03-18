@@ -65,7 +65,7 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: 1px solid var(--evz-brand-green-border);
   background-color: var(--evz-surface);
-  border-radius: 1rem;
+  border-radius: 0.625rem;
 }
 
 .list-item-refined:hover {
@@ -180,6 +180,58 @@
 
 .dark .evz-shadow {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* ──────────────────────────────────────────────
+   Global Thin Green Border Normalization
+   ────────────────────────────────────────────── */
+
+/* Shared card surface utility – thin green border */
+.evz-card {
+  border: 1px solid var(--evz-brand-green-border) !important;
+}
+
+/* Normalize hardcoded rounded-[2.5rem] to reduced radius */
+.app-root [class*="rounded-[2.5rem]"] {
+  border-radius: 12px !important;
+}
+.app-root [class*="rounded-[2rem]"] {
+  border-radius: 10px !important;
+}
+.app-root [class*="rounded-[1.5rem]"] {
+  border-radius: 10px !important;
+}
+.app-root [class*="rounded-[1.25rem]"] {
+  border-radius: 8px !important;
+}
+
+/* Normalize border-2 on surface elements to thin (1px) green border */
+.app-root .border-2:not(input):not(textarea):not(select):not(nav *):not([class*="border-red"]):not([class*="border-white"]) {
+  border-width: 1px !important;
+  border-color: var(--evz-brand-green-border) !important;
+}
+
+/* Normalize common slate borders on cards/panels to thin green */
+.app-root section [class*="border-slate-100"]:not(input):not(textarea):not(select),
+.app-root section [class*="border-slate-200"]:not(input):not(textarea):not(select) {
+  border-color: var(--evz-brand-green-border) !important;
+}
+
+/* ──────────────────────────────────────────────
+   Header scroll-away: make screen roots flow naturally
+   ────────────────────────────────────────────── */
+
+/* Screen root wrappers should not constrain height → content flows naturally */
+.evz-page-scroll > div {
+  height: auto !important;
+  min-height: auto !important;
+  flex: 0 0 auto !important;
+}
+
+/* Inner <main> should not have its own scroll — the shell scrolls everything */
+.evz-page-scroll > div > main {
+  overflow: visible !important;
+  flex: 0 0 auto !important;
 }
 
 /* ──────────────────────────────────────────────
