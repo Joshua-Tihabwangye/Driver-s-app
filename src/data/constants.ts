@@ -49,8 +49,8 @@ export const JOB_HISTORY_ROUTES: Record<JobCategory | "default", string> = {
 export const JOB_CATEGORY_STYLES: Record<JobCategory, { bg: string; border: string; text: string; label: string }> = {
   ride: { bg: "bg-brand-secondary/10", border: "border-brand-secondary/20", text: "text-brand-secondary", label: "Ride" },
   delivery: { bg: "bg-brand-secondary/10", border: "border-brand-secondary/20", text: "text-brand-secondary", label: "Delivery" },
-  rental: { bg: "bg-brand-active/10", border: "border-brand-active/20", text: "text-brand-active", label: "Rental" },
-  tour: { bg: "bg-brand-active/10", border: "border-brand-active/20", text: "text-brand-active", label: "Tour" },
+  rental: { bg: "bg-brand-highlight/10", border: "border-brand-highlight/20", text: "text-brand-highlight", label: "Rental" },
+  tour: { bg: "bg-brand-highlight/10", border: "border-brand-highlight/20", text: "text-brand-highlight", label: "Tour" },
   shuttle: { bg: "bg-violet-50", border: "border-violet-100", text: "text-violet-600", label: "Shuttle" },
   ambulance: { bg: "bg-red-50", border: "border-red-100", text: "text-red-600", label: "Ambulance" },
 };

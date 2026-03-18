@@ -202,25 +202,25 @@ export default function RideRequestIncomingScreen() {
         </section>
 
         {/* Request card */}
-        <section className="rounded-[2.5rem] bg-slate-900 text-white p-6 space-y-6 shadow-2xl relative overflow-hidden group">
+        <section className="rounded-[2.5rem] bg-[#f0fff4] border-2 border-brand-active/20 text-slate-900 p-6 space-y-6 shadow-2xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 bg-brand-active/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110" />
           
           <div className="flex items-start justify-between relative z-10">
             <div className="flex items-center space-x-4">
             <button
               onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white border border-brand-active/20 shadow-sm active:scale-95 transition-transform"
             >
-              <ChevronLeft className="h-5 w-5 text-white" />
+              <ChevronLeft className="h-5 w-5 text-slate-700" />
             </button>
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-active text-slate-900 shadow-xl shadow-brand-active/20">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-active text-white shadow-xl shadow-brand-active/20">
                 <User className="h-6 w-6" />
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-500">
+                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-brand-active">
                   RIDER INFO
                 </span>
-                <p className="text-base font-black text-white leading-tight mt-0.5">
+                <p className="text-base font-black text-slate-900 leading-tight mt-0.5">
                   {isAmbulance
                     ? "Ambulance Dispatch"
                     : isShuttle
@@ -242,38 +242,38 @@ export default function RideRequestIncomingScreen() {
             </div>
           </div>
 
-          <div className="space-y-4 pt-2 relative z-10 border-t border-white/5">
+          <div className="space-y-4 pt-2 relative z-10 border-t border-brand-active/10">
             <div className="flex items-start space-x-4">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-brand-active/10 text-brand-active">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-brand-active/20 text-brand-active">
                 <MapPin className="h-4 w-4" />
               </div>
               <div className="flex flex-col">
-                <span className="text-[11px] font-black text-white uppercase tracking-tight">{pickupLabel}</span>
+                <span className="text-[11px] font-black text-slate-900 uppercase tracking-tight">{pickupLabel}</span>
                 <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">{pickupSub}</span>
               </div>
             </div>
             <div className="flex items-start space-x-4">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-slate-500/10 text-slate-400">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-slate-200 text-slate-500">
                 <MapPin className="h-4 w-4" />
               </div>
               <div className="flex flex-col">
-                <span className="text-[11px] font-black text-white uppercase tracking-tight">{dropoffLabel}</span>
+                <span className="text-[11px] font-black text-slate-900 uppercase tracking-tight">{dropoffLabel}</span>
                 <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">{dropoffSub}</span>
               </div>
             </div>
           </div>
 
           {!isAmbulance && (
-            <div className="flex items-center justify-between pt-2 text-[10px] font-black text-slate-400 uppercase tracking-widest relative z-10">
+            <div className="flex items-center justify-between pt-2 text-[10px] font-black text-slate-500 uppercase tracking-widest relative z-10">
               <span className="inline-flex items-center">
-                <Clock className="h-3.5 w-3.5 mr-2" />
+                <Clock className="h-3.5 w-3.5 mr-2 text-brand-active" />
                 Pickup ETA: 18:42
               </span>
               {!isShuttle && (
                 <button
                   type="button"
                   onClick={() => navigate("/driver/delivery/route/demo-route/stop/alpha-stop/contact")}
-                  className="inline-flex items-center rounded-full border border-slate-700 px-3 py-1 text-[10px] hover:bg-white/5 transition-colors"
+                  className="inline-flex items-center rounded-full border border-slate-300 bg-white px-3 py-1 text-[10px] text-slate-700 hover:bg-slate-50 transition-colors shadow-sm"
                 >
                   <Phone className="h-3.5 w-3.5 mr-2" />
                   Call
@@ -300,7 +300,7 @@ export default function RideRequestIncomingScreen() {
               <button
                 type="button"
                 onClick={handleDecline}
-                className="flex-[0.4] rounded-full py-5 text-[11px] font-black uppercase tracking-widest border border-brand-active/10 text-brand-inactive bg-white dark:bg-slate-800 hover:bg-slate-50 transition-all flex items-center justify-center hover:border-brand-active/30 shadow-sm"
+                className="flex-[0.4] rounded-full py-5 text-[11px] font-black uppercase tracking-widest border border-orange-200 text-orange-500 bg-orange-50 hover:bg-orange-100 transition-all flex items-center justify-center hover:border-orange-300 shadow-sm"
               >
                 Decline
               </button>
@@ -308,7 +308,7 @@ export default function RideRequestIncomingScreen() {
             <button
               type="button"
               onClick={handleAccept}
-              className="flex-1 rounded-full py-5 text-[11px] font-black uppercase tracking-widest bg-slate-900 text-white shadow-xl hover:bg-slate-800 active:scale-95 transition-all flex items-center justify-center"
+              className="flex-1 rounded-full py-5 text-[11px] font-black uppercase tracking-widest bg-orange-500 text-white shadow-xl hover:bg-orange-600 active:scale-95 transition-all flex items-center justify-center shadow-orange-500/20"
             >
               {!isShuttle && <Check className="h-4 w-4 mr-3" />}
               {primaryCta}

@@ -120,7 +120,7 @@ export default function NavigateToPickupScreen() {
               <path
                 d="M20 80 C 30 70, 45 60, 65 40 S 80 25, 85 20"
                 fill="none"
-                stroke="#f97316"
+                stroke="#12c98c"
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeDasharray="4 2"
@@ -131,20 +131,20 @@ export default function NavigateToPickupScreen() {
           {/* Driver marker (bottom) */}
           <div className="absolute left-7 bottom-10 flex flex-col items-center">
             <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/90 border border-white">
-              <Navigation className="h-3.5 w-3.5 text-orange-500" />
+              <Navigation className="h-3.5 w-3.5 text-brand-active" />
             </div>
           </div>
 
           {/* Pickup marker (top) */}
           <div className="absolute right-9 top-9 flex flex-col items-center">
             <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/90 border border-white shadow-lg">
-              <MapPin className="h-3.5 w-3.5 text-orange-500" />
+              <MapPin className="h-3.5 w-3.5 text-brand-active" />
             </div>
           </div>
 
           <div className="absolute top-4 left-4">
-             <div className="bg-cream/90 backdrop-blur-md rounded-full px-3 py-1 flex items-center space-x-2 border-2 border-orange-500/20">
-                <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+             <div className="bg-cream/90 backdrop-blur-md rounded-full px-3 py-1 flex items-center space-x-2 border-2 border-brand-active/20">
+                <div className="w-1.5 h-1.5 rounded-full bg-brand-active animate-pulse" />
                 <span className="text-[9px] font-black text-slate-900 uppercase tracking-widest">Tracking Customer</span>
              </div>
           </div>
@@ -155,7 +155,7 @@ export default function NavigateToPickupScreen() {
           <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-cream p-6 space-y-6 shadow-sm hover:border-orange-500/30 transition-all">
             <div className="flex items-start justify-between">
               <div className="flex flex-col space-y-1">
-                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-500">Pickup Location</span>
+                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-brand-active">Pickup Location</span>
                 <p className="text-sm font-black text-slate-900 uppercase tracking-tight">
                   {pickupTitle}
                 </p>
