@@ -59,3 +59,35 @@ export const MOCK_DASHBOARD_STATS = {
     ambulance: 0,
   },
 };
+
+// ── Delivery Routes ──────────────────────────────────────
+export const MOCK_DELIVERY_ROUTES = {
+  "demo-route": {
+    id: "demo-route",
+    jobId: "3249",
+    stops: [
+      {
+        id: "alpha-stop",
+        index: 1,
+        label: "FreshMart, Lugogo",
+        detail: "Pickup order #3249 · Groceries",
+        eta: "18:40",
+        contactName: "FreshMart Support",
+        contactPhone: "+256 700 000 333",
+        distance: "0 km",
+        duration: "0 min",
+      },
+      {
+        id: "beta-stop",
+        index: 2,
+        label: "Naguru (Block B)",
+        detail: "Dropoff order #3249 · Groceries",
+        eta: "18:55",
+        contactName: "Sarah",
+        contactPhone: "+256 700 000 444",
+        distance: "2.7 km",
+        duration: "10 min",
+      }
+    ]
+  }
+};

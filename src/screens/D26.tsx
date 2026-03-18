@@ -25,7 +25,7 @@ export default function OnlineMapViewScreen() {
         onBack={() => navigate(-1)}
         rightAction={
           <div className="inline-flex items-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1 text-[10px] font-black text-slate-900 dark:text-slate-200 uppercase tracking-widest shrink-0 shadow-sm">
-            <Wifi className="h-3 w-3 mr-1.5 animate-pulse text-orange-500" />
+            <Wifi className="h-3 w-3 mr-1.5 animate-pulse text-brand-active" />
             LIVE
           </div>
         }
@@ -38,7 +38,7 @@ export default function OnlineMapViewScreen() {
           {/* Fake map background */}
           <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200 dark:from-slate-800 dark:via-slate-900 dark:to-slate-800 opacity-50" />
 
-          <div className="absolute top-4 right-4 rounded-xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-md px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-orange-500 border border-white dark:border-slate-700 shadow-lg">
+          <div className="absolute top-4 right-4 rounded-xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-md px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-brand-active border border-white dark:border-slate-700 shadow-lg">
             {zoom}x Zoom
           </div>
 

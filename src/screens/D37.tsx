@@ -21,11 +21,11 @@ function ToggleRow({ icon: Icon, title, subtitle, checked, onChange }) {
     <button
       type="button"
       onClick={onChange}
-      className="flex items-center justify-between rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform"
+      className="flex min-h-[72px] items-center justify-between rounded-2xl border border-slate-100 bg-white px-3 py-2.5 shadow-sm active:scale-[0.98] transition-all"
     >
       <div className="flex items-center space-x-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-50">
-          <Icon className="h-4 w-4 text-slate-700" />
+        <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${checked ? "bg-brand-active/10" : "bg-slate-50"}`}>
+          <Icon className={`h-4 w-4 ${checked ? "text-brand-active" : "text-slate-700"}`} />
         </div>
         <div className="flex flex-col items-start">
           <span className="text-xs font-semibold text-slate-900">{title}</span>
@@ -33,8 +33,8 @@ function ToggleRow({ icon: Icon, title, subtitle, checked, onChange }) {
         </div>
       </div>
       <div
-        className={`flex h-5 w-9 items-center rounded-full p-[2px] transition-colors ${
-          checked ? "bg-orange-500" : "bg-slate-300"
+        className={`flex h-5 w-9 shrink-0 items-center rounded-full p-[2px] transition-colors ${
+          checked ? "bg-brand-active" : "bg-slate-300"
         }`}
       >
         <div

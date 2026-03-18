@@ -7,7 +7,7 @@ MapPin,
 Navigation,
 ShieldCheck
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 
@@ -27,6 +27,16 @@ const JOB_TYPES = ["ride", "delivery", "rental", "tour", "ambulance"];
 export default function RideInProgressScreen() {
   const navigate = useNavigate();
   const [jobType, setJobType] = useState("ride");
+  const [tripState, setTripState] = useState<"active" | "reached">("active");
+
+  useEffect(() => {
+    if (tripState === "active") {
+      const timer = setTimeout(() => {
+        setTripState("reached");
+      }, 5000); // 5 sec sim
+      return () => clearTimeout(timer);
+    }
+  }, [tripState]);
 
   const jobTypeLabelMap = {
     ride: "Ride",
@@ -66,6 +76,13 @@ export default function RideInProgressScreen() {
     subtitleText = "Current status: En route to hospital";
     rightLine1 = "Time since pickup: 05:20";
     rightLine2 = "Distance to hospital: 3.2 km";
+  }
+
+  if (tripState === "reached") {
+    titleText = "Destination Reached";
+    subtitleText = "Ready to drop off";
+    rightLine1 = "Time in trip: 04:02";
+    rightLine2 = "Arrived at location";
   }
 
   return (
@@ -197,17 +214,27 @@ export default function RideInProgressScreen() {
             </div>
           </div>
 
-          <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-[#f0fff4]/50 p-6 flex flex-col space-y-4 shadow-sm hover:border-orange-500/30 transition-all">
-            <div className="flex items-center space-x-3">
-<div className="flex flex-col">
-                 <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-500">Safety Support</span>
-                 <p className="text-xs font-black text-slate-900 uppercase tracking-tight">Safety tools active</p>
+          {tripState === "reached" ? (
+            <button
+               type="button"
+               onClick={() => navigate("/driver/trip/demo-trip/completed")}
+               className="w-full rounded-[2rem] bg-orange-500 py-4 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-orange-500/20 active:scale-95 transition-transform"
+            >
+               End Trip
+            </button>
+          ) : (
+            <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-[#f0fff4]/50 p-6 flex flex-col space-y-4 shadow-sm hover:border-orange-500/30 transition-all">
+              <div className="flex items-center space-x-3">
+                <div className="flex flex-col">
+                   <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-500">Safety Support</span>
+                   <p className="text-xs font-black text-slate-900 uppercase tracking-tight">Safety tools active</p>
+                </div>
               </div>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed">
+                SOS, position tracking, and incident reporting are available in the options menu.
+              </p>
             </div>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed">
-              SOS, position tracking, and incident reporting are available in the options menu.
-            </p>
-          </div>
+          )}
         </section>
       </main>
     </div>

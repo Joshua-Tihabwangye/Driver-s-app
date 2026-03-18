@@ -6,7 +6,7 @@ MapPin,
 MessageCircle,
 Phone
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 
@@ -39,7 +39,22 @@ function JobTypeLabel({ jobType }) {
 
 export default function ArrivedAtPickupScreen() {
   const [jobType, setJobType] = useState("ride");
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setElapsedSeconds(prev => prev + 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatTime = (totalSeconds: number) => {
+    const m = Math.floor(totalSeconds / 60).toString().padStart(2, "0");
+    const s = (totalSeconds % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
+  };
+
   const sanitizePhone = (phone) => (phone || "").replace(/[^\d+]/g, "");
   const handleCall = (phone) => {
     const target = sanitizePhone(phone);
@@ -65,7 +80,7 @@ export default function ArrivedAtPickupScreen() {
   // Summary card title & text vary per job type
   let summaryTitle = "Waiting at Acacia Mall";
   let summaryText = "Please look for the rider near the main entrance.";
-  let timeLabel = "Waiting: 00:00";
+  let timeLabel = `Waiting: ${formatTime(elapsedSeconds)}`;
 
   if (isRental) {
     summaryTitle = "Arrived at rental pickup";
@@ -76,7 +91,7 @@ export default function ArrivedAtPickupScreen() {
   } else if (isAmbulance) {
     summaryTitle = "On scene at patient location";
     summaryText = "Stay with the patient and follow dispatch or medical instructions.";
-    timeLabel = "On scene: 00:00";
+    timeLabel = `On scene: ${formatTime(elapsedSeconds)}`;
   }
 
   return (
@@ -202,10 +217,10 @@ export default function ArrivedAtPickupScreen() {
               </button>
               <button
                 type="button"
-                onClick={() => navigate("/driver/trip/demo-trip/waiting")}
+                onClick={() => navigate("/driver/trip/demo-trip/in-progress")}
                 className="flex-[2] rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-orange-500 text-white shadow-xl shadow-orange-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center"
               >
-                Start Waiting
+                Start Trip
               </button>
             </div>
           </div>
