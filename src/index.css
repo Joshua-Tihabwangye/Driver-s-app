@@ -24,12 +24,16 @@
   --evz-orange-dim: var(--evz-brand-orange-dim);
 
   /* Surfaces & Borders */
-  --evz-stage: #f8fafc;
+  --evz-stage: #f0f4f8;
   --evz-surface: #ffffff;
   --evz-surface-alt: #f1f5f9;
   --evz-border: #e2e8f0;
   --evz-text: #0f172a;
   --evz-text-secondary: #64748b;
+
+  /* Card elevation */
+  --evz-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --evz-card-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
 
   --evz-navy: #0f172a;
 
@@ -132,6 +136,10 @@
   --evz-text: #f1f5f9;
   --evz-text-secondary: #94a3b8;
 
+  /* Card elevation */
+  --evz-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --evz-card-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.2);
+
   --evz-navy: #020617;
 
   /* Semantic UI Roles */
@@ -189,6 +197,44 @@
 /* Shared card surface utility – thin green border */
 .evz-card {
   border: 1px solid var(--evz-brand-green-border) !important;
+  box-shadow: var(--evz-card-shadow) !important;
+  background-color: var(--evz-surface) !important;
+}
+
+/* ──────────────────────────────────────────────
+   Global Card Elevation & Visibility
+   ────────────────────────────────────────────── */
+
+/* All bg-white surfaces inside the app get subtle elevation + green border */
+.app-root section [class*="bg-white"],
+.app-root section [class*="bg-cream"],
+.app-root section [class*="bg-slate-50"] {
+  box-shadow: var(--evz-card-shadow) !important;
+  border-color: var(--evz-brand-green-border) !important;
+}
+
+/* Cards/buttons with explicit border get the green tint */
+.app-root section [class*="bg-white"][class*="border"],
+.app-root section [class*="bg-cream"][class*="border"] {
+  border-color: var(--evz-brand-green-border) !important;
+}
+
+/* Hover elevation lift for interactive cards */
+.app-root section button[class*="bg-white"]:hover,
+.app-root section button[class*="bg-cream"]:hover,
+.app-root section a[class*="bg-white"]:hover {
+  box-shadow: var(--evz-card-shadow-hover) !important;
+}
+
+/* Dark mode: ensure card surfaces are distinctly lighter than the stage */
+.dark .app-root section [class*="bg-white"] {
+  background-color: var(--evz-surface) !important;
+  box-shadow: var(--evz-card-shadow) !important;
+}
+
+.dark .app-root section [class*="bg-slate-50"] {
+  background-color: var(--evz-surface-alt) !important;
+  box-shadow: var(--evz-card-shadow) !important;
 }
 
 /* Normalize hardcoded rounded-[2.5rem] to reduced radius */
