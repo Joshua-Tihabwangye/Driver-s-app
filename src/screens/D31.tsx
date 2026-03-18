@@ -5,10 +5,13 @@ import {
   Map,
   MapPin,
   Package,
-  ShieldCheck
+  ShieldCheck,
+  Wifi
 } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import OfflineConfirmModal from "../components/OfflineConfirmModal";
 import { MOCK_DASHBOARD_STATS } from "../data/mockData";
 
 // EVzone Driver App – D31 Online Dashboard (Active Mode)
@@ -35,6 +38,7 @@ function QuickAction({ icon: Icon, label, sub, onClick }: any) {
 export default function OnlineMapDashboardScreen() {
   const navigate = useNavigate();
   const { onlineTime, jobsToday, earningsToday } = MOCK_DASHBOARD_STATS;
+  const [showOfflineModal, setShowOfflineModal] = useState(false);
 
   return (
     <div className="flex flex-col h-full bg-transparent">
@@ -49,14 +53,20 @@ export default function OnlineMapDashboardScreen() {
         hideBack={true}
         rightAction={
           <button
-            onClick={() => navigate("/driver/dashboard/offline")}
-            className="flex items-center gap-2 rounded-full bg-brand-active/15 px-3 py-2 active:scale-95 transition-all"
+            onClick={() => setShowOfflineModal(true)}
+            className="flex items-center gap-2 rounded-lg bg-brand-active/15 px-3 py-2 active:scale-95 transition-all"
             title="Go Offline"
           >
-            <span className="h-2 w-2 rounded-full bg-brand-active animate-pulse" />
+            <Wifi className="h-4 w-4 text-brand-active" />
             <span className="text-[10px] font-bold text-brand-active uppercase tracking-wide">Online</span>
           </button>
         }
+      />
+
+      <OfflineConfirmModal
+        isOpen={showOfflineModal}
+        onConfirm={() => { setShowOfflineModal(false); navigate("/driver/dashboard/offline"); }}
+        onCancel={() => setShowOfflineModal(false)}
       />
 
       {/* Content */}

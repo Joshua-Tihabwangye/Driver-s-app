@@ -3,8 +3,8 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 
 /**
- * Standardized page header with back button and centered title.
- * Used across all non-dashboard screens for consistent navigation.
+ * Standardized page header with optional back button and left-aligned title.
+ * Scrolls away naturally with page content (not sticky).
  */
 export default function PageHeader({
   title,
@@ -23,36 +23,35 @@ export default function PageHeader({
   const handleBack = onBack || (() => navigate(-1));
 
   return (
-    <div className="relative shrink-0" style={{ minHeight: 90 }}>
-      <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-        <div className="flex items-center space-x-3">
-          {!hideBack && (
-            <button
-              onClick={handleBack}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
-            </button>
+    <header className="shrink-0 flex items-center justify-between px-5 pt-8 pb-4 gap-3">
+      {/* Left: back button + title */}
+      <div className="flex items-center gap-3 min-w-0">
+        {!hideBack && (
+          <button
+            onClick={handleBack}
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white dark:bg-slate-800 border border-[var(--evz-brand-green-border)] shadow-sm active:scale-95 transition-transform"
+          >
+            <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
+          </button>
+        )}
+        <div className="flex flex-col min-w-0">
+          {subtitle && (
+            <span className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-500 dark:text-slate-400">
+              {subtitle}
+            </span>
           )}
+          <p className="text-base font-black text-slate-900 dark:text-white tracking-tight leading-tight truncate">
+            {title}
+          </p>
         </div>
-        <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center">
-          <div className="flex items-center space-x-3">
-            <div className="flex flex-col items-center">
-              {subtitle && (
-                <span className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-500 dark:text-slate-400">
-                  {subtitle}
-                </span>
-              )}
-              <p className="text-base font-black text-slate-900 dark:text-white tracking-tight leading-tight text-center">
-                {title}
-              </p>
-            </div>
-          </div>
+      </div>
+      {/* Right: optional action */}
+      {rightAction && (
+        <div className="shrink-0 flex items-center">
+          {rightAction}
         </div>
-        <div className="w-10 flex items-center justify-end">
-          {rightAction || null}
-        </div>
-      </header>
-    </div>
+      )}
+    </header>
   );
 }
+
