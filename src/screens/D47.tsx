@@ -25,6 +25,7 @@ const JOB_TYPES = ["ride", "delivery", "rental", "tour", "ambulance"];
 
 export default function NavigateToPickupScreen() {
   const [jobType, setJobType] = useState("ride"); // "ride" | "delivery" | "rental" | "tour" | "ambulance"
+  const [hasArrived, setHasArrived] = useState(false);
   const navigate = useNavigate();
 
   const jobTypeLabelMap = {
@@ -172,15 +173,18 @@ export default function NavigateToPickupScreen() {
                     <span>ETA 18:22</span>
                   </div>
                 )}
-                {!isAmbulance && (
+                {!isAmbulance && hasArrived && (
                   <button
                     type="button"
-                    onClick={() => navigate("/driver/trip/demo-trip/en-route-details")}
-                    className="inline-flex items-center rounded-full bg-white border border-orange-50 px-3 py-1.5 text-[10px] font-black uppercase tracking-tight text-orange-500 shadow-sm hover:bg-orange-50 transition-colors"
+                    onClick={() => window.open("tel:+256700000000")}
+                    className="inline-flex items-center rounded-full bg-orange-500 px-3 py-1.5 text-[10px] font-black uppercase tracking-tight text-white shadow-md hover:bg-orange-600 transition-colors"
                   >
                     <Phone className="h-3 w-3 mr-2" />
-                    Support
+                    Call
                   </button>
+                )}
+                {!isAmbulance && !hasArrived && (
+                  <div className="h-[26px]" /> // Placeholder to keep layout stable
                 )}
               </div>
             </div>
@@ -193,13 +197,23 @@ export default function NavigateToPickupScreen() {
               >
                 Cancel
               </button>
-              <button
-                type="button"
-                onClick={() => navigate("/driver/trip/demo-trip/arrived")}
-                className="flex-[2] rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-orange-500 text-white shadow-xl shadow-orange-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center"
-              >
-                Confirm Arrival
-              </button>
+              {hasArrived ? (
+                <button
+                  type="button"
+                  onClick={() => navigate("/driver/trip/demo-trip/arrived")}
+                  className="flex-[2] rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-brand-active text-white shadow-xl shadow-brand-active/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center animate-in fade-in zoom-in-95 duration-300"
+                >
+                  Continue to Pickup
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setHasArrived(true)}
+                  className="flex-[2] rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-orange-500 text-white shadow-xl shadow-orange-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center"
+                >
+                  Confirm Arrival
+                </button>
+              )}
             </div>
           </div>
 

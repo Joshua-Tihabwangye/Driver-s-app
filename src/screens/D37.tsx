@@ -1,12 +1,14 @@
 import {
-AlertCircle,
-ChevronLeft,
-Eye,
-Map,
-Moon,
-Send,
-Settings as SettingsIcon,
-SunMedium
+  AlertCircle,
+  CheckCircle2,
+  ChevronLeft,
+  Eye,
+  Loader2,
+  Map,
+  Moon,
+  Send,
+  Settings as SettingsIcon,
+  SunMedium
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -52,10 +54,25 @@ export default function MapSettingsScreen() {
   const [showTraffic, setShowTraffic] = useState(true);
   const [showCompass, setShowCompass] = useState(true);
   const [issueText, setIssueText] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmitIssue = () => {
-    navigate("/driver/safety/toolkit");
+    if (!issueText.trim()) return;
+    
+    setIsSending(true);
+    // Simulate API call
+    setTimeout(() => {
+      setIsSending(false);
+      setShowSuccess(true);
+      setIssueText("");
+      
+      // Hide success toast after 3 seconds
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 3000);
+    }, 1500);
   };
 
   return (
@@ -158,13 +175,37 @@ export default function MapSettingsScreen() {
             <button
                type="button"
                onClick={handleSubmitIssue}
-               className="w-full rounded-2xl bg-orange-500 py-4 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-orange-500/20 active:scale-95 transition-all flex items-center justify-center hover:bg-orange-600"
+               disabled={isSending || !issueText.trim()}
+               className={`w-full rounded-2xl py-4 text-[11px] font-black uppercase tracking-widest text-white shadow-xl transition-all flex items-center justify-center ${
+                 isSending || !issueText.trim() 
+                   ? "bg-slate-300 shadow-none cursor-not-allowed" 
+                   : "bg-orange-500 shadow-orange-500/20 active:scale-95 hover:bg-orange-600"
+               }`}
             >
-              <Send className="h-4 w-4 mr-3" />
-              Send Report
+              {isSending ? (
+                <Loader2 className="h-4 w-4 mr-3 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4 mr-3" />
+              )}
+              {isSending ? "Sending..." : "Send Report"}
             </button>
           </div>
         </section>
+
+        {/* Success Toast */}
+        {showSuccess && (
+          <div className="fixed bottom-24 left-6 right-6 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
+            <div className="bg-slate-900 text-white rounded-2xl px-6 py-4 shadow-2xl flex items-center space-x-4 border border-brand-active/20">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-active/20 text-brand-active">
+                <CheckCircle2 className="h-6 w-6" />
+              </div>
+              <div className="flex flex-col">
+                <p className="text-sm font-black uppercase tracking-tight">Sent</p>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">Your feedback has been received.</p>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

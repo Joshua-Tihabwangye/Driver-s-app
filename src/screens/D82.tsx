@@ -14,52 +14,140 @@ import PageHeader from "../components/PageHeader";
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
 
-function StatusChip({ state }) {
-  if (state === "completed") {
-    return (
-      <span className="inline-flex items-center rounded-full bg-orange-50 px-2 py-0.5 text-[10px] font-medium text-orange-700 border border-orange-100">
-        <CheckCircle2 className="h-3 w-3 mr-1" />
-        Completed
-      </span>
-    );
-  }
-  if (state === "next") {
-    return (
-      <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700 border border-blue-100">
-        Next stop
-      </span>
-    );
-  }
+function StatusBadge({ status }) {
+  const configs = {
+    completed: {
+      bg: "bg-orange-50",
+      text: "text-orange-700",
+      border: "border-orange-100",
+      icon: <CheckCircle2 className="h-3 w-3 mr-1" />,
+      label: "Completed"
+    },
+    current: {
+      bg: "bg-blue-600",
+      text: "text-white",
+      border: "border-blue-700",
+      icon: <Navigation className="h-3 w-3 mr-1 animate-pulse" />,
+      label: "Current"
+    },
+    upcoming: {
+      bg: "bg-slate-50",
+      text: "text-slate-500",
+      border: "border-slate-100",
+      icon: null,
+      label: "Upcoming"
+    }
+  };
+
+  const config = configs[status] || configs.upcoming;
+
   return (
-    <span className="inline-flex items-center rounded-full bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-slate-500 border border-slate-100">
-      Upcoming
+    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-tight shadow-sm ${config.bg} ${config.text} ${config.border} border`}>
+      {config.icon}
+      {config.label}
     </span>
   );
 }
 
-function StopRow({ index, label, detail, eta, type, state }) {
+function StopTimelineItem({ 
+  index, 
+  label, 
+  address, 
+  purpose, 
+  eta, 
+  status, 
+  distance, 
+  isLast 
+}: any) {
+  const isCurrent = status === "current";
+  const isCompleted = status === "completed";
+
   return (
-    <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-2.5 shadow-sm text-[11px] text-slate-600">
-      <div className="flex items-center space-x-2 max-w-[210px]">
-        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-50">
-          <MapPin className="h-4 w-4 text-orange-500" />
-        </div>
-        <div className="flex flex-col items-start">
-          <span className="text-xs font-semibold text-slate-900">
-            Stop {index} · {label}
-          </span>
-          <span className="text-[10px] text-slate-500 truncate max-w-[190px]">
-            {detail}
-          </span>
-          <span className="mt-0.5 text-[10px] text-slate-500">{type}</span>
-        </div>
+    <div className="relative pl-8 pb-8">
+      {/* Timeline line */}
+      {!isLast && (
+        <div 
+          className={`absolute left-[11px] top-6 bottom-0 w-0.5 ${
+            isCompleted ? "bg-orange-500" : "bg-slate-200"
+          }`} 
+        />
+      )}
+
+      {/* Timeline marker */}
+      <div 
+        className={`absolute left-0 top-1.5 flex h-6 w-6 items-center justify-center rounded-full border-2 bg-white z-10 ${
+          isCurrent 
+            ? "border-blue-600 shadow-lg shadow-blue-600/20" 
+            : isCompleted 
+            ? "border-orange-500" 
+            : "border-slate-200"
+        }`}
+      >
+        {isCompleted ? (
+          <CheckCircle2 className="h-3.5 w-3.5 text-orange-500" />
+        ) : isCurrent ? (
+          <div className="h-2 w-2 rounded-full bg-blue-600" />
+        ) : (
+          <div className="h-1.5 w-1.5 rounded-full bg-slate-300" />
+        )}
       </div>
-      <div className="flex flex-col items-end text-[10px] text-slate-500 space-y-1">
-        <span className="inline-flex items-center">
-          <Clock className="h-3 w-3 mr-1" />
-          {eta}
-        </span>
-        <StatusChip state={state} />
+
+      {/* Content card */}
+      <div 
+        className={`rounded-2xl border p-4 transition-all ${
+          isCurrent 
+            ? "bg-blue-50/30 border-blue-600/30 shadow-md ring-1 ring-blue-600/5 translate-x-1" 
+            : "bg-white border-slate-100 shadow-sm"
+        }`}
+      >
+        <div className="flex items-start justify-between mb-2">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">
+              Stop {index}
+            </span>
+            <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">
+              {label}
+            </h3>
+          </div>
+          <StatusBadge status={status} />
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-start space-x-2">
+            <MapPin className="h-3.5 w-3.5 text-slate-400 mt-0.5 shrink-0" />
+            <span className="text-[11px] text-slate-600 font-bold uppercase tracking-tight leading-tight">
+              {address}
+            </span>
+          </div>
+
+          <div className="flex items-center space-x-4 pt-1">
+            <div className="flex items-center space-x-1.5">
+              <div className={`h-1.5 w-1.5 rounded-full ${isCurrent ? "bg-blue-600" : "bg-orange-500"}`} />
+              <span className="text-[10px] text-slate-500 font-black uppercase tracking-widest">
+                {purpose}
+              </span>
+            </div>
+            {eta && (
+              <div className="flex items-center space-x-1.5">
+                <Clock className="h-3 w-3 text-slate-400" />
+                <span className="text-[10px] text-slate-500 font-bold tracking-tighter">
+                  {eta}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {distance && (
+            <div className="mt-2 pt-2 border-t border-slate-50 flex items-center justify-between">
+              <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">
+                Distance from prev.
+              </span>
+              <span className="text-[10px] text-slate-900 font-black uppercase tracking-tight bg-slate-50 px-2 py-0.5 rounded-md">
+                {distance}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -71,39 +159,61 @@ export default function ActiveRouteDetailsScreen() {
   const stops = [
     {
       index: 1,
-      label: "FreshMart, Lugogo",
-      detail: "Pickup groceries",
-      eta: "Completed",
-      type: "Pickup",
-      state: "completed"
+      label: "Start Point",
+      address: "EVzone Depot, Industrial Area",
+      purpose: "Vehicle Check & Departure",
+      eta: "08:15 (Actual)",
+      status: "completed",
+      distance: null
     },
     {
       index: 2,
-      label: "PharmaPlus, City Centre",
-      detail: "Pickup pharmacy order",
-      eta: "18:25",
-      type: "Pickup",
-      state: "next"
+      label: "FreshMart, Lugogo",
+      address: "Lugogo Bypass, Kampala",
+      purpose: "Pickup order #3249",
+      eta: "08:45 (Actual)",
+      status: "completed",
+      distance: "4.2 km"
     },
     {
       index: 3,
-      label: "Naguru (Block B)",
-      detail: "Deliver groceries",
-      eta: "18:40",
-      type: "Deliver",
-      state: "upcoming"
+      label: "PharmaPlus, City Centre",
+      address: "Parliamentary Ave, Kampala",
+      purpose: "Pickup order #4112",
+      eta: "09:25 (ETA)",
+      status: "current",
+      distance: "2.5 km"
     },
     {
       index: 4,
+      label: "Naguru (Block B)",
+      address: "Naguru Hill, Block B-12",
+      purpose: "Deliver order #3249",
+      eta: "09:40 (ETA)",
+      status: "upcoming",
+      distance: "3.1 km"
+    },
+    {
+      index: 5,
       label: "Ntinda (Main Road)",
-      detail: "Deliver pharmacy order",
-      eta: "18:55",
-      type: "Deliver",
-      state: "upcoming"
+      address: "Plot 45, Ntinda Main Rd",
+      purpose: "Deliver order #4112",
+      eta: "09:55 (ETA)",
+      status: "upcoming",
+      distance: "2.2 km"
+    },
+    {
+      index: 6,
+      label: "Final Destination",
+      address: "EVzone Depot, Industrial Area",
+      purpose: "Return Vehicle",
+      eta: "10:15 (ETA)",
+      status: "upcoming",
+      distance: "3.8 km"
     },
   ];
 
-  const completedCount = stops.filter((s) => s.state === "completed").length;
+  const completedCount = stops.filter((s) => s.status === "completed").length;
 
   return (
     <div className="flex flex-col h-full ">
@@ -144,14 +254,15 @@ export default function ActiveRouteDetailsScreen() {
           </p>
         </section>
 
-        {/* Stops list with statuses */}
-        <section className="space-y-4 pb-12">
-          <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-2">
-            Stops on this route
-          </h2>
-          <div className="space-y-3">
-            {stops.map((s) => (
-              <StopRow key={s.index} {...s} />
+        {/* Timeline list */}
+        <section className="pb-12 px-2">
+          <div className="flex flex-col">
+            {stops.map((s, idx) => (
+              <StopTimelineItem 
+                key={s.index} 
+                {...s} 
+                isLast={idx === stops.length - 1} 
+              />
             ))}
           </div>
         </section>
