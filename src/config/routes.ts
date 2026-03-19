@@ -7,106 +7,106 @@ import { SAMPLE_IDS } from "../data/constants";
 // ── Screen Imports ──────────────────────────────────────
 import AboutScreen from "../screens/About";
 import CashOutScreen from "../screens/CashOut";
-import D01Screen from "../screens/D01.jsx";
-import D02Screen from "../screens/D02.jsx";
-import D03Screen from "../screens/D03.jsx";
-import D04Screen from "../screens/D04.jsx";
-import D05Screen from "../screens/D05.jsx";
-import D06Screen from "../screens/D06.jsx";
-import D07Screen from "../screens/D07.jsx";
-import D08Screen from "../screens/D08.jsx";
-import D09Screen from "../screens/D09.jsx";
-import D10Screen from "../screens/D10.jsx";
-import D100Screen from "../screens/D100.jsx";
-import D101Screen from "../screens/D101.jsx";
-import D102Screen from "../screens/D102.jsx";
-import D11Screen from "../screens/D11.jsx";
-import D12Screen from "../screens/D12.jsx";
-import D13Screen from "../screens/D13.jsx";
-import D14Screen from "../screens/D14.jsx";
-import D15Screen from "../screens/D15.jsx";
-import D16Screen from "../screens/D16.jsx";
-import D17Screen from "../screens/D17.jsx";
-import D18Screen from "../screens/D18.jsx";
-import D19Screen from "../screens/D19.jsx";
-import D20Screen from "../screens/D20.jsx";
-import D21Screen from "../screens/D21.jsx";
-import D22Screen from "../screens/D22.jsx";
-import D23Screen from "../screens/D23.jsx";
-import D24Screen from "../screens/D24.jsx";
-import D25Screen from "../screens/D25.jsx";
-import D26Screen from "../screens/D26.jsx";
-import D27Screen from "../screens/D27.jsx";
-import D28Screen from "../screens/D28.jsx";
-import D29Screen from "../screens/D29.jsx";
-import D30Screen from "../screens/D30.jsx";
-import D31Screen from "../screens/D31.jsx";
-import D32Screen from "../screens/D32.jsx";
-import D33Screen from "../screens/D33.jsx";
-import D34Screen from "../screens/D34.jsx";
-import D35Screen from "../screens/D35.jsx";
-import D36Screen from "../screens/D36.jsx";
-import D37Screen from "../screens/D37.jsx";
-import D38Screen from "../screens/D38.jsx";
-import D39Screen from "../screens/D39.jsx";
-import D40Screen from "../screens/D40.jsx";
-import D41Screen from "../screens/D41.jsx";
-import D42Screen from "../screens/D42.jsx";
-import D43Screen from "../screens/D43.jsx";
-import D44Screen from "../screens/D44.jsx";
-import D45Screen from "../screens/D45.jsx";
-import D46Screen from "../screens/D46.jsx";
-import D47Screen from "../screens/D47.jsx";
-import D48Screen from "../screens/D48.jsx";
-import D49Screen from "../screens/D49.jsx";
-import D50Screen from "../screens/D50.jsx";
-import D51Screen from "../screens/D51.jsx";
-import D52Screen from "../screens/D52.jsx";
-import D53Screen from "../screens/D53.jsx";
-import D54Screen from "../screens/D54.jsx";
-import D55Screen from "../screens/D55.jsx";
-import D56Screen from "../screens/D56.jsx";
-import D57Screen from "../screens/D57.jsx";
-import D58Screen from "../screens/D58.jsx";
-import D59Screen from "../screens/D59.jsx";
-import D60Screen from "../screens/D60.jsx";
-import D61Screen from "../screens/D61.jsx";
-import D62Screen from "../screens/D62.jsx";
-import D63Screen from "../screens/D63.jsx";
-import D64Screen from "../screens/D64.jsx";
-import D65Screen from "../screens/D65.jsx";
-import D66Screen from "../screens/D66.jsx";
-import D67Screen from "../screens/D67.jsx";
-import D68Screen from "../screens/D68.jsx";
-import D69Screen from "../screens/D69.jsx";
-import D70Screen from "../screens/D70.jsx";
-import D71Screen from "../screens/D71.jsx";
-import D72Screen from "../screens/D72.jsx";
-import D73Screen from "../screens/D73.jsx";
-import D74Screen from "../screens/D74.jsx";
-import D77Screen from "../screens/D77.jsx";
-import D78Screen from "../screens/D78.jsx";
-import D79Screen from "../screens/D79.jsx";
-import D80Screen from "../screens/D80.jsx";
-import D81Screen from "../screens/D81.jsx";
-import D82Screen from "../screens/D82.jsx";
-import D83Screen from "../screens/D83.jsx";
-import D84Screen from "../screens/D84.jsx";
-import D85Screen from "../screens/D85.jsx";
-import D86Screen from "../screens/D86.jsx";
-import D87Screen from "../screens/D87.jsx";
-import D88Screen from "../screens/D88.jsx";
-import D89Screen from "../screens/D89.jsx";
-import D90Screen from "../screens/D90.jsx";
-import D91Screen from "../screens/D91.jsx";
-import D92Screen from "../screens/D92.jsx";
-import D93Screen from "../screens/D93.jsx";
-import D94Screen from "../screens/D94.jsx";
-import D95Screen from "../screens/D95.jsx";
-import D96Screen from "../screens/D96.jsx";
-import D97Screen from "../screens/D97.jsx";
-import D98Screen from "../screens/D98.jsx";
-import D99Screen from "../screens/D99.jsx";
+import SuperAppHome from "../screens/SuperAppHome";
+import RegisterServices from "../screens/RegisterServices";
+import Registration from "../screens/Registration";
+import DriverRegistration from "../screens/DriverRegistration";
+import DriverProfileOnboarding from "../screens/DriverProfileOnboarding";
+import DriverPreferences from "../screens/DriverPreferences";
+import DocumentUpload from "../screens/DocumentUpload";
+import DocumentReview from "../screens/DocumentReview";
+import DocumentRejected from "../screens/DocumentRejected";
+import DocumentVerified from "../screens/DocumentVerified";
+import AmbulanceJobStatus from "../screens/AmbulanceJobStatus";
+import JobTypesLegend from "../screens/JobTypesLegend";
+import ShuttleLinkInfo from "../screens/ShuttleLinkInfo";
+import IdentityVerification from "../screens/IdentityVerification";
+import FaceCapture from "../screens/FaceCapture";
+import ImageUpload from "../screens/ImageUpload";
+import MyVehicles from "../screens/MyVehicles";
+import VehicleDetails from "../screens/VehicleDetails";
+import BusinessVehicles from "../screens/BusinessVehicles";
+import VehicleAccessories from "../screens/VehicleAccessories";
+import TrainingIntro from "../screens/TrainingIntro";
+import TrainingInfoSession from "../screens/TrainingInfoSession";
+import EarningsTutorial from "../screens/EarningsTutorial";
+import TrainingQuiz from "../screens/TrainingQuiz";
+import TrainingQuizAnswer from "../screens/TrainingQuizAnswer";
+import TrainingQuizPassed from "../screens/TrainingQuizPassed";
+import TrainingCompletion from "../screens/TrainingCompletion";
+import DeliveryDashboard from "../screens/DeliveryDashboard";
+import OnlineMapView from "../screens/OnlineMapView";
+import OfflineDashboard from "../screens/OfflineDashboard";
+import OnlineMapVariant from "../screens/OnlineMapVariant";
+import ActiveDashboard from "../screens/ActiveDashboard";
+import RequiredActionsDashboard from "../screens/RequiredActionsDashboard";
+import OnlineDashboard from "../screens/OnlineDashboard";
+import SearchingForRide from "../screens/SearchingForRide";
+import EarningsOverview from "../screens/EarningsOverview";
+import WeeklyEarnings from "../screens/WeeklyEarnings";
+import MonthlyEarnings from "../screens/MonthlyEarnings";
+import SearchScreen from "../screens/SearchScreen";
+import MapSettings from "../screens/MapSettings";
+import EarningsGoals from "../screens/EarningsGoals";
+import SurgeNotification from "../screens/SurgeNotification";
+import RideSharingNotification from "../screens/RideSharingNotification";
+import LastTripSummary from "../screens/LastTripSummary";
+import RideRequestIncoming from "../screens/RideRequestIncoming";
+import RideRequestRich from "../screens/RideRequestRich";
+import RideRequestsList from "../screens/RideRequestsList";
+import RideRequestsPrompt from "../screens/RideRequestsPrompt";
+import ActiveRideWithAdditional from "../screens/ActiveRideWithAdditional";
+import NavigateToPickup from "../screens/NavigateToPickup";
+import NavigationInProgress from "../screens/NavigationInProgress";
+import EnRouteDetails from "../screens/EnRouteDetails";
+import ArrivedAtPickup from "../screens/ArrivedAtPickup";
+import WaitingForPassenger from "../screens/WaitingForPassenger";
+import CancelNoShow from "../screens/CancelNoShow";
+import RiderVerification from "../screens/RiderVerification";
+import StartDrive from "../screens/StartDrive";
+import RideInProgress from "../screens/RideInProgress";
+import TripCompletion from "../screens/TripCompletion";
+import CancelReason from "../screens/CancelReason";
+import CancelDetails from "../screens/CancelDetails";
+import SafetyToolkit from "../screens/SafetyToolkit";
+import EmergencyAssistanceMap from "../screens/EmergencyAssistanceMap";
+import SOSSending from "../screens/SOSSending";
+import EmergencyAssistanceDetails from "../screens/EmergencyAssistanceDetails";
+import EmergencyCall from "../screens/EmergencyCall";
+import EmergencyConfirmation from "../screens/EmergencyConfirmation";
+import FollowMyRide from "../screens/FollowMyRide";
+import ShareMyRide from "../screens/ShareMyRide";
+import ProofOfTripMain from "../screens/ProofOfTripMain";
+import ProofOfTripActive from "../screens/ProofOfTripActive";
+import RideHistory from "../screens/RideHistory";
+import SafetyHub from "../screens/SafetyHub";
+import SafetyHubExpanded from "../screens/SafetyHubExpanded";
+import DrivingHours from "../screens/DrivingHours";
+import SurgePricing from "../screens/SurgePricing";
+import DeliveryOrdersDashboard from "../screens/DeliveryOrdersDashboard";
+import PickedUpOrders from "../screens/PickedUpOrders";
+import DeliveryRouteDetails from "../screens/DeliveryRouteDetails";
+import DeliveryRouteMap from "../screens/DeliveryRouteMap";
+import ActiveDeliveryRoute from "../screens/ActiveDeliveryRoute";
+import DeliveryStopContact from "../screens/DeliveryStopContact";
+import ActiveRouteDetails from "../screens/ActiveRouteDetails";
+import DeliveryStopDetails from "../screens/DeliveryStopDetails";
+import SelectDestination from "../screens/SelectDestination";
+import PickupConfirmation from "../screens/PickupConfirmation";
+import ConfirmPickupLocation from "../screens/ConfirmPickupLocation";
+import PackagePickupQR from "../screens/PackagePickupQR";
+import QRScanner from "../screens/QRScanner";
+import QRScanConfirmation from "../screens/QRScanConfirmation";
+import QRInstruction from "../screens/QRInstruction";
+import QRScannerActive from "../screens/QRScannerActive";
+import QRScanned from "../screens/QRScanned";
+import QRProcessing from "../screens/QRProcessing";
+import QRMarketingScan from "../screens/QRMarketingScan";
+import QRMarketingProcessing from "../screens/QRMarketingProcessing";
+import PickupConfirmed from "../screens/PickupConfirmed";
+import RentalJobOverview from "../screens/RentalJobOverview";
+import TourSchedule from "../screens/TourSchedule";
+import AmbulanceIncoming from "../screens/AmbulanceIncoming";
 import HelpScreen from "../screens/Help";
 import MoreMenuScreen from "../screens/MoreMenu";
 import ProfileScreen from "../screens/Profile";
@@ -133,118 +133,118 @@ export interface ScreenConfig {
 
 export const SCREENS: ScreenConfig[] = [
   // Super app & registration
-  { id: "D01", label: "Home (Super App)", path: "/app/home", Component: D01Screen },
-  { id: "D02", label: "Register Services", path: "/app/register-services", Component: D02Screen },
-  { id: "D03", label: "Registration", path: "/auth/register", Component: D03Screen },
-  { id: "D04", label: "Registration – EVzone Driver", path: "/driver/register", Component: D04Screen },
+  { id: "SuperAppHome", label: "Home (Super App)", path: "/app/home", Component: SuperAppHome },
+  { id: "RegisterServices", label: "Register Services", path: "/app/register-services", Component: RegisterServices },
+  { id: "Registration", label: "Registration", path: "/auth/register", Component: Registration },
+  { id: "DriverRegistration", label: "Registration – EVzone Driver", path: "/driver/register", Component: DriverRegistration },
   // Profile, documents & identity
-  { id: "D05", label: "Driver Personal", path: "/driver/onboarding/profile", Component: D05Screen },
-  { id: "D06", label: "Preferences", path: "/driver/preferences", Component: D06Screen },
-  { id: "D07", label: "Document Verification", path: "/driver/onboarding/profile/documents/upload", Component: D07Screen },
-  { id: "D08", label: "Document Under Review", path: "/driver/onboarding/profile/documents/review", Component: D08Screen },
-  { id: "D09", label: "Document Rejected", path: "/driver/onboarding/profile/documents/rejected", Component: D09Screen },
-  { id: "D10", label: "All Documents Verified", path: "/driver/onboarding/profile/documents/verified", Component: D10Screen },
-  { id: "D11", label: "Identity Verification", path: "/driver/preferences/identity", Component: D11Screen },
-  { id: "D12", label: "Face Capture", path: "/driver/preferences/identity/face-capture", Component: D12Screen },
-  { id: "D13", label: "Upload Your Image", path: "/driver/preferences/identity/upload-image", Component: D13Screen },
-  { id: "D14", label: "My Vehicles", path: "/driver/vehicles", Component: D14Screen },
-  { id: "D15", label: "Vehicles", path: "/driver/vehicles/:vehicleId", previewPath: `/driver/vehicles/${SAMPLE_IDS.vehicle}`, Component: D15Screen },
-  { id: "D16", label: "Business Vehicles", path: "/driver/vehicles/business", Component: D16Screen },
-  { id: "D17", label: "Vehicle Accessories", path: "/driver/vehicles/accessories", Component: D17Screen },
+  { id: "DriverProfileOnboarding", label: "Driver Personal", path: "/driver/onboarding/profile", Component: DriverProfileOnboarding },
+  { id: "DriverPreferences", label: "Preferences", path: "/driver/preferences", Component: DriverPreferences },
+  { id: "DocumentUpload", label: "Document Verification", path: "/driver/onboarding/profile/documents/upload", Component: DocumentUpload },
+  { id: "DocumentReview", label: "Document Under Review", path: "/driver/onboarding/profile/documents/review", Component: DocumentReview },
+  { id: "DocumentRejected", label: "Document Rejected", path: "/driver/onboarding/profile/documents/rejected", Component: DocumentRejected },
+  { id: "DocumentVerified", label: "All Documents Verified", path: "/driver/onboarding/profile/documents/verified", Component: DocumentVerified },
+  { id: "IdentityVerification", label: "Identity Verification", path: "/driver/preferences/identity", Component: IdentityVerification },
+  { id: "FaceCapture", label: "Face Capture", path: "/driver/preferences/identity/face-capture", Component: FaceCapture },
+  { id: "ImageUpload", label: "Upload Your Image", path: "/driver/preferences/identity/upload-image", Component: ImageUpload },
+  { id: "MyVehicles", label: "My Vehicles", path: "/driver/vehicles", Component: MyVehicles },
+  { id: "VehicleDetails", label: "Vehicles", path: "/driver/vehicles/:vehicleId", previewPath: `/driver/vehicles/${SAMPLE_IDS.vehicle}`, Component: VehicleDetails },
+  { id: "BusinessVehicles", label: "Business Vehicles", path: "/driver/vehicles/business", Component: BusinessVehicles },
+  { id: "VehicleAccessories", label: "Vehicle Accessories", path: "/driver/vehicles/accessories", Component: VehicleAccessories },
   // Training & quiz
-  { id: "D18", label: "Intro to Driving with EVzone Ride", path: "/driver/training/intro", Component: D18Screen },
-  { id: "D19", label: "Info Session for Driver-Partners", path: "/driver/training/info-session", Component: D19Screen },
-  { id: "D20", label: "Driver Info Tutorial", path: "/driver/training/earnings-tutorial", Component: D20Screen },
-  { id: "D21", label: "Driver Info Session Quiz", path: "/driver/training/quiz", Component: D21Screen },
-  { id: "D22", label: "Quiz Answer Selected", path: "/driver/training/quiz/answer", Component: D22Screen },
-  { id: "D23", label: "Quiz Passed Confirmation", path: "/driver/training/quiz/passed", Component: D23Screen },
-  { id: "D24", label: "Content Completion Screen", path: "/driver/training/completion", Component: D24Screen },
+  { id: "TrainingIntro", label: "Intro to Driving with EVzone Ride", path: "/driver/training/intro", Component: TrainingIntro },
+  { id: "TrainingInfoSession", label: "Info Session for Driver-Partners", path: "/driver/training/info-session", Component: TrainingInfoSession },
+  { id: "EarningsTutorial", label: "Driver Info Tutorial", path: "/driver/training/earnings-tutorial", Component: EarningsTutorial },
+  { id: "TrainingQuiz", label: "Driver Info Session Quiz", path: "/driver/training/quiz", Component: TrainingQuiz },
+  { id: "TrainingQuizAnswer", label: "Quiz Answer Selected", path: "/driver/training/quiz/answer", Component: TrainingQuizAnswer },
+  { id: "TrainingQuizPassed", label: "Quiz Passed Confirmation", path: "/driver/training/quiz/passed", Component: TrainingQuizPassed },
+  { id: "TrainingCompletion", label: "Content Completion Screen", path: "/driver/training/completion", Component: TrainingCompletion },
   // Dashboards, earnings & map
-  { id: "D25", label: "Delivery Driver Dashboard", path: "/driver/dashboard/delivery", Component: D25Screen },
-  { id: "D26", label: "Online Map View", path: "/driver/map/online", Component: D26Screen },
-  { id: "D27", label: "Dashboard (Offline State)", path: "/driver/dashboard/offline", Component: D27Screen },
-  { id: "D28", label: "Map View (Online Variant)", path: "/driver/map/online/variant", Component: D28Screen },
-  { id: "D29", label: "Active Dashboard (Online Mode)", path: "/driver/dashboard/active", Component: D29Screen },
-  { id: "D30", label: "Required Actions Dashboard", path: "/driver/dashboard/required-actions", Component: D30Screen },
-  { id: "D31", label: "Online Dashboard (Active)", path: "/driver/dashboard/online", Component: D31Screen },
-  { id: "D32", label: "Searching for Ride", path: "/driver/map/searching", Component: D32Screen },
-  { id: "D33", label: "Earnings Overview", path: "/driver/earnings/overview", Component: D33Screen },
-  { id: "D34", label: "Weekly Earnings Summary", path: "/driver/earnings/weekly", Component: D34Screen },
-  { id: "D35", label: "Monthly Earnings Summary", path: "/driver/earnings/monthly", Component: D35Screen },
-  { id: "D36", label: "Search Screen", path: "/driver/search", Component: D36Screen },
-  { id: "D37", label: "Map Settings & Report Issues", path: "/driver/map/settings", Component: D37Screen },
-  { id: "D38", label: "Set Weekly Earning Goal", path: "/driver/earnings/goals", Component: D38Screen },
-  { id: "D39", label: "Surge Notification Popup", path: "/driver/surge/notification", Component: D39Screen },
-  { id: "D40", label: "Ride Sharing Notification Popup", path: "/driver/ridesharing/notification", Component: D40Screen },
-  { id: "D41", label: "Last Trip Summary Popup", path: "/driver/trip/last-summary", Component: D41Screen },
+  { id: "DeliveryDashboard", label: "Delivery Driver Dashboard", path: "/driver/dashboard/delivery", Component: DeliveryDashboard },
+  { id: "OnlineMapView", label: "Online Map View", path: "/driver/map/online", Component: OnlineMapView },
+  { id: "OfflineDashboard", label: "Dashboard (Offline State)", path: "/driver/dashboard/offline", Component: OfflineDashboard },
+  { id: "OnlineMapVariant", label: "Map View (Online Variant)", path: "/driver/map/online/variant", Component: OnlineMapVariant },
+  { id: "ActiveDashboard", label: "Active Dashboard (Online Mode)", path: "/driver/dashboard/active", Component: ActiveDashboard },
+  { id: "RequiredActionsDashboard", label: "Required Actions Dashboard", path: "/driver/dashboard/required-actions", Component: RequiredActionsDashboard },
+  { id: "OnlineDashboard", label: "Online Dashboard (Active)", path: "/driver/dashboard/online", Component: OnlineDashboard },
+  { id: "SearchingForRide", label: "Searching for Ride", path: "/driver/map/searching", Component: SearchingForRide },
+  { id: "EarningsOverview", label: "Earnings Overview", path: "/driver/earnings/overview", Component: EarningsOverview },
+  { id: "WeeklyEarnings", label: "Weekly Earnings Summary", path: "/driver/earnings/weekly", Component: WeeklyEarnings },
+  { id: "MonthlyEarnings", label: "Monthly Earnings Summary", path: "/driver/earnings/monthly", Component: MonthlyEarnings },
+  { id: "SearchScreen", label: "Search Screen", path: "/driver/search", Component: SearchScreen },
+  { id: "MapSettings", label: "Map Settings & Report Issues", path: "/driver/map/settings", Component: MapSettings },
+  { id: "EarningsGoals", label: "Set Weekly Earning Goal", path: "/driver/earnings/goals", Component: EarningsGoals },
+  { id: "SurgeNotification", label: "Surge Notification Popup", path: "/driver/surge/notification", Component: SurgeNotification },
+  { id: "RideSharingNotification", label: "Ride Sharing Notification Popup", path: "/driver/ridesharing/notification", Component: RideSharingNotification },
+  { id: "LastTripSummary", label: "Last Trip Summary Popup", path: "/driver/trip/last-summary", Component: LastTripSummary },
   // Job requests & selection
-  { id: "D42", label: "Ride Request Incoming", path: "/driver/jobs/incoming", Component: D42Screen },
-  { id: "D43", label: "Incoming Ride Request (Rich)", path: "/driver/jobs/incoming/rich", Component: D43Screen },
-  { id: "D44", label: "Ride Requests List", path: "/driver/jobs/list", Component: D44Screen },
-  { id: "D45", label: "Ride Requests Prompt", path: "/driver/jobs/prompt", Component: D45Screen },
-  { id: "D46", label: "Active Ride with Additional Requests", path: "/driver/jobs/active-with-additional", Component: D46Screen },
+  { id: "RideRequestIncoming", label: "Ride Request Incoming", path: "/driver/jobs/incoming", Component: RideRequestIncoming },
+  { id: "RideRequestRich", label: "Incoming Ride Request (Rich)", path: "/driver/jobs/incoming/rich", Component: RideRequestRich },
+  { id: "RideRequestsList", label: "Ride Requests List", path: "/driver/jobs/list", Component: RideRequestsList },
+  { id: "RideRequestsPrompt", label: "Ride Requests Prompt", path: "/driver/jobs/prompt", Component: RideRequestsPrompt },
+  { id: "ActiveRideWithAdditional", label: "Active Ride with Additional Requests", path: "/driver/jobs/active-with-additional", Component: ActiveRideWithAdditional },
   // Navigation & trip
-  { id: "D47", label: "Navigate to Pick-Up Location", path: "/driver/trip/:tripId/navigate-to-pickup", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/navigate-to-pickup`, Component: D47Screen },
-  { id: "D48", label: "Navigation in Progress", path: "/driver/trip/:tripId/navigation", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/navigation`, Component: D48Screen },
-  { id: "D49", label: "En Route to Pickup – Details", path: "/driver/trip/:tripId/en-route-details", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/en-route-details`, Component: D49Screen },
-  { id: "D50", label: "Arrived at Pickup Point", path: "/driver/trip/:tripId/arrived", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/arrived`, Component: D50Screen },
-  { id: "D51", label: "Waiting for Passenger", path: "/driver/trip/:tripId/waiting", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/waiting`, Component: D51Screen },
-  { id: "D52", label: "Cancel Ride – Passenger No-Show", path: "/driver/trip/:tripId/cancel/no-show", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/cancel/no-show`, Component: D52Screen },
-  { id: "D53", label: "Rider Verification Code Entry", path: "/driver/trip/:tripId/verify-rider", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/verify-rider`, Component: D53Screen },
-  { id: "D54", label: "Start Drive", path: "/driver/trip/:tripId/start", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/start`, Component: D54Screen },
-  { id: "D55", label: "Ride in Progress", path: "/driver/trip/:tripId/in-progress", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/in-progress`, Component: D55Screen },
-  { id: "D56", label: "Trip Completion Screen", path: "/driver/trip/:tripId/completed", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/completed`, Component: D56Screen },
-  { id: "D57", label: "Cancel Ride – Reason", path: "/driver/trip/:tripId/cancel/reason", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/cancel/reason`, Component: D57Screen },
-  { id: "D58", label: "Cancel Ride – Additional Comment", path: "/driver/trip/:tripId/cancel/details", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/cancel/details`, Component: D58Screen },
+  { id: "NavigateToPickup", label: "Navigate to Pick-Up Location", path: "/driver/trip/:tripId/navigate-to-pickup", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/navigate-to-pickup`, Component: NavigateToPickup },
+  { id: "NavigationInProgress", label: "Navigation in Progress", path: "/driver/trip/:tripId/navigation", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/navigation`, Component: NavigationInProgress },
+  { id: "EnRouteDetails", label: "En Route to Pickup – Details", path: "/driver/trip/:tripId/en-route-details", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/en-route-details`, Component: EnRouteDetails },
+  { id: "ArrivedAtPickup", label: "Arrived at Pickup Point", path: "/driver/trip/:tripId/arrived", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/arrived`, Component: ArrivedAtPickup },
+  { id: "WaitingForPassenger", label: "Waiting for Passenger", path: "/driver/trip/:tripId/waiting", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/waiting`, Component: WaitingForPassenger },
+  { id: "CancelNoShow", label: "Cancel Ride – Passenger No-Show", path: "/driver/trip/:tripId/cancel/no-show", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/cancel/no-show`, Component: CancelNoShow },
+  { id: "RiderVerification", label: "Rider Verification Code Entry", path: "/driver/trip/:tripId/verify-rider", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/verify-rider`, Component: RiderVerification },
+  { id: "StartDrive", label: "Start Drive", path: "/driver/trip/:tripId/start", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/start`, Component: StartDrive },
+  { id: "RideInProgress", label: "Ride in Progress", path: "/driver/trip/:tripId/in-progress", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/in-progress`, Component: RideInProgress },
+  { id: "TripCompletion", label: "Trip Completion Screen", path: "/driver/trip/:tripId/completed", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/completed`, Component: TripCompletion },
+  { id: "CancelReason", label: "Cancel Ride – Reason", path: "/driver/trip/:tripId/cancel/reason", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/cancel/reason`, Component: CancelReason },
+  { id: "CancelDetails", label: "Cancel Ride – Additional Comment", path: "/driver/trip/:tripId/cancel/details", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/cancel/details`, Component: CancelDetails },
   // Safety & emergency
-  { id: "D59", label: "Safety Toolkit", path: "/driver/safety/toolkit", Component: D59Screen },
-  { id: "D60", label: "Emergency Assistance (Map Variant)", path: "/driver/safety/emergency/map", Component: D60Screen },
-  { id: "D61", label: "SOS / Emergency Alert Sending", path: "/driver/safety/sos/sending", Component: D61Screen },
-  { id: "D62", label: "Emergency Assistance (Details Variant)", path: "/driver/safety/emergency/details", Component: D62Screen },
-  { id: "D63", label: "Emergency Calling Screen", path: "/driver/safety/emergency/call", Component: D63Screen },
-  { id: "D64", label: "Emergency Assistance Confirmation", path: "/driver/safety/emergency/confirmation", Component: D64Screen },
-  { id: "D65", label: "Follow My Ride", path: "/driver/safety/follow-my-ride", Component: D65Screen },
-  { id: "D66", label: "Share My Ride", path: "/driver/safety/share-my-ride", Component: D66Screen },
+  { id: "SafetyToolkit", label: "Safety Toolkit", path: "/driver/safety/toolkit", Component: SafetyToolkit },
+  { id: "EmergencyAssistanceMap", label: "Emergency Assistance (Map Variant)", path: "/driver/safety/emergency/map", Component: EmergencyAssistanceMap },
+  { id: "SOSSending", label: "SOS / Emergency Alert Sending", path: "/driver/safety/sos/sending", Component: SOSSending },
+  { id: "EmergencyAssistanceDetails", label: "Emergency Assistance (Details Variant)", path: "/driver/safety/emergency/details", Component: EmergencyAssistanceDetails },
+  { id: "EmergencyCall", label: "Emergency Calling Screen", path: "/driver/safety/emergency/call", Component: EmergencyCall },
+  { id: "EmergencyConfirmation", label: "Emergency Assistance Confirmation", path: "/driver/safety/emergency/confirmation", Component: EmergencyConfirmation },
+  { id: "FollowMyRide", label: "Follow My Ride", path: "/driver/safety/follow-my-ride", Component: FollowMyRide },
+  { id: "ShareMyRide", label: "Share My Ride", path: "/driver/safety/share-my-ride", Component: ShareMyRide },
   // Proof & history
-  { id: "D67", label: "Proof of Trip Status – Main View", path: "/driver/trip/:tripId/proof", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/proof`, Component: D67Screen },
-  { id: "D68", label: "Proof of Trip – Active Trip View", path: "/driver/trip/:tripId/proof/active", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/proof/active`, Component: D68Screen },
-  { id: "D69", label: "Ride History", path: "/driver/history/rides", Component: D69Screen },
+  { id: "ProofOfTripMain", label: "Proof of Trip Status – Main View", path: "/driver/trip/:tripId/proof", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/proof`, Component: ProofOfTripMain },
+  { id: "ProofOfTripActive", label: "Proof of Trip – Active Trip View", path: "/driver/trip/:tripId/proof/active", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/proof/active`, Component: ProofOfTripActive },
+  { id: "RideHistory", label: "Ride History", path: "/driver/history/rides", Component: RideHistory },
   // Safety hub additions
-  { id: "D70", label: "Safety Hub", path: "/driver/safety/hub", Component: D70Screen },
-  { id: "D71", label: "Safety Hub – Expanded", path: "/driver/safety/hub/expanded", Component: D71Screen },
-  { id: "D72", label: "Driving Hours", path: "/driver/safety/driving-hours", Component: D72Screen },
+  { id: "SafetyHub", label: "Safety Hub", path: "/driver/safety/hub", Component: SafetyHub },
+  { id: "SafetyHubExpanded", label: "Safety Hub – Expanded", path: "/driver/safety/hub/expanded", Component: SafetyHubExpanded },
+  { id: "DrivingHours", label: "Driving Hours", path: "/driver/safety/driving-hours", Component: DrivingHours },
   // Surge & delivery order dashboards
-  { id: "D73", label: "Surge Pricing", path: "/driver/surge/map", Component: D73Screen },
-  { id: "D74", label: "Orders to Delivery", path: "/driver/delivery/orders-dashboard", Component: D74Screen },
-  { id: "D77", label: "Picked-Up Orders", path: "/driver/delivery/orders/picked-up", Component: D77Screen },
+  { id: "SurgePricing", label: "Surge Pricing", path: "/driver/surge/map", Component: SurgePricing },
+  { id: "DeliveryOrdersDashboard", label: "Orders to Delivery", path: "/driver/delivery/orders-dashboard", Component: DeliveryOrdersDashboard },
+  { id: "PickedUpOrders", label: "Picked-Up Orders", path: "/driver/delivery/orders/picked-up", Component: PickedUpOrders },
   // Routes & delivery flows
-  { id: "D78", label: "Route Details", path: "/driver/delivery/route/:routeId", previewPath: `/driver/delivery/route/${SAMPLE_IDS.route}`, Component: D78Screen },
-  { id: "D79", label: "Route Details (Map Variant)", path: "/driver/delivery/route/:routeId/map", previewPath: `/driver/delivery/route/${SAMPLE_IDS.route}/map`, Component: D79Screen },
-  { id: "D80", label: "Active Delivery Route", path: "/driver/delivery/route/:routeId/active", previewPath: `/driver/delivery/route/${SAMPLE_IDS.route}/active`, Component: D80Screen },
-  { id: "D81", label: "Active Route – Stop Contact", path: "/driver/delivery/route/:routeId/stop/:stopId/contact", previewPath: `/driver/delivery/route/${SAMPLE_IDS.route}/stop/${SAMPLE_IDS.stop}/contact`, Component: D81Screen },
-  { id: "D82", label: "Active Route Details", path: "/driver/delivery/route/:routeId/details", previewPath: `/driver/delivery/route/${SAMPLE_IDS.route}/details`, Component: D82Screen },
-  { id: "D83", label: "Active Route – Expanded Stop Details", path: "/driver/delivery/route/:routeId/stop/:stopId/details", previewPath: `/driver/delivery/route/${SAMPLE_IDS.route}/stop/${SAMPLE_IDS.stop}/details`, Component: D83Screen },
-  { id: "D84", label: "Pick Your Destination", path: "/driver/delivery/destination/select", Component: D84Screen },
+  { id: "DeliveryRouteDetails", label: "Route Details", path: "/driver/delivery/route/:routeId", previewPath: `/driver/delivery/route/${SAMPLE_IDS.route}`, Component: DeliveryRouteDetails },
+  { id: "DeliveryRouteMap", label: "Route Details (Map Variant)", path: "/driver/delivery/route/:routeId/map", previewPath: `/driver/delivery/route/${SAMPLE_IDS.route}/map`, Component: DeliveryRouteMap },
+  { id: "ActiveDeliveryRoute", label: "Active Delivery Route", path: "/driver/delivery/route/:routeId/active", previewPath: `/driver/delivery/route/${SAMPLE_IDS.route}/active`, Component: ActiveDeliveryRoute },
+  { id: "DeliveryStopContact", label: "Active Route – Stop Contact", path: "/driver/delivery/route/:routeId/stop/:stopId/contact", previewPath: `/driver/delivery/route/${SAMPLE_IDS.route}/stop/${SAMPLE_IDS.stop}/contact`, Component: DeliveryStopContact },
+  { id: "ActiveRouteDetails", label: "Active Route Details", path: "/driver/delivery/route/:routeId/details", previewPath: `/driver/delivery/route/${SAMPLE_IDS.route}/details`, Component: ActiveRouteDetails },
+  { id: "DeliveryStopDetails", label: "Active Route – Expanded Stop Details", path: "/driver/delivery/route/:routeId/stop/:stopId/details", previewPath: `/driver/delivery/route/${SAMPLE_IDS.route}/stop/${SAMPLE_IDS.stop}/details`, Component: DeliveryStopDetails },
+  { id: "SelectDestination", label: "Pick Your Destination", path: "/driver/delivery/destination/select", Component: SelectDestination },
   // Pickup confirmation & QR
-  { id: "D85", label: "Pick Up Confirmation", path: "/driver/delivery/pickup/confirm", Component: D85Screen },
-  { id: "D86", label: "Confirm Current Location as Pick Up", path: "/driver/delivery/pickup/confirm-location", Component: D86Screen },
-  { id: "D87", label: "Package Pickup Verification", path: "/driver/delivery/pickup/qr", Component: D87Screen },
-  { id: "D88", label: "QR Code Scanner", path: "/driver/qr/scanner", Component: D88Screen },
-  { id: "D89", label: "Scan QR Code Confirmation", path: "/driver/qr/scan-confirmation", Component: D89Screen },
-  { id: "D90", label: "Scan QR Code – Instruction Popup", path: "/driver/qr/instruction", Component: D90Screen },
-  { id: "D91", label: "Scan QR Code – Active Camera View", path: "/driver/qr/active", Component: D91Screen },
-  { id: "D92", label: "QR Code Scanned – Confirmation Indicator", path: "/driver/qr/scanned", Component: D92Screen },
-  { id: "D93", label: "QR Code – Processing Stage", path: "/driver/qr/processing", Component: D93Screen },
-  { id: "D94", label: "QR Code Scanning – Marketing", path: "/driver/qr/marketing-scan", Component: D94Screen },
-  { id: "D95", label: "QR Code – Marketing Processing", path: "/driver/qr/marketing-processing", Component: D95Screen },
-  { id: "D96", label: "Pick-Up Confirmed Screen", path: "/driver/delivery/pickup/confirmed", Component: D96Screen },
+  { id: "PickupConfirmation", label: "Pick Up Confirmation", path: "/driver/delivery/pickup/confirm", Component: PickupConfirmation },
+  { id: "ConfirmPickupLocation", label: "Confirm Current Location as Pick Up", path: "/driver/delivery/pickup/confirm-location", Component: ConfirmPickupLocation },
+  { id: "PackagePickupQR", label: "Package Pickup Verification", path: "/driver/delivery/pickup/qr", Component: PackagePickupQR },
+  { id: "QRScanner", label: "QR Code Scanner", path: "/driver/qr/scanner", Component: QRScanner },
+  { id: "QRScanConfirmation", label: "Scan QR Code Confirmation", path: "/driver/qr/scan-confirmation", Component: QRScanConfirmation },
+  { id: "QRInstruction", label: "Scan QR Code – Instruction Popup", path: "/driver/qr/instruction", Component: QRInstruction },
+  { id: "QRScannerActive", label: "Scan QR Code – Active Camera View", path: "/driver/qr/active", Component: QRScannerActive },
+  { id: "QRScanned", label: "QR Code Scanned – Confirmation Indicator", path: "/driver/qr/scanned", Component: QRScanned },
+  { id: "QRProcessing", label: "QR Code – Processing Stage", path: "/driver/qr/processing", Component: QRProcessing },
+  { id: "QRMarketingScan", label: "QR Code Scanning – Marketing", path: "/driver/qr/marketing-scan", Component: QRMarketingScan },
+  { id: "QRMarketingProcessing", label: "QR Code – Marketing Processing", path: "/driver/qr/marketing-processing", Component: QRMarketingProcessing },
+  { id: "PickupConfirmed", label: "Pick-Up Confirmed Screen", path: "/driver/delivery/pickup/confirmed", Component: PickupConfirmed },
   // Special job types
-  { id: "D97", label: "Rental Job Overview / On Rental", path: "/driver/rental/job/:jobId", previewPath: `/driver/rental/job/${SAMPLE_IDS.job}`, Component: D97Screen },
-  { id: "D98", label: "Tour – Today’s Schedule", path: "/driver/tour/:tourId/today", previewPath: `/driver/tour/${SAMPLE_IDS.tour}/today`, Component: D98Screen },
-  { id: "D99", label: "Ambulance Job Incoming", path: "/driver/ambulance/incoming", Component: D99Screen },
-  { id: "D100", label: "Ambulance Job Status Screen", path: "/driver/ambulance/job/:jobId/status", previewPath: `/driver/ambulance/job/${SAMPLE_IDS.job}/status`, Component: D100Screen },
-  { id: "D101", label: "Job Types & Icons Legend", path: "/driver/settings/job-types-legend", Component: D101Screen },
-  { id: "D102", label: "Shuttle Link Info Screen", path: "/driver/help/shuttle-link", Component: D102Screen },
+  { id: "RentalJobOverview", label: "Rental Job Overview / On Rental", path: "/driver/rental/job/:jobId", previewPath: `/driver/rental/job/${SAMPLE_IDS.job}`, Component: RentalJobOverview },
+  { id: "TourSchedule", label: "Tour – Today’s Schedule", path: "/driver/tour/:tourId/today", previewPath: `/driver/tour/${SAMPLE_IDS.tour}/today`, Component: TourSchedule },
+  { id: "AmbulanceIncoming", label: "Ambulance Job Incoming", path: "/driver/ambulance/incoming", Component: AmbulanceIncoming },
+  { id: "AmbulanceJobStatus", label: "Ambulance Job Status Screen", path: "/driver/ambulance/job/:jobId/status", previewPath: `/driver/ambulance/job/${SAMPLE_IDS.job}/status`, Component: AmbulanceJobStatus },
+  { id: "JobTypesLegend", label: "Job Types & Icons Legend", path: "/driver/settings/job-types-legend", Component: JobTypesLegend },
+  { id: "ShuttleLinkInfo", label: "Shuttle Link Info Screen", path: "/driver/help/shuttle-link", Component: ShuttleLinkInfo },
   { id: "MoreMenu", label: "More Menu", path: "/driver/more", Component: MoreMenuScreen },
   { id: "Profile", label: "Profile", path: "/driver/profile", Component: ProfileScreen },
   { id: "ProfileMore", label: "Profile (More)", path: "/driver/more/profile", Component: ProfileScreen },
