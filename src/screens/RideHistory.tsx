@@ -1,6 +1,7 @@
 import {
-CheckCircle2,
-History as HistoryIcon
+  Share2,
+  CheckCircle2,
+  History as HistoryIcon
 } from "lucide-react";
 import { useState } from "react";
 import { useJobs } from "../context/JobsContext";
@@ -28,7 +29,7 @@ function formatTime(ts: number): string {
   return d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
 }
 
-function TripRow({ job, onClick }: any) {
+function TripRow({ job, onClick, navigate }: any) {
   const { from, to, fare, jobType, requestedAt } = job;
   const date = formatDate(requestedAt);
   const time = formatTime(requestedAt);
@@ -54,11 +55,20 @@ function TripRow({ job, onClick }: any) {
             </span>
         </div>
       </div>
-      <div className="flex flex-col items-end">
+      <div className="flex flex-col items-end space-y-2">
         <span className="text-[15px] font-medium text-slate-900 dark:text-white">
           {amount !== "—" ? `$${amount}` : "—"}
         </span>
-        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Done</span>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/driver/safety/share-my-ride/${job.id}`);
+          }}
+          className="flex items-center space-x-1 rounded-full bg-orange-500/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-orange-600 border border-orange-500/20 hover:bg-emerald-500 hover:text-white hover:border-emerald-500 transition-all active:scale-95"
+        >
+          <Share2 className="h-3 w-3" />
+          <span>Share</span>
+        </button>
       </div>
     </button>
   );
@@ -116,6 +126,7 @@ export default function RideHistory() {
             <TripRow
               key={job.id}
               job={job}
+              navigate={navigate}
               onClick={() => navigate(JOB_HISTORY_ROUTES[job.jobType] || JOB_HISTORY_ROUTES.default)}
             />
           ))}

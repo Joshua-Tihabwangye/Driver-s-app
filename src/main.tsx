@@ -5,6 +5,7 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import { AuthProvider } from "./context/AuthContext";
 import { JobsProvider } from "./context/JobsContext";
+import { SharedTripsProvider } from "./context/SharedTripsContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import "./index.css";
 import theme from "./theme";
@@ -14,12 +15,14 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <ThemeProvider>
       <AuthProvider>
         <JobsProvider>
-          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-            <MuiThemeProvider theme={theme}>
-              <CssBaseline />
-              <App />
-            </MuiThemeProvider>
-          </BrowserRouter>
+          <SharedTripsProvider>
+            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+              <MuiThemeProvider theme={theme}>
+                <CssBaseline />
+                <App />
+              </MuiThemeProvider>
+            </BrowserRouter>
+          </SharedTripsProvider>
         </JobsProvider>
       </AuthProvider>
     </ThemeProvider>

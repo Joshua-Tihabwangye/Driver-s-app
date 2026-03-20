@@ -121,3 +121,63 @@ export const MOCK_DELIVERY_ROUTES = {
     ]
   }
 };
+
+// ── Shared Trips ─────────────────────────────────────────
+export const MOCK_SHARED_TRIPS: import('./types').SharedTrip[] = [
+  {
+    id: "share-100",
+    type: "shared",
+    status: "pending",
+    chainStatus: "active",
+    seatCapacity: 4,
+    occupiedSeats: 1,
+    allowAdditionalMatches: true,
+    estimatedTotalEarnings: 15.40,
+    currentStopIndex: 0,
+    earningsBreakdown: [
+      { id: "eb-1", type: "base_trip", passengerId: "p-1", title: "Base Shared Fare", amount: 6.50, status: "pending" },
+    ],
+    passengers: [
+      {
+        id: "p-1",
+        firstName: "Sarah",
+        lastName: "L",
+        displayName: "Sarah L.",
+        phone: "+256 700 111 222",
+        rating: 4.88,
+        seatCount: 1,
+        pickupStopId: "s-1",
+        dropoffStopId: "s-2",
+        status: "queued",
+        joinedSequence: 1,
+        fareContribution: 6.50,
+      }
+    ],
+    stops: [
+      {
+        id: "s-1",
+        type: "pickup",
+        passengerId: "p-1",
+        label: "Pickup Sarah L.",
+        address: "Acacia Mall, Kampala",
+        eta: "14:10",
+        status: "upcoming",
+        sequenceOrder: 1,
+        legDistance: "1.2 km",
+        legDuration: "4 min",
+      },
+      {
+        id: "s-2",
+        type: "dropoff",
+        passengerId: "p-1",
+        label: "Drop-off Sarah L.",
+        address: "Bugolobi Flats",
+        eta: "14:35",
+        status: "upcoming",
+        sequenceOrder: 2,
+        legDistance: "6.5 km",
+        legDuration: "20 min",
+      }
+    ]
+  }
+];

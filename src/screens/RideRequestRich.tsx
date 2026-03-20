@@ -4,18 +4,20 @@ Clock,
 Map,
 MapPin,
 Phone,
-User
+User,
+Users
 } from "lucide-react";
 import { useEffect,useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useSharedTrips } from "../context/SharedTripsContext";
 
 // EVzone Driver App – RideRequestRich Incoming Ride Request (Rich variant, v2)
 // Map + bottom sheet variant of an incoming job request.
 // Supports multiple job types: Ride / Delivery / Rental / Tour / Ambulance / Shuttle.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-const JOB_TYPES = ["ride", "delivery", "rental", "tour", "ambulance", "shuttle"];
+const JOB_TYPES = ["ride", "shared", "delivery", "rental", "tour", "ambulance", "shuttle"];
 
 
 function JobTypePill({ jobType }) {
@@ -57,6 +59,13 @@ function JobTypePill({ jobType }) {
       </span>
     );
   }
+  if (jobType === "shared") {
+    return (
+      <span className={`${base} bg-[#f77f00]/10 border-[#f77f00]/30 text-[#f77f00]`}>
+        Shared Ride
+      </span>
+    );
+  }
   // default Ride
   return (
     <span className={`${base} bg-slate-900/70 border-slate-700 text-slate-50`}>
@@ -67,6 +76,7 @@ function JobTypePill({ jobType }) {
 
 export default function RideRequestRich() {
   const navigate = useNavigate();
+  const { setActiveSharedTrip } = useSharedTrips();
   const [timeLeft, setTimeLeft] = useState(20);
   // Preview-only job type toggle so you can see all states in the canvas
   const [jobType, setJobType] = useState("ride");
@@ -81,6 +91,7 @@ export default function RideRequestRich() {
   const isRental = jobType === "rental";
   const isTour = jobType === "tour";
   const isShuttle = jobType === "shuttle";
+  const isShared = jobType === "shared";
 
   let headerTitle = "Sarah L · 4.88 ★";
   let rightTop = "$7.20 (est.)";
@@ -126,9 +137,25 @@ export default function RideRequestRich() {
     pickupSub = "Start of shuttle run";
     dropLabel = "Open Shuttle Driver App";
     dropSub = "Route & students shown in shuttle app";
+  } else if (isShared) {
+    headerTitle = "Sarah L. (1 seat) · 4.88 ★";
+    rightTop = "$6.50 (est. total)";
+    rightBottom = "2 pickups likely";
+    pickupLabel = "Pickup 1 · Acacia Mall";
+    pickupSub = "3 min away · +2 min wait max";
+    dropLabel = "Drop-off 1 · Bugolobi";
+    dropSub = "Route optimized for matches";
   }
 
   const primaryCta = isShuttle ? "Open Shuttle Driver App" : "Accept";
+
+  const handleAccept = () => {
+    if (isShared) {
+      navigate("/driver/trip/share-100/active");
+    } else {
+      navigate("/driver/trip/demo-trip/in-progress");
+    }
+  };
 
   return (
     <div className="flex flex-col h-full ">
@@ -268,7 +295,11 @@ export default function RideRequestRich() {
                 Decline
               </button>
             )}
-            <button className="flex-1 rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-orange-500 text-slate-900 shadow-xl shadow-orange-500/20 active:scale-95 transition-all">
+            <button 
+              type="button"
+              onClick={handleAccept}
+              className="flex-1 rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-orange-500 text-slate-900 shadow-xl shadow-orange-500/20 active:scale-95 transition-all"
+            >
               {primaryCta}
             </button>
           </div>

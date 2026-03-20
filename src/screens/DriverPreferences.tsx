@@ -18,6 +18,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 
+import { useSharedTrips } from "../context/SharedTripsContext";
+
 // EVzone Driver App – DriverPreferences Preferences
 // New design: green curved header, toggleable Areas/Services/Requirements cards, green nav.
 // Functionality: all items are clickable and toggle their active state (green ↔ white).
@@ -68,12 +70,18 @@ function RequirementCard({ icon: Icon, label, color, active, onClick }) {
     >
       <Icon className={`h-4 w-4 flex-shrink-0 ${active ? "text-white" : ""}`} style={!active ? { color } : {}} />
       <span className="text-[11px] font-medium">{label}</span>
+      {label === "Ride sharing" && (
+         <span className={`ml-auto text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${active ? "bg-white text-orange-500" : "bg-orange-50 text-orange-500"}`}>
+            New flow
+         </span>
+      )}
     </button>
   );
 }
 
 export default function DriverPreferences() {
   const navigate = useNavigate();
+  const { sharedRidesEnabled, setSharedRidesEnabled } = useSharedTrips();
 
   // Toggleable state for areas
   const [areas, setAreas] = useState([
@@ -99,12 +107,11 @@ export default function DriverPreferences() {
 
   // Toggleable state for requirements
   const [requirements, setRequirements] = useState([
-    { icon: ShoppingCart, label: "Shopping & Errands", color: "#f97316", active: true },
-    { icon: Briefcase, label: "Ride sharing", color: "#f77f00", active: false },
-    { icon: Clock, label: "Long Distance", color: "#2196F3", active: false },
-    { icon: ShoppingCart, label: "Shopping Partner", color: "#f97316", active: true },
-    { icon: Car, label: "Surge", color: "#ef4444", active: false },
-    { icon: Bus, label: "Ride sharing", color: "#f77f00", active: false },
+    { id: "shopping", icon: ShoppingCart, label: "Shopping & Errands", color: "#f97316", active: true },
+    { id: "shared", icon: Bus, label: "Ride sharing", color: "#f77f00", active: sharedRidesEnabled },
+    { id: "long", icon: Clock, label: "Long Distance", color: "#2196F3", active: false },
+    { id: "partner", icon: ShoppingCart, label: "Shopping Partner", color: "#f97316", active: true },
+    { id: "surge", icon: Car, label: "Surge", color: "#ef4444", active: false },
   ]);
 
   const toggleArea = (index) => {
@@ -116,7 +123,16 @@ export default function DriverPreferences() {
   };
 
   const toggleRequirement = (index) => {
-    setRequirements((prev) => prev.map((r, i) => (i === index ? { ...r, active: !r.active } : r)));
+    setRequirements((prev) => prev.map((r, i) => {
+       if (i === index) {
+          const toggled = !r.active;
+          if (r.id === "shared") {
+             setSharedRidesEnabled(toggled);
+          }
+          return { ...r, active: toggled };
+       }
+       return r;
+    }));
   };
 
   return (

@@ -9,6 +9,7 @@ export const JOB_FILTERS: { key: string; label: string }[] = [
   { key: "shuttle", label: "Shuttle" },
   { key: "tour", label: "Tour" },
   { key: "ambulance", label: "Ambulance" },
+  { key: "shared", label: "Shared" },
 ];
 
 // ── Period Options ────────────────────────────────────────
@@ -32,6 +33,7 @@ export const JOB_DETAIL_ROUTES: Record<JobCategory | "default", string> = {
   tour: "/driver/tour/demo-tour/today",
   ambulance: "/driver/ambulance/job/demo-job/status",
   shuttle: "/driver/help/shuttle-link",
+  shared: "/driver/jobs/incoming",
   default: "/driver/jobs/incoming",
 };
 
@@ -42,6 +44,7 @@ export const JOB_HISTORY_ROUTES: Record<JobCategory | "default", string> = {
   tour: "/driver/tour/demo-tour/today",
   shuttle: "/driver/help/shuttle-link",
   ambulance: "/driver/ambulance/job/demo-job/status",
+  shared: "/driver/trip/shared-100/proof",
   default: "/driver/trip/demo-trip/proof",
 };
 
@@ -53,6 +56,7 @@ export const JOB_CATEGORY_STYLES: Record<JobCategory, { bg: string; border: stri
   tour: { bg: "bg-brand-highlight/10", border: "border-brand-highlight/20", text: "text-brand-highlight", label: "Tour" },
   shuttle: { bg: "bg-violet-50", border: "border-violet-100", text: "text-violet-600", label: "Shuttle" },
   ambulance: { bg: "bg-red-50", border: "border-red-100", text: "text-red-600", label: "Ambulance" },
+  shared: { bg: "bg-orange-50", border: "border-orange-200", text: "text-orange-600", label: "Shared Ride" },
 };
 // ── Generic Status Styles ─────────────────────────────────
 export const GENERIC_STATUS_STYLES: Record<string, { bg: string; border: string; text: string; label: string }> = {
@@ -73,6 +77,7 @@ export const APP_VERSION = "1.0.0";
 export const SAMPLE_IDS = {
   vehicle: "v123",
   trip: "t456",
+  ride: "3250",
   route: "r789",
   stop: "s012",
   job: "j345",

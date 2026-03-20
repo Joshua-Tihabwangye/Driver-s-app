@@ -53,14 +53,14 @@ export default function TrainingIntro() {
 
         {/* White Card/Content Area */}
         <section className="flex-1 bg-white -mt-10 rounded-t-[3rem] px-8 pt-10 pb-12 flex flex-col shadow-[0_-20px_50px_rgba(0,0,0,0.02)]">
-          <div className="space-y-4">
-            <h2 className="text-2xl font-black text-slate-900 leading-tight tracking-tight">
-              Mastering the EVRide Experience
+          <div className="space-y-4 text-center">
+            <h2 className="text-2xl font-black text-slate-900 leading-tight tracking-tight px-4">
+              Mastering the EVzone Experience
             </h2>
-            <p className="text-[13px] text-slate-500 leading-relaxed font-medium">
+            <p className="text-[13px] text-slate-500 leading-relaxed font-medium px-4">
               Join our community of elite drivers. This 5-minute session covers everything from system basics to advanced EV management.
             </p>
-            <div className="flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-orange-500 bg-orange-50/50 w-fit px-3 py-1.5 rounded-full border border-orange-100">
+            <div className="flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-orange-500 bg-orange-50/50 w-fit px-3 py-1.5 rounded-full border border-orange-100 mx-auto">
               <CheckCircle2 className="h-3.5 w-3.5" />
               <span>Investment: 5–7 Minutes</span>
             </div>
