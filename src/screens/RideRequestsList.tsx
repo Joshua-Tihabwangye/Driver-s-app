@@ -8,7 +8,6 @@ import {
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useJobs } from "../context/JobsContext";
-import { useSharedTrips } from "../context/SharedTripsContext";
 import PageHeader from "../components/PageHeader";
 import StatusChip from "../components/StatusChip";
 import EmptyState from "../components/EmptyState";
@@ -130,7 +129,6 @@ export default function RideRequestsList() {
   const [selectedQuarter, setSelectedQuarter] = useState("Q1");
   const navigate = useNavigate();
   const { pendingJobs, attendJob } = useJobs();
-  const { sharedRidesEnabled } = useSharedTrips();
   const yearOptions = getYearOptions();
 
   useEffect(() => {
@@ -145,7 +143,7 @@ export default function RideRequestsList() {
     setSearchParams(newFilter === "all" ? {} : { category: newFilter }, { replace: true });
   };
 
-  const visiblePendingJobs = pendingJobs.filter(job => job.jobType !== "shared" || sharedRidesEnabled);
+  const visiblePendingJobs = pendingJobs;
   const filteredJobs = filter === "all" ? visiblePendingJobs : visiblePendingJobs.filter((job) => job.jobType === filter);
   const hasShuttleJob = filteredJobs.some((j) => j.jobType === "shuttle");
   const periodLabel = PERIOD_OPTIONS.find(p => p.key === period)?.label || "Today";

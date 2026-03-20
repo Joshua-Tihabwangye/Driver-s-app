@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import BottomNav from "./BottomNav";
 import { useTheme } from "../context/ThemeContext";
-import SharedTripSimulator from "./SharedTripSimulator";
 
 interface AppPhoneShellProps {
   children: React.ReactNode;
@@ -86,7 +85,6 @@ export default function AppPhoneShell({ children }: AppPhoneShellProps) {
           {children}
         </div>
       </div>
-      <SharedTripSimulator />
       <BottomNav isVisible={isVisible} />
     </div>
   );
