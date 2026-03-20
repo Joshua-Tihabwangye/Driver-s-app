@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useContext, useState, useMemo, useCallback } from "react";
 import type { Job, TripRecord, SharedTrip, RevenueEvent, PeriodFilter, JobCategory } from "../data/types";
-import { MOCK_EARNINGS } from "../data/mockData";
+import { MOCK_EARNINGS, MOCK_COMPLETED_TRIPS } from "../data/mockData";
 
 export interface DashboardMetrics {
   onlineTime: string;
@@ -37,7 +37,7 @@ interface StoreContextType {
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 // Helper to filter dates (mock simplified logic for demonstration)
-const isWithinPeriod = (timestampOrDate: number | string, period: PeriodFilter) => {
+export const isWithinPeriod = (timestampOrDate: number | string, period: PeriodFilter) => {
   const now = Date.now();
   const date = new Date(timestampOrDate).getTime();
   const diffHours = (now - date) / (1000 * 60 * 60);
@@ -52,20 +52,27 @@ const isWithinPeriod = (timestampOrDate: number | string, period: PeriodFilter) 
 
 // Extracted from original mock
 const initialJobs: Job[] = [
+  { id: "3244", from: "Kampala Serena", to: "Entebbe Airport", distance: "38 km", duration: "45 min", fare: "85.00", jobType: "ride", status: "pending", requestedAt: Date.now() - 0.02 * 3600000 },
+  { id: "3245", from: "Village Mall", to: "Kyambogo", distance: "5.2 km", duration: "16 min", fare: "12.50", jobType: "ride", status: "pending", requestedAt: Date.now() - 0.05 * 3600000 },
   { id: "3246", from: "Airport", to: "Safari Lodge", distance: "42 km", duration: "Day 2 of 5", fare: "Tour", jobType: "tour", status: "pending", requestedAt: Date.now() - 3 * 3600000 },
   { id: "3247", from: "Near Acacia Road", to: "City Hospital", distance: "3.1 km", duration: "8 min", fare: "—", jobType: "ambulance", status: "pending", requestedAt: Date.now() - 0.1 * 3600000 },
   { id: "3249", from: "FreshMart", to: "Naguru", distance: "2.7 km", duration: "10 min", fare: "3.40", jobType: "delivery", itemType: "Grocery", status: "pending", requestedAt: Date.now() - 0.8 * 3600000 },
   { id: "shared-100", from: "Acacia Mall", to: "Bugolobi (+1 stop)", distance: "7.7 km", duration: "24 min", fare: "15.40", jobType: "shared", status: "pending", requestedAt: Date.now() - 0.15 * 3600000 },
+  { id: "shared-101", from: "Makerere Main Gate", to: "Ntinda (+2 stops)", distance: "8.5 km", duration: "30 min", fare: "18.20", jobType: "shared", status: "pending", requestedAt: Date.now() - 0.25 * 3600000 },
 ];
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [periodFilter, setPeriodFilter] = useState<PeriodFilter>("day");
   const [jobs, setJobs] = useState<Job[]>(initialJobs);
-  const [trips, setTrips] = useState<TripRecord[]>([]);
+  const [trips, setTrips] = useState<TripRecord[]>(MOCK_COMPLETED_TRIPS);
   const [revenueEvents, setRevenueEvents] = useState<RevenueEvent[]>([
     // Prepulate some today revenue for demonstration
-    { id: "r1", tripId: "t1", timestamp: Date.now() - 3600000, type: "base", amount: 8000, label: "Private Ride", category: "ride" },
-    { id: "r2", tripId: "t2", timestamp: Date.now() - 7200000, type: "shared_addon", amount: 12500, label: "Shared Ride", category: "shared" },
+    { id: "r1", tripId: "t1", timestamp: Date.now() - 3600000, type: "base", amount: 28000, label: "Private Ride", category: "ride" },
+    { id: "r2", tripId: "t2", timestamp: Date.now() - 7200000, type: "shared_addon", amount: 42500, label: "Shared Ride", category: "shared" },
+    { id: "r3", tripId: "t3", timestamp: Date.now() - 14400000, type: "base", amount: 15600, label: "Delivery", category: "delivery" },
+    { id: "r4", tripId: "t4", timestamp: Date.now() - 86400000 * 2, type: "base", amount: 120000, label: "Rental", category: "rental" },
+    { id: "r5", tripId: "t5", timestamp: Date.now() - 86400000 * 5, type: "base", amount: 250000, label: "Tour", category: "tour" },
+    { id: "r6", tripId: "t6", timestamp: Date.now() - 86400000 * 10, type: "base", amount: 35000, label: "Private Ride", category: "ride" },
   ]);
   const [activeSharedTrip, setActiveSharedTrip] = useState<SharedTrip | null>(null);
 

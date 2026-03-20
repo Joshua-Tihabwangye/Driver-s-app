@@ -81,6 +81,11 @@ import AddShareContact from "../screens/AddShareContact";
 import ProofOfTripMain from "../screens/ProofOfTripMain";
 import ProofOfTripActive from "../screens/ProofOfTripActive";
 import RideHistory from "../screens/RideHistory";
+import RideDetails from "../screens/RideDetails";
+import SharedRideDetails from "../screens/SharedRideDetails";
+import DeliveryDetailsView from "../screens/DeliveryDetailsView";
+import RentalDetailsView from "../screens/RentalDetailsView";
+import TourDetailsView from "../screens/TourDetailsView";
 import SafetyHub from "../screens/SafetyHub";
 import SafetyHubExpanded from "../screens/SafetyHubExpanded";
 import DrivingHours from "../screens/DrivingHours";
@@ -213,6 +218,11 @@ export const SCREENS: ScreenConfig[] = [
   { id: "ProofOfTripMain", label: "Proof of Trip Status – Main View", path: "/driver/trip/:tripId/proof", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/proof`, Component: ProofOfTripMain },
   { id: "ProofOfTripActive", label: "Proof of Trip – Active Trip View", path: "/driver/trip/:tripId/proof/active", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/proof/active`, Component: ProofOfTripActive },
   { id: "RideHistory", label: "Ride History", path: "/driver/history/rides", Component: RideHistory },
+  { id: "RideDetails", label: "Ride Details", path: "/driver/history/ride/:tripId", previewPath: `/driver/history/ride/${SAMPLE_IDS.trip}`, Component: RideDetails },
+  { id: "SharedRideDetails", label: "Shared Ride Details", path: "/driver/history/shared/:tripId", previewPath: `/driver/history/shared/shared-100`, Component: SharedRideDetails },
+  { id: "DeliveryDetailsView", label: "Delivery Details", path: "/driver/history/delivery/:tripId", previewPath: `/driver/history/delivery/${SAMPLE_IDS.job}`, Component: DeliveryDetailsView },
+  { id: "RentalDetailsView", label: "Rental Details", path: "/driver/history/rental/:tripId", previewPath: `/driver/history/rental/${SAMPLE_IDS.job}`, Component: RentalDetailsView },
+  { id: "TourDetailsView", label: "Tour Details", path: "/driver/history/tour/:tripId", previewPath: `/driver/history/tour/${SAMPLE_IDS.tour}`, Component: TourDetailsView },
   // Safety hub additions
   { id: "SafetyHub", label: "Safety Hub", path: "/driver/safety/hub", Component: SafetyHub },
   { id: "SafetyHubExpanded", label: "Safety Hub – Expanded", path: "/driver/safety/hub/expanded", Component: SafetyHubExpanded },

@@ -13,7 +13,7 @@ import {
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
-import SharedTripSimulator from "../components/SharedTripSimulator";
+
 import { useSharedTrips } from "../context/SharedTripsContext";
 
 export default function ActiveSharedTrip() {
@@ -24,7 +24,8 @@ export default function ActiveSharedTrip() {
     markRiderOnboard, 
     markRiderNoShow, 
     markRiderDroppedOff, 
-    simulateNewMatch 
+    simulateNewMatch,
+    toggleAllowMatches 
   } = useSharedTrips();
 
   const [waitTimer, setWaitTimer] = useState<number | null>(null);
@@ -78,7 +79,7 @@ export default function ActiveSharedTrip() {
 
   return (
     <div className="flex flex-col h-full bg-slate-50 relative">
-      <SharedTripSimulator />
+
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
@@ -108,9 +109,18 @@ export default function ActiveSharedTrip() {
              <span className="text-[10px] font-black uppercase tracking-widest">{activeSharedTrip.occupiedSeats}/{activeSharedTrip.seatCapacity} Seats</span>
           </div>
           
-          <div className="absolute top-4 right-4 bg-slate-900/80 backdrop-blur-md text-white px-3 py-1.5 rounded-full flex flex-col items-end shadow-lg border border-white/10">
-             <span className="text-[8px] text-emerald-400 font-bold uppercase tracking-widest">Real-time Revenue</span>
-             <span className="text-[12px] font-black uppercase tracking-widest">${activeSharedTrip.estimatedTotalEarnings.toFixed(2)}</span>
+          <div className="absolute top-4 right-4 flex flex-col items-end space-y-2">
+            <div className="bg-slate-900/80 backdrop-blur-md text-white px-3 py-1.5 rounded-full flex flex-col items-end shadow-lg border border-white/10">
+               <span className="text-[8px] text-emerald-400 font-bold uppercase tracking-widest">Real-time Revenue</span>
+               <span className="text-[12px] font-black uppercase tracking-widest">${activeSharedTrip.estimatedTotalEarnings.toFixed(2)}</span>
+            </div>
+            
+            <button
+               onClick={toggleAllowMatches}
+               className={`text-[9px] font-black uppercase px-3 py-1.5 rounded-full tracking-widest transition-all shadow-lg ${activeSharedTrip.allowAdditionalMatches ? "bg-orange-500 text-white border border-orange-400" : "bg-slate-100/90 backdrop-blur text-slate-500 border border-white"}`}
+             >
+               {activeSharedTrip.allowAdditionalMatches ? "Taking Matches" : "Vehicle Full"}
+             </button>
           </div>
         </section>
 

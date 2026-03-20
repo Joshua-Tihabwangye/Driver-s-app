@@ -38,14 +38,14 @@ export const JOB_DETAIL_ROUTES: Record<JobCategory | "default", string> = {
 };
 
 export const JOB_HISTORY_ROUTES: Record<JobCategory | "default", string> = {
-  ride: "/driver/trip/demo-trip/proof",
-  delivery: "/driver/delivery/route/demo-route/details",
-  rental: "/driver/rental/job/demo-job",
-  tour: "/driver/tour/demo-tour/today",
-  shuttle: "/driver/help/shuttle-link",
+  ride: "/driver/history/ride/",
+  delivery: "/driver/history/delivery/",
+  rental: "/driver/history/rental/",
+  tour: "/driver/history/tour/",
+  shuttle: "/driver/help/shuttle-link/",
   ambulance: "/driver/ambulance/job/demo-job/status",
-  shared: "/driver/trip/shared-100/proof",
-  default: "/driver/trip/demo-trip/proof",
+  shared: "/driver/history/shared/",
+  default: "/driver/history/ride/",
 };
 
 // ── Job Category Color Map ───────────────────────────────

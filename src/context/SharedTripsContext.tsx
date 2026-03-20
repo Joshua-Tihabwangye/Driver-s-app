@@ -14,6 +14,7 @@ interface SharedTripsContextType {
   markRiderNoShow: (passengerId: string) => void;
   markRiderDroppedOff: (passengerId: string) => void;
   simulateNewMatch: () => void;
+  toggleAllowMatches: () => void;
 }
 
 const SharedTripsContext = createContext<SharedTripsContextType | undefined>(undefined);
@@ -134,6 +135,13 @@ export function SharedTripsProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const toggleAllowMatches = useCallback(() => {
+    setActiveSharedTrip(prev => {
+      if (!prev) return prev;
+      return { ...prev, allowAdditionalMatches: !prev.allowAdditionalMatches };
+    });
+  }, []);
+
   const simulateNewMatch = useCallback(() => {
     setActiveSharedTrip(prev => {
       if (!prev) return prev;
@@ -221,7 +229,8 @@ export function SharedTripsProvider({ children }: { children: ReactNode }) {
     markRiderOnboard,
     markRiderNoShow,
     markRiderDroppedOff,
-    simulateNewMatch
+    simulateNewMatch,
+    toggleAllowMatches
   }), [
     sharedRidesEnabled, 
     activeSharedTrip, 
@@ -229,7 +238,8 @@ export function SharedTripsProvider({ children }: { children: ReactNode }) {
     markRiderOnboard, 
     markRiderNoShow, 
     markRiderDroppedOff, 
-    simulateNewMatch
+    simulateNewMatch,
+    toggleAllowMatches
   ]);
 
   return <SharedTripsContext.Provider value={value}>{children}</SharedTripsContext.Provider>;

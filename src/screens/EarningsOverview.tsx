@@ -7,7 +7,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";
-import { useStore } from "../context/StoreContext";
+import { useStore, isWithinPeriod } from "../context/StoreContext";
 import { MOCK_WALLET_BALANCE, MOCK_WEEKLY_TOTAL } from "../data/mockData";
 
 // EVzone Driver App – EarningsOverview Driver App – Earnings & Stats Dashboard
@@ -39,18 +39,25 @@ function StationRow({ name, value, total }: any) {
 
 export default function EarningsOverview() {
   const navigate = useNavigate();
-  const { recentEarnings, revenueEvents, periodFilter } = useStore();
-  const latestEarning = recentEarnings[0];
+  const { recentEarnings, revenueEvents, periodFilter, setPeriodFilter, dashboardMetrics } = useStore();
+  const latestEarning = recentEarnings[0] || { amount: 0 };
 
-  const filteredRevenue = revenueEvents.filter(r => {
-    // simplified filter based on period array in store, we just take all revenue events for this demo
-    return true;
-  });
+  const filteredRevenue = revenueEvents.filter(r => isWithinPeriod(r.timestamp, periodFilter));
 
-  const sharedRevenue = filteredRevenue.filter(r => r.category === "shared").reduce((sum, r) => sum + r.amount, 0);
-  const privateRevenue = filteredRevenue.filter(r => r.category !== "shared").reduce((sum, r) => sum + r.amount, 0);
-  const totalRevenue = sharedRevenue + privateRevenue || 1; // prevent div by zero
-  const sharedPercentage = Math.round((sharedRevenue / totalRevenue) * 100);
+  const rideRev = filteredRevenue.filter(r => r.category === "ride").reduce((sum, r) => sum + r.amount, 0);
+  const sharedRev = filteredRevenue.filter(r => r.category === "shared").reduce((sum, r) => sum + r.amount, 0);
+  const deliveryRev = filteredRevenue.filter(r => r.category === "delivery").reduce((sum, r) => sum + r.amount, 0);
+  const rentalRev = filteredRevenue.filter(r => r.category === "rental").reduce((sum, r) => sum + r.amount, 0);
+  const tourRev = filteredRevenue.filter(r => r.category === "tour").reduce((sum, r) => sum + r.amount, 0);
+  
+  const totalRevenue = rideRev + sharedRev + deliveryRev + rentalRev + tourRev || 1; // prevent div by zero
+  const sharedPercentage = Math.round((sharedRev / totalRevenue) * 100);
+  
+  const avgPerJob = dashboardMetrics.jobsCount > 0 ? totalRevenue / dashboardMetrics.jobsCount : 0;
+
+  // Determine Top Earning Category
+  const revMap = { "Private": rideRev, "Shared": sharedRev, "Delivery": deliveryRev, "Rental": rentalRev, "Tour": tourRev };
+  const topCategory = Object.entries(revMap).reduce((a, b) => a[1] > b[1] ? a : b)[0];
 
   return (
     <div className="flex flex-col h-full bg-transparent">
@@ -58,6 +65,59 @@ export default function EarningsOverview() {
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
+        
+        {/* Period Selector */}
+        <div className="flex justify-between items-center bg-white dark:bg-slate-900 px-4 py-3 rounded-2xl shadow-sm border border-slate-100">
+           <span className="text-[11px] font-black uppercase tracking-widest text-slate-500">Analysis Period</span>
+           <select 
+             value={periodFilter} 
+             onChange={(e) => setPeriodFilter(e.target.value as any)}
+             className="bg-slate-100 text-slate-900 text-xs font-bold px-3 py-1.5 rounded-lg border-none focus:ring-0 cursor-pointer uppercase tracking-wider"
+           >
+             <option value="day">Today</option>
+             <option value="week">This Week</option>
+             <option value="month">This Month</option>
+             <option value="quarter">Last 90 Days</option>
+             <option value="year">This Year</option>
+           </select>
+        </div>
+
+        {/* Global Analytics Overview Grid */}
+        <section className="grid grid-cols-2 gap-3">
+           <div className="bg-slate-900 text-white p-4 rounded-3xl shadow-lg border border-slate-800 flex flex-col justify-between">
+              <span className="text-[10px] uppercase font-black tracking-widest text-emerald-400">Total Revenue</span>
+              <span className="text-xl font-black mt-2">UGX {totalRevenue.toLocaleString()}</span>
+           </div>
+           <div className="bg-orange-500 text-white p-4 rounded-3xl shadow-lg border border-orange-400 flex flex-col justify-between">
+              <span className="text-[10px] uppercase font-black tracking-widest text-orange-200">Avg / Job</span>
+              <span className="text-xl font-black mt-2">UGX {avgPerJob.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+           </div>
+           <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 col-span-2">
+              <span className="text-[10px] uppercase font-black tracking-widest text-slate-400 block mb-3">Revenue by Service</span>
+              <div className="flex flex-col space-y-3">
+                 <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-slate-600">Private Rides</span>
+                    <span className="text-slate-900">UGX {rideRev.toLocaleString()}</span>
+                 </div>
+                 <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-slate-600">Shared Rides</span>
+                    <span className="text-orange-500">UGX {sharedRev.toLocaleString()}</span>
+                 </div>
+                 <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-slate-600">Deliveries</span>
+                    <span className="text-blue-500">UGX {deliveryRev.toLocaleString()}</span>
+                 </div>
+                 <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-slate-600">Rentals & Tours</span>
+                    <span className="text-purple-500">UGX {(rentalRev + tourRev).toLocaleString()}</span>
+                 </div>
+                 <div className="mt-3 pt-3 border-t border-slate-100 flex justify-between items-center">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Top Category</span>
+                    <span className="text-[10px] uppercase font-black bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md">{topCategory}</span>
+                 </div>
+              </div>
+           </div>
+        </section>
 
         {/* Welcome Banner */}
         <section className="rounded-[2.5rem] bg-slate-900 border border-slate-800 p-6 flex items-center justify-between text-white relative h-28 overflow-hidden shadow-2xl group hover:scale-[1.01] transition-transform duration-500">
@@ -121,15 +181,15 @@ export default function EarningsOverview() {
 
         {/* Revenue Breakdown */}
         <section className="rounded-[2.5rem] border-2 border-orange-500/10 bg-cream p-6 space-y-4 shadow-sm">
-          <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Revenue Mix</h3>
+          <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Shared vs Private Ratio</h3>
           <div className="flex justify-between items-end">
             <div className="flex flex-col">
-              <span className="text-xl font-black text-slate-900">UGX {privateRevenue.toLocaleString()}</span>
-              <span className="text-[10px] uppercase font-bold text-slate-500">Private Rides</span>
+              <span className="text-xl font-black text-slate-900">UGX {rideRev.toLocaleString()}</span>
+              <span className="text-[10px] uppercase font-bold text-slate-500">Private Revenue</span>
             </div>
             <div className="flex flex-col text-right">
-              <span className="text-xl font-black text-orange-600">UGX {sharedRevenue.toLocaleString()}</span>
-              <span className="text-[10px] uppercase font-bold text-slate-500">Shared Rides</span>
+              <span className="text-xl font-black text-orange-600">UGX {sharedRev.toLocaleString()}</span>
+              <span className="text-[10px] uppercase font-bold text-slate-500">Shared Revenue</span>
             </div>
           </div>
           <div className="h-4 w-full bg-slate-200 rounded-full flex overflow-hidden">
@@ -137,7 +197,7 @@ export default function EarningsOverview() {
              <div className="h-full bg-orange-500" style={{ width: `${sharedPercentage}%` }} />
           </div>
           <div className="text-[10px] text-slate-500 font-bold uppercase tracking-tight text-center">
-             Shared rides added <span className="text-orange-600">+{sharedPercentage}%</span> to your earnings
+             Shared rides added <span className="text-orange-600">+{sharedPercentage}%</span> margin efficiency
           </div>
         </section>
 
