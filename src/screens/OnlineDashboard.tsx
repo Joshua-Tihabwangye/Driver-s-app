@@ -12,7 +12,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import OfflineConfirmModal from "../components/OfflineConfirmModal";
-import { MOCK_DASHBOARD_STATS } from "../data/mockData";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – OnlineDashboard Online Dashboard (Active Mode)
 // Restoration of the original design from Driver-s-app.
@@ -37,7 +37,8 @@ function QuickAction({ icon: Icon, label, sub, onClick }: any) {
 
 export default function OnlineDashboard() {
   const navigate = useNavigate();
-  const { onlineTime, jobsToday, earningsToday } = MOCK_DASHBOARD_STATS;
+  const { dashboardMetrics } = useStore();
+  const { onlineTime, jobsCount, earningsAmount } = dashboardMetrics;
   const [showOfflineModal, setShowOfflineModal] = useState(false);
 
   return (
@@ -94,11 +95,11 @@ export default function OnlineDashboard() {
             <div className="pt-6 border-t border-slate-200 grid grid-cols-2 gap-8">
               <div className="flex flex-col space-y-1">
                  <span className="text-[10px] uppercase font-black text-slate-500 tracking-[0.2em]">TODAY'S EARNINGS</span>
-                 <span className="text-2xl font-black text-slate-900 tracking-tight">{earningsToday}</span>
+                 <span className="text-2xl font-black text-slate-900 tracking-tight">{earningsAmount}</span>
               </div>
               <div className="flex flex-col space-y-1 text-right">
                  <span className="text-[10px] uppercase font-black text-slate-500 tracking-[0.2em]">TRIPS</span>
-                 <span className="text-2xl font-black text-emerald-500 tracking-tight">{jobsToday}</span>
+                 <span className="text-2xl font-black text-emerald-500 tracking-tight">{jobsCount}</span>
               </div>
             </div>
           </div>

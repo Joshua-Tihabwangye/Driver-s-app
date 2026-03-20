@@ -5,6 +5,16 @@ export type JobStatus = "pending" | "attended" | "in-progress" | "completed" | "
 export type TripStatus = "navigating" | "waiting" | "in-progress" | "completed" | "cancelled";
 export type DocumentStatus = "pending" | "under-review" | "verified" | "rejected";
 
+export interface SharedContact {
+  id: string;
+  name: string;
+  phone: string;
+  email?: string;
+  relationship?: string;
+  note?: string;
+  createdAt: number;
+}
+
 export interface Job {
   id: string;
   from: string;
@@ -16,6 +26,7 @@ export interface Job {
   itemType?: string;
   status: JobStatus;
   requestedAt: number;
+  sharedContacts?: SharedContact[];
 }
 
 export interface Vehicle {
@@ -58,6 +69,18 @@ export interface AppNotification {
   type: "info" | "promo" | "alert" | "system";
   read: boolean;
   createdAt: number;
+}
+
+export type PeriodFilter = "day" | "week" | "month" | "quarter" | "year";
+
+export interface RevenueEvent {
+  id: string;
+  tripId: string;
+  timestamp: number;
+  type: "base" | "distance" | "time" | "pickup_bonus" | "shared_addon" | "no_show_fee" | "cancellation_adjustment" | "other";
+  amount: number;
+  label: string;
+  category: JobCategory;
 }
 
 export interface TripRecord {
