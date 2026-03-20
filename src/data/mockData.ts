@@ -60,6 +60,15 @@ export const MOCK_DASHBOARD_STATS = {
   },
 };
 
+// ── Completed Trips History ────────────────────────────────
+export const MOCK_COMPLETED_TRIPS: import('./types').TripRecord[] = [
+  { id: "tr-101", from: "Acacia Mall", to: "Ntinda", date: "2026-03-20", time: "10:15 AM", amount: "12500", jobType: "ride", status: "completed" },
+  { id: "tr-102", from: "Arena Mall", to: "Kibuli", date: "2026-03-20", time: "09:30 AM", amount: "8000", jobType: "shared", status: "completed" },
+  { id: "tr-103", from: "Bugolobi", to: "Luzira", date: "2026-03-19", time: "04:45 PM", amount: "15000", jobType: "ride", status: "completed" },
+  { id: "tr-104", from: "Makerere", to: "Wandegeya", date: "2026-03-19", time: "02:10 PM", amount: "5500", jobType: "delivery", status: "completed" },
+  { id: "tr-105", from: "City Square", to: "Kololo", date: "2026-03-18", time: "11:20 AM", amount: "9000", jobType: "shared", status: "completed" },
+];
+
 // ── Delivery Routes ──────────────────────────────────────
 export const MOCK_DELIVERY_ROUTES = {
   "demo-route": {

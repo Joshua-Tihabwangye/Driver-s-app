@@ -89,9 +89,13 @@ export interface TripRecord {
   to: string;
   date: string;
   time: string;
-  amount: string;
+  amount: string | number;
   jobType: JobCategory;
   status: TripStatus;
+  pickup?: string;
+  dropoff?: string;
+  distance?: string;
+  duration?: string;
 }
 
 // ── Shared Trips Types ───────────────────────────────────

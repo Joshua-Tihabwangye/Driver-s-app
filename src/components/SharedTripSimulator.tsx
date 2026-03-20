@@ -1,14 +1,27 @@
 import React, { useState } from 'react';
 import { useSharedTrips } from '../context/SharedTripsContext';
 import { useStore } from '../context/StoreContext';
-import { Settings2, Plus, UserX, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { Settings2, Plus, ArrowDownToLine } from 'lucide-react';
 
 export default function SharedTripSimulator() {
   const [isOpen, setIsOpen] = useState(false);
   const { activeSharedTrip, simulateNewMatch } = useSharedTrips();
-  const { setPeriodFilter, periodFilter } = useStore();
+  const { setPeriodFilter, periodFilter, addJob } = useStore();
 
-  if (!activeSharedTrip) return null;
+  const triggerIncomingRequest = () => {
+    addJob({
+      id: `mock-shared-${Date.now()}`,
+      from: "Makerere Main Gate",
+      to: "Ntinda (+2 stops)",
+      distance: "8.5 km",
+      duration: "30 min",
+      fare: "18.20",
+      jobType: "shared",
+      status: "pending",
+      requestedAt: Date.now()
+    });
+    setIsOpen(false);
+  };
 
   return (
     <div className="fixed bottom-24 right-4 z-50 flex flex-col items-end">
@@ -23,9 +36,17 @@ export default function SharedTripSimulator() {
             {/* Actions */}
             <div className="space-y-2">
               <p className="text-[9px] font-bold uppercase text-slate-500 tracking-wider">Trip Events</p>
+              
+              <button 
+                onClick={triggerIncomingRequest} 
+                className="w-full bg-slate-800 hover:bg-slate-700 text-left px-3 py-2 rounded-xl flex items-center text-[11px] font-bold transition-colors"
+               >
+                 <ArrowDownToLine className="h-3 w-3 mr-2 text-blue-400" /> Simulate Incoming Request
+              </button>
+
               <button 
                 onClick={simulateNewMatch} 
-                disabled={!activeSharedTrip.allowAdditionalMatches}
+                disabled={!activeSharedTrip || !activeSharedTrip.allowAdditionalMatches}
                 className="w-full bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-left px-3 py-2 rounded-xl flex items-center text-[11px] font-bold transition-colors"
                >
                  <Plus className="h-3 w-3 mr-2 text-emerald-400" /> Simulate Co-Rider Match

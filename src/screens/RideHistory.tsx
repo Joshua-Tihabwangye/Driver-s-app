@@ -4,7 +4,7 @@ import {
   History as HistoryIcon
 } from "lucide-react";
 import { useState } from "react";
-import { useJobs } from "../context/JobsContext";
+import { useStore } from "../context/StoreContext";
 import PageHeader from "../components/PageHeader";
 import StatusChip from "../components/StatusChip";
 import EmptyState from "../components/EmptyState";
@@ -14,26 +14,8 @@ import { useNavigate } from "react-router-dom";
 // EVzone Driver App – RideHistory Driver – Ride History
 // Shows ONLY attended/completed jobs from the centralized context.
 
-function formatDate(ts: number): string {
-  const diff = Date.now() - ts;
-  const hours = diff / 3_600_000;
-  if (hours < 24) return "Today";
-  if (hours < 48) return "Yesterday";
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `${days} days ago`;
-  return "Last week";
-}
-
-function formatTime(ts: number): string {
-  const d = new Date(ts);
-  return d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
-}
-
-function TripRow({ job, onClick, navigate }: any) {
-  const { from, to, fare, jobType, requestedAt } = job;
-  const date = formatDate(requestedAt);
-  const time = formatTime(requestedAt);
-  const amount = fare;
+function TripRow({ trip, onClick, navigate }: any) {
+  const { from, to, amount, jobType, date, time } = trip;
   return (
     <button
       type="button"
@@ -59,16 +41,9 @@ function TripRow({ job, onClick, navigate }: any) {
         <span className="text-[15px] font-medium text-slate-900 dark:text-white">
           {amount !== "—" ? `$${amount}` : "—"}
         </span>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            navigate(`/driver/safety/share-my-ride/${job.id}`);
-          }}
-          className="flex items-center space-x-1 rounded-full bg-orange-500/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-orange-600 border border-orange-500/20 hover:bg-emerald-500 hover:text-white hover:border-emerald-500 transition-all active:scale-95"
-        >
-          <Share2 className="h-3 w-3" />
-          <span>Share</span>
-        </button>
+        {jobType === "shared" && (
+          <span className="bg-orange-500/10 text-orange-600 border border-orange-500/20 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md mt-1 shadow-sm">Shared Ride</span>
+        )}
       </div>
     </button>
   );
@@ -76,13 +51,13 @@ function TripRow({ job, onClick, navigate }: any) {
 
 export default function RideHistory() {
   const [filter, setFilter] = useState("all");
-  const { attendedJobs } = useJobs();
+  const { trips } = useStore();
   const navigate = useNavigate();
 
   const filteredTrips =
     filter === "all"
-      ? attendedJobs
-      : attendedJobs.filter((job) => job.jobType === filter);
+      ? trips
+      : trips.filter((trip) => trip.jobType === filter);
 
   return (
     <div className="flex flex-col h-full ">
@@ -122,12 +97,12 @@ export default function RideHistory() {
 
         {/* Job list */}
         <section className="space-y-3">
-          {filteredTrips.map((job) => (
+          {filteredTrips.map((trip) => (
             <TripRow
-              key={job.id}
-              job={job}
+              key={trip.id}
+              trip={trip}
               navigate={navigate}
-              onClick={() => navigate(JOB_HISTORY_ROUTES[job.jobType] || JOB_HISTORY_ROUTES.default)}
+              onClick={() => navigate((JOB_HISTORY_ROUTES[trip.jobType] || JOB_HISTORY_ROUTES.default) + trip.id)}
             />
           ))}
 
