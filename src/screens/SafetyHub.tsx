@@ -67,7 +67,7 @@ export default function SafetyHub() {
       <PageHeader 
         title="Safety Hub" 
         subtitle="Safety" 
-        hideBack={true} 
+        onBack={() => navigate(-1)} 
       />
 
       <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-6">
@@ -89,7 +89,7 @@ export default function SafetyHub() {
           </div>
           <p className="text-[11px] text-slate-400 font-medium leading-relaxed">
             Open the Safety hub any time you feel unsafe, notice something
-            unusual, or want someone to follow your trip.
+            unusual, or need emergency assistance.
           </p>
         </section>
 
@@ -109,30 +109,9 @@ export default function SafetyHub() {
             <HubTile
               icon={LifeBuoy}
               title="Safety toolkit"
-              subtitle="Access SOS, follow ride, and support options in one place."
+              subtitle="Access SOS, and support options in one place."
               tone="primary"
               onClick={() => navigate("/driver/safety/hub/expanded")}
-            />
-          </div>
-        </section>
-
-        {/* Share trip */}
-        <section className="space-y-4">
-          <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-2">
-            Share Your Trip
-          </h2>
-          <div className="space-y-3">
-            <HubTile
-              icon={MapPin}
-              title="Follow my ride"
-              subtitle="Let trusted contacts follow your location for this trip."
-              onClick={() => navigate("/driver/safety/follow-my-ride")}
-            />
-            <HubTile
-              icon={Share2}
-              title="Share my trip link"
-              subtitle="Create a link or QR code friends or family can use."
-              onClick={() => navigate("/driver/safety/share-my-ride")}
             />
           </div>
         </section>

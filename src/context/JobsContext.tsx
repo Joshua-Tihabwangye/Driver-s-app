@@ -2,7 +2,17 @@ import { createContext, ReactNode, useContext, useState, useCallback, useMemo } 
 
 // ── Types ────────────────────────────────────────────────
 export type JobStatus = "pending" | "attended";
-export type JobCategory = "ride" | "delivery" | "rental" | "shuttle" | "tour" | "ambulance";
+export type JobCategory = "ride" | "delivery" | "rental" | "shuttle" | "tour" | "ambulance" | "shared";
+
+export interface SharedContact {
+  id: string;
+  name: string;
+  phone: string;
+  email?: string;
+  relationship?: string;
+  note?: string;
+  createdAt: number;
+}
 
 export interface Job {
   id: string;
@@ -15,6 +25,7 @@ export interface Job {
   itemType?: string;        // delivery-specific
   status: JobStatus;
   requestedAt: number;      // Unix timestamp (ms)
+  sharedContacts?: SharedContact[];
 }
 
 interface JobsContextType {
@@ -26,6 +37,8 @@ interface JobsContextType {
   pendingCount: number;
   /** Mark a job as attended — moves it from pending → attended */
   attendJob: (id: string) => void;
+  /** Add a shared contact to a specific job */
+  addSharedContact: (jobId: string, contact: Omit<SharedContact, "id" | "createdAt">) => void;
   /** All jobs regardless of status */
   allJobs: Job[];
 }
@@ -44,9 +57,23 @@ const INITIAL_JOBS: Job[] = [
   { id: "3246", from: "Airport", to: "Safari Lodge", distance: "42 km", duration: "Day 2 of 5", fare: "Tour", jobType: "tour", status: "pending", requestedAt: now - 3 * HOUR },
   { id: "3247", from: "Near Acacia Road", to: "City Hospital", distance: "3.1 km", duration: "8 min", fare: "—", jobType: "ambulance", status: "pending", requestedAt: now - 0.1 * HOUR },
   { id: "3249", from: "FreshMart", to: "Naguru", distance: "2.7 km", duration: "10 min", fare: "3.40", jobType: "delivery", itemType: "Grocery", status: "pending", requestedAt: now - 0.8 * HOUR },
+  { id: "shared-100", from: "Acacia Mall", to: "Bugolobi (+1 stop)", distance: "7.7 km", duration: "24 min", fare: "15.40", jobType: "shared", status: "pending", requestedAt: now - 0.15 * HOUR },
 
   // Already attended (appear in History)
-  { id: "3250", from: "Acacia Mall", to: "Bugolobi", distance: "9.1 km", duration: "22 min", fare: "7.20", jobType: "ride", status: "attended", requestedAt: now - 5 * HOUR },
+  { 
+    id: "3250", 
+    from: "Acacia Mall", 
+    to: "Bugolobi", 
+    distance: "9.1 km", 
+    duration: "22 min", 
+    fare: "7.20", 
+    jobType: "ride", 
+    status: "attended", 
+    requestedAt: now - 5 * HOUR,
+    sharedContacts: [
+      { id: "c1", name: "Sarah (sister)", phone: "+256 700 000 111", relationship: "sister", createdAt: now - 10 * HOUR }
+    ]
+  },
   { id: "3251", from: "City Centre", to: "Ntinda", distance: "7.8 km", duration: "19 min", fare: "5.40", jobType: "ride", status: "attended", requestedAt: now - 8 * HOUR },
   { id: "3252", from: "Burger Hub, Acacia Mall", to: "Kira Road", distance: "3.2 km", duration: "15 min", fare: "3.80", jobType: "delivery", itemType: "Food", status: "attended", requestedAt: now - 24 * HOUR },
   { id: "3253", from: "City Hotel", to: "Rental day", distance: "—", duration: "09:00–17:10", fare: "64.80", jobType: "rental", status: "attended", requestedAt: now - 30 * HOUR },
@@ -67,6 +94,25 @@ export function JobsProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
+  const addSharedContact = useCallback((jobId: string, contact: Omit<SharedContact, "id" | "createdAt">) => {
+    setJobs((prev) =>
+      prev.map((j) => {
+        if (j.id === jobId) {
+          const newContact: SharedContact = {
+            ...contact,
+            id: `c-${Date.now()}`,
+            createdAt: Date.now(),
+          };
+          return {
+            ...j,
+            sharedContacts: [...(j.sharedContacts || []), newContact],
+          };
+        }
+        return j;
+      })
+    );
+  }, []);
+
   const pendingJobs = useMemo(
     () => jobs.filter((j) => j.status === "pending").sort((a, b) => b.requestedAt - a.requestedAt),
     [jobs]
@@ -80,8 +126,8 @@ export function JobsProvider({ children }: { children: ReactNode }) {
   const pendingCount = pendingJobs.length;
 
   const value = useMemo(
-    () => ({ pendingJobs, attendedJobs, pendingCount, attendJob, allJobs: jobs }),
-    [pendingJobs, attendedJobs, pendingCount, attendJob, jobs]
+    () => ({ pendingJobs, attendedJobs, pendingCount, attendJob, addSharedContact, allJobs: jobs }),
+    [pendingJobs, attendedJobs, pendingCount, attendJob, addSharedContact, jobs]
   );
 
   return <JobsContext.Provider value={value}>{children}</JobsContext.Provider>;

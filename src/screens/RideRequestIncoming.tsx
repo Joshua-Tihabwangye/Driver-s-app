@@ -7,16 +7,18 @@ MapPin,
 Phone,
 User
 } from "lucide-react";
-import { useEffect,useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useSharedTrips } from "../context/SharedTripsContext";
+import { MOCK_SHARED_TRIPS } from "../data/mockData";
 
 // EVzone Driver App – RideRequestIncoming Driver App – Ride Request Incoming (v2)
 // Full-screen incoming job request with timer, pickup/drop details, accept/decline actions
-// and support for multiple job types: Ride / Delivery / Rental / Shuttle / Tour / Ambulance.
+// and support for multiple job types: Ride / Delivery / Rental / Shuttle / Tour / Ambulance / Shared.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-const JOB_TYPES = ["ride", "delivery", "rental", "tour", "ambulance", "shuttle"];
+const JOB_TYPES = ["ride", "delivery", "rental", "tour", "ambulance", "shuttle", "shared"];
 
 
 function JobTypePill({ jobType }) {
@@ -72,6 +74,16 @@ function JobTypePill({ jobType }) {
     );
   }
 
+  if (jobType === "shared") {
+    return (
+      <span
+        className={`${base} bg-orange-50 border-orange-200 text-orange-600`}
+      >
+        Shared Ride
+      </span>
+    );
+  }
+
   // ride / delivery default
   return (
     <span className={`${base} bg-slate-900/60 border-slate-700 text-slate-50`}>
@@ -81,10 +93,12 @@ function JobTypePill({ jobType }) {
 }
 
 export default function RideRequestIncoming() {
+  const location = useLocation();
   const [timeLeft, setTimeLeft] = useState(15);
   // Demo state so you can preview all variants inside the canvas
-  const [jobType, setJobType] = useState("ride");
+  const [jobType, setJobType] = useState(location.state?.jobType || "ride");
   const navigate = useNavigate();
+  const { setActiveSharedTrip } = useSharedTrips();
 
   useEffect(() => {
     if (timeLeft <= 0) return;
@@ -96,6 +110,7 @@ export default function RideRequestIncoming() {
   const isRental = jobType === "rental";
   const isTour = jobType === "tour";
   const isShuttle = jobType === "shuttle";
+  const isShared = jobType === "shared";
 
   // Right-hand summary block content per jobType
   let rightLine1 = "$5.80 (est.)";
@@ -116,6 +131,9 @@ export default function RideRequestIncoming() {
   } else if (isShuttle) {
     rightLine1 = "Shuttle run · Green Valley School";
     rightLine2 = "Morning route";
+  } else if (isShared) {
+    rightLine1 = "$15.40 (est.)";
+    rightLine2 = "7.7 km · 24 min";
   }
 
   // Pickup / drop-off or patient text per jobType
@@ -135,12 +153,16 @@ export default function RideRequestIncoming() {
     ? "Destination · City Hospital"
     : isShuttle
     ? "Open in Shuttle Driver App"
+    : isShared
+    ? "Drop-off · Bugolobi (+1 stop)"
     : "Drop-off · Ntinda";
 
   const dropoffSub = isAmbulance
     ? "Hospital for handover"
     : isShuttle
     ? "Route & students shown in shuttle app"
+    : isShared
+    ? "High chance of matching another rider"
     : "Residential · usual demand";
 
   // Primary action label
@@ -157,6 +179,9 @@ export default function RideRequestIncoming() {
       navigate("/driver/tour/demo-tour/today");
     } else if (jobType === "delivery") {
       navigate("/driver/jobs/list?category=delivery");
+    } else if (isShared) {
+      setActiveSharedTrip(MOCK_SHARED_TRIPS[0]);
+      navigate("/driver/trip/shared-100/active");
     } else {
       navigate("/driver/trip/demo-trip/navigate-to-pickup");
     }
@@ -225,6 +250,8 @@ export default function RideRequestIncoming() {
                     ? "Ambulance Dispatch"
                     : isShuttle
                     ? "Shuttle Service"
+                    : isShared
+                    ? "Sarah L. (1 Seat)"
                     : "John K · 4.92 ★"}
                 </p>
                 <div className="mt-2">

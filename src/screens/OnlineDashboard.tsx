@@ -98,14 +98,14 @@ export default function OnlineDashboard() {
               </div>
               <div className="flex flex-col space-y-1 text-right">
                  <span className="text-[10px] uppercase font-black text-slate-500 tracking-[0.2em]">TRIPS</span>
-                 <span className="text-2xl font-black text-slate-900 tracking-tight">{jobsToday}</span>
+                 <span className="text-2xl font-black text-emerald-500 tracking-tight">{jobsToday}</span>
               </div>
             </div>
           </div>
         </section>
 
-        <p className="text-[11px] text-slate-400 leading-relaxed font-bold uppercase tracking-tight bg-slate-50 p-4 rounded-3xl border border-slate-100 shadow-inner">
-          TIP: Drive towards areas with higher demand to get more requests. Keep your acceptance rate high for bonus eligibility.
+        <p className="text-[11px] text-slate-400 leading-relaxed font-bold uppercase tracking-tight bg-white p-5 rounded-[2rem] border border-emerald-500/10 shadow-inner">
+          <span className="text-emerald-500 mr-1">TIP:</span> Drive towards areas with higher demand to get more requests. Keep your acceptance rate high for bonus eligibility.
         </p>
 
         {/* Mini map preview */}
@@ -116,14 +116,14 @@ export default function OnlineDashboard() {
         >
           <div className="absolute inset-0 bg-gradient-to-br from-slate-100 via-slate-200 to-slate-100" />
           <div className="absolute inset-0 opacity-40 group-hover:opacity-60 transition-opacity" 
-               style={{ backgroundImage: 'radial-gradient(#f97316 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+               style={{ backgroundImage: 'radial-gradient(#10b981 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
 
           {/* Current location marker */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="relative flex items-center justify-center">
-              <div className="h-20 w-20 rounded-full bg-orange-500/10 animate-ping" />
-              <div className="absolute h-12 w-12 rounded-full bg-orange-500/20" />
-              <div className="absolute h-4 w-4 rounded-full bg-orange-500 border-4 border-white shadow-xl" />
+              <div className="h-20 w-20 rounded-full bg-emerald-500/10 animate-ping" />
+              <div className="absolute h-12 w-12 rounded-full bg-emerald-500/20" />
+              <div className="absolute h-4 w-4 rounded-full bg-emerald-500 border-4 border-white shadow-xl" />
             </div>
           </div>
 
@@ -164,12 +164,19 @@ export default function OnlineDashboard() {
               sub="Package Orders"
               onClick={() => navigate("/driver/jobs/list?category=delivery")}
             />
-            <QuickAction
-              icon={ShieldCheck}
-              label="Safety"
-              sub="Help Center"
+            <button
+              type="button"
               onClick={() => navigate("/driver/safety/hub")}
-            />
+              className="flex flex-col items-start rounded-2xl border-2 border-emerald-500/10 bg-emerald-50/30 shadow-sm px-3 py-3 flex-1 min-w-[0] active:scale-[0.97] hover:scale-[1.02] hover:shadow-md hover:border-emerald-500/30 transition-all duration-300 group"
+            >
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 mb-1 group-hover:bg-emerald-500 transition-colors">
+                <ShieldCheck className="h-4 w-4 text-emerald-500 group-hover:text-white" />
+              </div>
+              <span className="text-xs font-black text-slate-900 mb-0.5 truncate w-full text-left uppercase tracking-tight">
+                Safety
+              </span>
+              <span className="text-[11px] text-slate-500 truncate w-full text-left font-medium">Hub</span>
+            </button>
           </div>
         </section>
 

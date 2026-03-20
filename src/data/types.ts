@@ -1,6 +1,6 @@
 // ── Shared Types for the Driver App ──────────────────────
 
-export type JobCategory = "ride" | "delivery" | "rental" | "shuttle" | "tour" | "ambulance";
+export type JobCategory = "ride" | "delivery" | "rental" | "shuttle" | "tour" | "ambulance" | "shared";
 export type JobStatus = "pending" | "attended" | "in-progress" | "completed" | "cancelled";
 export type TripStatus = "navigating" | "waiting" | "in-progress" | "completed" | "cancelled";
 export type DocumentStatus = "pending" | "under-review" | "verified" | "rejected";
@@ -69,5 +69,61 @@ export interface TripRecord {
   amount: string;
   jobType: JobCategory;
   status: TripStatus;
-  hasProof: boolean;
+}
+
+// ── Shared Trips Types ───────────────────────────────────
+
+export interface SharedRider {
+  id: string;
+  firstName: string;
+  lastName: string;
+  displayName: string;
+  phone: string;
+  rating: number;
+  seatCount: number;
+  pickupStopId: string;
+  dropoffStopId: string;
+  status: "queued" | "driver_en_route" | "arrived" | "waiting" | "onboard" | "dropped_off" | "no_show" | "canceled";
+  joinedSequence: number;
+  fareContribution: number;
+}
+
+export interface SharedStop {
+  id: string;
+  type: "pickup" | "dropoff";
+  passengerId: string;
+  label: string;
+  address: string;
+  eta: string;
+  status: "upcoming" | "current" | "completed" | "skipped";
+  waitTimerStartedAt?: number;
+  sequenceOrder: number;
+  legDistance: string;
+  legDuration: string;
+}
+
+export interface EarningsBreakdownItem {
+  id: string;
+  type: "base_trip" | "added_pickup" | "dropoff_completion" | "no_show_fee" | "adjustment";
+  passengerId?: string;
+  title: string;
+  amount: number;
+  status: "pending" | "earned";
+}
+
+export interface SharedTrip {
+  id: string;
+  type: "shared";
+  status: "pending" | "accepted" | "in_progress" | "completed" | "canceled";
+  chainStatus: "active" | "partially_completed" | "completed";
+  seatCapacity: number;
+  occupiedSeats: number;
+  allowAdditionalMatches: boolean;
+  estimatedTotalEarnings: number;
+  earningsBreakdown: EarningsBreakdownItem[];
+  stops: SharedStop[];
+  passengers: SharedRider[];
+  currentStopIndex: number;
+  startedAt?: number;
+  completedAt?: number;
 }

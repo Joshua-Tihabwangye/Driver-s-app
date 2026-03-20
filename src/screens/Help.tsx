@@ -29,14 +29,14 @@ function HelpItem({
       onClick={onClick}
       className="flex w-full items-center rounded-2xl border border-slate-50 bg-white px-4 py-4 shadow-sm active:scale-[0.98] transition-all hover:bg-slate-50 group"
     >
-      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 mr-4 shrink-0 transition-colors group-hover:bg-[#03cd8c] group-hover:text-white">
-        <Icon className="h-5 w-5 text-[#03cd8c] group-hover:text-white" />
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 mr-4 shrink-0 transition-all group-hover:bg-emerald-500 group-hover:shadow-lg group-hover:shadow-emerald-500/20">
+        <Icon className="h-5 w-5 text-orange-500 group-hover:text-white" />
       </div>
       <div className="flex-1 text-left">
-        <p className="text-[13px] font-bold text-slate-900">{title}</p>
-        <p className="text-[11px] text-slate-500 mt-0.5">{subtitle}</p>
+        <p className="text-[13px] font-bold text-slate-900 group-hover:text-emerald-600 transition-colors uppercase tracking-tight">{title}</p>
+        <p className="text-[11px] text-slate-500 font-medium mt-0.5">{subtitle}</p>
       </div>
-      <ChevronRight className="h-4 w-4 text-slate-300 ml-2 shrink-0 group-hover:text-[#03cd8c]" />
+      <ChevronRight className="h-4 w-4 text-slate-300 ml-2 shrink-0 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
     </button>
   );
 }
@@ -85,13 +85,13 @@ export default function Help() {
           <div className="flex space-x-3 pt-2 relative">
             <button
               type="button"
-              className="flex-1 rounded-xl bg-[#03cd8c] text-white font-bold text-xs py-3.5 active:scale-[0.98] transition-all shadow-lg shadow-[#03cd8c]/20"
+              className="flex-1 rounded-xl bg-emerald-500 text-white font-black uppercase tracking-widest text-[10px] py-4 active:scale-[0.98] transition-all shadow-lg shadow-emerald-500/20"
             >
               Call Support
             </button>
             <button
               type="button"
-              className="flex-1 rounded-xl border border-slate-700 bg-slate-800 text-white font-bold text-xs py-3.5 active:scale-[0.98] transition-all"
+              className="flex-1 rounded-xl bg-orange-50 text-orange-600 border border-orange-100 font-black uppercase tracking-widest text-[10px] py-4 active:scale-[0.98] transition-all hover:bg-emerald-500 hover:text-white hover:border-emerald-500 shadow-sm"
             >
               Live Chat
             </button>

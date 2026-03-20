@@ -57,65 +57,69 @@ export default function Profile() {
           <button
             type="button"
             onClick={() => (isEditing ? handleSave() : setIsEditing(true))}
-            className={`flex items-center rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all active:scale-[0.97] shadow-sm ${
-              isEditing ? "bg-brand-active text-white shadow-brand-active/20" : "bg-brand-inactive/20 text-brand-inactive shadow-brand-inactive/10"
+            className={`flex items-center rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all active:scale-[0.97] shadow-lg ${
+              isEditing ? "bg-emerald-500 text-white shadow-emerald-500/20" : "bg-orange-50 text-orange-500 border border-orange-100 shadow-orange-500/10"
             }`}
           >
             {isEditing ? (
               <>
                 <Check className="h-3.5 w-3.5 mr-1.5" />
-                Save
+                Done
               </>
             ) : (
               <>
                 <Edit3 className="h-3.5 w-3.5 mr-1.5" />
-                Edit
+                Edit Info
               </>
             )}
           </button>
         </header>
       </div>
 
-      <main className="flex-1 px-4 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
+      <main className="flex-1 px-4 pt-6 pb-20 space-y-6 overflow-y-auto scrollbar-hide">
         <div className="flex flex-col items-center pt-1 mb-2">
           <div className="relative group">
-            <div className="flex h-28 w-28 items-center justify-center rounded-[2.5rem] bg-gradient-to-tr from-brand-active to-emerald-300 text-4xl font-bold text-white shadow-xl group-hover:rotate-3 transition-transform">
-              JD
+            <div className="flex h-28 w-28 items-center justify-center rounded-[2.5rem] bg-slate-900 border-4 border-emerald-500/20 text-4xl font-bold text-white shadow-2xl group-hover:scale-105 transition-all duration-500 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/20 to-orange-500/20" />
+              <span className="relative z-10 font-black text-emerald-500">JD</span>
             </div>
-            <div className="absolute -top-1 -right-1 bg-white dark:bg-slate-800 p-1.5 rounded-full shadow-md">
-              <ShieldCheck className="h-5 w-5 text-brand-active fill-brand-active/10" />
+            <div className="absolute -top-1 -right-1 bg-white dark:bg-slate-800 p-1.5 rounded-full shadow-lg border border-emerald-100">
+              <ShieldCheck className="h-5 w-5 text-emerald-500 fill-emerald-500/10" />
             </div>
             <button
               type="button"
-              className="absolute -bottom-2 -right-2 flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-white border-4 border-white shadow-lg active:scale-95 transition-transform"
+              className="absolute -bottom-2 -right-2 flex h-10 w-10 items-center justify-center rounded-full bg-orange-500 text-white border-4 border-white shadow-lg active:scale-95 transition-transform"
             >
               <Camera className="h-4 w-4" />
             </button>
           </div>
-          <h2 className="mt-5 text-xl font-bold text-slate-900">{profile.name}</h2>
-          <div className="flex items-center space-x-1.5 mt-1.5 bg-brand-secondary/10 px-3 py-1 rounded-full border border-brand-secondary/20">
-            <Star className="h-3.5 w-3.5 text-brand-secondary fill-brand-secondary" />
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-300 tracking-tight">4.92 Rating</span>
-            <span className="text-[10px] text-brand-inactive font-medium ml-1">(324 Total Trips)</span>
+          <h2 className="mt-5 text-xl font-black text-slate-900 uppercase tracking-tight">{profile.name}</h2>
+          <div className="flex items-center space-x-1.5 mt-1.5 bg-orange-50 px-3 py-1.5 rounded-full border border-orange-100 shadow-sm">
+            <Star className="h-3.5 w-3.5 text-orange-500 fill-orange-500" />
+            <span className="text-xs font-black text-slate-900 tracking-wider">4.92 RATING</span>
+            <span className="text-[10px] text-slate-400 font-bold ml-1">324 TRIPS</span>
           </div>
         </div>
 
         <div className="grid grid-cols-3 gap-3">
           {[
-            { label: "Total KM", value: "2.4k", icon: Car, color: "var(--evz-brand-orange)" },
-            { label: "On Time", value: "98%", icon: Star, color: "var(--evz-brand-green)" },
-            { label: "City", value: "Kampala", icon: MapPin, color: "var(--evz-brand-orange)" },
+            { label: "Total KM", value: "2.4k", icon: Car, color: "#f97316", bg: "bg-orange-50", border: "border-orange-100" },
+            { label: "On Time", value: "98%", icon: Check, color: "#10b981", bg: "bg-emerald-50", border: "border-emerald-100" },
+            { label: "Level", value: "Gold", icon: Star, color: "#f97316", bg: "bg-orange-50", border: "border-orange-100" },
           ].map((stat) => (
-            <div key={stat.label} className={`flex flex-col items-center rounded-2xl border-2 bg-cream dark:bg-slate-800 px-1 py-4 shadow-sm ${stat.color.includes('green') ? 'border-brand-active/10' : 'border-brand-secondary/10'}`}>
+            <div key={stat.label} className={`flex flex-col items-center rounded-2xl border ${stat.border} ${stat.bg} px-1 py-4 shadow-sm transition-transform hover:scale-[1.02]`}>
               <stat.icon className="h-4 w-4 mb-2" style={{ color: stat.color }} />
-              <span className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">{stat.value}</span>
-              <span className="text-[9px] font-bold text-brand-inactive uppercase mt-0.5">{stat.label}</span>
+              <span className="text-xs font-black text-slate-900 tracking-tight uppercase">{stat.value}</span>
+              <span className="text-[8px] font-bold text-slate-400 uppercase mt-0.5 tracking-widest">{stat.label}</span>
             </div>
           ))}
         </div>
 
         <section className="space-y-3">
-          <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">Core Information</h3>
+          <div className="flex items-center justify-between px-1">
+             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Profile Details</h3>
+             {isEditing && <span className="text-[9px] text-emerald-500 font-black uppercase tracking-widest">Editing Mode</span>}
+          </div>
           <div className="space-y-2">
             {[
               { label: "Full Name", value: profile.name, key: "name", icon: User },
@@ -125,14 +129,13 @@ export default function Profile() {
             ].map((field) => (
               <div
                 key={field.key}
-                className={`rounded-2xl border-2 transition-all duration-300 ${isEditing ? "bg-white dark:bg-slate-800 border-brand-secondary/30 shadow-md" : "bg-cream dark:bg-slate-900 border-brand-secondary/10 shadow-sm"} px-5 py-4`}
+                className={`rounded-2xl border transition-all duration-300 ${isEditing ? "bg-white dark:bg-slate-800 border-emerald-500/30 shadow-lg" : "bg-slate-50 dark:bg-slate-900 border-slate-100 shadow-sm"} px-5 py-4`}
               >
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest flex items-center">
-                    <field.icon className="h-3 w-3 mr-1.5" />
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center">
+                    <field.icon className="h-3 w-3 mr-1.5 text-orange-500" />
                     {field.label}
                   </label>
-                  {isEditing && <span className="text-[8px] bg-brand-active/10 text-brand-active px-1.5 py-0.5 rounded font-bold">EDITABLE</span>}
                 </div>
                 {isEditing ? (
                   <input
@@ -143,7 +146,7 @@ export default function Profile() {
                     autoFocus={field.key === "name"}
                   />
                 ) : (
-                  <p className="text-[13px] font-bold text-slate-800 tracking-tight">{field.value as string}</p>
+                  <p className="text-[13px] font-black text-slate-900 tracking-tight">{field.value as string}</p>
                 )}
               </div>
             ))}
@@ -151,58 +154,67 @@ export default function Profile() {
         </section>
 
         <section className="space-y-3 pt-2">
-          <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1">Security & Identity</h3>
+          <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">Verification Hub</h3>
+          
+          {/* Documents Card */}
           <button
             type="button"
             onClick={() => navigate("/driver/documents")}
-            className="w-full rounded-2xl border-2 border-orange-500/10 bg-cream px-5 py-5 flex items-center justify-between group active:scale-[0.98] hover:scale-[1.01] hover:bg-cream hover:shadow-md hover:border-orange-500/30 transition-all duration-300"
+            className="w-full rounded-[2.5rem] bg-white border border-slate-100 px-5 py-5 flex items-center justify-between group active:scale-[0.98] hover:border-emerald-500/20 hover:shadow-lg transition-all"
           >
             <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center group-hover:bg-blue-500 transition-colors border border-orange-50">
-                <FileText className="h-5 w-5 text-blue-500 group-hover:text-white" />
+              <div className="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center group-hover:bg-orange-500 transition-colors">
+                <FileText className="h-6 w-6 text-orange-500 group-hover:text-white" />
               </div>
               <div className="flex flex-col items-start text-left">
-                <p className="text-sm font-bold text-slate-800">Documents</p>
-                <p className="text-[11px] text-slate-500 font-medium">Manage your compliance items</p>
+                <p className="text-[13px] font-black text-slate-900 uppercase tracking-tight">Compliance</p>
+                <p className="text-[10px] text-slate-400 font-medium tracking-tight">Manage legal documents</p>
               </div>
             </div>
-            <div className="bg-brand-secondary rounded-full px-2.5 py-1">
-              <span className="text-[9px] font-bold text-white uppercase">Attention</span>
+            <div className="flex items-center space-x-2">
+                 <div className="h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
+                 <span className="text-[9px] font-black text-orange-500 uppercase tracking-widest">Update</span>
             </div>
           </button>
 
+          {/* Vehicle Card */}
           <button
             type="button"
             onClick={() => navigate("/driver/vehicles/manage")}
-            className="w-full rounded-2xl border-2 border-orange-500/10 bg-cream px-5 py-5 flex items-center justify-between group active:scale-[0.98] hover:scale-[1.01] hover:bg-cream hover:border-orange-500/30 hover:shadow-md transition-all duration-300"
+            className="w-full rounded-[2.5rem] bg-white border border-slate-100 px-5 py-5 flex items-center justify-between group active:scale-[0.98] hover:border-emerald-500/20 hover:shadow-lg transition-all"
           >
             <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 rounded-xl bg-slate-50 shadow-sm flex items-center justify-center group-hover:bg-slate-900 transition-colors border border-orange-50/50">
-                <Car className="h-5 w-5 text-slate-500 group-hover:text-white" />
+              <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center group-hover:bg-emerald-500 transition-colors">
+                <Car className="h-6 w-6 text-emerald-500 group-hover:text-white" />
               </div>
               <div className="flex flex-col items-start text-left">
-                <p className="text-sm font-bold text-slate-800">My Vehicle</p>
-                <p className="text-[11px] text-slate-500 font-medium">Toyota Prius • UBB 123X</p>
+                <p className="text-[13px] font-black text-slate-900 uppercase tracking-tight">Vehicle Fleet</p>
+                <p className="text-[10px] text-slate-400 font-medium tracking-tight">Toyota Prius • UBB 123X</p>
               </div>
             </div>
-            <ChevronRight className="h-5 w-5 text-brand-inactive group-hover:text-brand-secondary transition-colors" />
+            <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
           </button>
 
+          {/* Identity Card */}
           <button
             type="button"
             onClick={() => navigate("/driver/preferences/identity")}
+            className="w-full rounded-[2.5rem] bg-slate-900 border border-slate-800 px-5 py-5 flex items-center justify-between group active:scale-[0.98] hover:border-emerald-500/20 hover:shadow-lg transition-all overflow-hidden relative"
           >
-            <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center group-hover:bg-brand-active transition-colors border border-brand-active/20">
-                <ShieldCheck className="h-5 w-5 text-brand-active group-hover:text-white" />
+            <div className="absolute top-0 right-0 p-4 opacity-10">
+                <ShieldCheck className="h-16 w-16 text-emerald-500" />
+            </div>
+            <div className="flex items-center space-x-4 relative z-10">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
+                <ShieldCheck className="h-6 w-6 text-emerald-500" />
               </div>
               <div className="flex flex-col items-start text-left">
-                <p className="text-sm font-bold text-slate-800">Identity Verification</p>
-                <p className="text-[11px] text-slate-500 font-medium">Verify your face and documents</p>
+                <p className="text-[13px] font-black text-white uppercase tracking-tight">Identity Status</p>
+                <p className="text-[10px] text-slate-400 font-medium tracking-tight">Verified & active profile</p>
               </div>
             </div>
-            <div className="bg-brand-active rounded-full px-2.5 py-1">
-              <span className="text-[9px] font-bold text-white uppercase">Active</span>
+            <div className="bg-emerald-500 rounded-full px-3 py-1 relative z-10 shadow-lg shadow-emerald-500/20">
+              <span className="text-[9px] font-black text-white uppercase tracking-widest">Secure</span>
             </div>
           </button>
         </section>
