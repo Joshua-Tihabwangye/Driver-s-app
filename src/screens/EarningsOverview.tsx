@@ -5,9 +5,10 @@ import {
 } from "lucide-react";
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import PageHeader from "../components/PageHeader";
 import MetricCard from "../components/MetricCard";
-import { MOCK_WALLET_BALANCE, MOCK_WEEKLY_TOTAL, MOCK_EARNINGS } from "../data/mockData";
+import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
+import { MOCK_WALLET_BALANCE, MOCK_WEEKLY_TOTAL } from "../data/mockData";
 
 // EVzone Driver App – EarningsOverview Driver App – Earnings & Stats Dashboard
 // scrolling dashboard with welcome banner, wallet, charts, stats grids, and map station lists.
@@ -38,7 +39,18 @@ function StationRow({ name, value, total }: any) {
 
 export default function EarningsOverview() {
   const navigate = useNavigate();
-  const latestEarning = MOCK_EARNINGS[0];
+  const { recentEarnings, revenueEvents, periodFilter } = useStore();
+  const latestEarning = recentEarnings[0];
+
+  const filteredRevenue = revenueEvents.filter(r => {
+    // simplified filter based on period array in store, we just take all revenue events for this demo
+    return true;
+  });
+
+  const sharedRevenue = filteredRevenue.filter(r => r.category === "shared").reduce((sum, r) => sum + r.amount, 0);
+  const privateRevenue = filteredRevenue.filter(r => r.category !== "shared").reduce((sum, r) => sum + r.amount, 0);
+  const totalRevenue = sharedRevenue + privateRevenue || 1; // prevent div by zero
+  const sharedPercentage = Math.round((sharedRevenue / totalRevenue) * 100);
 
   return (
     <div className="flex flex-col h-full bg-transparent">
@@ -89,7 +101,7 @@ export default function EarningsOverview() {
             <div className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-tight">Weekly Total: UGX {MOCK_WEEKLY_TOTAL.toLocaleString()}</div>
           </div>
           <div className="flex items-end justify-between h-32 px-2 pt-4">
-            {MOCK_EARNINGS.slice().reverse().map((e, i) => (
+            {recentEarnings.slice().reverse().map((e, i) => (
               <div key={e.id} className="flex flex-col items-center space-y-3">
                 <div
                    className={`w-4 rounded-full ${i === 6 ? 'bg-orange-500 shadow-lg shadow-orange-500/30' : 'bg-slate-100 dark:bg-slate-700'} relative transition-all`}
@@ -104,6 +116,28 @@ export default function EarningsOverview() {
                 <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-tighter">{new Date(e.date).toLocaleDateString('en-US', { weekday: 'short' })}</span>
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* Revenue Breakdown */}
+        <section className="rounded-[2.5rem] border-2 border-orange-500/10 bg-cream p-6 space-y-4 shadow-sm">
+          <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Revenue Mix</h3>
+          <div className="flex justify-between items-end">
+            <div className="flex flex-col">
+              <span className="text-xl font-black text-slate-900">UGX {privateRevenue.toLocaleString()}</span>
+              <span className="text-[10px] uppercase font-bold text-slate-500">Private Rides</span>
+            </div>
+            <div className="flex flex-col text-right">
+              <span className="text-xl font-black text-orange-600">UGX {sharedRevenue.toLocaleString()}</span>
+              <span className="text-[10px] uppercase font-bold text-slate-500">Shared Rides</span>
+            </div>
+          </div>
+          <div className="h-4 w-full bg-slate-200 rounded-full flex overflow-hidden">
+             <div className="h-full bg-slate-900" style={{ width: `${100 - sharedPercentage}%` }} />
+             <div className="h-full bg-orange-500" style={{ width: `${sharedPercentage}%` }} />
+          </div>
+          <div className="text-[10px] text-slate-500 font-bold uppercase tracking-tight text-center">
+             Shared rides added <span className="text-orange-600">+{sharedPercentage}%</span> to your earnings
           </div>
         </section>
 

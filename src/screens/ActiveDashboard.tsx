@@ -12,7 +12,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";
-import { MOCK_DASHBOARD_STATS } from "../data/mockData";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – ActiveDashboard Driver App – Active Dashboard (Online Mode)
 // Performance dashboard showing online time, trips, earnings and job mix.
@@ -42,8 +42,9 @@ function JobMixPill({ icon: Icon, label, value, onClick }: { icon: any; label: s
 
 export default function ActiveDashboard() {
   const navigate = useNavigate();
-  const { onlineTime, jobsToday, earningsToday, jobMix } = MOCK_DASHBOARD_STATS;
-  const totalJobs = jobMix.ride + jobMix.delivery + jobMix.rental + jobMix.tour + jobMix.ambulance;
+  const { dashboardMetrics } = useStore();
+  const { onlineTime, jobsCount, earningsAmount, jobMix } = dashboardMetrics;
+  const totalJobs = jobsCount;
 
   return (
     <div className="flex flex-col h-full bg-transparent">
@@ -76,11 +77,11 @@ export default function ActiveDashboard() {
           <div className="pt-6 border-t border-slate-800 grid grid-cols-2 gap-4 relative z-10">
             <div className="flex flex-col space-y-1">
                <span className="text-[10px] uppercase font-black text-slate-600 tracking-widest">Trips</span>
-               <span className="text-lg font-medium text-white tracking-tight">{jobsToday}</span>
+               <span className="text-lg font-medium text-white tracking-tight">{jobsCount}</span>
             </div>
             <div className="flex flex-col space-y-1 text-right">
                <span className="text-[10px] uppercase font-black text-slate-600 tracking-widest">Earnings Today</span>
-               <span className="text-lg font-medium text-brand-secondary tracking-tight">{earningsToday}</span>
+               <span className="text-lg font-medium text-brand-secondary tracking-tight">{earningsAmount}</span>
             </div>
           </div>
         </section>
@@ -100,14 +101,14 @@ export default function ActiveDashboard() {
             />
             <MetricCard
               label="Trips"
-              value={jobsToday}
+              value={jobsCount}
               sub="Completed Today"
               icon={Activity}
               onClick={() => navigate("/driver/history/rides")}
             />
             <MetricCard
               label="Earnings"
-              value={earningsToday}
+              value={earningsAmount}
               sub="Net Earnings"
               icon={DollarSign}
               onClick={() => navigate("/driver/earnings/overview")}

@@ -13,6 +13,7 @@ import {
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import SharedTripSimulator from "../components/SharedTripSimulator";
 import { useSharedTrips } from "../context/SharedTripsContext";
 
 export default function ActiveSharedTrip() {
@@ -76,7 +77,8 @@ export default function ActiveSharedTrip() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-50">
+    <div className="flex flex-col h-full bg-slate-50 relative">
+      <SharedTripSimulator />
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
@@ -88,28 +90,8 @@ export default function ActiveSharedTrip() {
         onBack={() => navigate(-1)} 
       />
 
-      {/* Development Options */}
-      <section className="px-6 pt-4 pb-2 z-10 relative">
-        <div className="bg-white rounded-[2rem] p-4 border border-orange-500/20 shadow-sm flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Users className="h-5 w-5 text-orange-500" />
-            <span className="text-xs font-black uppercase text-slate-700 tracking-widest">
-              Seats: {activeSharedTrip.occupiedSeats}/{activeSharedTrip.seatCapacity}
-            </span>
-          </div>
-          {activeSharedTrip.allowAdditionalMatches && !isChainCompleted && (
-            <button 
-              onClick={simulateNewMatch}
-              className="text-[10px] font-black uppercase bg-orange-100 text-orange-700 px-3 py-1.5 rounded-full tracking-widest active:scale-95"
-            >
-              Simulate Match
-            </button>
-          )}
-        </div>
-      </section>
-
       {/* Main Content */}
-      <main className="flex-1 px-6 pt-2 pb-24 overflow-y-auto scrollbar-hide space-y-6">
+      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-6">
         
         {/* Active Map */}
         <section className="relative rounded-[2.5rem] overflow-hidden border border-slate-100 bg-slate-200 h-[260px] shadow-lg">
@@ -121,10 +103,45 @@ export default function ActiveSharedTrip() {
             <div className="w-16 h-16 bg-orange-500/20 rounded-full absolute animate-ping" />
           </div>
           
-          <div className="absolute top-4 right-4 bg-slate-900/80 backdrop-blur-md text-white px-3 py-1.5 rounded-full flex items-center shadow-lg border border-white/10">
-             <span className="text-[10px] font-black uppercase tracking-widest">Est. Total: ${activeSharedTrip.estimatedTotalEarnings.toFixed(2)}</span>
+          <div className="absolute top-4 left-4 bg-orange-500/90 text-white px-3 py-1.5 rounded-full flex items-center shadow-lg border border-orange-400">
+             <Users className="h-3 w-3 mr-1.5" />
+             <span className="text-[10px] font-black uppercase tracking-widest">{activeSharedTrip.occupiedSeats}/{activeSharedTrip.seatCapacity} Seats</span>
+          </div>
+          
+          <div className="absolute top-4 right-4 bg-slate-900/80 backdrop-blur-md text-white px-3 py-1.5 rounded-full flex flex-col items-end shadow-lg border border-white/10">
+             <span className="text-[8px] text-emerald-400 font-bold uppercase tracking-widest">Real-time Revenue</span>
+             <span className="text-[12px] font-black uppercase tracking-widest">${activeSharedTrip.estimatedTotalEarnings.toFixed(2)}</span>
           </div>
         </section>
+
+        {/* Event Log Banner */}
+        {!isChainCompleted && activeSharedTrip.passengers.length > 1 && (
+          <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-2xl shadow-sm flex items-start space-x-3 animate-in fade-in slide-in-from-top-4">
+             <div className="mt-0.5"><AlertCircle className="h-4 w-4 text-blue-500" /></div>
+             <div className="flex flex-col">
+                <span className="text-[10px] font-black uppercase tracking-widest text-blue-600">Route Updated Live</span>
+                <span className="text-[11px] font-bold mt-0.5">New match picked up! Route re-optimized to include {activeSharedTrip.passengers.length} drop-offs.</span>
+             </div>
+          </div>
+        )}
+
+        {/* Operational Metrics */}
+        {!isChainCompleted && (
+          <section className="grid grid-cols-3 gap-3">
+             <div className="bg-white border text-center border-slate-100 rounded-2xl p-3 shadow-sm flex flex-col items-center">
+                <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Efficiency</span>
+                <span className="text-sm font-black text-emerald-500 mt-1">+45%</span>
+             </div>
+             <div className="bg-white border text-center border-slate-100 rounded-2xl p-3 shadow-sm flex flex-col items-center">
+                <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Matches</span>
+                <span className="text-sm font-black text-slate-800 mt-1">{activeSharedTrip.passengers.length}</span>
+             </div>
+             <div className="bg-white border text-center border-slate-100 rounded-2xl p-3 shadow-sm flex flex-col items-center">
+                <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Est. End</span>
+                <span className="text-sm font-black text-slate-800 mt-1">{activeSharedTrip.stops[activeSharedTrip.stops.length-1]?.eta}</span>
+             </div>
+          </section>
+        )}
 
         {/* Action Panel */}
         <section className="rounded-[2.5rem] bg-white border border-slate-100 shadow-xl shadow-slate-200/50 p-6 space-y-5 relative overflow-hidden">
@@ -276,23 +293,30 @@ export default function ActiveSharedTrip() {
         )}
 
         {/* Earnings Breakdown */}
-        {isChainCompleted && (
-          <section className="bg-white rounded-[2.5rem] border border-slate-100 p-6 shadow-sm space-y-4">
-             <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Completed Chain Earnings</h3>
-             <div className="space-y-3">
-               {activeSharedTrip.earningsBreakdown.map(e => (
-                 <div key={e.id} className="flex justify-between items-center bg-slate-50 px-4 py-3 rounded-2xl">
-                    <span className="text-xs font-black text-slate-700">{e.title}</span>
-                    <span className="text-sm font-black text-slate-900">${e.amount.toFixed(2)}</span>
+        <section className="bg-white rounded-[2.5rem] border border-slate-100 p-6 shadow-sm space-y-4 relative overflow-hidden">
+             <div className="absolute -top-10 -right-10 w-32 h-32 bg-orange-500/5 rounded-full blur-2xl pointer-events-none" />
+             <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Live Revenue Monitor</h3>
+             <div className="space-y-3 relative z-10">
+               {activeSharedTrip.earningsBreakdown.map((e, index) => (
+                 <div key={e.id} className="flex justify-between items-center bg-slate-50 px-4 py-3 rounded-2xl border border-slate-100">
+                    <div className="flex items-center space-x-3">
+                       <div className="bg-white h-6 w-6 rounded-full shadow-sm flex items-center justify-center font-black text-slate-400 text-[10px]">
+                         {index + 1}
+                       </div>
+                       <span className="text-xs font-black text-slate-700">{e.title}</span>
+                    </div>
+                    <span className="text-sm font-black text-emerald-600">+${e.amount.toFixed(2)}</span>
                  </div>
                ))}
                <div className="flex justify-between items-center px-4 pt-4 border-t border-slate-100">
-                  <span className="text-sm font-black text-slate-900 uppercase tracking-tight">Total</span>
-                  <span className="text-xl font-black text-orange-500">${activeSharedTrip.estimatedTotalEarnings.toFixed(2)}</span>
+                  <div className="flex flex-col">
+                     <span className="text-sm font-black text-slate-900 uppercase tracking-tight">Projected Total</span>
+                     <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Base + Matches</span>
+                  </div>
+                  <span className="text-2xl font-black text-orange-500 drop-shadow-sm">${activeSharedTrip.estimatedTotalEarnings.toFixed(2)}</span>
                </div>
              </div>
           </section>
-        )}
 
       </main>
     </div>

@@ -2,7 +2,8 @@ import {
   ArrowRight,
   HelpCircle,
   MapPin,
-  Package
+  Package,
+  Users
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -28,49 +29,92 @@ function RequestCard({ job, onClick }: { job: any, onClick: (j: any) => void }) 
     return `${hrs}h ago`;
   };
 
+  const isShared = jobType === "shared";
+
+  const renderTitle = () => {
+    if (jobType === "delivery") {
+      return (
+        <span className="text-xs font-medium flex items-center list-title">
+          #{id} · {itemType}
+        </span>
+      );
+    }
+    
+    return (
+      <span className="text-xs font-medium flex items-center list-title">
+        {from}
+        <ArrowRight className="h-3 w-3 mx-1.5 text-slate-300" />
+        <span className="truncate">{to}</span>
+      </span>
+    );
+  };
+
   return (
     <button
       type="button"
       onClick={() => onClick(job)}
-      className="w-full rounded-2xl px-3 py-2.5 active:scale-[0.98] transition-all flex flex-col space-y-2 text-[11px] list-item-refined group"
+      className={`relative w-full rounded-[2rem] px-5 py-4 active:scale-[0.98] transition-all flex flex-col space-y-3 group text-left ${
+        isShared 
+          ? "border-2 border-orange-500 bg-orange-50 shadow-lg shadow-orange-500/20" 
+          : "border border-slate-100 bg-white hover:bg-slate-50 shadow-sm"
+      }`}
     >
-      <div className="flex items-center justify-between">
-        <div className="flex flex-col items-start max-w-[200px]">
-          {jobType === "delivery" ? (
-            <span className="text-xs font-medium flex items-center list-title">
-              #{id} · {itemType}
-            </span>
-          ) : (
-            <span className="text-xs font-medium flex items-center list-title">
-              {from}
-              <ArrowRight className="h-3 w-3 mx-1.5 text-slate-300" />
-              <span className="truncate">{to}</span>
-            </span>
+      {/* Header Row */}
+      <div className="flex items-start justify-between w-full">
+        <div className="flex flex-col space-y-1.5 max-w-[200px]">
+          {isShared && (
+            <div className="flex items-center space-x-1.5 mb-1">
+               <span className="bg-orange-500 text-white text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md">Shared</span>
+               <div className="flex items-center text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded-md">
+                 <Users className="h-3 w-3 mr-1" />
+                 <span className="text-[9px] font-black tracking-widest">1/4</span>
+               </div>
+            </div>
           )}
+          {renderTitle()}
         </div>
-        <div className="flex flex-col items-end">
-          <span className="text-sm font-medium text-slate-900 dark:text-white flex items-center">
+        <div className="flex flex-col items-end shrink-0">
+          <span className={`text-lg font-black tracking-tight flex flex-col items-end ${isShared ? 'text-orange-600' : 'text-slate-900 dark:text-white'}`}>
             {fare !== "Shuttle" && fare !== "Tour" && fare !== "—" ? `$${fare}` : fare}
+            {isShared && <span className="text-[9px] text-slate-500 font-bold uppercase mt-0.5">Est. Total</span>}
           </span>
-          <span className="text-[9px] text-emerald-500 font-bold mt-0.5">{timeAgo()}</span>
+          <span className="text-[9px] text-emerald-500 font-bold mt-1 uppercase">{timeAgo()}</span>
         </div>
       </div>
       
       {jobType === "delivery" && (
-        <div className="flex items-center justify-between">
-          <span className="inline-flex items-center truncate max-w-[220px]">
-            <Package className="h-3 w-3 mr-1" />
+        <div className="flex items-center justify-between w-full">
+          <span className="inline-flex items-center truncate max-w-[220px] text-[11px] font-medium text-slate-600">
+            <Package className="h-3.5 w-3.5 mr-1.5 text-slate-400" />
             {from} → {to}
           </span>
         </div>
       )}
 
-      <div className="flex items-center justify-between pt-1 border-t border-slate-50 dark:border-slate-700/50">
-        <span className="font-normal flex items-center list-desc">
-          <MapPin className="h-3 w-3 mr-1 text-slate-400" />
+      {isShared && (
+        <div className="w-full bg-white/60 rounded-xl p-3 border border-orange-500/10 flex justify-between items-center mt-2">
+           <div className="flex flex-col">
+             <span className="text-[9px] uppercase font-bold text-slate-500">Base Fare</span>
+             <span className="text-[11px] font-black text-slate-800">$6.50</span>
+           </div>
+           <div className="flex flex-col text-right">
+             <span className="text-[9px] uppercase font-bold text-slate-500">Max Add-ons</span>
+             <span className="text-[11px] font-black text-emerald-600">+$8.90 potential</span>
+           </div>
+        </div>
+      )}
+
+      {/* Footer Row */}
+      <div className="flex items-center justify-between w-full pt-3 border-t border-slate-100 dark:border-slate-700/50">
+        <span className="text-[11px] font-bold text-slate-500 flex items-center uppercase tracking-tight">
+          <MapPin className="h-3.5 w-3.5 mr-1.5 text-slate-400" />
           {distance} · {duration}
         </span>
-        <StatusChip jobType={jobType} />
+        {isShared ? (
+          <span className="text-[10px] font-black uppercase text-white bg-slate-900 px-4 py-2 rounded-full tracking-widest">Accept</span>
+        ) : (
+          <StatusChip jobType={jobType} />
+        )}
       </div>
     </button>
   );
