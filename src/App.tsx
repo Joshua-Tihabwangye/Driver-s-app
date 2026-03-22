@@ -11,7 +11,7 @@ import { SCREENS } from "./config/routes";
 import LandingPage from "./screens/LandingPage";
 import Login from "./screens/Login";
 
-const DEFAULT_SCREEN = SCREENS.find((s) => s.id === "OnlineDashboard") || SCREENS[0];
+const DEFAULT_SCREEN = SCREENS.find((s) => s.id === "RegisterServices") || SCREENS[0];
 
 export default function App() {
   const { isDark, toggleTheme } = useTheme();

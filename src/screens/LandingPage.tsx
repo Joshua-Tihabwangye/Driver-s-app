@@ -65,7 +65,7 @@ export default function LandingPage() {
           </button>
           
           <button
-            onClick={() => navigate("/driver/dashboard/online")}
+            onClick={() => navigate("/app/register-services")}
             className="w-full bg-slate-900 text-white font-black py-6 rounded-2xl flex items-center justify-center group active:scale-[0.98] transition-all shadow-xl shadow-slate-200"
           >
             <span className="text-lg">JOIN AS DRIVER</span>

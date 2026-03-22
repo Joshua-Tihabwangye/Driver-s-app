@@ -49,10 +49,10 @@ export default function RegisterServices() {
   const serviceRoutes = {
     school: "/driver/safety/hub",
     seller: "/driver/delivery/orders-dashboard",
-    driver: "/driver/register",
+    driver: "/auth/register",
     faith: "/driver/help/shuttle-link",
     charging: "/driver/vehicles",
-    wallet: "/driver/earnings/overview"
+    wallet: "/driver/analytics"
 };
 
   return (

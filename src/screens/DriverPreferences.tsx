@@ -19,6 +19,7 @@ import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 
 import { useSharedTrips } from "../context/SharedTripsContext";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – DriverPreferences Preferences
 // New design: green curved header, toggleable Areas/Services/Requirements cards, green nav.
@@ -82,6 +83,13 @@ function RequirementCard({ icon: Icon, label, color, active, onClick }) {
 export default function DriverPreferences() {
   const navigate = useNavigate();
   const { sharedRidesEnabled, setSharedRidesEnabled } = useSharedTrips();
+  const { driverRoleConfig, assignableJobTypes, enableDualMode } = useStore();
+  const roleLabel =
+    driverRoleConfig.coreRole === "ride-only"
+      ? "Rider-only"
+      : driverRoleConfig.coreRole === "delivery-only"
+      ? "Delivery-only"
+      : "Ride + Delivery";
 
   // Toggleable state for areas
   const [areas, setAreas] = useState([
@@ -146,6 +154,31 @@ export default function DriverPreferences() {
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 space-y-8">
+        {/* Role mode section */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
+              Onboarding Role
+            </h2>
+            <span className="rounded-full bg-orange-50 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-orange-600">
+              {roleLabel}
+            </span>
+          </div>
+          <div className="rounded-[2rem] border border-slate-100 bg-white p-4 shadow-sm space-y-3">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+              Task allocation: {assignableJobTypes.join(", ")}
+            </p>
+            {driverRoleConfig.coreRole !== "dual-mode" && (
+              <button
+                type="button"
+                onClick={enableDualMode}
+                className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-emerald-700 hover:bg-emerald-100"
+              >
+                Enable Ride + Delivery
+              </button>
+            )}
+          </div>
+        </section>
 
         {/* Areas section */}
         <section className="space-y-4">
@@ -206,7 +239,7 @@ export default function DriverPreferences() {
         <section className="pt-4 pb-12">
           <button
             type="button"
-            onClick={() => navigate("/driver/dashboard/online")}
+            onClick={() => navigate("/driver/analytics")}
             className="w-full rounded-2xl bg-orange-500 py-4 text-sm font-black text-white shadow-xl shadow-orange-500/20 hover:bg-orange-600 active:scale-[0.98] transition-all uppercase tracking-widest"
           >
             Save Preferences

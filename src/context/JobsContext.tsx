@@ -25,7 +25,7 @@ const normalizeEmail = (value?: string) => (value || "").trim().toLowerCase();
 const JobsContext = createContext<JobsContextType | undefined>(undefined);
 
 export function JobsProvider({ children }: { children: ReactNode }) {
-  const { jobs, updateJobStatus, addSharedContactToJob } = useStore();
+  const { jobs, updateJobStatus, addSharedContactToJob, canAcceptJobType } = useStore();
 
   const attendJob = useCallback((id: string) => {
     updateJobStatus(id, "attended");
@@ -69,8 +69,11 @@ export function JobsProvider({ children }: { children: ReactNode }) {
   }, [jobs, addSharedContactToJob]);
 
   const pendingJobs = useMemo(
-    () => jobs.filter((j) => j.status === "pending").sort((a, b) => b.requestedAt - a.requestedAt),
-    [jobs]
+    () =>
+      jobs
+        .filter((j) => j.status === "pending" && canAcceptJobType(j.jobType))
+        .sort((a, b) => b.requestedAt - a.requestedAt),
+    [jobs, canAcceptJobType]
   );
 
   const attendedJobs = useMemo(

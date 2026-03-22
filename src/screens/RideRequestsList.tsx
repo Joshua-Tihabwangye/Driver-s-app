@@ -8,10 +8,12 @@ import {
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useJobs } from "../context/JobsContext";
+import { useStore } from "../context/StoreContext";
 import PageHeader from "../components/PageHeader";
 import StatusChip from "../components/StatusChip";
 import EmptyState from "../components/EmptyState";
 import { JOB_FILTERS, PERIOD_OPTIONS, getYearOptions, JOB_DETAIL_ROUTES } from "../data/constants";
+import type { JobCategory } from "../data/types";
 
 // EVzone Driver App – RideRequestsList Unified Job Requests
 // Shows ONLY pending/unattended jobs, sorted by request time.
@@ -129,7 +131,13 @@ export default function RideRequestsList() {
   const [selectedQuarter, setSelectedQuarter] = useState("Q1");
   const navigate = useNavigate();
   const { pendingJobs, attendJob } = useJobs();
+  const { assignableJobTypes } = useStore();
   const yearOptions = getYearOptions();
+  const availableFilters = JOB_FILTERS.filter(
+    (jobFilter) =>
+      jobFilter.key === "all" ||
+      assignableJobTypes.includes(jobFilter.key as JobCategory)
+  );
 
   useEffect(() => {
     const queryCategory = searchParams.get("category");
@@ -137,6 +145,17 @@ export default function RideRequestsList() {
       setFilter(queryCategory);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    const isAllowed =
+      filter === "all" ||
+      assignableJobTypes.includes(filter as JobCategory);
+
+    if (!isAllowed) {
+      setFilter("all");
+      setSearchParams({}, { replace: true });
+    }
+  }, [filter, assignableJobTypes, setSearchParams]);
 
   const handleFilterChange = (newFilter: string) => {
     setFilter(newFilter);
@@ -180,7 +199,7 @@ export default function RideRequestsList() {
                 onChange={(e) => handleFilterChange(e.target.value)}
                 className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-2.5 text-[11px] font-black uppercase tracking-wide text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30"
               >
-                {JOB_FILTERS.map((f) => (
+                {availableFilters.map((f) => (
                   <option key={f.key} value={f.key}>
                     {f.label}
                   </option>

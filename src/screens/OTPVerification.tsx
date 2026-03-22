@@ -38,7 +38,7 @@ export default function OTPVerification() {
   const handleVerify = () => {
     if (otp.every((digit) => digit !== "")) {
       // In a real app, verify OTP here
-      navigate("/driver/dashboard/online");
+      navigate("/app/register-services");
     }
   };
 

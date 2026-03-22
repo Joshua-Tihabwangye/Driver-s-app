@@ -4,6 +4,14 @@ export type JobCategory = "ride" | "delivery" | "rental" | "shuttle" | "tour" | 
 export type JobStatus = "pending" | "attended" | "in-progress" | "completed" | "cancelled";
 export type TripStatus = "navigating" | "waiting" | "in-progress" | "completed" | "cancelled";
 export type DocumentStatus = "pending" | "under-review" | "verified" | "rejected";
+export type DriverCoreRole = "ride-only" | "delivery-only" | "dual-mode";
+
+export interface DriverProgramFlags {
+  rental: boolean;
+  tour: boolean;
+  ambulance: boolean;
+  shuttle: boolean;
+}
 
 export interface SharedContact {
   id: string;

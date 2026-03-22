@@ -59,7 +59,7 @@ function BottomNavItem({ icon: Icon, label, active, onClick, isDark, badge }: Bo
 const TABS = [
   { id: "home", label: "Home", icon: Home, route: "/driver/dashboard/online" },
   { id: "jobs", label: "Jobs", icon: Briefcase, route: "/driver/jobs/list" },
-  { id: "earnings", label: "Earnings", icon: DollarSign, route: "/driver/earnings/overview" },
+  { id: "earnings", label: "Earnings", icon: DollarSign, route: "/driver/analytics" },
   { id: "more", label: "More", icon: MoreHorizontal, route: "/driver/more" },
 ];
 

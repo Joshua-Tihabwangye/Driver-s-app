@@ -17,7 +17,7 @@ export default function Login() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     login();
-    navigate("/driver/dashboard/online");
+    navigate("/app/register-services");
   };
 
   return (
@@ -110,7 +110,7 @@ export default function Login() {
         </div>
 
         <p className="text-center text-[11px] text-slate-500 font-bold uppercase tracking-wide mt-8">
-          New here? <button type="button" onClick={() => navigate("/app/home")} className="text-[#03cd8c] font-black hover:underline">Register Fleet</button>
+          New here? <button type="button" onClick={() => navigate("/app/register-services")} className="text-[#03cd8c] font-black hover:underline">Register Fleet</button>
         </p>
       </div>
     </div>

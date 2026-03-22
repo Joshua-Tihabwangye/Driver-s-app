@@ -1,5 +1,15 @@
 import { createContext, ReactNode, useContext, useState, useMemo, useCallback } from "react";
-import type { Job, TripRecord, SharedTrip, RevenueEvent, PeriodFilter, JobCategory, SharedContact } from "../data/types";
+import type {
+  Job,
+  TripRecord,
+  SharedTrip,
+  RevenueEvent,
+  PeriodFilter,
+  JobCategory,
+  SharedContact,
+  DriverCoreRole,
+  DriverProgramFlags,
+} from "../data/types";
 import { MOCK_EARNINGS, MOCK_COMPLETED_TRIPS } from "../data/mockData";
 
 export interface DashboardMetrics {
@@ -8,6 +18,22 @@ export interface DashboardMetrics {
   earningsAmount: string;
   jobMix: Record<JobCategory, number>;
   totalTrips: number;
+}
+
+export interface DriverRoleConfig {
+  coreRole: DriverCoreRole;
+  programs: DriverProgramFlags;
+  onboardingComplete: boolean;
+}
+
+export interface DriverRoleUpdateInput {
+  coreRole: DriverCoreRole;
+  programs: DriverProgramFlags;
+}
+
+export interface DriverRoleUpdateResult {
+  ok: boolean;
+  error?: string;
 }
 
 interface StoreContextType {
@@ -24,6 +50,9 @@ interface StoreContextType {
   // Metrics (Derived)
   dashboardMetrics: DashboardMetrics;
   recentEarnings: typeof MOCK_EARNINGS;
+  driverRoleConfig: DriverRoleConfig;
+  assignableJobTypes: JobCategory[];
+  canAcceptJobType: (jobType: JobCategory) => boolean;
 
   // Actions
   addJob: (job: Job) => void;
@@ -33,9 +62,54 @@ interface StoreContextType {
   updateActiveSharedTrip: (updater: (prev: SharedTrip) => SharedTrip) => void;
   completeTrip: (trip: TripRecord, revenue: RevenueEvent[]) => void;
   addRevenueEvent: (event: RevenueEvent) => void;
+  updateDriverRoleConfig: (input: DriverRoleUpdateInput) => DriverRoleUpdateResult;
+  enableDualMode: () => void;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
+
+const DEFAULT_PROGRAM_FLAGS: DriverProgramFlags = {
+  rental: false,
+  tour: false,
+  ambulance: false,
+  shuttle: false,
+};
+
+const ROLE_BASE_JOB_TYPES: Record<DriverCoreRole, JobCategory[]> = {
+  "ride-only": ["ride"],
+  "delivery-only": ["delivery"],
+  "dual-mode": ["ride", "delivery"],
+};
+
+function validateDriverRoleConfig(
+  input: DriverRoleUpdateInput
+): DriverRoleUpdateResult {
+  const validRoles: DriverCoreRole[] = ["ride-only", "delivery-only", "dual-mode"];
+
+  if (!validRoles.includes(input.coreRole)) {
+    return { ok: false, error: "Invalid core role selected." };
+  }
+
+  if (
+    input.coreRole === "delivery-only" &&
+    (input.programs.rental ||
+      input.programs.tour ||
+      input.programs.ambulance ||
+      input.programs.shuttle)
+  ) {
+    return {
+      ok: false,
+      error:
+        "Delivery-only cannot enable ride programs. Switch to Ride + Delivery to unlock them.",
+    };
+  }
+
+  return { ok: true };
+}
+
+function getAssignableJobTypes(config: DriverRoleUpdateInput): JobCategory[] {
+  return [...ROLE_BASE_JOB_TYPES[config.coreRole]];
+}
 
 // Helper to filter dates (mock simplified logic for demonstration)
 export const isWithinPeriod = (timestampOrDate: number | string, period: PeriodFilter) => {
@@ -76,6 +150,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     { id: "r6", tripId: "t6", timestamp: Date.now() - 86400000 * 10, type: "base", amount: 35000, label: "Private Ride", category: "ride" },
   ]);
   const [activeSharedTrip, setActiveSharedTrip] = useState<SharedTrip | null>(null);
+  const [driverRoleConfig, setDriverRoleConfig] = useState<DriverRoleConfig>({
+    coreRole: "dual-mode",
+    programs: { ...DEFAULT_PROGRAM_FLAGS },
+    onboardingComplete: false,
+  });
 
   // Actions
   const addJob = useCallback((job: Job) => setJobs(prev => [job, ...prev]), []);
@@ -105,6 +184,30 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const completeTrip = useCallback((trip: TripRecord, revEvents: RevenueEvent[]) => {
     setTrips(prev => [trip, ...prev]);
     setRevenueEvents(prev => [...prev, ...revEvents]);
+  }, []);
+  const updateDriverRoleConfig = useCallback(
+    (input: DriverRoleUpdateInput): DriverRoleUpdateResult => {
+      const validation = validateDriverRoleConfig(input);
+      if (!validation.ok) {
+        return validation;
+      }
+
+      setDriverRoleConfig({
+        coreRole: input.coreRole,
+        programs: { ...input.programs },
+        onboardingComplete: true,
+      });
+
+      return { ok: true };
+    },
+    []
+  );
+  const enableDualMode = useCallback(() => {
+    setDriverRoleConfig((prev) => ({
+      ...prev,
+      coreRole: "dual-mode",
+      onboardingComplete: true,
+    }));
   }, []);
 
   // Derived Metrics
@@ -144,6 +247,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       amount: periodFilter === "week" ? e.amount * 4 : periodFilter === "month" ? e.amount * 12 : e.amount
     }));
   }, [periodFilter]);
+  const assignableJobTypes = useMemo(
+    () =>
+      getAssignableJobTypes({
+        coreRole: driverRoleConfig.coreRole,
+        programs: driverRoleConfig.programs,
+      }),
+    [driverRoleConfig]
+  );
+  const canAcceptJobType = useCallback(
+    (jobType: JobCategory) => assignableJobTypes.includes(jobType),
+    [assignableJobTypes]
+  );
 
   const value: StoreContextType = {
     periodFilter,
@@ -154,13 +269,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     activeSharedTrip,
     dashboardMetrics,
     recentEarnings,
+    driverRoleConfig,
+    assignableJobTypes,
+    canAcceptJobType,
     addJob,
     updateJobStatus,
     addSharedContactToJob,
     setActiveSharedTrip,
     updateActiveSharedTrip,
     completeTrip,
-    addRevenueEvent
+    addRevenueEvent,
+    updateDriverRoleConfig,
+    enableDualMode,
   };
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

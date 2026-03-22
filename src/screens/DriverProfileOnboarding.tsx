@@ -13,10 +13,10 @@ import {
   Star,
   User
 } from "lucide-react";
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import StatusChip from "../components/StatusChip";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – DriverProfileOnboarding Driver Personnel
 // Standardized Driver Personnel / Onboarding dashboard.
@@ -45,8 +45,9 @@ function DocRow({ icon: Icon, title, description, statusLabel, color, onClick }:
 }
 
 export default function DriverProfileOnboarding() {
-  const [canGoOnline] = useState(false);
   const navigate = useNavigate();
+  const { driverRoleConfig } = useStore();
+  const canGoOnline = driverRoleConfig.onboardingComplete;
 
   return (
     <div className="flex flex-col min-h-full bg-transparent">
@@ -264,14 +265,14 @@ export default function DriverProfileOnboarding() {
         <section className="pt-4 pb-12">
           <button
             type="button"
-            onClick={() => navigate("/driver/dashboard/online")}
+            onClick={() => navigate("/driver/analytics")}
             disabled={!canGoOnline}
             className={`w-full rounded-2xl py-4 text-sm font-black shadow-lg transition-all active:scale-[0.98] uppercase tracking-widest ${canGoOnline
                 ? "bg-orange-500 text-white shadow-orange-500/20 hover:bg-orange-600"
                 : "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
               }`}
           >
-            Go Online
+            Continue to Analytics
           </button>
           <p className="mt-2 text-center text-[10px] text-slate-400 font-bold uppercase tracking-tight">
             Requirements pending approval for live tracking.

@@ -10,6 +10,7 @@ import {
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – DriverRegistration Registration – Driver Information
 // Standardized Driver Profile registration screen.
@@ -21,12 +22,54 @@ const CORE_MODES = [
 ];
 
 export default function DriverRegistration() {
-  const [coreMode, setCoreMode] = useState("both");
-  const [rental, setRental] = useState(false);
-  const [tour, setTour] = useState(false);
-  const [ambulance, setAmbulance] = useState(false);
-  const [shuttle, setShuttle] = useState(false);
   const navigate = useNavigate();
+  const { updateDriverRoleConfig, driverRoleConfig } = useStore();
+  const initialCoreMode =
+    driverRoleConfig.coreRole === "ride-only"
+      ? "ride"
+      : driverRoleConfig.coreRole === "delivery-only"
+      ? "delivery"
+      : "both";
+  const [coreMode, setCoreMode] = useState(initialCoreMode);
+  const [rental, setRental] = useState(driverRoleConfig.programs.rental);
+  const [tour, setTour] = useState(driverRoleConfig.programs.tour);
+  const [ambulance, setAmbulance] = useState(driverRoleConfig.programs.ambulance);
+  const [shuttle, setShuttle] = useState(driverRoleConfig.programs.shuttle);
+  const [errorMessage, setErrorMessage] = useState("");
+  const isDeliveryOnly = coreMode === "delivery";
+
+  const handleCoreModeChange = (nextMode: string) => {
+    setCoreMode(nextMode);
+    setErrorMessage("");
+
+    if (nextMode === "delivery") {
+      setRental(false);
+      setTour(false);
+      setAmbulance(false);
+      setShuttle(false);
+    }
+  };
+
+  const handleContinue = () => {
+    const coreRole =
+      coreMode === "ride"
+        ? "ride-only"
+        : coreMode === "delivery"
+        ? "delivery-only"
+        : "dual-mode";
+
+    const updateResult = updateDriverRoleConfig({
+      coreRole,
+      programs: { rental, tour, ambulance, shuttle },
+    });
+
+    if (!updateResult.ok) {
+      setErrorMessage(updateResult.error || "Unable to save onboarding role.");
+      return;
+    }
+
+    navigate("/driver/onboarding/profile");
+  };
 
   return (
     <div className="flex flex-col min-h-full bg-transparent">
@@ -88,7 +131,7 @@ export default function DriverRegistration() {
               <button
                 key={mode.key}
                 type="button"
-                onClick={() => setCoreMode(mode.key)}
+                onClick={() => handleCoreModeChange(mode.key)}
                 className={`w-full rounded-2xl border-2 px-4 py-4 text-left flex items-start space-x-3 transition-all active:scale-[0.98] hover:scale-[1.01] ${coreMode === mode.key
                     ? "border-orange-500 bg-[#fffdf5] shadow-lg shadow-orange-500/5"
                     : "border-orange-500/10 bg-cream hover:border-orange-500/30"
@@ -127,11 +170,15 @@ export default function DriverRegistration() {
               { id: 'shuttle', state: shuttle, set: setShuttle, icon: Bus, label: "School Shuttle", desc: "Managed via Separate App." },
               { id: 'ambulance', state: ambulance, set: setAmbulance, icon: ShieldCheck, label: "Ambulance Driver", desc: "Strict medical requirements." }
             ].map((prog) => (
-              <label key={prog.id} className={`flex items-start space-x-3 rounded-2xl border-2 px-4 py-4 transition-all cursor-pointer hover:scale-[1.01] ${prog.state ? 'border-orange-500 bg-[#fffdf5] shadow-lg' : 'border-orange-500/10 bg-cream hover:border-orange-500/30'}`}>
+              <label
+                key={prog.id}
+                className={`flex items-start space-x-3 rounded-2xl border-2 px-4 py-4 transition-all ${isDeliveryOnly ? "cursor-not-allowed opacity-60" : "cursor-pointer hover:scale-[1.01]"} ${prog.state ? 'border-orange-500 bg-[#fffdf5] shadow-lg' : 'border-orange-500/10 bg-cream hover:border-orange-500/30'}`}
+              >
                 <div className="mt-1">
                   <input
                     type="checkbox"
                     checked={prog.state}
+                    disabled={isDeliveryOnly}
                     onChange={(e) => prog.set(e.target.checked)}
                     className="h-5 w-5 rounded-lg border-orange-200 text-orange-500 focus:ring-orange-500 transition-all bg-white"
                   />
@@ -147,6 +194,14 @@ export default function DriverRegistration() {
               </label>
             ))}
           </div>
+
+          {isDeliveryOnly && (
+            <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-amber-700">
+                Delivery-only mode disables ride programs. Enable Ride + Delivery to unlock them.
+              </p>
+            </div>
+          )}
           
           <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
              <p className="text-[10px] text-slate-400 leading-relaxed font-bold uppercase tracking-tight">
@@ -170,11 +225,18 @@ export default function DriverRegistration() {
         {/* Continue button */}
         <button
           type="button"
-          onClick={() => navigate("/driver/onboarding/profile")}
+          onClick={handleContinue}
           className="w-full rounded-2xl bg-orange-500 py-4 text-sm font-black text-white shadow-lg shadow-orange-500/20 hover:bg-orange-600 active:scale-[0.98] transition-all uppercase tracking-widest mt-4 mb-12"
         >
           Continue
         </button>
+        {errorMessage && (
+          <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 -mt-8 mb-12">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-red-700">
+              {errorMessage}
+            </p>
+          </div>
+        )}
       </main>
     </div>
   );
