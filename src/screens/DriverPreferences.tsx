@@ -84,12 +84,22 @@ export default function DriverPreferences() {
   const navigate = useNavigate();
   const { sharedRidesEnabled, setSharedRidesEnabled } = useSharedTrips();
   const { driverRoleConfig, assignableJobTypes, enableDualMode } = useStore();
+  const ROLE_LABELS = {
+    "ride-only": "Rider-only",
+    "delivery-only": "Delivery-only",
+    "dual-mode": "Ride + Delivery",
+    "rental-only": "Rental-only",
+    "tour-only": "Tour-only",
+    "ambulance-only": "Ambulance-only",
+  } as const;
+  const specializedSelections =
+    Number(driverRoleConfig.programs.rental) +
+    Number(driverRoleConfig.programs.tour) +
+    Number(driverRoleConfig.programs.ambulance);
   const roleLabel =
-    driverRoleConfig.coreRole === "ride-only"
-      ? "Rider-only"
-      : driverRoleConfig.coreRole === "delivery-only"
-      ? "Delivery-only"
-      : "Ride + Delivery";
+    specializedSelections > 1
+      ? "Specialized Multi"
+      : ROLE_LABELS[driverRoleConfig.coreRole];
 
   // Toggleable state for areas
   const [areas, setAreas] = useState([
@@ -239,7 +249,7 @@ export default function DriverPreferences() {
         <section className="pt-4 pb-12">
           <button
             type="button"
-            onClick={() => navigate("/driver/analytics")}
+            onClick={() => navigate("/driver/dashboard/online")}
             className="w-full rounded-2xl bg-orange-500 py-4 text-sm font-black text-white shadow-xl shadow-orange-500/20 hover:bg-orange-600 active:scale-[0.98] transition-all uppercase tracking-widest"
           >
             Save Preferences

@@ -45,6 +45,8 @@ interface StoreContextType {
   jobs: Job[];
   trips: TripRecord[];
   revenueEvents: RevenueEvent[];
+  filteredTrips: TripRecord[];
+  filteredRevenueEvents: RevenueEvent[];
   activeSharedTrip: SharedTrip | null;
 
   // Metrics (Derived)
@@ -79,36 +81,47 @@ const ROLE_BASE_JOB_TYPES: Record<DriverCoreRole, JobCategory[]> = {
   "ride-only": ["ride"],
   "delivery-only": ["delivery"],
   "dual-mode": ["ride", "delivery"],
+  "rental-only": ["rental"],
+  "tour-only": ["tour"],
+  "ambulance-only": ["ambulance"],
 };
 
 function validateDriverRoleConfig(
   input: DriverRoleUpdateInput
 ): DriverRoleUpdateResult {
-  const validRoles: DriverCoreRole[] = ["ride-only", "delivery-only", "dual-mode"];
+  const validRoles: DriverCoreRole[] = [
+    "ride-only",
+    "delivery-only",
+    "dual-mode",
+    "rental-only",
+    "tour-only",
+    "ambulance-only",
+  ];
 
   if (!validRoles.includes(input.coreRole)) {
     return { ok: false, error: "Invalid core role selected." };
-  }
-
-  if (
-    input.coreRole === "delivery-only" &&
-    (input.programs.rental ||
-      input.programs.tour ||
-      input.programs.ambulance ||
-      input.programs.shuttle)
-  ) {
-    return {
-      ok: false,
-      error:
-        "Delivery-only cannot enable ride programs. Switch to Ride + Delivery to unlock them.",
-    };
   }
 
   return { ok: true };
 }
 
 function getAssignableJobTypes(config: DriverRoleUpdateInput): JobCategory[] {
-  return [...ROLE_BASE_JOB_TYPES[config.coreRole]];
+  const assignableSet = new Set<JobCategory>(ROLE_BASE_JOB_TYPES[config.coreRole]);
+
+  if (config.programs.rental) {
+    assignableSet.add("rental");
+  }
+  if (config.programs.tour) {
+    assignableSet.add("tour");
+  }
+  if (config.programs.ambulance) {
+    assignableSet.add("ambulance");
+  }
+  if (config.programs.shuttle) {
+    assignableSet.add("shuttle");
+  }
+
+  return Array.from(assignableSet);
 }
 
 // Helper to filter dates (mock simplified logic for demonstration)
@@ -129,6 +142,7 @@ export const isWithinPeriod = (timestampOrDate: number | string, period: PeriodF
 const initialJobs: Job[] = [
   { id: "3244", from: "Kampala Serena", to: "Entebbe Airport", distance: "38 km", duration: "45 min", fare: "85.00", jobType: "ride", status: "pending", requestedAt: Date.now() - 0.02 * 3600000 },
   { id: "3245", from: "Village Mall", to: "Kyambogo", distance: "5.2 km", duration: "16 min", fare: "12.50", jobType: "ride", status: "pending", requestedAt: Date.now() - 0.05 * 3600000 },
+  { id: "3250", from: "Sheraton Hotel", to: "Speke Resort", distance: "26 km", duration: "4h booking", fare: "Rental", jobType: "rental", status: "pending", requestedAt: Date.now() - 0.06 * 3600000 },
   { id: "3246", from: "Airport", to: "Safari Lodge", distance: "42 km", duration: "Day 2 of 5", fare: "Tour", jobType: "tour", status: "pending", requestedAt: Date.now() - 3 * 3600000 },
   { id: "3247", from: "Near Acacia Road", to: "City Hospital", distance: "3.1 km", duration: "8 min", fare: "—", jobType: "ambulance", status: "pending", requestedAt: Date.now() - 0.1 * 3600000 },
   { id: "3249", from: "FreshMart", to: "Naguru", distance: "2.7 km", duration: "10 min", fare: "3.40", jobType: "delivery", itemType: "Grocery", status: "pending", requestedAt: Date.now() - 0.8 * 3600000 },
@@ -210,43 +224,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
-  // Derived Metrics
-  const dashboardMetrics = useMemo(() => {
-    // Filter trips and revenue by current period
-    const filteredTrips = trips.filter(t => isWithinPeriod(t.date || t.time || Date.now(), periodFilter));
-    const filteredRevenue = revenueEvents.filter(r => isWithinPeriod(r.timestamp, periodFilter));
-
-    let totalEarnings = filteredRevenue.reduce((sum, r) => sum + r.amount, 0);
-    
-    // Calculate job mix logically from completed trips + current period defaults
-    const mix: Record<JobCategory, number> = {
-      ride: filteredTrips.filter(t => t.jobType === "ride").length + (periodFilter === "day" ? 7 : 30),
-      delivery: filteredTrips.filter(t => t.jobType === "delivery").length + (periodFilter === "day" ? 3 : 15),
-      rental: filteredTrips.filter(t => t.jobType === "rental").length + (periodFilter === "day" ? 1 : 4),
-      tour: filteredTrips.filter(t => t.jobType === "tour").length + (periodFilter === "day" ? 1 : 2),
-      ambulance: filteredTrips.filter(t => t.jobType === "ambulance").length,
-      shuttle: filteredTrips.filter(t => t.jobType === "shuttle").length,
-      shared: filteredTrips.filter(t => t.jobType === "shared").length + (periodFilter === "day" ? 2 : 10),
-    };
-
-    const jobsCount = Object.values(mix).reduce((a,b)=>a+b, 0);
-
-    return {
-      onlineTime: periodFilter === "day" ? "3h 24m" : periodFilter === "week" ? "28h 15m" : "110h",
-      jobsCount,
-      totalTrips: jobsCount + 400, // mock historical scale
-      earningsAmount: `UGX ${totalEarnings.toLocaleString()}`,
-      jobMix: mix,
-    };
-  }, [periodFilter, trips, revenueEvents]);
-
-  // Adjust recent earnings charts based on period
-  const recentEarnings = useMemo(() => {
-    return MOCK_EARNINGS.map(e => ({
-      ...e,
-      amount: periodFilter === "week" ? e.amount * 4 : periodFilter === "month" ? e.amount * 12 : e.amount
-    }));
-  }, [periodFilter]);
   const assignableJobTypes = useMemo(
     () =>
       getAssignableJobTypes({
@@ -259,6 +236,59 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     (jobType: JobCategory) => assignableJobTypes.includes(jobType),
     [assignableJobTypes]
   );
+  const filteredTrips = useMemo(
+    () => trips.filter((trip) => assignableJobTypes.includes(trip.jobType)),
+    [trips, assignableJobTypes]
+  );
+  const filteredRevenueEvents = useMemo(
+    () =>
+      revenueEvents.filter((event) =>
+        assignableJobTypes.includes(event.category)
+      ),
+    [revenueEvents, assignableJobTypes]
+  );
+
+  // Derived Metrics
+  const dashboardMetrics = useMemo(() => {
+    const periodTrips = filteredTrips.filter((trip) =>
+      isWithinPeriod(trip.date || trip.time || Date.now(), periodFilter)
+    );
+    const periodRevenue = filteredRevenueEvents.filter((event) =>
+      isWithinPeriod(event.timestamp, periodFilter)
+    );
+    const totalEarnings = periodRevenue.reduce((sum, event) => sum + event.amount, 0);
+
+    const mix: Record<JobCategory, number> = {
+      ride: 0,
+      delivery: 0,
+      rental: 0,
+      tour: 0,
+      ambulance: 0,
+      shuttle: 0,
+      shared: 0,
+    };
+    for (const trip of periodTrips) {
+      mix[trip.jobType] += 1;
+    }
+
+    const jobsCount = periodTrips.length;
+
+    return {
+      onlineTime: periodFilter === "day" ? "3h 24m" : periodFilter === "week" ? "28h 15m" : "110h",
+      jobsCount,
+      totalTrips: filteredTrips.length,
+      earningsAmount: `UGX ${totalEarnings.toLocaleString()}`,
+      jobMix: mix,
+    };
+  }, [periodFilter, filteredTrips, filteredRevenueEvents]);
+
+  // Adjust recent earnings charts based on period
+  const recentEarnings = useMemo(() => {
+    return MOCK_EARNINGS.map(e => ({
+      ...e,
+      amount: periodFilter === "week" ? e.amount * 4 : periodFilter === "month" ? e.amount * 12 : e.amount
+    }));
+  }, [periodFilter]);
 
   const value: StoreContextType = {
     periodFilter,
@@ -266,6 +296,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     jobs,
     trips,
     revenueEvents,
+    filteredTrips,
+    filteredRevenueEvents,
     activeSharedTrip,
     dashboardMetrics,
     recentEarnings,

@@ -4,7 +4,13 @@ export type JobCategory = "ride" | "delivery" | "rental" | "shuttle" | "tour" | 
 export type JobStatus = "pending" | "attended" | "in-progress" | "completed" | "cancelled";
 export type TripStatus = "navigating" | "waiting" | "in-progress" | "completed" | "cancelled";
 export type DocumentStatus = "pending" | "under-review" | "verified" | "rejected";
-export type DriverCoreRole = "ride-only" | "delivery-only" | "dual-mode";
+export type DriverCoreRole =
+  | "ride-only"
+  | "delivery-only"
+  | "dual-mode"
+  | "rental-only"
+  | "tour-only"
+  | "ambulance-only";
 
 export interface DriverProgramFlags {
   rental: boolean;

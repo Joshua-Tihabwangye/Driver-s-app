@@ -39,10 +39,19 @@ function StationRow({ name, value, total }: any) {
 
 export default function EarningsOverview() {
   const navigate = useNavigate();
-  const { recentEarnings, revenueEvents, periodFilter, setPeriodFilter, dashboardMetrics } = useStore();
+  const {
+    recentEarnings,
+    filteredRevenueEvents,
+    periodFilter,
+    setPeriodFilter,
+    dashboardMetrics,
+    assignableJobTypes,
+  } = useStore();
   const latestEarning = recentEarnings[0] || { amount: 0 };
 
-  const filteredRevenue = revenueEvents.filter(r => isWithinPeriod(r.timestamp, periodFilter));
+  const filteredRevenue = filteredRevenueEvents.filter((event) =>
+    isWithinPeriod(event.timestamp, periodFilter)
+  );
 
   const rideRev = filteredRevenue.filter(r => r.category === "ride").reduce((sum, r) => sum + r.amount, 0);
   const sharedRev = filteredRevenue.filter(r => r.category === "shared").reduce((sum, r) => sum + r.amount, 0);
@@ -50,14 +59,19 @@ export default function EarningsOverview() {
   const rentalRev = filteredRevenue.filter(r => r.category === "rental").reduce((sum, r) => sum + r.amount, 0);
   const tourRev = filteredRevenue.filter(r => r.category === "tour").reduce((sum, r) => sum + r.amount, 0);
   
-  const totalRevenue = rideRev + sharedRev + deliveryRev + rentalRev + tourRev || 1; // prevent div by zero
-  const sharedPercentage = Math.round((sharedRev / totalRevenue) * 100);
+  const totalRevenue = rideRev + sharedRev + deliveryRev + rentalRev + tourRev;
+  const sharedPercentage = totalRevenue > 0
+    ? Math.round((sharedRev / totalRevenue) * 100)
+    : 0;
   
   const avgPerJob = dashboardMetrics.jobsCount > 0 ? totalRevenue / dashboardMetrics.jobsCount : 0;
 
   // Determine Top Earning Category
   const revMap = { "Private": rideRev, "Shared": sharedRev, "Delivery": deliveryRev, "Rental": rentalRev, "Tour": tourRev };
-  const topCategory = Object.entries(revMap).reduce((a, b) => a[1] > b[1] ? a : b)[0];
+  const topCategory =
+    totalRevenue > 0
+      ? Object.entries(revMap).reduce((a, b) => (a[1] > b[1] ? a : b))[0]
+      : "N/A";
 
   return (
     <div className="flex flex-col h-full bg-transparent">
@@ -112,11 +126,16 @@ export default function EarningsOverview() {
                     <span className="text-purple-500">UGX {(rentalRev + tourRev).toLocaleString()}</span>
                  </div>
                  <div className="mt-3 pt-3 border-t border-slate-100 flex justify-between items-center">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Top Category</span>
+                   <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Top Category</span>
                     <span className="text-[10px] uppercase font-black bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md">{topCategory}</span>
                  </div>
               </div>
            </div>
+        </section>
+        <section className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3">
+          <p className="text-[10px] font-black uppercase tracking-widest text-emerald-700">
+            Active categories: {assignableJobTypes.join(", ")}
+          </p>
         </section>
 
         {/* Welcome Banner */}

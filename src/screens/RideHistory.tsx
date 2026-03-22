@@ -3,13 +3,14 @@ import {
   CheckCircle2,
   History as HistoryIcon
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useStore } from "../context/StoreContext";
 import PageHeader from "../components/PageHeader";
 import StatusChip from "../components/StatusChip";
 import EmptyState from "../components/EmptyState";
 import { JOB_FILTERS, JOB_HISTORY_ROUTES } from "../data/constants";
 import { useNavigate } from "react-router-dom";
+import type { JobCategory } from "../data/types";
 
 // EVzone Driver App – RideHistory Driver – Ride History
 // Shows ONLY attended/completed jobs from the centralized context.
@@ -51,13 +52,27 @@ function TripRow({ trip, onClick, navigate }: any) {
 
 export default function RideHistory() {
   const [filter, setFilter] = useState("all");
-  const { trips } = useStore();
+  const { filteredTrips: roleFilteredTrips, assignableJobTypes } = useStore();
   const navigate = useNavigate();
+  const availableFilters = JOB_FILTERS.filter(
+    (jobFilter) =>
+      jobFilter.key === "all" ||
+      assignableJobTypes.includes(jobFilter.key as JobCategory)
+  );
+
+  useEffect(() => {
+    const isAllowed =
+      filter === "all" ||
+      assignableJobTypes.includes(filter as JobCategory);
+    if (!isAllowed) {
+      setFilter("all");
+    }
+  }, [filter, assignableJobTypes]);
 
   const filteredTrips =
     filter === "all"
-      ? trips
-      : trips.filter((trip) => trip.jobType === filter);
+      ? roleFilteredTrips
+      : roleFilteredTrips.filter((trip) => trip.jobType === filter);
 
   return (
     <div className="flex flex-col h-full ">
@@ -78,7 +93,7 @@ export default function RideHistory() {
         {/* Job type filter bar */}
         <section className="sticky top-0 /80 backdrop-blur-md z-10 py-2 -mx-6 px-6">
           <div className="flex items-center space-x-2 overflow-x-auto no-scrollbar pb-1">
-            {JOB_FILTERS.map((f) => (
+            {availableFilters.map((f) => (
               <button
                 key={f.key}
                 type="button"

@@ -37,9 +37,10 @@ function QuickAction({ icon: Icon, label, sub, onClick }: any) {
 
 export default function OnlineDashboard() {
   const navigate = useNavigate();
-  const { dashboardMetrics } = useStore();
+  const { dashboardMetrics, assignableJobTypes } = useStore();
   const { onlineTime, jobsCount, earningsAmount } = dashboardMetrics;
   const [showOfflineModal, setShowOfflineModal] = useState(false);
+  const hasDelivery = assignableJobTypes.includes("delivery");
 
   return (
     <div className="flex flex-col h-full bg-transparent">
@@ -159,12 +160,14 @@ export default function OnlineDashboard() {
               sub="Manage Jobs"
               onClick={() => navigate("/driver/jobs/list")}
             />
-            <QuickAction
-              icon={Package}
-              label="Deliveries"
-              sub="Package Orders"
-              onClick={() => navigate("/driver/jobs/list?category=delivery")}
-            />
+            {hasDelivery && (
+              <QuickAction
+                icon={Package}
+                label="Deliveries"
+                sub="Package Orders"
+                onClick={() => navigate("/driver/jobs/list?category=delivery")}
+              />
+            )}
             <button
               type="button"
               onClick={() => navigate("/driver/safety/hub")}

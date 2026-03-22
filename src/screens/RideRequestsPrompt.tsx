@@ -17,9 +17,7 @@ import PageHeader from "../components/PageHeader";
 export default function RideRequestsPrompt() {
   const navigate = useNavigate();
   const handleViewJobs = () => {
-    // In the real app, navigate to the Ride Requests / Job list (RideRequestsList), e.g.:
-    // navigate("/driver/ride-requests");
-    // Left intentionally without side effects in the preview environment.
+    navigate("/driver/jobs/list");
   };
 
   return (

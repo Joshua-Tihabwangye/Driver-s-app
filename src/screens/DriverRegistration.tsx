@@ -1,9 +1,10 @@
 import {
-  Bus,
+  Ambulance,
   Car,
   ChevronDown,
   Package,
   Pencil,
+  Route,
   ShieldCheck,
   User
 } from "lucide-react";
@@ -11,56 +12,117 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
+import type { DriverCoreRole } from "../data/types";
 
 // EVzone Driver App – DriverRegistration Registration – Driver Information
 // Standardized Driver Profile registration screen.
 
-const CORE_MODES = [
-  { key: "ride", label: "Ride only", desc: "Standard passenger trips." },
-  { key: "delivery", label: "Delivery only", desc: "Food and parcel deliveries." },
-  { key: "both", label: "Ride + Delivery", desc: "Receive both rides and delivery jobs." },
-];
+const SERVICE_OPTIONS = [
+  {
+    key: "ride",
+    label: "Ride only",
+    desc: "Standard passenger trips.",
+    icon: Car,
+    role: "ride-only",
+  },
+  {
+    key: "delivery",
+    label: "Delivery only",
+    desc: "Food and parcel deliveries.",
+    icon: Package,
+    role: "delivery-only",
+  },
+  {
+    key: "rental",
+    label: "Rental / Chauffeur",
+    desc: "Hourly chauffeur and booked rentals.",
+    icon: Car,
+    role: "rental-only",
+  },
+  {
+    key: "tour",
+    label: "Tour Driving",
+    desc: "Scheduled tour driving routes.",
+    icon: Route,
+    role: "tour-only",
+  },
+  {
+    key: "ambulance",
+    label: "Ambulance Driver",
+    desc: "Emergency medical transport only.",
+    icon: Ambulance,
+    role: "ambulance-only",
+  },
+] as const;
+
+type ServiceOptionKey = (typeof SERVICE_OPTIONS)[number]["key"];
+
+const PRIMARY_ROLE_BY_OPTION: Record<ServiceOptionKey, DriverCoreRole> = {
+  ride: "ride-only",
+  delivery: "delivery-only",
+  rental: "rental-only",
+  tour: "tour-only",
+  ambulance: "ambulance-only",
+};
 
 export default function DriverRegistration() {
   const navigate = useNavigate();
   const { updateDriverRoleConfig, driverRoleConfig } = useStore();
-  const initialCoreMode =
-    driverRoleConfig.coreRole === "ride-only"
-      ? "ride"
-      : driverRoleConfig.coreRole === "delivery-only"
-      ? "delivery"
-      : "both";
-  const [coreMode, setCoreMode] = useState(initialCoreMode);
-  const [rental, setRental] = useState(driverRoleConfig.programs.rental);
-  const [tour, setTour] = useState(driverRoleConfig.programs.tour);
-  const [ambulance, setAmbulance] = useState(driverRoleConfig.programs.ambulance);
-  const [shuttle, setShuttle] = useState(driverRoleConfig.programs.shuttle);
+  const [selectedServices, setSelectedServices] = useState<Record<ServiceOptionKey, boolean>>({
+    ride:
+      driverRoleConfig.coreRole === "ride-only" ||
+      driverRoleConfig.coreRole === "dual-mode",
+    delivery:
+      driverRoleConfig.coreRole === "delivery-only" ||
+      driverRoleConfig.coreRole === "dual-mode",
+    rental:
+      driverRoleConfig.coreRole === "rental-only" ||
+      driverRoleConfig.programs.rental,
+    tour:
+      driverRoleConfig.coreRole === "tour-only" ||
+      driverRoleConfig.programs.tour,
+    ambulance:
+      driverRoleConfig.coreRole === "ambulance-only" ||
+      driverRoleConfig.programs.ambulance,
+  });
   const [errorMessage, setErrorMessage] = useState("");
-  const isDeliveryOnly = coreMode === "delivery";
 
-  const handleCoreModeChange = (nextMode: string) => {
-    setCoreMode(nextMode);
+  const handleServiceToggle = (optionKey: ServiceOptionKey) => {
+    setSelectedServices((prev) => ({
+      ...prev,
+      [optionKey]: !prev[optionKey],
+    }));
     setErrorMessage("");
-
-    if (nextMode === "delivery") {
-      setRental(false);
-      setTour(false);
-      setAmbulance(false);
-      setShuttle(false);
-    }
   };
 
   const handleContinue = () => {
-    const coreRole =
-      coreMode === "ride"
-        ? "ride-only"
-        : coreMode === "delivery"
-        ? "delivery-only"
-        : "dual-mode";
+    const selectedKeys = (Object.keys(selectedServices) as ServiceOptionKey[]).filter(
+      (key) => selectedServices[key]
+    );
 
+    if (selectedKeys.length === 0) {
+      setErrorMessage("Select at least one service category.");
+      return;
+    }
+
+    const hasRide = selectedServices.ride;
+    const hasDelivery = selectedServices.delivery;
+    const primaryRole =
+      hasRide && hasDelivery
+        ? "dual-mode"
+        : hasRide
+        ? "ride-only"
+        : hasDelivery
+        ? "delivery-only"
+        : PRIMARY_ROLE_BY_OPTION[selectedKeys[0]];
     const updateResult = updateDriverRoleConfig({
-      coreRole,
-      programs: { rental, tour, ambulance, shuttle },
+      coreRole: primaryRole,
+      programs: {
+        rental: selectedServices.rental,
+        tour: selectedServices.tour,
+        ambulance: selectedServices.ambulance,
+        shuttle: false,
+      },
     });
 
     if (!updateResult.ok) {
@@ -123,89 +185,55 @@ export default function DriverRegistration() {
           </div>
         </div>
 
-        {/* Base driving mode selection */}
+        {/* Service category selection */}
         <section className="space-y-4">
-          <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">Base driving mode</h2>
+          <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">Service category</h2>
           <div className="space-y-3">
-            {CORE_MODES.map((mode) => (
-              <button
-                key={mode.key}
-                type="button"
-                onClick={() => handleCoreModeChange(mode.key)}
-                className={`w-full rounded-2xl border-2 px-4 py-4 text-left flex items-start space-x-3 transition-all active:scale-[0.98] hover:scale-[1.01] ${coreMode === mode.key
+            {SERVICE_OPTIONS.map((option) => (
+              <label
+                key={option.key}
+                className={`w-full rounded-2xl border-2 px-4 py-4 text-left flex items-start space-x-3 transition-all active:scale-[0.98] ${
+                  selectedServices[option.key]
                     ? "border-orange-500 bg-[#fffdf5] shadow-lg shadow-orange-500/5"
                     : "border-orange-500/10 bg-cream hover:border-orange-500/30"
-                  }`}
-              >
-                <div className={`mt-0.5 flex h-10 w-10 items-center justify-center rounded-xl ${coreMode === mode.key ? 'bg-white shadow-sm' : 'bg-white/50 border border-orange-50'}`}>
-                  {mode.key === "delivery" ? (
-                    <Package className={`h-5 w-5 ${coreMode === mode.key ? 'text-orange-500' : 'text-slate-400'}`} />
-                  ) : (
-                    <Car className={`h-5 w-5 ${coreMode === mode.key ? 'text-orange-500' : 'text-slate-400'}`} />
-                  )}
-                </div>
-                <div className="flex flex-col">
-                  <span className={`text-sm font-black tracking-tight ${coreMode === mode.key ? 'text-slate-900' : 'text-slate-700'}`}>{mode.label}</span>
-                  <span className={`text-[11px] font-medium leading-tight mt-0.5 ${coreMode === mode.key ? 'text-slate-600' : 'text-slate-400'}`}>{mode.desc}</span>
-                </div>
-              </button>
-            ))}
-          </div>
-        </section>
-
-        {/* Specialised programs */}
-        <section className="space-y-4">
-          <div className="flex items-center justify-between px-1">
-            <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Programs (Optional)</h2>
-            <span className="inline-flex items-center text-[10px] uppercase font-black text-slate-400 tracking-widest">
-              <ShieldCheck className="h-3 w-3 mr-1.5 text-emerald-500" />
-              Verified
-            </span>
-          </div>
-          
-          <div className="space-y-3">
-            {[
-              { id: 'rental', state: rental, set: setRental, icon: Car, label: "Rental / Chauffeur", desc: "Defined time window & multiple stops." },
-              { id: 'tour', state: tour, set: setTour, icon: Car, label: "Tour Driving", desc: "Multi-day schedules with fixed segments." },
-              { id: 'shuttle', state: shuttle, set: setShuttle, icon: Bus, label: "School Shuttle", desc: "Managed via Separate App." },
-              { id: 'ambulance', state: ambulance, set: setAmbulance, icon: ShieldCheck, label: "Ambulance Driver", desc: "Strict medical requirements." }
-            ].map((prog) => (
-              <label
-                key={prog.id}
-                className={`flex items-start space-x-3 rounded-2xl border-2 px-4 py-4 transition-all ${isDeliveryOnly ? "cursor-not-allowed opacity-60" : "cursor-pointer hover:scale-[1.01]"} ${prog.state ? 'border-orange-500 bg-[#fffdf5] shadow-lg' : 'border-orange-500/10 bg-cream hover:border-orange-500/30'}`}
+                }`}
               >
                 <div className="mt-1">
                   <input
                     type="checkbox"
-                    checked={prog.state}
-                    disabled={isDeliveryOnly}
-                    onChange={(e) => prog.set(e.target.checked)}
-                    className="h-5 w-5 rounded-lg border-orange-200 text-orange-500 focus:ring-orange-500 transition-all bg-white"
+                    checked={selectedServices[option.key]}
+                    onChange={() => handleServiceToggle(option.key)}
+                    className="h-5 w-5 rounded-lg border-orange-200 text-orange-500 focus:ring-orange-500 bg-white"
                   />
                 </div>
-                <div className="flex-1">
-                  <span className={`block text-sm font-black tracking-tight ${prog.state ? 'text-slate-900' : 'text-slate-700'}`}>
-                    {prog.label}
+                <div className={`mt-0.5 flex h-10 w-10 items-center justify-center rounded-xl ${selectedServices[option.key] ? "bg-white shadow-sm" : "bg-white/50 border border-orange-50"}`}>
+                  <option.icon className={`h-5 w-5 ${selectedServices[option.key] ? "text-orange-500" : "text-slate-400"}`} />
+                </div>
+                <div className="flex flex-col">
+                  <span className={`text-sm font-black tracking-tight ${selectedServices[option.key] ? "text-slate-900" : "text-slate-700"}`}>
+                    {option.label}
                   </span>
-                  <span className={`block text-[11px] font-medium leading-tight mt-0.5 ${prog.state ? 'text-slate-600' : 'text-slate-400'}`}>
-                    {prog.desc}
+                  <span className={`text-[11px] font-medium leading-tight mt-0.5 ${selectedServices[option.key] ? "text-slate-600" : "text-slate-400"}`}>
+                    {option.desc}
                   </span>
                 </div>
               </label>
             ))}
           </div>
+        </section>
 
-          {isDeliveryOnly && (
-            <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-amber-700">
-                Delivery-only mode disables ride programs. Enable Ride + Delivery to unlock them.
-              </p>
-            </div>
-          )}
-          
+        {/* Allocation note */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Allocation policy</h2>
+            <span className="inline-flex items-center text-[10px] uppercase font-black text-slate-400 tracking-widest">
+              <ShieldCheck className="h-3 w-3 mr-1.5 text-emerald-500" />
+              Strict
+            </span>
+          </div>
           <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
              <p className="text-[10px] text-slate-400 leading-relaxed font-bold uppercase tracking-tight">
-                Final activation depends on checks, training and agreements outside this app.
+                Ride and delivery are separate checkbox options. Select only the categories you want to receive tasks from.
              </p>
           </div>
         </section>

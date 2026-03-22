@@ -1,4 +1,8 @@
-import { Settings as SettingsIcon, ChevronLeft, Globe, Moon, Bell, Lock, Shield, ChevronRight, UserX } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  UserX
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useTheme } from "../context/ThemeContext";
@@ -7,6 +11,9 @@ export default function Settings() {
   const navigate = useNavigate();
   const { isDark, toggleTheme } = useTheme();
   const [notifications, setNotifications] = useState(true);
+  const [locationSharing, setLocationSharing] = useState(true);
+  const [dataSaver, setDataSaver] = useState(false);
+  const [biometricLock, setBiometricLock] = useState(false);
 
   return (
     <div className="flex flex-col h-full ">
@@ -77,6 +84,75 @@ export default function Settings() {
                 className={`w-12 h-6 rounded-full relative transition-colors ${notifications ? "bg-orange-500" : "bg-slate-200"}`}
               >
                 <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${notifications ? "left-7" : "left-1"} shadow-sm`} />
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Driver Controls */}
+        <section className="space-y-4">
+          <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-1">Driver Controls</h2>
+          <div className="bg-cream dark:bg-slate-800 rounded-[2.5rem] shadow-sm divide-y divide-slate-100 dark:divide-slate-700 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => navigate("/driver/settings/job-types-legend")}
+              className="flex w-full items-center justify-between p-6 text-left"
+            >
+              <div>
+                <h3 className="text-xs font-black text-slate-900 uppercase">Service Visibility</h3>
+                <p className="text-[10px] text-slate-400 font-bold">View configured task categories</p>
+              </div>
+              <ChevronRight className="h-5 w-5 text-slate-300" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate("/driver/notifications")}
+              className="flex w-full items-center justify-between p-6 text-left"
+            >
+              <div>
+                <h3 className="text-xs font-black text-slate-900 uppercase">Notifications Center</h3>
+                <p className="text-[10px] text-slate-400 font-bold">Alerts, requests and updates</p>
+              </div>
+              <ChevronRight className="h-5 w-5 text-slate-300" />
+            </button>
+
+            <div className="flex items-center justify-between p-6">
+              <div>
+                <h3 className="text-xs font-black text-slate-900 uppercase">Location Sharing</h3>
+                <p className="text-[10px] text-slate-400 font-bold">Enable live trip/location updates</p>
+              </div>
+              <button
+                onClick={() => setLocationSharing(!locationSharing)}
+                className={`w-12 h-6 rounded-full relative transition-colors ${locationSharing ? "bg-orange-500" : "bg-slate-200"}`}
+              >
+                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${locationSharing ? "left-7" : "left-1"} shadow-sm`} />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between p-6">
+              <div>
+                <h3 className="text-xs font-black text-slate-900 uppercase">Data Saver</h3>
+                <p className="text-[10px] text-slate-400 font-bold">Reduce map and media data usage</p>
+              </div>
+              <button
+                onClick={() => setDataSaver(!dataSaver)}
+                className={`w-12 h-6 rounded-full relative transition-colors ${dataSaver ? "bg-orange-500" : "bg-slate-200"}`}
+              >
+                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${dataSaver ? "left-7" : "left-1"} shadow-sm`} />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between p-6">
+              <div>
+                <h3 className="text-xs font-black text-slate-900 uppercase">Biometric Lock</h3>
+                <p className="text-[10px] text-slate-400 font-bold">Require biometric unlock for app open</p>
+              </div>
+              <button
+                onClick={() => setBiometricLock(!biometricLock)}
+                className={`w-12 h-6 rounded-full relative transition-colors ${biometricLock ? "bg-orange-500" : "bg-slate-200"}`}
+              >
+                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${biometricLock ? "left-7" : "left-1"} shadow-sm`} />
               </button>
             </div>
           </div>

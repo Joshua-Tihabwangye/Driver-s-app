@@ -171,6 +171,7 @@ export const SCREENS: ScreenConfig[] = [
   { id: "FaceCapture", label: "Face Capture", path: "/driver/preferences/identity/face-capture", Component: FaceCapture },
   { id: "ImageUpload", label: "Upload Your Image", path: "/driver/preferences/identity/upload-image", Component: ImageUpload },
   { id: "MyVehicles", label: "My Vehicles", path: "/driver/vehicles", Component: MyVehicles },
+  { id: "MyVehiclesManage", label: "My Vehicles (Manage)", path: "/driver/vehicles/manage", Component: MyVehicles },
   { id: "VehicleDetails", label: "Vehicles", path: "/driver/vehicles/:vehicleId", previewPath: `/driver/vehicles/${SAMPLE_IDS.vehicle}`, Component: VehicleDetails },
   { id: "BusinessVehicles", label: "Business Vehicles", path: "/driver/vehicles/business", Component: BusinessVehicles },
   { id: "VehicleAccessories", label: "Vehicle Accessories", path: "/driver/vehicles/accessories", Component: VehicleAccessories },

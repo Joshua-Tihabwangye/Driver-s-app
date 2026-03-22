@@ -8,6 +8,7 @@ Handshake,
 Store,
 Wallet2
 } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 
@@ -25,35 +26,35 @@ const services = [
 ];
 
 
-function ServiceTile({ icon: Icon, label, color, onClick }) {
+function ServiceTile({ icon: Icon, label, color, onClick, selected }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="flex flex-col items-center justify-center rounded-2xl bg-white py-4 px-2 shadow-[0_2px_12px_rgba(0,0,0,0.06)] active:scale-[0.97] transition-transform"
+      className={`flex flex-col items-center justify-center rounded-2xl py-4 px-2 active:scale-[0.97] transition-transform border-2 ${
+        selected
+          ? "bg-orange-50 border-orange-500 shadow-[0_6px_18px_rgba(249,115,22,0.2)]"
+          : "bg-white border-transparent shadow-[0_2px_12px_rgba(0,0,0,0.06)]"
+      }`}
     >
       <div
-        className="mb-2 flex h-12 w-12 items-center justify-center rounded-2xl"
-        style={{ backgroundColor: `${color}15` }}
+        className={`mb-2 flex h-12 w-12 items-center justify-center rounded-2xl ${
+          selected ? "ring-2 ring-orange-200" : ""
+        }`}
+        style={{ backgroundColor: selected ? "#fff7ed" : `${color}15` }}
       >
-        <Icon className="h-6 w-6" style={{ color }} />
+        <Icon className="h-6 w-6" style={{ color: selected ? "#f97316" : color }} />
       </div>
-      <span className="text-xs font-semibold text-slate-800">{label}</span>
+      <span className={`text-xs font-semibold ${selected ? "text-orange-600" : "text-slate-800"}`}>
+        {label}
+      </span>
     </button>
   );
 }
 
 export default function RegisterServices() {
   const navigate = useNavigate();
-
-  const serviceRoutes = {
-    school: "/driver/safety/hub",
-    seller: "/driver/delivery/orders-dashboard",
-    driver: "/auth/register",
-    faith: "/driver/help/shuttle-link",
-    charging: "/driver/vehicles",
-    wallet: "/driver/analytics"
-};
+  const [selectedService, setSelectedService] = useState<string | null>(null);
 
   return (
     <div className="flex flex-col min-h-full ">
@@ -72,12 +73,14 @@ export default function RegisterServices() {
               icon={service.icon}
               label={service.label}
               color={service.color}
-              onClick={() =>
-                navigate(serviceRoutes[service.key] || "/app/register-services")
-              }
+              selected={selectedService === service.key}
+              onClick={() => setSelectedService(service.key)}
             />
           ))}
         </div>
+        <p className="text-center text-[10px] font-black uppercase tracking-widest text-slate-500">
+          Select one service, then register
+        </p>
 
         {/* Business Partner card */}
         <section className="rounded-[2.5rem] bg-[#f0faf7] border border-[#d6ebe6] p-8 text-center space-y-4 shadow-sm relative overflow-hidden group">
@@ -98,8 +101,13 @@ export default function RegisterServices() {
 
           <button
             type="button"
-            onClick={() => navigate("/driver/delivery/orders-dashboard")}
-            className="relative z-10 w-full rounded-2xl bg-orange-500 py-4 text-sm font-black text-white shadow-lg shadow-orange-500/20 hover:bg-orange-600 active:scale-[0.98] transition-all uppercase tracking-widest"
+            onClick={() => navigate("/auth/register", { state: { selectedService } })}
+            disabled={!selectedService}
+            className={`relative z-10 w-full rounded-2xl py-4 text-sm font-black uppercase tracking-widest transition-all ${
+              selectedService
+                ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20 hover:bg-orange-600 active:scale-[0.98]"
+                : "bg-slate-200 text-slate-500 cursor-not-allowed"
+            }`}
           >
             Register Now
           </button>

@@ -265,14 +265,14 @@ export default function DriverProfileOnboarding() {
         <section className="pt-4 pb-12">
           <button
             type="button"
-            onClick={() => navigate("/driver/analytics")}
+            onClick={() => navigate("/driver/dashboard/online")}
             disabled={!canGoOnline}
             className={`w-full rounded-2xl py-4 text-sm font-black shadow-lg transition-all active:scale-[0.98] uppercase tracking-widest ${canGoOnline
                 ? "bg-orange-500 text-white shadow-orange-500/20 hover:bg-orange-600"
                 : "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
               }`}
           >
-            Continue to Analytics
+            Go Online
           </button>
           <p className="mt-2 text-center text-[10px] text-slate-400 font-bold uppercase tracking-tight">
             Requirements pending approval for live tracking.
