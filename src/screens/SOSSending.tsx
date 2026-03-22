@@ -22,7 +22,7 @@ export default function SOSSending() {
       return () => clearInterval(timer);
     } else {
       // Navigate to EmergencyCall (Emergency Calling) when timer hits 0
-      navigate('/driver/safety/sos/calling');
+      navigate("/driver/safety/emergency/call");
     }
   }, [sosTimer, navigate]);
 

@@ -5,6 +5,7 @@ import {
   Routes,
 } from "react-router-dom";
 import AppPhoneShell from "./components/AppPhoneShell";
+import SupervisorQAMode from "./components/SupervisorQAMode";
 import { useTheme } from "./context/ThemeContext";
 import { SCREENS } from "./config/routes";
 import LandingPage from "./screens/LandingPage";
@@ -14,6 +15,7 @@ const DEFAULT_SCREEN = SCREENS.find((s) => s.id === "OnlineDashboard") || SCREEN
 
 export default function App() {
   const { isDark, toggleTheme } = useTheme();
+  const showSupervisorQaMode = !import.meta.env.PROD;
 
   return (
     <div className={`app-root ${isDark ? "dark" : ""}`}>
@@ -26,6 +28,8 @@ export default function App() {
       >
         {isDark ? <Sun size={20} /> : <Moon size={20} />}
       </button>
+
+      {showSupervisorQaMode && <SupervisorQAMode />}
 
       <Routes>
         {/* Auth Flow - No Shell */}

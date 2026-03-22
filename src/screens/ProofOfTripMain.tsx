@@ -1,3 +1,4 @@
+import { SAMPLE_IDS } from "../data/constants";
 import {
 AlertCircle,
 Camera,
@@ -94,7 +95,7 @@ export default function ProofOfTripMain() {
     setStatus("submitting");
     setTimeout(() => {
       setStatus("submitted");
-      navigate("/driver/trip/demo-trip/completed");
+      navigate(`/driver/trip/${SAMPLE_IDS.trip}/completed`);
     }, 900);
   };
 

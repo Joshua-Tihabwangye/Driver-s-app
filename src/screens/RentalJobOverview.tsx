@@ -1,3 +1,4 @@
+import { SAMPLE_IDS } from "../data/constants";
 import {
 Car,
 ChevronLeft,
@@ -178,13 +179,13 @@ export default function RentalJobOverview() {
         {/* CTAs */}
         <section className="space-y-3 pb-8">
           <button
-            onClick={() => navigate("/driver/trip/demo-trip/navigation")}
+            onClick={() => navigate(`/driver/trip/${SAMPLE_IDS.trip}/navigation`)}
             className="w-full rounded-[2rem] bg-emerald-500 px-6 py-5 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-emerald-500/20 active:scale-[0.98] transition-all"
           >
             Start Navigation
           </button>
           <button
-            onClick={() => navigate("/driver/trip/demo-trip/completed")}
+            onClick={() => navigate(`/driver/trip/${SAMPLE_IDS.trip}/completed`)}
             className="w-full rounded-[2rem] border-2 border-slate-900 bg-white px-6 py-5 text-[11px] font-black uppercase tracking-widest text-slate-900 active:scale-[0.98] transition-all"
           >
             End Rental

@@ -1,3 +1,4 @@
+import { SAMPLE_IDS } from "../data/constants";
 import {
   ChevronLeft,
   Clock,
@@ -206,7 +207,7 @@ export default function WaitingForPassenger() {
             <div className="space-y-3">
               <button
                 type="button"
-                onClick={() => navigate("/driver/trip/demo-trip/cancel/reason")}
+                onClick={() => navigate(`/driver/trip/${SAMPLE_IDS.trip}/cancel/reason`)}
                 className={`w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest transition-all ${
                   canNoShow
                     ? "bg-white text-red-600 border border-red-200 shadow-lg shadow-red-500/10 hover:bg-red-50"

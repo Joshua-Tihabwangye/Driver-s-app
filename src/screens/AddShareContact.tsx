@@ -29,28 +29,35 @@ export default function AddShareContact() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.phone) return;
 
+    setSubmitError(null);
     setIsSubmitting(true);
     
     // Simulate API call
     setTimeout(() => {
-      addSharedContact(rideId!, {
+      const persisted = rideId ? addSharedContact(rideId, {
         name: formData.name,
         phone: formData.phone,
         email: formData.email,
         relationship: formData.relationship,
         note: formData.note
-      });
+      }) : false;
       setIsSubmitting(false);
-      setShowSuccess(true);
-      
-      setTimeout(() => {
-        navigate(`/driver/safety/follow-my-ride/${rideId}`);
-      }, 2000);
+
+      if (persisted) {
+        setShowSuccess(true);
+        setTimeout(() => {
+          navigate(`/driver/safety/follow-my-ride/${rideId}`);
+        }, 2000);
+        return;
+      }
+
+      setSubmitError("Contact could not be saved. It may already exist for this ride.");
     }, 1500);
   };
 
@@ -176,6 +183,14 @@ export default function AddShareContact() {
                 </div>
               </label>
             </div>
+
+            {submitError && (
+              <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3">
+                <p className="text-[10px] font-black uppercase tracking-widest text-red-600">
+                  {submitError}
+                </p>
+              </div>
+            )}
 
             <button
               disabled={isSubmitting || !formData.name || !formData.phone}

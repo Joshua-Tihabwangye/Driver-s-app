@@ -1,3 +1,4 @@
+import { SAMPLE_IDS } from "../data/constants";
 import {
 ChevronLeft,
 MessageCircle,
@@ -127,7 +128,7 @@ export default function RiderVerification() {
             >
               Verify & Start Trip
             </button>
-            <button type="button" onClick={() => navigate("/driver/trip/demo-trip/cancel/reason")} className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest border-2 border-orange-500/10 text-slate-400 hover:bg-white hover:border-orange-500/30 transition-all">
+            <button type="button" onClick={() => navigate(`/driver/trip/${SAMPLE_IDS.trip}/cancel/reason`)} className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest border-2 border-orange-500/10 text-slate-400 hover:bg-white hover:border-orange-500/30 transition-all">
               Cancel Trip
             </button>
           </div>

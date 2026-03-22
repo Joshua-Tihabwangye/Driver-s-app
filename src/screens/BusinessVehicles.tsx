@@ -1,3 +1,4 @@
+import { SAMPLE_IDS } from "../data/constants";
 import {
   AlertTriangle,
   Building2,
@@ -92,7 +93,7 @@ export default function BusinessVehicles() {
                subtitle="Fleet ID: GF-12 · Plate: UBF 234Q"
                tag="Active shift vehicle"
                status="Active"
-               onClick={() => navigate("/driver/vehicles/demo-vehicle")}
+               onClick={() => navigate(`/driver/vehicles/${SAMPLE_IDS.vehicle}`)}
              />
              <FleetVehicleCard
                icon={Truck}
@@ -100,7 +101,7 @@ export default function BusinessVehicles() {
                subtitle="Fleet ID: GF-07 · Plate: UBJ 981T"
                tag="Logistics operations"
                status="Maintenance"
-               onClick={() => navigate("/driver/vehicles/demo-vehicle")}
+               onClick={() => navigate(`/driver/vehicles/${SAMPLE_IDS.vehicle}`)}
              />
            </div>
         </section>

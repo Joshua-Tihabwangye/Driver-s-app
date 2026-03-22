@@ -1,3 +1,4 @@
+import { SAMPLE_IDS } from "../data/constants";
 import {
 Check,
 ChevronLeft,
@@ -172,18 +173,18 @@ export default function RideRequestIncoming() {
     if (isShuttle) {
       navigate("/driver/help/shuttle-link");
     } else if (isAmbulance) {
-      navigate("/driver/ambulance/job/demo-job/status");
+      navigate(`/driver/ambulance/job/${SAMPLE_IDS.job}/status`);
     } else if (jobType === "rental") {
-      navigate("/driver/rental/job/demo-job");
+      navigate(`/driver/rental/job/${SAMPLE_IDS.job}`);
     } else if (jobType === "tour") {
-      navigate("/driver/tour/demo-tour/today");
+      navigate(`/driver/tour/${SAMPLE_IDS.tour}/today`);
     } else if (jobType === "delivery") {
       navigate("/driver/jobs/list?category=delivery");
     } else if (isShared) {
       setActiveSharedTrip(MOCK_SHARED_TRIPS[0]);
-      navigate("/driver/trip/shared-100/active");
+      navigate(`/driver/trip/${SAMPLE_IDS.ride}/active`);
     } else {
-      navigate("/driver/trip/demo-trip/navigate-to-pickup");
+      navigate(`/driver/trip/${SAMPLE_IDS.trip}/navigate-to-pickup`);
     }
   };
 
@@ -299,7 +300,7 @@ export default function RideRequestIncoming() {
               {!isShuttle && (
                 <button
                   type="button"
-                  onClick={() => navigate("/driver/delivery/route/demo-route/stop/alpha-stop/contact")}
+                  onClick={() => navigate(`/driver/delivery/route/${SAMPLE_IDS.route}/stop/${SAMPLE_IDS.stop}/contact`)}
                   className="inline-flex items-center rounded-full border border-slate-300 bg-white px-3 py-1 text-[10px] text-slate-700 hover:bg-slate-50 transition-colors shadow-sm"
                 >
                   <Phone className="h-3.5 w-3.5 mr-2" />

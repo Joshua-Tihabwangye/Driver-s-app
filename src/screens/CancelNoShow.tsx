@@ -1,3 +1,4 @@
+import { SAMPLE_IDS } from "../data/constants";
 import {
 ChevronLeft,
 Clock,
@@ -101,7 +102,7 @@ export default function CancelNoShow() {
           <div className="flex space-x-3 pt-2">
             <button
               type="button"
-              onClick={() => navigate("/driver/trip/demo-trip/waiting")}
+              onClick={() => navigate(`/driver/trip/${SAMPLE_IDS.trip}/waiting`)}
               className="flex-1 rounded-full py-4 text-[11px] font-black uppercase tracking-widest border border-slate-100 text-slate-400 hover:bg-slate-100 transition-all"
             >
               Wait

@@ -1,3 +1,4 @@
+import { SAMPLE_IDS } from "../data/constants";
 import {
 Ambulance,
 ChevronLeft,
@@ -75,7 +76,7 @@ export default function AmbulanceJobStatus() {
   };
 
   const handleOpenCompletion = () => {
-    navigate("/driver/trip/demo-trip/completed");
+    navigate(`/driver/trip/${SAMPLE_IDS.trip}/completed`);
   };
 
   const handlePrimaryClick = () => {

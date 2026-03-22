@@ -1,3 +1,4 @@
+import { SAMPLE_IDS } from "../data/constants";
 import {
 ChevronLeft,
 Clock,
@@ -217,7 +218,7 @@ export default function RideInProgress() {
           {tripState === "reached" ? (
             <button
                type="button"
-               onClick={() => navigate("/driver/trip/demo-trip/completed")}
+               onClick={() => navigate(`/driver/trip/${SAMPLE_IDS.trip}/completed`)}
                className="w-full rounded-[2rem] bg-orange-500 py-4 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-orange-500/20 active:scale-95 transition-transform"
             >
                End Trip

@@ -1,3 +1,4 @@
+import { SAMPLE_IDS } from "../data/constants";
 import {
 ChevronLeft,
 Clock,
@@ -151,9 +152,9 @@ export default function RideRequestRich() {
 
   const handleAccept = () => {
     if (isShared) {
-      navigate("/driver/trip/share-100/active");
+      navigate(`/driver/trip/${SAMPLE_IDS.ride}/active`);
     } else {
-      navigate("/driver/trip/demo-trip/in-progress");
+      navigate(`/driver/trip/${SAMPLE_IDS.trip}/in-progress`);
     }
   };
 

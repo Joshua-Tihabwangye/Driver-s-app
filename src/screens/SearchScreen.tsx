@@ -1,3 +1,4 @@
+import { SAMPLE_IDS } from "../data/constants";
 import {
   AlertTriangle,
   Ambulance,
@@ -192,8 +193,8 @@ export default function SearchScreen() {
   const jobRouteMap = {
     ride: "/driver/jobs/incoming",
     delivery: "/driver/jobs/list?category=delivery",
-    rental: "/driver/rental/job/demo-job",
-    tour: "/driver/trip/demo-trip/navigation",
+    rental: `/driver/rental/job/${SAMPLE_IDS.job}`,
+    tour: `/driver/tour/${SAMPLE_IDS.tour}/today`,
     ambulance: "/driver/ambulance/incoming",
     shuttle: "/driver/help/shuttle-link",
     all: "/driver/jobs/list"

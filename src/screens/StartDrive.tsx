@@ -1,3 +1,4 @@
+import { SAMPLE_IDS } from "../data/constants";
 import {
 ChevronLeft,
 Clock,
@@ -229,7 +230,7 @@ export default function StartDrive() {
              <button className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-orange-500 text-white shadow-xl shadow-orange-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
                 {primaryCtaText}
              </button>
-             <button type="button" onClick={() => navigate("/driver/trip/demo-trip/verify-rider")} className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest border-2 border-orange-500/10 text-slate-400 hover:bg-white hover:border-orange-500/30 transition-all">
+             <button type="button" onClick={() => navigate(`/driver/trip/${SAMPLE_IDS.trip}/verify-rider`)} className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest border-2 border-orange-500/10 text-slate-400 hover:bg-white hover:border-orange-500/30 transition-all">
                 Back to verification
              </button>
           </div>

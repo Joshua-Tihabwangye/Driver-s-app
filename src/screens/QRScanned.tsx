@@ -54,7 +54,7 @@ export default function QRScanned() {
           
           <div className="flex flex-col space-y-3">
              <button
-               onClick={() => navigate("/driver/qr/confirm")}
+               onClick={() => navigate("/driver/qr/processing")}
                className="w-full rounded-[2rem] bg-slate-900 px-6 py-5 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-slate-200 active:scale-[0.98] transition-all"
              >
                Next Step

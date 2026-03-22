@@ -1,5 +1,5 @@
 import { createContext, ReactNode, useContext, useState, useMemo, useCallback } from "react";
-import type { Job, TripRecord, SharedTrip, RevenueEvent, PeriodFilter, JobCategory } from "../data/types";
+import type { Job, TripRecord, SharedTrip, RevenueEvent, PeriodFilter, JobCategory, SharedContact } from "../data/types";
 import { MOCK_EARNINGS, MOCK_COMPLETED_TRIPS } from "../data/mockData";
 
 export interface DashboardMetrics {
@@ -28,6 +28,7 @@ interface StoreContextType {
   // Actions
   addJob: (job: Job) => void;
   updateJobStatus: (id: string, status: Job["status"]) => void;
+  addSharedContactToJob: (jobId: string, contact: SharedContact) => boolean;
   setActiveSharedTrip: (trip: SharedTrip | null) => void;
   updateActiveSharedTrip: (updater: (prev: SharedTrip) => SharedTrip) => void;
   completeTrip: (trip: TripRecord, revenue: RevenueEvent[]) => void;
@@ -81,6 +82,22 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const updateJobStatus = useCallback((id: string, status: Job["status"]) => {
     setJobs(prev => prev.map(j => j.id === id ? { ...j, status } : j));
   }, []);
+  const addSharedContactToJob = useCallback((jobId: string, contact: SharedContact) => {
+    const hasJob = jobs.some((job) => job.id === jobId);
+    if (!hasJob) {
+      return false;
+    }
+
+    setJobs((prev) =>
+      prev.map((job) =>
+        job.id === jobId
+          ? { ...job, sharedContacts: [...(job.sharedContacts ?? []), contact] }
+          : job
+      )
+    );
+
+    return true;
+  }, [jobs]);
   const updateActiveSharedTrip = useCallback((updater: (prev: SharedTrip) => SharedTrip) => {
     setActiveSharedTrip(prev => prev ? updater(prev) : null);
   }, []);
@@ -139,6 +156,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     recentEarnings,
     addJob,
     updateJobStatus,
+    addSharedContactToJob,
     setActiveSharedTrip,
     updateActiveSharedTrip,
     completeTrip,

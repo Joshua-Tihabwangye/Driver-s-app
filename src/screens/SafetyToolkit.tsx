@@ -9,6 +9,8 @@ ShieldCheck
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useJobs } from "../context/JobsContext";
+import { resolveSafetyRideId } from "../utils/rideIdResolver";
 
 // EVzone Driver App – SafetyToolkit Driver – Safety Toolkit Screen (v2)
 // Central hub for safety tools: SOS, follow ride, incident reporting, help.
@@ -20,6 +22,8 @@ import PageHeader from "../components/PageHeader";
 
 export default function SafetyToolkit() {
   const navigate = useNavigate();
+  const { allJobs } = useJobs();
+  const shareRideId = resolveSafetyRideId(allJobs);
 
 
   return (
@@ -81,7 +85,7 @@ export default function SafetyToolkit() {
 
             <button
                type="button"
-               onClick={() => navigate("/driver/safety/share-my-ride")}
+               onClick={() => navigate(`/driver/safety/share-my-ride/${shareRideId}`)}
                className="flex items-start space-x-4 rounded-[1.5rem] border border-amber-100 bg-amber-50 px-6 py-5 shadow-sm active:scale-[0.98] transition-all text-left group"
             >
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white group-hover:scale-110 transition-transform">

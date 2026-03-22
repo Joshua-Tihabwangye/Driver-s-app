@@ -1,3 +1,4 @@
+import { SAMPLE_IDS } from "../data/constants";
 import {
   CheckCircle2,
   Info,
@@ -134,7 +135,7 @@ export default function VehicleAccessories() {
 
           <button
             type="button"
-            onClick={() => navigate("/driver/vehicles/demo-vehicle")}
+            onClick={() => navigate(`/driver/vehicles/${SAMPLE_IDS.vehicle}`)}
             className="w-full rounded-2xl bg-orange-500 py-4 text-sm font-black text-white shadow-xl shadow-orange-500/20 hover:bg-orange-600 active:scale-[0.98] transition-all uppercase tracking-widest"
           >
             Update Inventory

@@ -25,13 +25,25 @@ export const PERIOD_OPTIONS = [
 export const getYearOptions = (count = 7): string[] =>
   Array.from({ length: count }, (_, i) => String(new Date().getFullYear() - i));
 
+// ── Sample IDs for demo/preview routes ───────────────────
+// Keep these aligned with ids that exist in mock/store datasets.
+export const SAMPLE_IDS = {
+  vehicle: "v123",
+  trip: "3244",
+  ride: "shared-100",
+  route: "demo-route",
+  stop: "alpha-stop",
+  job: "3249",
+  tour: "3246",
+};
+
 // ── Route Map for Job Types ──────────────────────────────
 export const JOB_DETAIL_ROUTES: Record<JobCategory | "default", string> = {
   ride: "/driver/jobs/incoming",
-  delivery: "/driver/delivery/route/demo-route/active",
-  rental: "/driver/rental/job/demo-job",
-  tour: "/driver/tour/demo-tour/today",
-  ambulance: "/driver/ambulance/job/demo-job/status",
+  delivery: `/driver/delivery/route/${SAMPLE_IDS.route}/active`,
+  rental: `/driver/rental/job/${SAMPLE_IDS.job}`,
+  tour: `/driver/tour/${SAMPLE_IDS.tour}/today`,
+  ambulance: `/driver/ambulance/job/${SAMPLE_IDS.job}/status`,
   shuttle: "/driver/help/shuttle-link",
   shared: "/driver/jobs/incoming",
   default: "/driver/jobs/incoming",
@@ -43,7 +55,7 @@ export const JOB_HISTORY_ROUTES: Record<JobCategory | "default", string> = {
   rental: "/driver/history/rental/",
   tour: "/driver/history/tour/",
   shuttle: "/driver/help/shuttle-link/",
-  ambulance: "/driver/ambulance/job/demo-job/status",
+  ambulance: `/driver/ambulance/job/${SAMPLE_IDS.job}/status`,
   shared: "/driver/history/shared/",
   default: "/driver/history/ride/",
 };
@@ -72,14 +84,3 @@ export const GENERIC_STATUS_STYLES: Record<string, { bg: string; border: string;
 // ── App Branding ──────────────────────────────────────────
 export const APP_NAME = "EVzone Driver";
 export const APP_VERSION = "1.0.0";
-
-// ── Sample IDs for demo routes ──────────────────────────
-export const SAMPLE_IDS = {
-  vehicle: "v123",
-  trip: "t456",
-  ride: "3250",
-  route: "r789",
-  stop: "s012",
-  job: "j345",
-  tour: "tour678",
-};

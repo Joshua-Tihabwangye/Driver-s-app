@@ -1,3 +1,4 @@
+import { SAMPLE_IDS } from "../data/constants";
 import {
   Activity,
   Ambulance,
@@ -149,13 +150,13 @@ export default function ActiveDashboard() {
               icon={Briefcase}
               label="Rentals"
               value={jobMix.rental}
-              onClick={() => navigate("/driver/rental/job/demo-job")}
+              onClick={() => navigate(`/driver/rental/job/${SAMPLE_IDS.job}`)}
             />
             <JobMixPill
               icon={Map}
               label="Tours"
               value={jobMix.tour}
-              onClick={() => navigate("/driver/tour/demo-tour/today")}
+              onClick={() => navigate(`/driver/tour/${SAMPLE_IDS.tour}/today`)}
             />
           </div>
           
@@ -163,7 +164,7 @@ export default function ActiveDashboard() {
             icon={Ambulance}
             label="Emergency"
             value={jobMix.ambulance}
-            onClick={() => navigate("/driver/ambulance/job/demo-job/status")}
+            onClick={() => navigate(`/driver/ambulance/job/${SAMPLE_IDS.job}/status`)}
           />
 
           <div className="bg-cream p-5 rounded-3xl border-2 border-orange-500/10 shadow-sm">

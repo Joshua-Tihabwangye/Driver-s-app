@@ -1,3 +1,4 @@
+import { SAMPLE_IDS } from "../data/constants";
 import {
 ChevronLeft,
 Clock,
@@ -127,7 +128,7 @@ export default function DeliveryStopContact() {
         {/* Map preview */}
         <button
           type="button"
-          onClick={() => navigate("/driver/delivery/route/demo-route/map")}
+          onClick={() => navigate(`/driver/delivery/route/${SAMPLE_IDS.route}/map`)}
           className="relative rounded-[2.5rem] overflow-hidden border border-slate-200 bg-slate-200 h-[220px] w-full text-left active:scale-[0.99] transition-transform shadow-lg"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
@@ -170,7 +171,7 @@ export default function DeliveryStopContact() {
           />
           <button
             type="button"
-            onClick={() => navigate("/driver/delivery/route/demo-route/active")}
+            onClick={() => navigate(`/driver/delivery/route/${SAMPLE_IDS.route}/active`)}
             className="w-full rounded-[2rem] border-2 border-slate-900 bg-white px-6 py-4 text-[11px] font-black uppercase tracking-widest text-slate-900 active:scale-[0.98] transition-all hover:bg-slate-50 shadow-xl shadow-slate-200/50"
           >
             Back to Active Route

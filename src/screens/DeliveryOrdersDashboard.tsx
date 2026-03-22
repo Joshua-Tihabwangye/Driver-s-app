@@ -1,3 +1,4 @@
+import { SAMPLE_IDS } from "../data/constants";
 import {
 AlertTriangle,
 CheckCircle2,
@@ -126,7 +127,7 @@ export default function DeliveryOrdersDashboard() {
               dropoff="Naguru"
               eta="Deliver by 18:40"
               status="En route"
-              onClick={() => navigate("/driver/delivery/route/demo-route/active")}
+              onClick={() => navigate(`/driver/delivery/route/${SAMPLE_IDS.route}/active`)}
             />
             <OrderRow
               id="3230"
@@ -134,7 +135,7 @@ export default function DeliveryOrdersDashboard() {
               dropoff="Kansanga"
               eta="Deliver by 18:55"
               status="En route"
-              onClick={() => navigate("/driver/delivery/route/demo-route/stop/alpha-stop/details")}
+              onClick={() => navigate(`/driver/delivery/route/${SAMPLE_IDS.route}/stop/${SAMPLE_IDS.stop}/details`)}
             />
           </div>
 

@@ -1,3 +1,4 @@
+import { SAMPLE_IDS } from "../data/constants";
 import {
 ChevronLeft,
 Clock,
@@ -210,14 +211,14 @@ export default function ArrivedAtPickup() {
             <div className="flex space-x-3">
               <button
                 type="button"
-                onClick={() => navigate("/driver/trip/demo-trip/cancel/reason")}
+                onClick={() => navigate(`/driver/trip/${SAMPLE_IDS.trip}/cancel/reason`)}
                 className="flex-1 rounded-full py-4 text-[11px] font-black uppercase tracking-widest border-2 border-orange-500/10 text-slate-400 hover:bg-white hover:border-orange-500/30 transition-all flex items-center justify-center"
               >
                 Cancel
               </button>
               <button
                 type="button"
-                onClick={() => navigate("/driver/trip/demo-trip/in-progress")}
+                onClick={() => navigate(`/driver/trip/${SAMPLE_IDS.trip}/in-progress`)}
                 className="flex-[2] rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-orange-500 text-white shadow-xl shadow-orange-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center"
               >
                 Start Trip

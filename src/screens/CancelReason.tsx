@@ -1,3 +1,4 @@
+import { SAMPLE_IDS } from "../data/constants";
 import {
 AlertTriangle,
 ChevronLeft,
@@ -111,7 +112,7 @@ export default function CancelReason() {
              </button>
               <button
                 type="button"
-                onClick={() => navigate("/driver/trip/demo-trip/navigation")}
+                onClick={() => navigate(`/driver/trip/${SAMPLE_IDS.trip}/navigation`)}
                 className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest border-2 border-orange-500/10 bg-cream text-slate-500 hover:border-orange-500/30 transition-all"
               >
                 Keep Ride

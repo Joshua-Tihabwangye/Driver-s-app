@@ -134,7 +134,7 @@ export const MOCK_DELIVERY_ROUTES = {
 // ── Shared Trips ─────────────────────────────────────────
 export const MOCK_SHARED_TRIPS: import('./types').SharedTrip[] = [
   {
-    id: "share-100",
+    id: "shared-100",
     type: "shared",
     status: "pending",
     chainStatus: "active",

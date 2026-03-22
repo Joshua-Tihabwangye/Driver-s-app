@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { SAMPLE_IDS } from "../data/constants";
 import { MOCK_DELIVERY_ROUTES } from "../data/mockData";
 
 // EVzone Driver App – ActiveDeliveryRoute Active Delivery Route Screen (v2)
@@ -81,7 +82,9 @@ export default function ActiveDeliveryRoute() {
   const { routeId } = useParams();
   
   // Resolve data via mock data
-  const route = MOCK_DELIVERY_ROUTES[routeId as keyof typeof MOCK_DELIVERY_ROUTES] || MOCK_DELIVERY_ROUTES["demo-route"];
+  const route =
+    MOCK_DELIVERY_ROUTES[routeId as keyof typeof MOCK_DELIVERY_ROUTES] ||
+    MOCK_DELIVERY_ROUTES[SAMPLE_IDS.route as keyof typeof MOCK_DELIVERY_ROUTES];
   const nextStop = route?.stops[0];
 
   const sanitizePhone = (phone: string) => (phone || "").replace(/[^\d+]/g, "");
@@ -110,7 +113,7 @@ export default function ActiveDeliveryRoute() {
         {/* Map container */}
         <button
           type="button"
-          onClick={() => navigate(`/driver/delivery/route/${routeId || "demo-route"}/map`)}
+          onClick={() => navigate(`/driver/delivery/route/${routeId || SAMPLE_IDS.route}/map`)}
           className="relative rounded-[2.5rem] overflow-hidden border border-slate-200 bg-slate-200 h-[260px] w-full text-left active:scale-[0.99] transition-transform shadow-xl"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
@@ -179,7 +182,7 @@ export default function ActiveDeliveryRoute() {
           
           <button
             type="button"
-            onClick={() => navigate(`/driver/delivery/route/${routeId || "demo-route"}/details`)}
+            onClick={() => navigate(`/driver/delivery/route/${routeId || SAMPLE_IDS.route}/details`)}
             className="w-full rounded-[2rem] border-2 border-slate-900 bg-white px-6 py-4 text-[11px] font-black uppercase tracking-widest text-slate-900 active:scale-[0.98] transition-all hover:bg-slate-50 shadow-xl shadow-slate-200/50"
           >
             View Full Manifest

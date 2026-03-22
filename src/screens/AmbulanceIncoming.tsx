@@ -1,3 +1,4 @@
+import { SAMPLE_IDS } from "../data/constants";
 import {
 AlertTriangle,
 ChevronLeft,
@@ -134,7 +135,7 @@ export default function AmbulanceIncoming() {
               Decline
             </button>
             <button
-              onClick={() => navigate("/driver/ambulance/job/demo-job/status")}
+              onClick={() => navigate(`/driver/ambulance/job/${SAMPLE_IDS.job}/status`)}
               className="rounded-[2rem] bg-red-600 px-6 py-5 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-red-200 active:scale-[0.98] transition-all"
             >
               Accept

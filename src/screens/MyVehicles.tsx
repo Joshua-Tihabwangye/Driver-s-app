@@ -1,3 +1,4 @@
+import { SAMPLE_IDS } from "../data/constants";
 import {
   CheckCircle2,
   Info,
@@ -119,7 +120,7 @@ export default function MyVehicles() {
                  image={v.image}
                  badge={v.badge}
                  primary={v.primary}
-                 onClick={() => navigate("/driver/vehicles/demo-vehicle")}
+                 onClick={() => navigate(`/driver/vehicles/${SAMPLE_IDS.vehicle}`)}
                />
              ))}
            </div>
@@ -139,7 +140,7 @@ export default function MyVehicles() {
         <section className="pt-2 pb-12">
           <button
             type="button"
-            onClick={() => navigate("/driver/vehicles/demo-vehicle")}
+            onClick={() => navigate(`/driver/vehicles/${SAMPLE_IDS.vehicle}`)}
             className="w-full rounded-2xl bg-[#F77F00] py-4 text-sm font-black text-white shadow-xl shadow-orange-500/20 active:scale-[0.98] transition-all flex items-center justify-center uppercase tracking-widest"
           >
             <Plus className="h-5 w-5 mr-2" />

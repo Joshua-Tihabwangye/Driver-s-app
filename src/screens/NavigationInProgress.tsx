@@ -1,3 +1,4 @@
+import { SAMPLE_IDS } from "../data/constants";
 import {
 ChevronLeft,
 Clock,
@@ -82,7 +83,7 @@ export default function NavigationInProgress() {
         <section className="space-y-4">
           <button
             type="button"
-            onClick={() => navigate("/driver/trip/demo-trip/en-route-details")}
+            onClick={() => navigate(`/driver/trip/${SAMPLE_IDS.trip}/en-route-details`)}
             className="rounded-[2.5rem] border border-slate-100 bg-white shadow-xl shadow-slate-200/50 p-6 flex items-center justify-between w-full text-left active:scale-[0.99] transition-transform"
           >
             <div className="flex flex-col space-y-1">
@@ -105,14 +106,14 @@ export default function NavigationInProgress() {
           <div className="flex space-x-3">
             <button
               type="button"
-              onClick={() => navigate("/driver/trip/demo-trip/in-progress")}
+              onClick={() => navigate(`/driver/trip/${SAMPLE_IDS.trip}/in-progress`)}
               className="flex-1 rounded-full py-4 text-[11px] font-black uppercase tracking-widest border border-slate-100 text-slate-400 hover:bg-slate-50 transition-all flex items-center justify-center"
             >
               Pause
             </button>
             <button
               type="button"
-              onClick={() => navigate("/driver/trip/demo-trip/completed")}
+              onClick={() => navigate(`/driver/trip/${SAMPLE_IDS.trip}/completed`)}
               className="flex-[2] rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-slate-900 text-white shadow-xl shadow-slate-900/20 hover:bg-slate-800 transition-all flex items-center justify-center"
             >
               Terminate Trip

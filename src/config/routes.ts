@@ -76,7 +76,9 @@ import EmergencyAssistanceDetails from "../screens/EmergencyAssistanceDetails";
 import EmergencyCall from "../screens/EmergencyCall";
 import EmergencyConfirmation from "../screens/EmergencyConfirmation";
 import FollowMyRide from "../screens/FollowMyRide";
+import FollowMyRideEntry from "../screens/FollowMyRideEntry";
 import ShareMyRide from "../screens/ShareMyRide";
+import ShareMyRideEntry from "../screens/ShareMyRideEntry";
 import AddShareContact from "../screens/AddShareContact";
 import ProofOfTripMain from "../screens/ProofOfTripMain";
 import ProofOfTripActive from "../screens/ProofOfTripActive";
@@ -91,6 +93,8 @@ import SafetyHubExpanded from "../screens/SafetyHubExpanded";
 import DrivingHours from "../screens/DrivingHours";
 import SurgePricing from "../screens/SurgePricing";
 import DeliveryOrdersDashboard from "../screens/DeliveryOrdersDashboard";
+import DeliveryOrdersEntry from "../screens/DeliveryOrdersEntry";
+import DeliveryOrdersFilterEntry from "../screens/DeliveryOrdersFilterEntry";
 import PickedUpOrders from "../screens/PickedUpOrders";
 import DeliveryRouteDetails from "../screens/DeliveryRouteDetails";
 import DeliveryRouteMap from "../screens/DeliveryRouteMap";
@@ -200,7 +204,7 @@ export const SCREENS: ScreenConfig[] = [
   { id: "RiderVerification", label: "Rider Verification Code Entry", path: "/driver/trip/:tripId/verify-rider", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/verify-rider`, Component: RiderVerification },
   { id: "StartDrive", label: "Start Drive", path: "/driver/trip/:tripId/start", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/start`, Component: StartDrive },
   { id: "RideInProgress", label: "Ride in Progress", path: "/driver/trip/:tripId/in-progress", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/in-progress`, Component: RideInProgress },
-  { id: "ActiveSharedTrip", label: "Active Shared Trip", path: "/driver/trip/:tripId/active", previewPath: `/driver/trip/shared-100/active`, Component: ActiveSharedTrip },
+  { id: "ActiveSharedTrip", label: "Active Shared Trip", path: "/driver/trip/:tripId/active", previewPath: `/driver/trip/${SAMPLE_IDS.ride}/active`, Component: ActiveSharedTrip },
   { id: "TripCompletion", label: "Trip Completion Screen", path: "/driver/trip/:tripId/completed", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/completed`, Component: TripCompletion },
   { id: "CancelReason", label: "Cancel Ride – Reason", path: "/driver/trip/:tripId/cancel/reason", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/cancel/reason`, Component: CancelReason },
   { id: "CancelDetails", label: "Cancel Ride – Additional Comment", path: "/driver/trip/:tripId/cancel/details", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/cancel/details`, Component: CancelDetails },
@@ -211,6 +215,8 @@ export const SCREENS: ScreenConfig[] = [
   { id: "EmergencyAssistanceDetails", label: "Emergency Assistance (Details Variant)", path: "/driver/safety/emergency/details", Component: EmergencyAssistanceDetails },
   { id: "EmergencyCall", label: "Emergency Calling Screen", path: "/driver/safety/emergency/call", Component: EmergencyCall },
   { id: "EmergencyConfirmation", label: "Emergency Assistance Confirmation", path: "/driver/safety/emergency/confirmation", Component: EmergencyConfirmation },
+  { id: "FollowMyRideEntry", label: "Follow My Ride (Entry)", path: "/driver/safety/follow-my-ride", Component: FollowMyRideEntry },
+  { id: "ShareMyRideEntry", label: "Share My Ride (Entry)", path: "/driver/safety/share-my-ride", Component: ShareMyRideEntry },
   { id: "FollowMyRide", label: "Follow My Ride", path: "/driver/safety/follow-my-ride/:rideId", previewPath: `/driver/safety/follow-my-ride/${SAMPLE_IDS.ride}`, Component: FollowMyRide },
   { id: "ShareMyRide", label: "Share My Ride", path: "/driver/safety/share-my-ride/:rideId", previewPath: `/driver/safety/share-my-ride/${SAMPLE_IDS.ride}`, Component: ShareMyRide },
   { id: "AddShareContact", label: "Add Person to Share Ride", path: "/driver/safety/share-my-ride/:rideId/add-contact", previewPath: `/driver/safety/share-my-ride/${SAMPLE_IDS.ride}/add-contact`, Component: AddShareContact },
@@ -219,7 +225,7 @@ export const SCREENS: ScreenConfig[] = [
   { id: "ProofOfTripActive", label: "Proof of Trip – Active Trip View", path: "/driver/trip/:tripId/proof/active", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/proof/active`, Component: ProofOfTripActive },
   { id: "RideHistory", label: "Ride History", path: "/driver/history/rides", Component: RideHistory },
   { id: "RideDetails", label: "Ride Details", path: "/driver/history/ride/:tripId", previewPath: `/driver/history/ride/${SAMPLE_IDS.trip}`, Component: RideDetails },
-  { id: "SharedRideDetails", label: "Shared Ride Details", path: "/driver/history/shared/:tripId", previewPath: `/driver/history/shared/shared-100`, Component: SharedRideDetails },
+  { id: "SharedRideDetails", label: "Shared Ride Details", path: "/driver/history/shared/:tripId", previewPath: `/driver/history/shared/${SAMPLE_IDS.ride}`, Component: SharedRideDetails },
   { id: "DeliveryDetailsView", label: "Delivery Details", path: "/driver/history/delivery/:tripId", previewPath: `/driver/history/delivery/${SAMPLE_IDS.job}`, Component: DeliveryDetailsView },
   { id: "RentalDetailsView", label: "Rental Details", path: "/driver/history/rental/:tripId", previewPath: `/driver/history/rental/${SAMPLE_IDS.job}`, Component: RentalDetailsView },
   { id: "TourDetailsView", label: "Tour Details", path: "/driver/history/tour/:tripId", previewPath: `/driver/history/tour/${SAMPLE_IDS.tour}`, Component: TourDetailsView },
@@ -230,6 +236,8 @@ export const SCREENS: ScreenConfig[] = [
   // Surge & delivery order dashboards
   { id: "SurgePricing", label: "Surge Pricing", path: "/driver/surge/map", Component: SurgePricing },
   { id: "DeliveryOrdersDashboard", label: "Orders to Delivery", path: "/driver/delivery/orders-dashboard", Component: DeliveryOrdersDashboard },
+  { id: "DeliveryOrdersEntry", label: "List of Orders (Entry)", path: "/driver/delivery/orders", Component: DeliveryOrdersEntry },
+  { id: "DeliveryOrdersFilterEntry", label: "Select Order Type (Entry)", path: "/driver/delivery/orders/filter", Component: DeliveryOrdersFilterEntry },
   { id: "PickedUpOrders", label: "Picked-Up Orders", path: "/driver/delivery/orders/picked-up", Component: PickedUpOrders },
   // Routes & delivery flows
   { id: "DeliveryRouteDetails", label: "Route Details", path: "/driver/delivery/route/:routeId", previewPath: `/driver/delivery/route/${SAMPLE_IDS.route}`, Component: DeliveryRouteDetails },
@@ -278,6 +286,23 @@ export const SCREENS: ScreenConfig[] = [
   { id: "DestinationFilter", label: "Destination Filter", path: "/driver/navigation/destination", Component: DestinationFilter },
   { id: "TripDetails", label: "Trip Details", path: "/driver/trip/:tripId/details", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/details`, Component: TripDetails },
 ];
+
+/**
+ * Single-source screen path map generated from SCREENS.
+ * Kept as a named export for compatibility with legacy ScreenMap imports.
+ */
+function buildScreenMap(screens: ScreenConfig[]): Record<string, string> {
+  const map: Record<string, string> = {};
+
+  for (const screen of screens) {
+    map[screen.id] = screen.path;
+  }
+
+  return map;
+}
+
+export const ScreenMap = Object.freeze(buildScreenMap(SCREENS));
+export type ScreenName = keyof typeof ScreenMap;
 
 /**
  * Returns the route for a given job type, with an optional fallback.
