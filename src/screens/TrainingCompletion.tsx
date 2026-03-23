@@ -1,6 +1,7 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
 import PageHeader from "../components/PageHeader";
+import { useAuth } from "../context/AuthContext";
 import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – TrainingCompletion Preferences – Content Completion Screen
@@ -10,11 +11,31 @@ import { useStore } from "../context/StoreContext";
 
 export default function TrainingCompletion() {
   const navigate = useNavigate();
+  const { isLoggedIn, login } = useAuth();
   const { setOnboardingCheckpoint } = useStore();
+  const [goOnlineRequested, setGoOnlineRequested] = useState(false);
 
   useEffect(() => {
     setOnboardingCheckpoint("trainingCompleted", true);
   }, [setOnboardingCheckpoint]);
+
+  useEffect(() => {
+    if (!goOnlineRequested || !isLoggedIn) {
+      return;
+    }
+
+    navigate("/driver/dashboard/online", { replace: true });
+  }, [goOnlineRequested, isLoggedIn, navigate]);
+
+  const handleGoOnline = () => {
+    setGoOnlineRequested(true);
+    if (!isLoggedIn) {
+      login();
+      return;
+    }
+
+    navigate("/driver/dashboard/online", { replace: true });
+  };
 
   return (
     <div className="flex flex-col h-full ">
@@ -75,7 +96,7 @@ export default function TrainingCompletion() {
         <div className="w-full space-y-4 flex flex-col items-center">
           <button
             type="button"
-            onClick={() => navigate("/driver/dashboard/online")}
+            onClick={handleGoOnline}
             className="w-full rounded-2xl bg-orange-500 py-5 text-sm font-black text-white shadow-2xl shadow-orange-500/20 hover:bg-orange-600 active:scale-[0.98] transition-all uppercase tracking-widest"
           >
             Go Online

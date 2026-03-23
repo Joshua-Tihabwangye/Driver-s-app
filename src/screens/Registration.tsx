@@ -1,14 +1,12 @@
 import {
-ChevronLeft,
-MapPin,
-Pencil,
-Plus,
-Shield,
-User
+  Pencil,
+  User,
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
+import { resetStoredDocumentState } from "../utils/documentVerificationState";
 
 // EVzone Driver App – Registration Registration (profile page)
 // New design: green curved header, profile photo, info rows, accordions, green bottom nav.
@@ -30,73 +28,39 @@ function Input({ label, type = "text", value, onChange, placeholder }) {
   );
 }
 
-function AccordionCard({ icon: Icon, title, description, cta, iconColor, borderColor, path, onNavigate }) {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <div
-      className="rounded-2xl border bg-white overflow-hidden"
-      style={{ borderColor: borderColor || "#e2e8f0" }}
-    >
-      <button
-        className="flex w-full items-center justify-between px-4 py-3"
-        onClick={() => setOpen((v) => !v)}
-      >
-        <div className="flex items-center gap-3">
-          <div
-            className="flex h-8 w-8 items-center justify-center rounded-full"
-            style={{ backgroundColor: `${iconColor}15` }}
-          >
-            <Icon className="h-4 w-4" style={{ color: iconColor }} />
-          </div>
-          <span className="text-xs font-semibold text-slate-900">{title}</span>
-        </div>
-        <Plus
-          className={`h-4 w-4 text-slate-400 transition-transform ${open ? "rotate-45" : ""}`}
-        />
-      </button>
-      {open && (
-        <div className="px-4 pb-3 text-[11px] text-slate-500 leading-relaxed border-t border-slate-50 space-y-2">
-          <p className="pt-2">{description}</p>
-          <p className="text-[11px] text-slate-600">{cta}</p>
-          <button
-            type="button"
-            onClick={() => onNavigate(path)}
-            className="inline-flex items-center rounded-full border border-orange-500 px-3 py-1 text-[11px] font-semibold text-orange-500"
-          >
-            Open
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
 export default function Registration() {
   const [fullName, setFullName] = useState("");
   const [country, setCountry] = useState("");
   const [dob, setDob] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [streetAddress, setStreetAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [district, setDistrict] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+  const [landmark, setLandmark] = useState("");
 
   const isValid =
     fullName.trim().length > 0 &&
     country.trim().length > 0 &&
     dob.trim().length > 0 &&
     email.trim().length > 0 &&
-    phone.trim().length > 0;
+    phone.trim().length > 0 &&
+    streetAddress.trim().length > 0 &&
+    city.trim().length > 0 &&
+    district.trim().length > 0;
 
   const navigate = useNavigate();
+  const { setOnboardingCheckpoint } = useStore();
 
   const handleNext = () => {
     if (!isValid) return;
-    navigate("/driver/register");
-  };
 
-  const handleAccordionNavigate = (path) => {
-    if (path) {
-      navigate(path);
-    }
+    resetStoredDocumentState();
+    setOnboardingCheckpoint("documentsVerified", false);
+    setOnboardingCheckpoint("trainingCompleted", false);
+
+    navigate("/driver/register");
   };
 
   return (
@@ -144,6 +108,14 @@ export default function Registration() {
           <div className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
             <span className="text-[11px] uppercase font-black text-slate-400 tracking-widest">Mobile</span>
             <span className="text-xs font-black text-slate-800 tracking-tight">{phone || "+256 8868564885"}</span>
+          </div>
+          <div className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
+            <span className="text-[11px] uppercase font-black text-slate-400 tracking-widest">Address</span>
+            <span className="max-w-[65%] truncate text-right text-xs font-black text-slate-800 tracking-tight">
+              {streetAddress
+                ? `${streetAddress}, ${city}`
+                : "Kampala, Uganda"}
+            </span>
           </div>
         </section>
 
@@ -194,34 +166,50 @@ export default function Registration() {
               onChange={setPhone}
               placeholder="e.g. +256 700 000000"
             />
+            <Input
+              label="Street Address"
+              value={streetAddress}
+              onChange={setStreetAddress}
+              placeholder="e.g. Plot 12, Acacia Avenue"
+            />
+            <Input
+              label="City / Town"
+              value={city}
+              onChange={setCity}
+              placeholder="e.g. Kampala"
+            />
+            <Input
+              label="District / State"
+              value={district}
+              onChange={setDistrict}
+              placeholder="e.g. Central Region"
+            />
+            <Input
+              label="Postal Code (Optional)"
+              value={postalCode}
+              onChange={setPostalCode}
+              placeholder="e.g. 25600"
+            />
+            <Input
+              label="Nearby Landmark (Optional)"
+              value={landmark}
+              onChange={setLandmark}
+              placeholder="e.g. Next to Acacia Mall"
+            />
           </div>
         </section>
 
-        {/* Expandable sections */}
+        {/* Onboarding note */}
         <section className="space-y-4">
           <div className="px-1">
              <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">Verification</h3>
           </div>
-          <AccordionCard
-            icon={Shield}
-            title="General ID"
-            description="Adding your identification Documents helps us ensure the security of our platform and verify your identity."
-            cta="Upload or update an official ID document so we can verify your identity and protect your account."
-            iconColor="#f97316"
-            borderColor="#d6ebe6"
-            path="/driver/preferences/identity"
-            onNavigate={handleAccordionNavigate}
-          />
-          <AccordionCard
-            icon={MapPin}
-            title="Addresses"
-            description="Your address is important for personalizing your experience and ensuring that you receive relevant information and opportunities tailored to your location."
-            cta="Add at least one valid address so we can personalize your experience and show you the right cities and services."
-            iconColor="#f77f00"
-            borderColor="#ffe0b2"
-            path="/driver/onboarding/profile"
-            onNavigate={handleAccordionNavigate}
-          />
+          <div className="rounded-2xl border border-orange-200 bg-orange-50/50 px-4 py-4">
+            <p className="text-[11px] font-medium leading-relaxed text-slate-700">
+              Document upload is handled on the onboarding profile screen after this step.
+              You will upload front and back copies for every required document there.
+            </p>
+          </div>
         </section>
 
         {/* Next button */}

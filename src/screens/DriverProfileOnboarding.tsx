@@ -20,7 +20,10 @@ import StatusChip from "../components/StatusChip";
 import { useStore } from "../context/StoreContext";
 import {
   areAllRequiredDocumentsUploaded,
+  isDocumentEntryComplete,
+  isDocumentEntryRejected,
   readStoredDocumentState,
+  type DocumentUploadKey,
 } from "../utils/documentVerificationState";
 
 // EVzone Driver App – DriverProfileOnboarding Driver Personnel
@@ -61,6 +64,34 @@ export default function DriverProfileOnboarding() {
   const blockerCount = onboardingBlockers.length;
   const documentsComplete = areAllRequiredDocumentsUploaded(documentState);
   const trainingComplete = onboardingCheckpoints.trainingCompleted;
+
+  const getDocumentStatusLabel = (key: DocumentUploadKey) => {
+    const entry = documentState[key];
+    if (isDocumentEntryComplete(entry)) {
+      return "Verified";
+    }
+    if (isDocumentEntryRejected(entry)) {
+      return "Rejected";
+    }
+    return "Pending";
+  };
+
+  const getDocumentDescription = (key: DocumentUploadKey) => {
+    const entry = documentState[key];
+    const uploadedSides =
+      Number(entry.front.status === "Uploaded") + Number(entry.back.status === "Uploaded");
+
+    if (isDocumentEntryComplete(entry)) {
+      return "Front and back copies uploaded";
+    }
+    if (isDocumentEntryRejected(entry)) {
+      return "Invalid format rejected. Re-upload with PDF or image.";
+    }
+    if (uploadedSides === 1) {
+      return "Upload the remaining side copy.";
+    }
+    return "Upload front and back copies.";
+  };
 
   useEffect(() => {
     setOnboardingCheckpoint("documentsVerified", documentsComplete);
@@ -230,14 +261,8 @@ export default function DriverProfileOnboarding() {
             <DocRow
               icon={IdCard}
               title="Driving Permit"
-              description={
-                documentState.license.status === "Uploaded"
-                  ? "Saved and ready for activation"
-                  : "Upload required permit"
-              }
-              statusLabel={
-                documentState.license.status === "Uploaded" ? "Verified" : "Review"
-              }
+              description={getDocumentDescription("license")}
+              statusLabel={getDocumentStatusLabel("license")}
               onClick={() =>
                 navigate(
                   documentsComplete
@@ -249,12 +274,8 @@ export default function DriverProfileOnboarding() {
             <DocRow
               icon={CreditCard}
               title="National ID"
-              description={
-                documentState.id.status === "Uploaded"
-                  ? "Saved and ready for activation"
-                  : "Re-upload for verification"
-              }
-              statusLabel={documentState.id.status === "Uploaded" ? "Verified" : "Pending"}
+              description={getDocumentDescription("id")}
+              statusLabel={getDocumentStatusLabel("id")}
               onClick={() =>
                 navigate(
                   documentsComplete
@@ -266,14 +287,8 @@ export default function DriverProfileOnboarding() {
             <DocRow
               icon={FileBadge2}
               title="Conduct Cert"
-              description={
-                documentState.police.status === "Uploaded"
-                  ? "Saved and ready for activation"
-                  : "Upload good conduct clearance"
-              }
-              statusLabel={
-                documentState.police.status === "Uploaded" ? "Verified" : "Pending"
-              }
+              description={getDocumentDescription("police")}
+              statusLabel={getDocumentStatusLabel("police")}
               onClick={() =>
                 navigate(
                   documentsComplete
@@ -358,7 +373,8 @@ export default function DriverProfileOnboarding() {
             type="button"
             onClick={() => navigate(gatewayAction.route)}
             className={`w-full rounded-2xl py-4 text-sm font-black shadow-lg transition-all active:scale-[0.98] uppercase tracking-widest ${
-              gatewayAction.label === "Go Online"
+              gatewayAction.label === "Go Online" ||
+              (gatewayAction.label === "View Verified Documents" && documentsComplete)
                 ? "bg-orange-500 text-white shadow-orange-500/20 hover:bg-orange-600"
                 : "bg-slate-900 text-white shadow-slate-900/20 hover:bg-slate-800"
             }`}

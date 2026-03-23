@@ -109,8 +109,8 @@ export default function DocumentVerified() {
               icon={IdCard}
               title="National ID"
               subtitle={
-                documentState.id.fileName
-                  ? `Saved file: ${documentState.id.fileName}`
+                documentState.id.front.fileName && documentState.id.back.fileName
+                  ? `Front: ${documentState.id.front.fileName} | Back: ${documentState.id.back.fileName}`
                   : "Identity confirmed"
               }
             />
@@ -118,8 +118,9 @@ export default function DocumentVerified() {
               icon={FileBadge2}
               title="Driver's License"
               subtitle={
-                documentState.license.fileName
-                  ? `Saved file: ${documentState.license.fileName}`
+                documentState.license.front.fileName &&
+                documentState.license.back.fileName
+                  ? `Front: ${documentState.license.front.fileName} | Back: ${documentState.license.back.fileName}`
                   : "Valid & in good standing"
               }
             />
@@ -127,8 +128,8 @@ export default function DocumentVerified() {
               icon={ClipboardCheck}
               title="Conduct Clearance"
               subtitle={
-                documentState.police.fileName
-                  ? `Saved file: ${documentState.police.fileName}`
+                documentState.police.front.fileName && documentState.police.back.fileName
+                  ? `Front: ${documentState.police.front.fileName} | Back: ${documentState.police.back.fileName}`
                   : "Background check passed"
               }
             />

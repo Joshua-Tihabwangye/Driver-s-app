@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
 import type { DriverCoreRole } from "../data/types";
+import { resetStoredDocumentState } from "../utils/documentVerificationState";
 
 // EVzone Driver App – DriverRegistration Registration – Driver Information
 // Standardized Driver Profile registration screen.
@@ -67,7 +68,7 @@ const PRIMARY_ROLE_BY_OPTION: Record<ServiceOptionKey, DriverCoreRole> = {
 
 export default function DriverRegistration() {
   const navigate = useNavigate();
-  const { updateDriverRoleConfig, driverRoleConfig } = useStore();
+  const { updateDriverRoleConfig, driverRoleConfig, setOnboardingCheckpoint } = useStore();
   const [selectedServices, setSelectedServices] = useState<Record<ServiceOptionKey, boolean>>({
     ride:
       driverRoleConfig.coreRole === "ride-only" ||
@@ -128,6 +129,12 @@ export default function DriverRegistration() {
     if (!updateResult.ok) {
       setErrorMessage(updateResult.error || "Unable to save onboarding role.");
       return;
+    }
+
+    if (!driverRoleConfig.onboardingComplete) {
+      resetStoredDocumentState();
+      setOnboardingCheckpoint("documentsVerified", false);
+      setOnboardingCheckpoint("trainingCompleted", false);
     }
 
     navigate("/driver/onboarding/profile");

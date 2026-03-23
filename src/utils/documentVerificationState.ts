@@ -1,54 +1,116 @@
 export const DOCUMENT_UPLOAD_STATE_KEY = "driver_document_upload_state";
 
 export type DocumentUploadKey = "id" | "license" | "police";
-export type DocumentUploadStatus = "Missing" | "Uploaded";
+export type DocumentUploadSide = "front" | "back";
+export type DocumentUploadStatus = "Missing" | "Uploaded" | "Rejected";
+
+export interface DocumentUploadCopy {
+  status: DocumentUploadStatus;
+  fileName: string;
+  error: string;
+}
 
 export interface DocumentUploadEntry {
-  status: DocumentUploadStatus;
+  front: DocumentUploadCopy;
+  back: DocumentUploadCopy;
   emphasise: boolean;
-  fileName: string;
 }
 
 export type DocumentUploadState = Record<DocumentUploadKey, DocumentUploadEntry>;
 
-export const DEFAULT_DOCUMENT_UPLOAD_STATE: DocumentUploadState = {
-  id: { status: "Missing", emphasise: false, fileName: "" },
-  license: { status: "Missing", emphasise: true, fileName: "" },
-  police: { status: "Missing", emphasise: false, fileName: "" },
+const EMPTY_COPY: DocumentUploadCopy = {
+  status: "Missing",
+  fileName: "",
+  error: "",
 };
 
-function sanitizeEntry(
-  raw: unknown,
-  fallback: DocumentUploadEntry
-): DocumentUploadEntry {
+export const DEFAULT_DOCUMENT_UPLOAD_STATE: DocumentUploadState = {
+  id: { front: { ...EMPTY_COPY }, back: { ...EMPTY_COPY }, emphasise: false },
+  license: { front: { ...EMPTY_COPY }, back: { ...EMPTY_COPY }, emphasise: true },
+  police: { front: { ...EMPTY_COPY }, back: { ...EMPTY_COPY }, emphasise: false },
+};
+
+const SUPPORTED_EXTENSIONS = [
+  ".pdf",
+  ".jpg",
+  ".jpeg",
+  ".png",
+  ".webp",
+  ".bmp",
+  ".gif",
+  ".tif",
+  ".tiff",
+];
+
+function cloneDefaultState(): DocumentUploadState {
+  return {
+    id: {
+      front: { ...DEFAULT_DOCUMENT_UPLOAD_STATE.id.front },
+      back: { ...DEFAULT_DOCUMENT_UPLOAD_STATE.id.back },
+      emphasise: DEFAULT_DOCUMENT_UPLOAD_STATE.id.emphasise,
+    },
+    license: {
+      front: { ...DEFAULT_DOCUMENT_UPLOAD_STATE.license.front },
+      back: { ...DEFAULT_DOCUMENT_UPLOAD_STATE.license.back },
+      emphasise: DEFAULT_DOCUMENT_UPLOAD_STATE.license.emphasise,
+    },
+    police: {
+      front: { ...DEFAULT_DOCUMENT_UPLOAD_STATE.police.front },
+      back: { ...DEFAULT_DOCUMENT_UPLOAD_STATE.police.back },
+      emphasise: DEFAULT_DOCUMENT_UPLOAD_STATE.police.emphasise,
+    },
+  };
+}
+
+function sanitizeCopy(raw: unknown, fallback: DocumentUploadCopy): DocumentUploadCopy {
   if (!raw || typeof raw !== "object") {
-    return fallback;
+    return { ...fallback };
+  }
+
+  const candidate = raw as Partial<DocumentUploadCopy>;
+  const status =
+    candidate.status === "Uploaded" ||
+    candidate.status === "Missing" ||
+    candidate.status === "Rejected"
+      ? candidate.status
+      : fallback.status;
+  const fileName =
+    typeof candidate.fileName === "string" ? candidate.fileName : fallback.fileName;
+  const error = typeof candidate.error === "string" ? candidate.error : fallback.error;
+
+  return { status, fileName, error };
+}
+
+function sanitizeEntry(raw: unknown, fallback: DocumentUploadEntry): DocumentUploadEntry {
+  if (!raw || typeof raw !== "object") {
+    return {
+      front: { ...fallback.front },
+      back: { ...fallback.back },
+      emphasise: fallback.emphasise,
+    };
   }
 
   const candidate = raw as Partial<DocumentUploadEntry>;
-  const status =
-    candidate.status === "Uploaded" || candidate.status === "Missing"
-      ? candidate.status
-      : fallback.status;
-  const emphasise =
-    typeof candidate.emphasise === "boolean"
-      ? candidate.emphasise
-      : fallback.emphasise;
-  const fileName =
-    typeof candidate.fileName === "string" ? candidate.fileName : fallback.fileName;
 
-  return { status, emphasise, fileName };
+  return {
+    front: sanitizeCopy(candidate.front, fallback.front),
+    back: sanitizeCopy(candidate.back, fallback.back),
+    emphasise:
+      typeof candidate.emphasise === "boolean"
+        ? candidate.emphasise
+        : fallback.emphasise,
+  };
 }
 
 export function readStoredDocumentState(): DocumentUploadState {
   if (typeof window === "undefined") {
-    return DEFAULT_DOCUMENT_UPLOAD_STATE;
+    return cloneDefaultState();
   }
 
   try {
     const raw = window.localStorage.getItem(DOCUMENT_UPLOAD_STATE_KEY);
     if (!raw) {
-      return DEFAULT_DOCUMENT_UPLOAD_STATE;
+      return cloneDefaultState();
     }
 
     const parsed = JSON.parse(raw) as Partial<Record<DocumentUploadKey, unknown>>;
@@ -58,7 +120,7 @@ export function readStoredDocumentState(): DocumentUploadState {
       police: sanitizeEntry(parsed?.police, DEFAULT_DOCUMENT_UPLOAD_STATE.police),
     };
   } catch {
-    return DEFAULT_DOCUMENT_UPLOAD_STATE;
+    return cloneDefaultState();
   }
 }
 
@@ -70,22 +132,46 @@ export function persistDocumentState(nextState: DocumentUploadState): void {
   window.localStorage.setItem(DOCUMENT_UPLOAD_STATE_KEY, JSON.stringify(nextState));
 }
 
+export function resetStoredDocumentState(): DocumentUploadState {
+  const nextState = cloneDefaultState();
+  persistDocumentState(nextState);
+  return nextState;
+}
+
+export function isAcceptedDocumentFile(file: File): boolean {
+  const mimeType = (file.type || "").toLowerCase();
+  if (mimeType.startsWith("image/") || mimeType === "application/pdf") {
+    return true;
+  }
+
+  const fileName = file.name.toLowerCase();
+  return SUPPORTED_EXTENSIONS.some((ext) => fileName.endsWith(ext));
+}
+
+export function isDocumentEntryComplete(entry: DocumentUploadEntry): boolean {
+  return entry.front.status === "Uploaded" && entry.back.status === "Uploaded";
+}
+
+export function isDocumentEntryRejected(entry: DocumentUploadEntry): boolean {
+  return entry.front.status === "Rejected" || entry.back.status === "Rejected";
+}
+
 export function areAllRequiredDocumentsUploaded(
   state: DocumentUploadState
 ): boolean {
-  return Object.values(state).every((doc) => doc.status === "Uploaded");
+  return Object.values(state).every((doc) => isDocumentEntryComplete(doc));
 }
 
 export function getFirstMissingDocumentKey(
   state: DocumentUploadState
 ): DocumentUploadKey | null {
-  if (state.id.status !== "Uploaded") {
+  if (!isDocumentEntryComplete(state.id)) {
     return "id";
   }
-  if (state.license.status !== "Uploaded") {
+  if (!isDocumentEntryComplete(state.license)) {
     return "license";
   }
-  if (state.police.status !== "Uploaded") {
+  if (!isDocumentEntryComplete(state.police)) {
     return "police";
   }
   return null;
