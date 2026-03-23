@@ -4,8 +4,10 @@ import {
   Package,
   QrCode,
 } from "lucide-react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – PackagePickupQR QR Code – Package Pickup Verification (v1)
 // Screen showing a QR code used to verify package pickup at a location.
@@ -14,6 +16,13 @@ import PageHeader from "../components/PageHeader";
 
 export default function PackagePickupQR() {
   const navigate = useNavigate();
+  const { deliveryStageAtLeast } = useStore();
+
+  useEffect(() => {
+    if (!deliveryStageAtLeast("pickup_confirmed")) {
+      navigate("/driver/delivery/pickup/confirm", { replace: true });
+    }
+  }, [deliveryStageAtLeast, navigate]);
 
   return (
     <div className="flex flex-col h-full ">
@@ -86,10 +95,10 @@ export default function PackagePickupQR() {
 
           <button
             type="button"
-            onClick={() => navigate("/driver/delivery/pickup/confirmed")}
+            onClick={() => navigate("/driver/qr/instruction")}
             className="w-full rounded-[2rem] bg-orange-500 py-5 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-orange-200/50 flex items-center justify-center active:scale-[0.98] transition-all hover:bg-orange-600"
           >
-            Mark Scan Complete
+            Start QR Scan
           </button>
           <button
             type="button"

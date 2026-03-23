@@ -7,8 +7,11 @@ Navigation,
 Package,
 Phone
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { SAMPLE_IDS } from "../data/constants";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – DeliveryStopDetails Active Route with Expanded Stop Details (Messaging Shortcut) (v1)
 // Active route view with an expanded card for the next stop, including quick message/call actions.
@@ -17,6 +20,14 @@ import PageHeader from "../components/PageHeader";
 
 export default function DeliveryStopDetails() {
   const navigate = useNavigate();
+  const { routeId } = useParams();
+  const { deliveryStageAtLeast, confirmDeliveryDropoff, deliveryWorkflow } = useStore();
+
+  useEffect(() => {
+    if (!deliveryStageAtLeast("in_delivery")) {
+      navigate("/driver/delivery/pickup/confirmed", { replace: true });
+    }
+  }, [deliveryStageAtLeast, navigate]);
 
   const nextStop = {
     label: "Naguru (Block B)",
@@ -124,6 +135,27 @@ export default function DeliveryStopDetails() {
             Use quick communication to coordinate gate access, entrances or
             safe meeting spots when needed.
           </p>
+          <button
+            type="button"
+            onClick={() => {
+              confirmDeliveryDropoff();
+              navigate("/driver/delivery/dropoff/confirmed");
+            }}
+            className="w-full rounded-[2rem] bg-orange-500 py-5 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-orange-200/50 flex items-center justify-center active:scale-[0.98] transition-all hover:bg-orange-600"
+          >
+            Confirm Delivered at Drop-Off
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              navigate(
+                `/driver/delivery/route/${routeId || deliveryWorkflow.routeId || SAMPLE_IDS.route}/active`
+              )
+            }
+            className="w-full rounded-[2rem] border-2 border-slate-900 bg-white py-5 text-[11px] font-black uppercase tracking-widest text-slate-900 active:scale-[0.98] transition-all hover:bg-slate-50"
+          >
+            Back to Active Route
+          </button>
         </section>
       </main>
     </div>

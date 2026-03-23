@@ -165,7 +165,11 @@ export default function OnlineDashboard() {
                 icon={Package}
                 label="Deliveries"
                 sub="Package Orders"
-                onClick={() => navigate("/driver/jobs/list?category=delivery")}
+                onClick={() =>
+                  navigate("/driver/jobs/incoming", {
+                    state: { jobType: "delivery" },
+                  })
+                }
               />
             )}
             <button

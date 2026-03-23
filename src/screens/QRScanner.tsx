@@ -4,8 +4,10 @@ ChevronLeft,
 Info,
 QrCode
 } from "lucide-react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – QRScanner QR Code Scanner (v2)
 // Base QR scanning screen with camera view and scan frame overlay.
@@ -15,6 +17,13 @@ import PageHeader from "../components/PageHeader";
 
 export default function QRScanner() {
   const navigate = useNavigate();
+  const { deliveryStageAtLeast } = useStore();
+
+  useEffect(() => {
+    if (!deliveryStageAtLeast("pickup_confirmed")) {
+      navigate("/driver/delivery/pickup/confirm", { replace: true });
+    }
+  }, [deliveryStageAtLeast, navigate]);
 
   return (
     <div className="flex flex-col h-full ">
@@ -82,6 +91,13 @@ export default function QRScanner() {
               </p>
             </div>
           </div>
+          <button
+            type="button"
+            onClick={() => navigate("/driver/qr/scan-confirmation")}
+            className="w-full rounded-[2rem] bg-orange-500 px-6 py-5 text-[11px] font-black uppercase tracking-widest text-white active:scale-[0.98] transition-all hover:bg-orange-600 shadow-xl shadow-orange-200/50"
+          >
+            I Have Scanned the Pickup QR
+          </button>
           <button
             type="button"
             onClick={() => navigate(-1)}

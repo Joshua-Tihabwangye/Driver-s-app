@@ -11,6 +11,7 @@ import type {
   DriverProgramFlags,
 } from "../data/types";
 import { MOCK_EARNINGS, MOCK_COMPLETED_TRIPS } from "../data/mockData";
+import { SAMPLE_IDS } from "../data/constants";
 
 export interface DashboardMetrics {
   onlineTime: string;
@@ -48,6 +49,21 @@ export interface OnboardingBlocker {
   route: string;
 }
 
+export type DeliveryWorkflowStage =
+  | "idle"
+  | "accepted"
+  | "pickup_confirmed"
+  | "qr_verified"
+  | "in_delivery"
+  | "dropoff_confirmed";
+
+export interface DeliveryWorkflowState {
+  activeJobId: string | null;
+  routeId: string;
+  stopId: string;
+  stage: DeliveryWorkflowStage;
+}
+
 export interface DriverRoleUpdateInput {
   coreRole: DriverCoreRole;
   programs: DriverProgramFlags;
@@ -81,6 +97,9 @@ interface StoreContextType {
   primaryOnboardingRoute: string;
   assignableJobTypes: JobCategory[];
   canAcceptJobType: (jobType: JobCategory) => boolean;
+  deliveryWorkflow: DeliveryWorkflowState;
+  activeDeliveryJob: Job | null;
+  deliveryStageAtLeast: (stage: DeliveryWorkflowStage) => boolean;
 
   // Actions
   addJob: (job: Job) => void;
@@ -96,6 +115,12 @@ interface StoreContextType {
     checkpoint: OnboardingCheckpointId,
     isComplete?: boolean
   ) => void;
+  acceptDeliveryJob: (jobId: string) => boolean;
+  confirmDeliveryPickup: () => void;
+  verifyDeliveryQr: () => void;
+  startDeliveryRoute: () => void;
+  confirmDeliveryDropoff: () => void;
+  resetDeliveryWorkflow: () => void;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -123,6 +148,7 @@ const ONBOARDING_CHECKPOINT_ORDER: OnboardingCheckpointId[] = [
 ];
 
 const ONBOARDING_CHECKPOINTS_STORAGE_KEY = "driver_onboarding_checkpoints";
+const DELIVERY_WORKFLOW_STORAGE_KEY = "driver_delivery_workflow";
 
 const DEFAULT_ONBOARDING_CHECKPOINTS: OnboardingCheckpointState = {
   roleSelected: true,
@@ -130,6 +156,13 @@ const DEFAULT_ONBOARDING_CHECKPOINTS: OnboardingCheckpointState = {
   identityVerified: true,
   vehicleReady: true,
   trainingCompleted: false,
+};
+
+const DEFAULT_DELIVERY_WORKFLOW: DeliveryWorkflowState = {
+  activeJobId: null,
+  routeId: SAMPLE_IDS.route,
+  stopId: SAMPLE_IDS.stop,
+  stage: "idle",
 };
 
 const ONBOARDING_CHECKPOINT_META: Record<
@@ -222,6 +255,36 @@ function readStoredOnboardingCheckpoints(): OnboardingCheckpointState {
   }
 }
 
+function readStoredDeliveryWorkflow(): DeliveryWorkflowState {
+  if (typeof window === "undefined") {
+    return DEFAULT_DELIVERY_WORKFLOW;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(DELIVERY_WORKFLOW_STORAGE_KEY);
+    if (!raw) {
+      return DEFAULT_DELIVERY_WORKFLOW;
+    }
+
+    const parsed = JSON.parse(raw) as Partial<DeliveryWorkflowState>;
+    return {
+      ...DEFAULT_DELIVERY_WORKFLOW,
+      ...parsed,
+    };
+  } catch {
+    return DEFAULT_DELIVERY_WORKFLOW;
+  }
+}
+
+const DELIVERY_WORKFLOW_STAGE_ORDER: Record<DeliveryWorkflowStage, number> = {
+  idle: 0,
+  accepted: 1,
+  pickup_confirmed: 2,
+  qr_verified: 3,
+  in_delivery: 4,
+  dropoff_confirmed: 5,
+};
+
 // Helper to filter dates (mock simplified logic for demonstration)
 export const isWithinPeriod = (timestampOrDate: number | string, period: PeriodFilter) => {
   const now = Date.now();
@@ -268,6 +331,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   });
   const [onboardingCheckpoints, setOnboardingCheckpoints] =
     useState<OnboardingCheckpointState>(() => readStoredOnboardingCheckpoints());
+  const [deliveryWorkflow, setDeliveryWorkflow] = useState<DeliveryWorkflowState>(() =>
+    readStoredDeliveryWorkflow()
+  );
 
   const setOnboardingCheckpoint = useCallback(
     (checkpoint: OnboardingCheckpointId, isComplete = true) => {
@@ -310,6 +376,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       JSON.stringify(onboardingCheckpoints)
     );
   }, [onboardingCheckpoints]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.localStorage.setItem(
+      DELIVERY_WORKFLOW_STORAGE_KEY,
+      JSON.stringify(deliveryWorkflow)
+    );
+  }, [deliveryWorkflow]);
 
   const driverRoleConfig = useMemo<DriverRoleConfig>(
     () => ({
@@ -380,6 +457,116 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  const deliveryStageAtLeast = useCallback(
+    (stage: DeliveryWorkflowStage) =>
+      DELIVERY_WORKFLOW_STAGE_ORDER[deliveryWorkflow.stage] >=
+      DELIVERY_WORKFLOW_STAGE_ORDER[stage],
+    [deliveryWorkflow.stage]
+  );
+
+  const acceptDeliveryJob = useCallback(
+    (jobId: string) => {
+      const targetJob = jobs.find(
+        (job) => job.id === jobId && job.jobType === "delivery"
+      );
+      if (!targetJob) {
+        return false;
+      }
+
+      setJobs((prev) =>
+        prev.map((job) =>
+          job.id === jobId ? { ...job, status: "attended" } : job
+        )
+      );
+
+      setDeliveryWorkflow({
+        activeJobId: jobId,
+        routeId: SAMPLE_IDS.route,
+        stopId: SAMPLE_IDS.stop,
+        stage: "accepted",
+      });
+
+      return true;
+    },
+    [jobs]
+  );
+
+  const confirmDeliveryPickup = useCallback(() => {
+    setDeliveryWorkflow((prev) => {
+      if (
+        DELIVERY_WORKFLOW_STAGE_ORDER[prev.stage] <
+        DELIVERY_WORKFLOW_STAGE_ORDER.accepted
+      ) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        stage: "pickup_confirmed",
+      };
+    });
+  }, []);
+
+  const verifyDeliveryQr = useCallback(() => {
+    setDeliveryWorkflow((prev) => {
+      if (
+        DELIVERY_WORKFLOW_STAGE_ORDER[prev.stage] <
+        DELIVERY_WORKFLOW_STAGE_ORDER.pickup_confirmed
+      ) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        stage: "qr_verified",
+      };
+    });
+  }, []);
+
+  const startDeliveryRoute = useCallback(() => {
+    setDeliveryWorkflow((prev) => {
+      if (
+        DELIVERY_WORKFLOW_STAGE_ORDER[prev.stage] <
+        DELIVERY_WORKFLOW_STAGE_ORDER.qr_verified
+      ) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        stage: "in_delivery",
+      };
+    });
+  }, []);
+
+  const confirmDeliveryDropoff = useCallback(() => {
+    if (
+      DELIVERY_WORKFLOW_STAGE_ORDER[deliveryWorkflow.stage] <
+      DELIVERY_WORKFLOW_STAGE_ORDER.in_delivery
+    ) {
+      return;
+    }
+
+    setDeliveryWorkflow((prev) => ({
+      ...prev,
+      stage: "dropoff_confirmed",
+    }));
+
+    if (deliveryWorkflow.activeJobId) {
+      setJobs((prev) =>
+        prev.map((job) =>
+          job.id === deliveryWorkflow.activeJobId
+            ? { ...job, status: "completed" }
+            : job
+        )
+      );
+    }
+  }, [deliveryWorkflow.activeJobId, deliveryWorkflow.stage]);
+
+  const resetDeliveryWorkflow = useCallback(() => {
+    setDeliveryWorkflow(DEFAULT_DELIVERY_WORKFLOW);
+  }, []);
+
   const assignableJobTypes = useMemo(
     () =>
       getAssignableJobTypes({
@@ -446,6 +633,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }));
   }, [periodFilter]);
 
+  const activeDeliveryJob = useMemo(
+    () =>
+      deliveryWorkflow.activeJobId
+        ? jobs.find(
+            (job) =>
+              job.id === deliveryWorkflow.activeJobId && job.jobType === "delivery"
+          ) || null
+        : null,
+    [deliveryWorkflow.activeJobId, jobs]
+  );
+
   const value: StoreContextType = {
     periodFilter,
     setPeriodFilter,
@@ -464,6 +662,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     primaryOnboardingRoute,
     assignableJobTypes,
     canAcceptJobType,
+    deliveryWorkflow,
+    activeDeliveryJob,
+    deliveryStageAtLeast,
     addJob,
     updateJobStatus,
     addSharedContactToJob,
@@ -474,6 +675,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     updateDriverRoleConfig,
     enableDualMode,
     setOnboardingCheckpoint,
+    acceptDeliveryJob,
+    confirmDeliveryPickup,
+    verifyDeliveryQr,
+    startDeliveryRoute,
+    confirmDeliveryDropoff,
+    resetDeliveryWorkflow,
   };
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

@@ -4,8 +4,10 @@ Info,
 Loader2,
 QrCode
 } from "lucide-react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – QRProcessing QR Code – Processing Stage (v1)
 // Screen showing the processing state after scanning a QR code, while verifying with backend.
@@ -14,6 +16,13 @@ import PageHeader from "../components/PageHeader";
 
 export default function QRProcessing() {
   const navigate = useNavigate();
+  const { deliveryStageAtLeast, verifyDeliveryQr } = useStore();
+
+  useEffect(() => {
+    if (!deliveryStageAtLeast("pickup_confirmed")) {
+      navigate("/driver/delivery/pickup/confirm", { replace: true });
+    }
+  }, [deliveryStageAtLeast, navigate]);
 
   return (
     <div className="flex flex-col h-full ">
@@ -56,6 +65,16 @@ export default function QRProcessing() {
               the pickup point until verification is complete.
             </p>
           </div>
+
+          <button
+            onClick={() => {
+              verifyDeliveryQr();
+              navigate("/driver/delivery/pickup/confirmed");
+            }}
+            className="w-full rounded-[2rem] bg-orange-500 px-6 py-5 text-[11px] font-black uppercase tracking-widest text-white active:scale-[0.98] transition-all hover:bg-orange-600 shadow-xl shadow-orange-200/50"
+          >
+            Verification Complete
+          </button>
 
           <button
             onClick={() => navigate(-1)}

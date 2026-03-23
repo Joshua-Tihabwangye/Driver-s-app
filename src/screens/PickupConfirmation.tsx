@@ -4,8 +4,10 @@ import {
   Package,
   X,
 } from "lucide-react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – PickupConfirmation Alert – Pick Up Confirmation (v1)
 // Alert screen asking the driver to confirm that all packages have been picked up.
@@ -14,6 +16,16 @@ import PageHeader from "../components/PageHeader";
 
 export default function PickupConfirmation() {
   const navigate = useNavigate();
+  const { confirmDeliveryPickup, deliveryStageAtLeast } = useStore();
+
+  useEffect(() => {
+    if (!deliveryStageAtLeast("accepted")) {
+      navigate("/driver/jobs/incoming", {
+        replace: true,
+        state: { jobType: "delivery" },
+      });
+    }
+  }, [deliveryStageAtLeast, navigate]);
 
   return (
     <div className="flex flex-col h-full ">
@@ -73,7 +85,10 @@ export default function PickupConfirmation() {
         <section className="space-y-4 pb-12">
           <button
             type="button"
-            onClick={() => navigate("/driver/delivery/pickup/qr")}
+            onClick={() => {
+              confirmDeliveryPickup();
+              navigate("/driver/qr/instruction");
+            }}
             className="w-full rounded-[2rem] bg-orange-500 py-5 text-sm font-black uppercase tracking-widest text-white shadow-xl shadow-orange-200/50 flex items-center justify-center active:scale-[0.98] transition-all hover:bg-orange-600"
           >
             <Check className="h-5 w-5 mr-3" />

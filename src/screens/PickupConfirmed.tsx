@@ -5,8 +5,10 @@ MapPin,
 Package,
 QrCode
 } from "lucide-react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – PickupConfirmed Pick-Up Confirmed Screen (v1)
 // Generic pickup confirmed screen usable for marketing scans or package pickup confirmation.
@@ -15,6 +17,13 @@ import PageHeader from "../components/PageHeader";
 
 export default function PickupConfirmed() {
   const navigate = useNavigate();
+  const { deliveryStageAtLeast, startDeliveryRoute, deliveryWorkflow } = useStore();
+
+  useEffect(() => {
+    if (!deliveryStageAtLeast("qr_verified")) {
+      navigate("/driver/qr/instruction", { replace: true });
+    }
+  }, [deliveryStageAtLeast, navigate]);
 
   return (
     <div className="flex flex-col min-h-full ">
@@ -97,10 +106,13 @@ export default function PickupConfirmed() {
           </div>
 
           <button
-            onClick={() => navigate("/driver/dashboard/online")}
+            onClick={() => {
+              startDeliveryRoute();
+              navigate(`/driver/delivery/route/${deliveryWorkflow.routeId}/active`);
+            }}
             className="w-full rounded-[2rem] bg-slate-900 px-6 py-5 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-slate-200 active:scale-[0.98] transition-all"
           >
-            Continue to Dashboard
+            Continue to Active Route
           </button>
         </section>
       </main>

@@ -192,7 +192,7 @@ export default function SearchScreen() {
 
   const jobRouteMap = {
     ride: "/driver/jobs/incoming",
-    delivery: "/driver/jobs/list?category=delivery",
+    delivery: "/driver/jobs/incoming",
     rental: `/driver/rental/job/${SAMPLE_IDS.job}`,
     tour: `/driver/tour/${SAMPLE_IDS.tour}/today`,
     ambulance: "/driver/ambulance/incoming",
@@ -202,6 +202,11 @@ export default function SearchScreen() {
 
   const handleJobNavigate = (type) => {
     const route = jobRouteMap[type] || jobRouteMap.all;
+    if (route === "/driver/jobs/incoming") {
+      navigate(route, { state: { jobType: type === "all" ? "ride" : type } });
+      return;
+    }
+
     navigate(route);
   };
 

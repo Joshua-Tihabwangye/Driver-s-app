@@ -42,7 +42,7 @@ export default function SuperAppHome() {
     school: "/driver/safety/hub",
     driver: "/driver/dashboard/offline",
     charging: "/driver/vehicles",
-    seller: "/driver/delivery/orders-dashboard",
+    seller: "/driver/jobs/incoming",
   };
 
   return (
@@ -117,7 +117,11 @@ export default function SuperAppHome() {
             />
             <ServiceCard 
               icon={Store} title="Seller" subtitle="Business dashboard" tone="orange" 
-              onClick={() => navigate(serviceRoutes.seller)} 
+              onClick={() =>
+                navigate(serviceRoutes.seller, {
+                  state: { jobType: "delivery" },
+                })
+              } 
             />
           </div>
         </section>

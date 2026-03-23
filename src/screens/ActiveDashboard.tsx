@@ -144,7 +144,11 @@ export default function ActiveDashboard() {
               icon={Package}
               label="Cargo"
               value={jobMix.delivery}
-              onClick={() => navigate("/driver/jobs/list?category=delivery")}
+              onClick={() =>
+                navigate("/driver/jobs/incoming", {
+                  state: { jobType: "delivery" },
+                })
+              }
             />
             <JobMixPill
               icon={Briefcase}

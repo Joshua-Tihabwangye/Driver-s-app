@@ -4,8 +4,10 @@ Info,
 MapPin,
 QrCode
 } from "lucide-react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – QRInstruction Scan QR Code – Instruction Popup (v1)
 // Early instruction popup explaining how to scan the QR code, shown over the scanner view.
@@ -14,6 +16,13 @@ import PageHeader from "../components/PageHeader";
 
 export default function QRInstruction() {
   const navigate = useNavigate();
+  const { deliveryStageAtLeast } = useStore();
+
+  useEffect(() => {
+    if (!deliveryStageAtLeast("pickup_confirmed")) {
+      navigate("/driver/delivery/pickup/confirm", { replace: true });
+    }
+  }, [deliveryStageAtLeast, navigate]);
 
   return (
     <div className="flex flex-col h-full ">

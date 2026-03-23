@@ -115,6 +115,7 @@ import QRProcessing from "../screens/QRProcessing";
 import QRMarketingScan from "../screens/QRMarketingScan";
 import QRMarketingProcessing from "../screens/QRMarketingProcessing";
 import PickupConfirmed from "../screens/PickupConfirmed";
+import DeliveryDropoffConfirmed from "../screens/DeliveryDropoffConfirmed";
 import RentalJobOverview from "../screens/RentalJobOverview";
 import TourSchedule from "../screens/TourSchedule";
 import AmbulanceIncoming from "../screens/AmbulanceIncoming";
@@ -263,6 +264,7 @@ export const SCREENS: ScreenConfig[] = [
   { id: "QRMarketingScan", label: "QR Code Scanning – Marketing", path: "/driver/qr/marketing-scan", Component: QRMarketingScan },
   { id: "QRMarketingProcessing", label: "QR Code – Marketing Processing", path: "/driver/qr/marketing-processing", Component: QRMarketingProcessing },
   { id: "PickupConfirmed", label: "Pick-Up Confirmed Screen", path: "/driver/delivery/pickup/confirmed", Component: PickupConfirmed },
+  { id: "DeliveryDropoffConfirmed", label: "Delivery Drop-Off Confirmed", path: "/driver/delivery/dropoff/confirmed", Component: DeliveryDropoffConfirmed },
   // Special job types
   { id: "RentalJobOverview", label: "Rental Job Overview / On Rental", path: "/driver/rental/job/:jobId", previewPath: `/driver/rental/job/${SAMPLE_IDS.job}`, Component: RentalJobOverview },
   { id: "TourSchedule", label: "Tour – Today’s Schedule", path: "/driver/tour/:tourId/today", previewPath: `/driver/tour/${SAMPLE_IDS.tour}/today`, Component: TourSchedule },

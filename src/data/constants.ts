@@ -40,7 +40,7 @@ export const SAMPLE_IDS = {
 // ── Route Map for Job Types ──────────────────────────────
 export const JOB_DETAIL_ROUTES: Record<JobCategory | "default", string> = {
   ride: "/driver/jobs/incoming",
-  delivery: `/driver/delivery/route/${SAMPLE_IDS.route}/active`,
+  delivery: "/driver/jobs/incoming",
   rental: `/driver/rental/job/${SAMPLE_IDS.job}`,
   tour: `/driver/tour/${SAMPLE_IDS.tour}/today`,
   ambulance: `/driver/ambulance/job/${SAMPLE_IDS.job}/status`,

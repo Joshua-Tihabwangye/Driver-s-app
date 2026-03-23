@@ -103,7 +103,7 @@ export default function DeliveryOrdersDashboard() {
               dropoff="Kira Road"
               eta="Pick up by 18:20"
               status="Ready for pickup"
-              onClick={() => navigate("/driver/delivery/orders/picked-up")}
+              onClick={() => navigate("/driver/delivery/orders")}
             />
             <OrderRow
               id="3242"
@@ -111,7 +111,7 @@ export default function DeliveryOrdersDashboard() {
               dropoff="Ntinda"
               eta="Pick up by 18:30"
               status="Ready for pickup"
-              onClick={() => navigate("/driver/delivery/orders/picked-up")}
+              onClick={() => navigate("/driver/delivery/orders")}
             />
           </div>
         </section>

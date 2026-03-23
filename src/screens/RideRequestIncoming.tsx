@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useSharedTrips } from "../context/SharedTripsContext";
+import { useStore } from "../context/StoreContext";
 import { MOCK_SHARED_TRIPS } from "../data/mockData";
 
 // EVzone Driver App – RideRequestIncoming Driver App – Ride Request Incoming (v2)
@@ -100,6 +101,7 @@ export default function RideRequestIncoming() {
   const [jobType, setJobType] = useState(location.state?.jobType || "ride");
   const navigate = useNavigate();
   const { setActiveSharedTrip } = useSharedTrips();
+  const { jobs, acceptDeliveryJob, resetDeliveryWorkflow } = useStore();
 
   useEffect(() => {
     if (timeLeft <= 0) return;
@@ -179,7 +181,12 @@ export default function RideRequestIncoming() {
     } else if (jobType === "tour") {
       navigate(`/driver/tour/${SAMPLE_IDS.tour}/today`);
     } else if (jobType === "delivery") {
-      navigate("/driver/jobs/list?category=delivery");
+      const fallbackDeliveryId = SAMPLE_IDS.job;
+      const nextDeliveryJobId =
+        jobs.find((job) => job.jobType === "delivery" && job.status === "pending")
+          ?.id || fallbackDeliveryId;
+      acceptDeliveryJob(nextDeliveryJobId);
+      navigate("/driver/delivery/orders");
     } else if (isShared) {
       setActiveSharedTrip(MOCK_SHARED_TRIPS[0]);
       navigate(`/driver/trip/${SAMPLE_IDS.ride}/active`);
@@ -189,6 +196,9 @@ export default function RideRequestIncoming() {
   };
 
   const handleDecline = () => {
+    if (jobType === "delivery") {
+      resetDeliveryWorkflow();
+    }
     navigate("/driver/jobs/list");
   };
 

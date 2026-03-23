@@ -170,7 +170,9 @@ export default function RideRequestsList() {
   const displayPeriodLabel = period === "quarter" ? `${selectedQuarter} ${selectedYear}` : period === "year" ? selectedYear : periodLabel;
 
   const handleCardClick = (job: any) => {
-    attendJob(job.id);
+    if (job.jobType !== "delivery") {
+      attendJob(job.id);
+    }
     const route = JOB_DETAIL_ROUTES[job.jobType] || JOB_DETAIL_ROUTES.default;
     navigate(route, { state: { jobType: job.jobType } });
   };

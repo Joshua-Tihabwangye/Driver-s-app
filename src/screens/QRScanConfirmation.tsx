@@ -5,8 +5,10 @@ MapPin,
 QrCode,
 X
 } from "lucide-react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – QRScanConfirmation Scan QR Code Confirmation Popup (v1)
 // Map/scanner view with a popup confirming the scanned code and its details.
@@ -15,6 +17,13 @@ import PageHeader from "../components/PageHeader";
 
 export default function QRScanConfirmation() {
   const navigate = useNavigate();
+  const { deliveryStageAtLeast } = useStore();
+
+  useEffect(() => {
+    if (!deliveryStageAtLeast("pickup_confirmed")) {
+      navigate("/driver/delivery/pickup/confirm", { replace: true });
+    }
+  }, [deliveryStageAtLeast, navigate]);
 
   return (
     <div className="flex flex-col h-full ">
