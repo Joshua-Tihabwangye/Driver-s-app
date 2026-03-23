@@ -39,7 +39,7 @@ export default function Login() {
         {/* Back Button */}
         <button 
           type="button"
-          onClick={() => navigate("/landing")}
+          onClick={() => navigate("/app/register-services")}
           className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center mb-10 active:scale-90 transition-transform shadow-sm border border-slate-100/50 hover:bg-slate-100"
         >
           <ArrowLeft className="h-6 w-6 text-slate-700" />

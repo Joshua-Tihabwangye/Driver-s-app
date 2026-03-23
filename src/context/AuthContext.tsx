@@ -1,8 +1,7 @@
 import React,{ createContext,useContext,useEffect,useState } from "react";
 
 export const AUTH_STORAGE_KEY = "isLoggedIn";
-export const AUTH_LOGIN_ROUTE = "/auth/login";
-export const AUTH_LANDING_ROUTE = "/landing";
+export const AUTH_LOGIN_ROUTE = "/app/register-services";
 export const AUTHENTICATED_HOME_ROUTE = "/driver/dashboard/offline";
 
 interface AuthContextType {

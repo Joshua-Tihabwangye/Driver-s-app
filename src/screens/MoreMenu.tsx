@@ -16,7 +16,7 @@ import {
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
-import { AUTH_LANDING_ROUTE, useAuth } from "../context/AuthContext";
+import { AUTH_LOGIN_ROUTE, useAuth } from "../context/AuthContext";
 
 function MenuSection({
   title,
@@ -83,7 +83,7 @@ export default function MoreMenu() {
 
   const handleLogout = () => {
     logout();
-    navigate(AUTH_LANDING_ROUTE, { replace: true });
+    navigate(AUTH_LOGIN_ROUTE, { replace: true });
   };
 
   return (
@@ -196,7 +196,7 @@ export default function MoreMenu() {
           <MenuItem
             icon={LogOut}
             label="Logout Account"
-            description="Return to the landing screen"
+            description="Return to the login screen"
             onClick={handleLogout}
             variant="danger"
           />

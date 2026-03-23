@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import BottomNav from "./BottomNav";
+import { useStore } from "../context/StoreContext";
 import { useTheme } from "../context/ThemeContext";
 
 interface AppPhoneShellProps {
@@ -22,6 +24,8 @@ function shouldTreatAsPhoneByUA() {
 
 export default function AppPhoneShell({ children }: AppPhoneShellProps) {
   const { isDark } = useTheme();
+  const { canGoOnline } = useStore();
+  const { pathname } = useLocation();
   const [isPhoneView, setIsPhoneView] = useState(() => {
     if (typeof window === "undefined") return true;
     const mediaQuery = window.matchMedia(PHONE_WIDTH_MEDIA);
@@ -52,7 +56,13 @@ export default function AppPhoneShell({ children }: AppPhoneShellProps) {
     };
   }, []);
 
-  const isVisible = true;
+  const isDriverRoute = pathname.startsWith("/driver/");
+  const isOnboardingRoute =
+    pathname.startsWith("/driver/register") ||
+    pathname.startsWith("/driver/onboarding") ||
+    pathname.startsWith("/driver/preferences") ||
+    pathname.startsWith("/driver/training");
+  const isVisible = isDriverRoute && canGoOnline && !isOnboardingRoute;
   const stageBackground = isDark
     ? "radial-gradient(1200px 520px at 85% -10%, rgba(16, 185, 129, 0.2), transparent 58%), radial-gradient(800px 480px at -8% 110%, rgba(30, 64, 175, 0.2), transparent 60%), linear-gradient(180deg, #020617 0%, #0b1120 100%)"
     : "radial-gradient(1100px 500px at 88% -15%, rgba(16, 185, 129, 0.22), transparent 60%), radial-gradient(780px 460px at -10% 110%, rgba(59, 130, 246, 0.16), transparent 62%), linear-gradient(180deg, #f0f4f8 0%, #e2e8f0 100%)";
@@ -78,7 +88,9 @@ export default function AppPhoneShell({ children }: AppPhoneShellProps) {
         className="w-full h-full flex flex-col flex-1"
       >
         <div
-          className={`relative isolate flex-1 flex flex-col w-full mx-auto pb-[60px] transition-all duration-300 md:max-w-3xl lg:max-w-5xl md:px-6 lg:px-8 overflow-y-auto scrollbar-hide evz-page-scroll ${
+          className={`relative isolate flex-1 flex flex-col w-full mx-auto transition-all duration-300 md:max-w-3xl lg:max-w-5xl md:px-6 lg:px-8 overflow-y-auto scrollbar-hide evz-page-scroll ${
+            isVisible ? "pb-[60px]" : "pb-0"
+          } ${
             isDark ? "bg-transparent" : "bg-transparent"
           }`}
         >

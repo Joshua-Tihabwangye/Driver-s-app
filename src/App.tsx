@@ -11,14 +11,11 @@ import SupervisorQAMode from "./components/SupervisorQAMode";
 import { SCREENS } from "./config/routes";
 import {
   AUTHENTICATED_HOME_ROUTE,
-  AUTH_LANDING_ROUTE,
   AUTH_LOGIN_ROUTE,
   useAuth,
 } from "./context/AuthContext";
 import { useTheme } from "./context/ThemeContext";
 import ForgotPassword from "./screens/ForgotPassword";
-import LandingPage from "./screens/LandingPage";
-import Login from "./screens/Login";
 import OTPVerification from "./screens/OTPVerification";
 
 const AUTH_ROUTES_WITHOUT_SHELL = new Set([
@@ -27,7 +24,6 @@ const AUTH_ROUTES_WITHOUT_SHELL = new Set([
 ]);
 
 const PUBLIC_SCREEN_IDS = new Set([
-  "SuperAppHome",
   "RegisterServices",
   "Registration",
   "DriverRegistration",
@@ -82,13 +78,11 @@ function RequireAuth({ children }: { children: ReactNode }) {
 }
 
 export default function App() {
-  const { isLoggedIn } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const showSupervisorQaMode = !import.meta.env.PROD;
   const appShellScreens = SCREENS.filter(
     (screen) => !AUTH_ROUTES_WITHOUT_SHELL.has(screen.path)
   );
-  const fallbackRoute = isLoggedIn ? AUTHENTICATED_HOME_ROUTE : AUTH_LANDING_ROUTE;
 
   return (
     <div className={`app-root ${isDark ? "dark" : ""}`}>
@@ -108,23 +102,15 @@ export default function App() {
         {/* Auth Flow - No Shell */}
         <Route
           path="/"
-          element={<Navigate to={fallbackRoute} replace />}
+          element={<Navigate to={AUTH_LOGIN_ROUTE} replace />}
         />
         <Route
-          path={AUTH_LANDING_ROUTE}
-          element={
-            <GuestOnlyRoute>
-              <LandingPage />
-            </GuestOnlyRoute>
-          }
+          path="/auth/login"
+          element={<Navigate to={AUTH_LOGIN_ROUTE} replace />}
         />
         <Route
-          path={AUTH_LOGIN_ROUTE}
-          element={
-            <GuestOnlyRoute>
-              <Login />
-            </GuestOnlyRoute>
-          }
+          path="/app/home"
+          element={<Navigate to={AUTH_LOGIN_ROUTE} replace />}
         />
         <Route
           path="/auth/forgot-password"
@@ -164,7 +150,7 @@ export default function App() {
           );
         })}
 
-        <Route path="*" element={<Navigate to={fallbackRoute} replace />} />
+        <Route path="*" element={<Navigate to={AUTH_LOGIN_ROUTE} replace />} />
       </Routes>
     </div>
   );

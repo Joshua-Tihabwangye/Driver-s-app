@@ -131,7 +131,6 @@ import SettingsPrivacy from "../screens/SettingsPrivacy";
 import SettingsDeleteAccount from "../screens/SettingsDeleteAccount";
 import DocumentCenter from "../screens/DocumentCenter";
 import DestinationFilter from "../screens/DestinationFilter";
-import SuperAppHome from "../screens/SuperAppHome";
 
 export interface ScreenConfig {
   id: string;
@@ -143,7 +142,6 @@ export interface ScreenConfig {
 
 export const SCREENS: ScreenConfig[] = [
   // Super app & registration
-  { id: "SuperAppHome", label: "Home (Super App)", path: "/app/home", Component: SuperAppHome },
   { id: "RegisterServices", label: "Register Services", path: "/app/register-services", Component: RegisterServices },
   { id: "Registration", label: "Registration", path: "/auth/register", Component: Registration },
   { id: "DriverRegistration", label: "Registration – EVzone Driver", path: "/driver/register", Component: DriverRegistration },
