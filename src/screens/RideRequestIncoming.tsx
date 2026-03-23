@@ -1,4 +1,4 @@
-import { SAMPLE_IDS } from "../data/constants";
+import { buildAcceptedJobRoute, SAMPLE_IDS } from "../data/constants";
 import {
 Check,
 ChevronLeft,
@@ -8,19 +8,31 @@ MapPin,
 Phone,
 User
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
-import { useSharedTrips } from "../context/SharedTripsContext";
 import { useStore } from "../context/StoreContext";
-import { MOCK_SHARED_TRIPS } from "../data/mockData";
+import type { JobCategory } from "../data/types";
 
 // EVzone Driver App – RideRequestIncoming Driver App – Ride Request Incoming (v2)
 // Full-screen incoming job request with timer, pickup/drop details, accept/decline actions
 // and support for multiple job types: Ride / Delivery / Rental / Shuttle / Tour / Ambulance / Shared.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-const JOB_TYPES = ["ride", "delivery", "rental", "tour", "ambulance", "shuttle", "shared"];
+const JOB_TYPES: JobCategory[] = [
+  "ride",
+  "delivery",
+  "rental",
+  "tour",
+  "ambulance",
+  "shuttle",
+  "shared",
+];
+
+type RequestRouteState = {
+  jobType?: JobCategory;
+  jobId?: string;
+};
 
 
 function JobTypePill({ jobType }) {
@@ -96,12 +108,48 @@ function JobTypePill({ jobType }) {
 
 export default function RideRequestIncoming() {
   const location = useLocation();
+  const routeState = (location.state as RequestRouteState | null) || null;
   const [timeLeft, setTimeLeft] = useState(15);
   // Demo state so you can preview all variants inside the canvas
-  const [jobType, setJobType] = useState(location.state?.jobType || "ride");
+  const [jobType, setJobType] = useState<JobCategory>(routeState?.jobType || "ride");
   const navigate = useNavigate();
-  const { setActiveSharedTrip } = useSharedTrips();
-  const { jobs, acceptDeliveryJob, resetDeliveryWorkflow } = useStore();
+  const {
+    jobs,
+    updateJobStatus,
+    acceptRideJob,
+    acceptDeliveryJob,
+    acceptSharedJob,
+    resetDeliveryWorkflow,
+  } = useStore();
+
+  const requestedJobId = routeState?.jobId;
+
+  useEffect(() => {
+    if (routeState?.jobType) {
+      setJobType(routeState.jobType);
+    }
+  }, [routeState?.jobType]);
+
+  const resolveRequestedJob = useMemo(() => {
+    return (targetType: JobCategory) => {
+      const matchingRequestedJob =
+        requestedJobId &&
+        jobs.find(
+          (job) =>
+            job.id === requestedJobId &&
+            job.jobType === targetType &&
+            (job.status === "pending" || job.status === "attended")
+        );
+
+      if (matchingRequestedJob) {
+        return matchingRequestedJob;
+      }
+
+      return jobs.find(
+        (job) => job.jobType === targetType && job.status === "pending"
+      ) || null;
+    };
+  }, [jobs, requestedJobId]);
 
   useEffect(() => {
     if (timeLeft <= 0) return;
@@ -173,26 +221,54 @@ export default function RideRequestIncoming() {
 
   const handleAccept = () => {
     if (isShuttle) {
-      navigate("/driver/help/shuttle-link");
-    } else if (isAmbulance) {
-      navigate(`/driver/ambulance/job/${SAMPLE_IDS.job}/status`);
-    } else if (jobType === "rental") {
-      navigate(`/driver/rental/job/${SAMPLE_IDS.job}`);
-    } else if (jobType === "tour") {
-      navigate(`/driver/tour/${SAMPLE_IDS.tour}/today`);
-    } else if (jobType === "delivery") {
-      const fallbackDeliveryId = SAMPLE_IDS.job;
-      const nextDeliveryJobId =
-        jobs.find((job) => job.jobType === "delivery" && job.status === "pending")
-          ?.id || fallbackDeliveryId;
-      acceptDeliveryJob(nextDeliveryJobId);
-      navigate("/driver/delivery/orders");
-    } else if (isShared) {
-      setActiveSharedTrip(MOCK_SHARED_TRIPS[0]);
-      navigate(`/driver/trip/${SAMPLE_IDS.ride}/active`);
-    } else {
-      navigate(`/driver/trip/${SAMPLE_IDS.trip}/navigate-to-pickup`);
+      navigate(buildAcceptedJobRoute("shuttle", requestedJobId || ""));
+      return;
     }
+
+    const selectedJob = resolveRequestedJob(jobType);
+    if (!selectedJob) {
+      navigate("/driver/jobs/list");
+      return;
+    }
+
+    if (jobType === "shared") {
+      const nextSharedJobId = selectedJob.id;
+      const accepted = acceptSharedJob(nextSharedJobId);
+      // Shared route canonical target: /driver/trip/${nextSharedJobId}/active
+      if (!accepted) {
+        navigate("/driver/jobs/list");
+        return;
+      }
+      navigate(buildAcceptedJobRoute("shared", nextSharedJobId), {
+        state: {
+          jobType,
+          jobId: nextSharedJobId,
+        },
+      });
+      return;
+    }
+
+    let accepted = false;
+    if (jobType === "ride") {
+      accepted = acceptRideJob(selectedJob.id);
+    } else if (jobType === "delivery") {
+      accepted = acceptDeliveryJob(selectedJob.id);
+    } else {
+      updateJobStatus(selectedJob.id, "attended");
+      accepted = true;
+    }
+
+    if (!accepted) {
+      navigate("/driver/jobs/list");
+      return;
+    }
+
+    navigate(buildAcceptedJobRoute(jobType, selectedJob.id), {
+      state: {
+        jobType,
+        jobId: selectedJob.id,
+      },
+    });
   };
 
   const handleDecline = () => {

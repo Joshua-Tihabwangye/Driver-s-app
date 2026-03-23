@@ -1,4 +1,4 @@
-import { SAMPLE_IDS } from "../data/constants";
+import { buildPrivateTripRoute } from "../data/constants";
 import {
 ChevronLeft,
 MessageCircle,
@@ -7,8 +7,9 @@ ShieldCheck,
 User
 } from "lucide-react";
 import { useRef,useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – RiderVerification Rider Verification Code Entry (v1)
 // Screen for entering a 4-digit rider verification code at pickup.
@@ -19,8 +20,11 @@ const CODE_LENGTH = 4;
 
 export default function RiderVerification() {
   const navigate = useNavigate();
+  const { tripId: routeTripId } = useParams();
+  const { activeTrip, transitionActiveTripStage } = useStore();
   const [code, setCode] = useState(Array(CODE_LENGTH).fill(""));
   const inputsRef = useRef([]);
+  const tripId = routeTripId || activeTrip.tripId;
 
   const handleChange = (index, value) => {
     if (!/^[0-9]?$/.test(value)) return;
@@ -39,6 +43,32 @@ export default function RiderVerification() {
   };
 
   const isComplete = code.every((c) => c !== "");
+
+  const handleVerifyAndContinue = () => {
+    if (!isComplete) {
+      return;
+    }
+
+    if (!tripId) {
+      navigate("/driver/jobs/list");
+      return;
+    }
+
+    if (activeTrip.tripId === tripId && activeTrip.jobType === "ride") {
+      transitionActiveTripStage("rider_verified");
+    }
+
+    navigate(buildPrivateTripRoute("start_drive", tripId));
+  };
+
+  const handleCancel = () => {
+    if (!tripId) {
+      navigate("/driver/jobs/list");
+      return;
+    }
+
+    navigate(buildPrivateTripRoute("cancel_reason", tripId));
+  };
 
   return (
     <div className="flex flex-col h-full ">
@@ -120,6 +150,7 @@ export default function RiderVerification() {
           <div className="flex flex-col space-y-3">
             <button
               disabled={!isComplete}
+              onClick={handleVerifyAndContinue}
               className={`w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest transition-all ${
                 isComplete
                   ? "bg-orange-500 text-white shadow-xl shadow-orange-500/20 hover:scale-[1.02] active:scale-[0.98]"
@@ -128,7 +159,11 @@ export default function RiderVerification() {
             >
               Verify & Start Trip
             </button>
-            <button type="button" onClick={() => navigate(`/driver/trip/${SAMPLE_IDS.trip}/cancel/reason`)} className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest border-2 border-orange-500/10 text-slate-400 hover:bg-white hover:border-orange-500/30 transition-all">
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest border-2 border-orange-500/10 text-slate-400 hover:bg-white hover:border-orange-500/30 transition-all"
+            >
               Cancel Trip
             </button>
           </div>

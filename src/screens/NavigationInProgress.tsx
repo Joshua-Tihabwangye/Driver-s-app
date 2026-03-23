@@ -1,4 +1,4 @@
-import { SAMPLE_IDS } from "../data/constants";
+import { buildPrivateTripRoute, SAMPLE_IDS } from "../data/constants";
 import {
 ChevronLeft,
 Clock,
@@ -6,8 +6,9 @@ Map,
 MapPin,
 Navigation
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – NavigationInProgress Driver App – Navigation in Progress (v1)
 // Navigation view while driving to drop-off or along the route.
@@ -16,6 +17,35 @@ import PageHeader from "../components/PageHeader";
 
 export default function NavigationInProgress() {
   const navigate = useNavigate();
+  const { tripId: routeTripId } = useParams();
+  const { activeTrip, transitionActiveTripStage } = useStore();
+  const tripId = routeTripId || activeTrip.tripId || SAMPLE_IDS.trip;
+
+  const handleArrivedAtPickup = () => {
+    if (
+      activeTrip.tripId === tripId &&
+      activeTrip.jobType === "ride"
+    ) {
+      transitionActiveTripStage("arrived_pickup");
+    }
+
+    navigate(buildPrivateTripRoute("arrived_pickup", tripId));
+  };
+
+  const handleBackToPickup = () => {
+    navigate(buildPrivateTripRoute("navigate_to_pickup", tripId));
+  };
+
+  const handleCancelTrip = () => {
+    if (
+      activeTrip.tripId === tripId &&
+      activeTrip.jobType === "ride"
+    ) {
+      transitionActiveTripStage("cancel_reason");
+    }
+
+    navigate(buildPrivateTripRoute("cancel_reason", tripId));
+  };
 
   return (
     <div className="flex flex-col h-full ">
@@ -83,7 +113,7 @@ export default function NavigationInProgress() {
         <section className="space-y-4">
           <button
             type="button"
-            onClick={() => navigate(`/driver/trip/${SAMPLE_IDS.trip}/en-route-details`)}
+            onClick={handleArrivedAtPickup}
             className="rounded-[2.5rem] border border-slate-100 bg-white shadow-xl shadow-slate-200/50 p-6 flex items-center justify-between w-full text-left active:scale-[0.99] transition-transform"
           >
             <div className="flex flex-col space-y-1">
@@ -106,17 +136,17 @@ export default function NavigationInProgress() {
           <div className="flex space-x-3">
             <button
               type="button"
-              onClick={() => navigate(`/driver/trip/${SAMPLE_IDS.trip}/in-progress`)}
+              onClick={handleBackToPickup}
               className="flex-1 rounded-full py-4 text-[11px] font-black uppercase tracking-widest border border-slate-100 text-slate-400 hover:bg-slate-50 transition-all flex items-center justify-center"
             >
-              Pause
+              Back to Pickup
             </button>
             <button
               type="button"
-              onClick={() => navigate(`/driver/trip/${SAMPLE_IDS.trip}/completed`)}
+              onClick={handleCancelTrip}
               className="flex-[2] rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-slate-900 text-white shadow-xl shadow-slate-900/20 hover:bg-slate-800 transition-all flex items-center justify-center"
             >
-              Terminate Trip
+              Cancel Trip
             </button>
           </div>
 

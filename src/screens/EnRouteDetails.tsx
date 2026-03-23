@@ -1,4 +1,4 @@
-import { SAMPLE_IDS } from "../data/constants";
+import { buildPrivateTripRoute } from "../data/constants";
 import {
   ChevronLeft,
   Clock,
@@ -10,8 +10,9 @@ import {
   Phone
 } from "lucide-react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – EnRouteDetails Driver App – En Route to Pickup (Trip Details & Fare Expanded) (v2)
 // Navigation state with an expanded bottom sheet showing trip details
@@ -69,6 +70,27 @@ function JobTypePill({ jobType }) {
 export default function EnRouteDetails() {
   const navigate = useNavigate();
   const [jobType, setJobType] = useState("ride"); // "ride" | "delivery" | "rental" | "tour" | "ambulance"
+  const { tripId: routeTripId } = useParams();
+  const { activeTrip, transitionActiveTripStage } = useStore();
+  const tripId = routeTripId || activeTrip.tripId;
+
+  const navigateToStage = (stage: "arrived_pickup" | "cancel_reason") => {
+    if (!tripId) {
+      navigate("/driver/jobs/list");
+      return;
+    }
+
+    if (
+      stage === "arrived_pickup" &&
+      activeTrip.tripId === tripId &&
+      activeTrip.jobType === "ride"
+    ) {
+      transitionActiveTripStage("arrived_pickup");
+    }
+
+    const routeStage = stage === "arrived_pickup" ? "arrived_pickup" : "cancel_reason";
+    navigate(buildPrivateTripRoute(routeStage, tripId));
+  };
 
   const isRental = jobType === "rental";
   const isTour = jobType === "tour";
@@ -272,10 +294,18 @@ export default function EnRouteDetails() {
             </div>
 
             <div className="flex space-x-3">
-              <button className="flex-1 rounded-full py-4 text-[11px] font-black uppercase tracking-widest border-2 border-orange-500/10 text-slate-400 hover:bg-white hover:border-orange-500/30 transition-all flex items-center justify-center">
+              <button
+                type="button"
+                onClick={() => navigateToStage("cancel_reason")}
+                className="flex-1 rounded-full py-4 text-[11px] font-black uppercase tracking-widest border-2 border-orange-500/10 text-slate-400 hover:bg-white hover:border-orange-500/30 transition-all flex items-center justify-center"
+              >
                 Cancel
               </button>
-              <button type="button" onClick={() => navigate(`/driver/trip/${SAMPLE_IDS.trip}/arrived`)} className="flex-[2] rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-orange-500 text-white shadow-xl shadow-orange-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center">
+              <button
+                type="button"
+                onClick={() => navigateToStage("arrived_pickup")}
+                className="flex-[2] rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-orange-500 text-white shadow-xl shadow-orange-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center"
+              >
                 Arrived
               </button>
             </div>

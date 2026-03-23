@@ -1,4 +1,4 @@
-import { SAMPLE_IDS } from "../data/constants";
+import { buildPrivateTripRoute } from "../data/constants";
 import {
 ChevronLeft,
 Clock,
@@ -7,8 +7,9 @@ MapPin,
 MessageCircle,
 Phone
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – CancelNoShow Driver App – Cancel Ride (Passenger No-Show Alert) (v1)
 // Confirmation alert before cancelling a ride as passenger no-show.
@@ -17,6 +18,25 @@ import PageHeader from "../components/PageHeader";
 
 export default function CancelNoShow() {
   const navigate = useNavigate();
+  const { tripId: routeTripId } = useParams();
+  const { activeTrip, cancelActiveTrip } = useStore();
+  const tripId = routeTripId || activeTrip.tripId;
+
+  const handleReturnToWaiting = () => {
+    if (!tripId) {
+      navigate("/driver/jobs/list");
+      return;
+    }
+    navigate(buildPrivateTripRoute("waiting_for_passenger", tripId));
+  };
+
+  const handleConfirmAbort = () => {
+    if (tripId && activeTrip.tripId === tripId && activeTrip.jobType === "ride") {
+      cancelActiveTrip("cancel_no_show");
+    }
+    navigate("/driver/dashboard/offline");
+  };
+
   return (
     <div className="flex flex-col h-full ">
       <style>{`
@@ -102,13 +122,14 @@ export default function CancelNoShow() {
           <div className="flex space-x-3 pt-2">
             <button
               type="button"
-              onClick={() => navigate(`/driver/trip/${SAMPLE_IDS.trip}/waiting`)}
+              onClick={handleReturnToWaiting}
               className="flex-1 rounded-full py-4 text-[11px] font-black uppercase tracking-widest border border-slate-100 text-slate-400 hover:bg-slate-100 transition-all"
             >
               Wait
             </button>
             <button
               type="button"
+              onClick={handleConfirmAbort}
               className="flex-[2] rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-red-600 text-white shadow-xl shadow-red-900/20 hover:bg-red-700 transition-all flex items-center justify-center"
             >
                Confirm Abort

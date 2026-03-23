@@ -37,16 +37,97 @@ export const SAMPLE_IDS = {
   tour: "3246",
 };
 
+export type JobDetailRouteBuilder = (jobId: string) => string;
+
+export type PrivateTripStageRoute =
+  | "navigate_to_pickup"
+  | "arrived_pickup"
+  | "waiting_for_passenger"
+  | "rider_verification"
+  | "start_drive"
+  | "in_progress"
+  | "cancel_reason"
+  | "cancel_details"
+  | "cancel_no_show"
+  | "completed"
+  | "navigation";
+
+export type TripStageRouteBuilder = (tripId: string) => string;
+
+export const PRIVATE_TRIP_ROUTE_BUILDERS: Record<
+  PrivateTripStageRoute,
+  TripStageRouteBuilder
+> = {
+  navigate_to_pickup: (tripId) => `/driver/trip/${tripId}/navigate-to-pickup`,
+  arrived_pickup: (tripId) => `/driver/trip/${tripId}/arrived`,
+  waiting_for_passenger: (tripId) => `/driver/trip/${tripId}/waiting`,
+  rider_verification: (tripId) => `/driver/trip/${tripId}/verify-rider`,
+  start_drive: (tripId) => `/driver/trip/${tripId}/start`,
+  in_progress: (tripId) => `/driver/trip/${tripId}/in-progress`,
+  cancel_reason: (tripId) => `/driver/trip/${tripId}/cancel/reason`,
+  cancel_details: (tripId) => `/driver/trip/${tripId}/cancel/details`,
+  cancel_no_show: (tripId) => `/driver/trip/${tripId}/cancel/no-show`,
+  completed: (tripId) => `/driver/trip/${tripId}/completed`,
+  navigation: (tripId) => `/driver/trip/${tripId}/navigation`,
+};
+
+export function buildPrivateTripRoute(
+  stage: PrivateTripStageRoute,
+  tripId: string
+): string {
+  return PRIVATE_TRIP_ROUTE_BUILDERS[stage](tripId);
+}
+
 // ── Route Map for Job Types ──────────────────────────────
+export const JOB_DETAIL_ROUTE_BUILDERS: Record<
+  JobCategory | "default",
+  JobDetailRouteBuilder
+> = {
+  ride: () => "/driver/jobs/incoming",
+  delivery: () => "/driver/jobs/incoming",
+  rental: (jobId) => `/driver/rental/job/${jobId}`,
+  tour: (jobId) => `/driver/tour/${jobId}/today`,
+  ambulance: (jobId) => `/driver/ambulance/job/${jobId}/status`,
+  shuttle: () => "/driver/help/shuttle-link",
+  shared: () => "/driver/jobs/incoming",
+  default: () => "/driver/jobs/incoming",
+};
+
+export function buildJobDetailRoute(jobType: JobCategory, jobId: string): string {
+  const routeBuilder =
+    JOB_DETAIL_ROUTE_BUILDERS[jobType] || JOB_DETAIL_ROUTE_BUILDERS.default;
+  return routeBuilder(jobId);
+}
+
+export const ACCEPTED_JOB_ROUTE_BUILDERS: Record<
+  JobCategory | "default",
+  JobDetailRouteBuilder
+> = {
+  ride: (jobId) => buildPrivateTripRoute("navigate_to_pickup", jobId),
+  delivery: () => "/driver/delivery/orders",
+  rental: (jobId) => `/driver/rental/job/${jobId}`,
+  tour: (jobId) => `/driver/tour/${jobId}/today`,
+  ambulance: (jobId) => `/driver/ambulance/job/${jobId}/status`,
+  shuttle: () => "/driver/help/shuttle-link",
+  shared: (jobId) => `/driver/trip/${jobId}/active`,
+  default: (jobId) => buildPrivateTripRoute("navigate_to_pickup", jobId),
+};
+
+export function buildAcceptedJobRoute(jobType: JobCategory, jobId: string): string {
+  const routeBuilder =
+    ACCEPTED_JOB_ROUTE_BUILDERS[jobType] || ACCEPTED_JOB_ROUTE_BUILDERS.default;
+  return routeBuilder(jobId);
+}
+
 export const JOB_DETAIL_ROUTES: Record<JobCategory | "default", string> = {
-  ride: "/driver/jobs/incoming",
-  delivery: "/driver/jobs/incoming",
-  rental: `/driver/rental/job/${SAMPLE_IDS.job}`,
-  tour: `/driver/tour/${SAMPLE_IDS.tour}/today`,
-  ambulance: `/driver/ambulance/job/${SAMPLE_IDS.job}/status`,
-  shuttle: "/driver/help/shuttle-link",
-  shared: "/driver/jobs/incoming",
-  default: "/driver/jobs/incoming",
+  ride: buildJobDetailRoute("ride", SAMPLE_IDS.trip),
+  delivery: buildJobDetailRoute("delivery", SAMPLE_IDS.job),
+  rental: buildJobDetailRoute("rental", SAMPLE_IDS.job),
+  tour: buildJobDetailRoute("tour", SAMPLE_IDS.tour),
+  ambulance: buildJobDetailRoute("ambulance", SAMPLE_IDS.job),
+  shuttle: buildJobDetailRoute("shuttle", SAMPLE_IDS.job),
+  shared: buildJobDetailRoute("shared", SAMPLE_IDS.ride),
+  default: buildJobDetailRoute("ride", SAMPLE_IDS.trip),
 };
 
 export type JobRouteBuilder = (jobId: string) => string;

@@ -1,12 +1,13 @@
-import { SAMPLE_IDS } from "../data/constants";
+import { buildPrivateTripRoute } from "../data/constants";
 import {
 AlertTriangle,
 ChevronLeft,
 Info
 } from "lucide-react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – CancelDetails Driver – Cancel Ride (Reason with Additional Comment) (v1)
 // Variant of the cancel screen that shows the selected reason summary plus a focused
@@ -18,9 +19,41 @@ const SELECTED_REASON = "Incorrect pickup or drop-off location";
 
 export default function CancelDetails() {
   const navigate = useNavigate();
-  const [notes, setNotes] = useState("");
+  const location = useLocation();
+  const { tripId: routeTripId } = useParams();
+  const { activeTrip, cancelActiveTrip } = useStore();
+  const cancellationState =
+    (location.state as { reason?: string; notes?: string } | null) || null;
+  const [notes, setNotes] = useState(cancellationState?.notes || "");
+  const selectedReason = cancellationState?.reason || SELECTED_REASON;
+  const tripId = routeTripId || activeTrip.tripId;
 
   const canSubmit = notes.trim().length > 0;
+
+  const handleConfirmCancellation = () => {
+    if (!canSubmit) {
+      return;
+    }
+
+    if (tripId && activeTrip.tripId === tripId && activeTrip.jobType === "ride") {
+      cancelActiveTrip("cancel_reason");
+    }
+
+    navigate("/driver/dashboard/offline");
+  };
+
+  const handleGoBack = () => {
+    if (!tripId) {
+      navigate("/driver/jobs/list");
+      return;
+    }
+    navigate(buildPrivateTripRoute("cancel_reason", tripId), {
+      state: {
+        reason: selectedReason,
+        notes,
+      },
+    });
+  };
 
   return (
     <div className="flex flex-col h-full ">
@@ -42,7 +75,7 @@ export default function CancelDetails() {
           <div className="flex items-center space-x-3">
 <div className="flex flex-col">
                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-red-500">Security</span>
-               <p className="text-sm font-black text-slate-900 uppercase tracking-tight leading-tight">{SELECTED_REASON}</p>
+               <p className="text-sm font-black text-slate-900 uppercase tracking-tight leading-tight">{selectedReason}</p>
             </div>
           </div>
           <p className="text-[11px] text-slate-500 font-bold uppercase tracking-tight leading-relaxed">
@@ -82,6 +115,8 @@ export default function CancelDetails() {
           <div className="flex flex-col space-y-3">
              <button
                disabled={!canSubmit}
+               type="button"
+               onClick={handleConfirmCancellation}
                className={`w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest transition-all ${
                  canSubmit
                    ? "bg-red-600 text-white shadow-xl shadow-red-900/20 hover:bg-red-700"
@@ -92,7 +127,7 @@ export default function CancelDetails() {
              </button>
               <button
                 type="button"
-                onClick={() => navigate(`/driver/trip/${SAMPLE_IDS.trip}/cancel/reason`)}
+                onClick={handleGoBack}
                 className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest border-2 border-orange-500/10 bg-cream text-slate-500 hover:border-orange-500/30 transition-all flex items-center justify-center"
               >
                 Go back

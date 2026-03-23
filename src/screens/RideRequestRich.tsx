@@ -1,4 +1,4 @@
-import { SAMPLE_IDS } from "../data/constants";
+import { buildAcceptedJobRoute } from "../data/constants";
 import {
 ChevronLeft,
 Clock,
@@ -8,17 +8,31 @@ Phone,
 User,
 Users
 } from "lucide-react";
-import { useEffect,useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
-import { useSharedTrips } from "../context/SharedTripsContext";
+import { useStore } from "../context/StoreContext";
+import type { JobCategory } from "../data/types";
 
 // EVzone Driver App – RideRequestRich Incoming Ride Request (Rich variant, v2)
 // Map + bottom sheet variant of an incoming job request.
 // Supports multiple job types: Ride / Delivery / Rental / Tour / Ambulance / Shuttle.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-const JOB_TYPES = ["ride", "shared", "delivery", "rental", "tour", "ambulance", "shuttle"];
+const JOB_TYPES: JobCategory[] = [
+  "ride",
+  "shared",
+  "delivery",
+  "rental",
+  "tour",
+  "ambulance",
+  "shuttle",
+];
+
+type RequestRouteState = {
+  jobType?: JobCategory;
+  jobId?: string;
+};
 
 
 function JobTypePill({ jobType }) {
@@ -77,10 +91,47 @@ function JobTypePill({ jobType }) {
 
 export default function RideRequestRich() {
   const navigate = useNavigate();
-  const { setActiveSharedTrip } = useSharedTrips();
+  const location = useLocation();
+  const routeState = (location.state as RequestRouteState | null) || null;
+  const {
+    jobs,
+    updateJobStatus,
+    acceptRideJob,
+    acceptDeliveryJob,
+    acceptSharedJob,
+    resetDeliveryWorkflow,
+  } = useStore();
   const [timeLeft, setTimeLeft] = useState(20);
   // Preview-only job type toggle so you can see all states in the canvas
-  const [jobType, setJobType] = useState("ride");
+  const [jobType, setJobType] = useState<JobCategory>(routeState?.jobType || "ride");
+  const requestedJobId = routeState?.jobId;
+
+  useEffect(() => {
+    if (routeState?.jobType) {
+      setJobType(routeState.jobType);
+    }
+  }, [routeState?.jobType]);
+
+  const resolveRequestedJob = useMemo(() => {
+    return (targetType: JobCategory) => {
+      const matchingRequestedJob =
+        requestedJobId &&
+        jobs.find(
+          (job) =>
+            job.id === requestedJobId &&
+            job.jobType === targetType &&
+            (job.status === "pending" || job.status === "attended")
+        );
+
+      if (matchingRequestedJob) {
+        return matchingRequestedJob;
+      }
+
+      return jobs.find(
+        (job) => job.jobType === targetType && job.status === "pending"
+      ) || null;
+    };
+  }, [jobs, requestedJobId]);
 
   useEffect(() => {
     if (timeLeft <= 0) return;
@@ -151,11 +202,62 @@ export default function RideRequestRich() {
   const primaryCta = isShuttle ? "Open Shuttle Driver App" : "Accept";
 
   const handleAccept = () => {
-    if (isShared) {
-      navigate(`/driver/trip/${SAMPLE_IDS.ride}/active`);
-    } else {
-      navigate(`/driver/trip/${SAMPLE_IDS.trip}/in-progress`);
+    if (isShuttle) {
+      navigate(buildAcceptedJobRoute("shuttle", requestedJobId || ""));
+      return;
     }
+
+    const selectedJob = resolveRequestedJob(jobType);
+    if (!selectedJob) {
+      navigate("/driver/jobs/list");
+      return;
+    }
+
+    if (jobType === "shared") {
+      const nextSharedJobId = selectedJob.id;
+      const accepted = acceptSharedJob(nextSharedJobId);
+      // Shared route canonical target: /driver/trip/${nextSharedJobId}/active
+      if (!accepted) {
+        navigate("/driver/jobs/list");
+        return;
+      }
+      navigate(buildAcceptedJobRoute("shared", nextSharedJobId), {
+        state: {
+          jobType,
+          jobId: nextSharedJobId,
+        },
+      });
+      return;
+    }
+
+    let accepted = false;
+    if (jobType === "ride") {
+      accepted = acceptRideJob(selectedJob.id);
+    } else if (jobType === "delivery") {
+      accepted = acceptDeliveryJob(selectedJob.id);
+    } else {
+      updateJobStatus(selectedJob.id, "attended");
+      accepted = true;
+    }
+
+    if (!accepted) {
+      navigate("/driver/jobs/list");
+      return;
+    }
+
+    navigate(buildAcceptedJobRoute(jobType, selectedJob.id), {
+      state: {
+        jobType,
+        jobId: selectedJob.id,
+      },
+    });
+  };
+
+  const handleDecline = () => {
+    if (jobType === "delivery") {
+      resetDeliveryWorkflow();
+    }
+    navigate("/driver/jobs/list");
   };
 
   return (
@@ -292,7 +394,7 @@ export default function RideRequestRich() {
 
           <div className="flex space-x-4 pt-2 relative z-10">
             {!isShuttle && (
-              <button type="button" onClick={() => navigate("/driver/map/searching")} className="flex-[0.4] rounded-full py-4 text-[11px] font-black uppercase tracking-widest border border-slate-700 text-slate-400 bg-transparent hover:bg-white/5 active:scale-95 transition-all">
+              <button type="button" onClick={handleDecline} className="flex-[0.4] rounded-full py-4 text-[11px] font-black uppercase tracking-widest border border-slate-700 text-slate-400 bg-transparent hover:bg-white/5 active:scale-95 transition-all">
                 Decline
               </button>
             )}

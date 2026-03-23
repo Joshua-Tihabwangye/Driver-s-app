@@ -1,4 +1,4 @@
-import { SAMPLE_IDS } from "../data/constants";
+import { buildPrivateTripRoute } from "../data/constants";
 import {
   ChevronLeft,
   Clock,
@@ -8,8 +8,9 @@ import {
   Phone
 } from "lucide-react";
 import { useEffect,useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – WaitingForPassenger Driver App – Waiting for Passenger (v2)
 // State when the driver is at pickup and waiting, with timer and no-show option.
@@ -36,6 +37,9 @@ export default function WaitingForPassenger() {
   const [waitingSeconds, setWaitingSeconds] = useState(0);
   const [jobType, setJobType] = useState("ride");
   const navigate = useNavigate();
+  const { tripId: routeTripId } = useParams();
+  const { activeTrip } = useStore();
+  const tripId = routeTripId || activeTrip.tripId;
 
   const sanitizePhone = (phone) => (phone || "").replace(/[^\d+]/g, "");
   const handleCall = (phone) => {
@@ -68,6 +72,14 @@ export default function WaitingForPassenger() {
 
   const waitingTime = formatTime(waitingSeconds);
   const canNoShow = waitingSeconds >= 300; // 5 minutes
+
+  const navigateToStage = (stage: "rider_verification" | "cancel_no_show") => {
+    if (!tripId) {
+      navigate("/driver/jobs/list");
+      return;
+    }
+    navigate(buildPrivateTripRoute(stage, tripId));
+  };
 
   // Header title varies slightly by job type
   const headerTitle = isAmbulance
@@ -207,7 +219,14 @@ export default function WaitingForPassenger() {
             <div className="space-y-3">
               <button
                 type="button"
-                onClick={() => navigate(`/driver/trip/${SAMPLE_IDS.trip}/cancel/reason`)}
+                onClick={() => navigateToStage("rider_verification")}
+                className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-orange-500 text-white shadow-xl shadow-orange-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+              >
+                {isAmbulance ? "Continue Protocol" : "Rider Onboard - Verify Code"}
+              </button>
+              <button
+                type="button"
+                onClick={() => navigateToStage("cancel_no_show")}
                 className={`w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest transition-all ${
                   canNoShow
                     ? "bg-white text-red-600 border border-red-200 shadow-lg shadow-red-500/10 hover:bg-red-50"
@@ -217,7 +236,7 @@ export default function WaitingForPassenger() {
               >
                 {canNoShow
                   ? isAmbulance
-                    ? "Mark scene complete"
+                    ? "Mark Scene Complete"
                     : "Cancel as rider no-show"
                   : isAmbulance
                   ? "Scene completion locked"

@@ -1,13 +1,15 @@
-import { createContext, ReactNode, useContext, useState, useCallback, useMemo } from "react";
-import { SharedTrip } from "../data/types";
-import { MOCK_SHARED_TRIPS } from "../data/mockData";
+import { createContext, ReactNode, useContext, useCallback, useMemo } from "react";
+import type { SharedTrip } from "../data/types";
+import { useStore } from "./StoreContext";
 
 interface SharedTripsContextType {
   sharedRidesEnabled: boolean;
   setSharedRidesEnabled: (val: boolean) => void;
   activeSharedTrip: SharedTrip | null;
   setActiveSharedTrip: (trip: SharedTrip | null) => void;
-  
+  acceptSharedJob: (jobId: string) => boolean;
+  hydrateSharedTripById: (jobId: string) => boolean;
+
   // Actions
   arriveAtCurrentStop: () => void;
   markRiderOnboard: (passengerId: string) => void;
@@ -19,228 +21,365 @@ interface SharedTripsContextType {
 
 const SharedTripsContext = createContext<SharedTripsContextType | undefined>(undefined);
 
-export function SharedTripsProvider({ children }: { children: ReactNode }) {
-  // Start with shared rides disabled by default, as requested.
-  const [sharedRidesEnabled, setSharedRidesEnabled] = useState(false);
-  
-  // We'll keep the mock trip in state to allow updates.
-  const [activeSharedTrip, setActiveSharedTrip] = useState<SharedTrip | null>(null);
+function advanceStopIndex(trip: SharedTrip): SharedTrip {
+  const nextStopIndex = trip.stops.findIndex(
+    (stop, index) => index > trip.currentStopIndex && stop.status === "upcoming"
+  );
 
-  const arriveAtCurrentStop = useCallback(() => {
-    setActiveSharedTrip(prev => {
-      if (!prev) return prev;
-      const newStops = [...prev.stops];
-      const currentStop = newStops[prev.currentStopIndex];
-      if (currentStop && currentStop.status === "upcoming") {
-        newStops[prev.currentStopIndex] = {
-          ...currentStop,
-          status: "current",
-          waitTimerStartedAt: currentStop.type === "pickup" ? Date.now() : undefined,
-        };
-      }
-      return { ...prev, stops: newStops };
-    });
-  }, []);
+  if (nextStopIndex === -1) {
+    return {
+      ...trip,
+      chainStatus: "completed",
+      status: "completed",
+      completedAt: Date.now(),
+    };
+  }
 
-  const advanceStopIndex = (trip: SharedTrip) => {
-    // Check if chain is done
-    if (trip.currentStopIndex >= trip.stops.length - 1) {
-      return { ...trip, chainStatus: "completed" as const, status: "completed" as const };
-    }
-    return { ...trip, currentStopIndex: trip.currentStopIndex + 1 };
+  return {
+    ...trip,
+    currentStopIndex: nextStopIndex,
+    status: trip.status === "accepted" ? "in_progress" : trip.status,
+  };
+}
+
+function insertAdditionalMatch(
+  trip: SharedTrip,
+  stamp = Date.now()
+): SharedTrip {
+  if (!trip.allowAdditionalMatches) {
+    return trip;
+  }
+  if (trip.passengers.length >= trip.seatCapacity) {
+    return trip;
+  }
+  if (trip.passengers.some((passenger) => passenger.id.includes("-p-extra-"))) {
+    return trip;
+  }
+
+  const newPassengerId = `${trip.id}-p-extra-${stamp}`;
+  const pickupStopId = `${trip.id}-s-extra-pickup-${stamp}`;
+  const dropoffStopId = `${trip.id}-s-extra-dropoff-${stamp}`;
+
+  const newPassenger = {
+    id: newPassengerId,
+    firstName: "Michael",
+    lastName: "T",
+    displayName: "Michael T.",
+    phone: "+256 700 999 888",
+    rating: 4.95,
+    seatCount: 1,
+    pickupStopId,
+    dropoffStopId,
+    status: "queued" as const,
+    joinedSequence: trip.passengers.length + 1,
+    fareContribution: 4.2,
   };
 
-  const markRiderOnboard = useCallback((passengerId: string) => {
-    setActiveSharedTrip(prev => {
-      if (!prev) return prev;
-      
-      const newPassengers = prev.passengers.map(p => 
-        p.id === passengerId ? { ...p, status: "onboard" as const } : p
-      );
-      
-      const newStops = [...prev.stops];
-      newStops[prev.currentStopIndex] = { ...newStops[prev.currentStopIndex], status: "completed" };
-      
-      let nextTrip = { ...prev, passengers: newPassengers, stops: newStops, occupiedSeats: prev.occupiedSeats + 1 };
-      return advanceStopIndex(nextTrip);
-    });
-  }, []);
+  const pickupStop = {
+    id: pickupStopId,
+    type: "pickup" as const,
+    passengerId: newPassengerId,
+    label: "Pickup Michael T.",
+    address: "Kisementi",
+    eta: "14:15",
+    status: "upcoming" as const,
+    sequenceOrder: trip.stops.length + 1,
+    legDistance: "0.8 km",
+    legDuration: "2 min",
+  };
 
-  const markRiderNoShow = useCallback((passengerId: string) => {
-    setActiveSharedTrip(prev => {
-      if (!prev) return prev;
+  const dropoffStop = {
+    id: dropoffStopId,
+    type: "dropoff" as const,
+    passengerId: newPassengerId,
+    label: "Drop-off Michael T.",
+    address: "Ntinda",
+    eta: "14:45",
+    status: "upcoming" as const,
+    sequenceOrder: trip.stops.length + 2,
+    legDistance: "4.1 km",
+    legDuration: "12 min",
+  };
 
-      const newPassengers = prev.passengers.map(p => 
-        p.id === passengerId ? { ...p, status: "no_show" as const } : p
-      );
-      
-      // Mark current stop as skipped
-      const newStops = [...prev.stops];
-      newStops[prev.currentStopIndex] = { ...newStops[prev.currentStopIndex], status: "skipped" };
-      
-      // Also remove their drop-off stop
-      const filteredStops = newStops.filter(s => !(s.passengerId === passengerId && s.type === "dropoff"));
-      
-      let nextTrip = { ...prev, passengers: newPassengers, stops: filteredStops };
-      
-      // Re-adjust index if necessary (wait, if we just removed a future stop, current index just advances by 1 normally relative to the current one which is now skipped)
-      // Actually wait, advanceStopIndex just does +1. But we might have removed a stop ahead of us. 
-      // The current stop is still at currentStopIndex (it wasn't removed since it's the pickup).
-      // Oh wait, if we are at stopIndex, the current is skipped. Let's just advance index.
-      const currentStopBeingSkipped = newStops[prev.currentStopIndex];
-      const remainingStops = newStops.filter(s => {
-          if (s.id === currentStopBeingSkipped.id) return true; // keep the skipped one for history
-          if (s.passengerId === passengerId && s.type === "dropoff") return false;
-          return true;
-      });
+  const nextStops = trip.stops.map((stop) => ({ ...stop }));
+  nextStops.splice(trip.currentStopIndex + 1, 0, pickupStop);
+  nextStops.push(dropoffStop);
+  const sequencedStops = nextStops.map((stop, index) => ({
+    ...stop,
+    sequenceOrder: index + 1,
+  }));
 
-      nextTrip.stops = remainingStops;
-      
-      // add no show fee
-      const newEarnings = [...nextTrip.earningsBreakdown, {
-        id: "eb-ns-" + Date.now(),
-        type: "no_show_fee" as const,
-        passengerId,
-        title: "No-Show Fee",
-        amount: 3.00,
-        status: "earned" as const
-      }];
-      nextTrip.earningsBreakdown = newEarnings;
-      nextTrip.estimatedTotalEarnings += 3.00;
-
-      return advanceStopIndex(nextTrip);
-    });
-  }, []);
-
-  const markRiderDroppedOff = useCallback((passengerId: string) => {
-    setActiveSharedTrip(prev => {
-      if (!prev) return prev;
-      
-      const newPassengers = prev.passengers.map(p => 
-        p.id === passengerId ? { ...p, status: "dropped_off" as const } : p
-      );
-      
-      const newStops = [...prev.stops];
-      newStops[prev.currentStopIndex] = { ...newStops[prev.currentStopIndex], status: "completed" };
-      
-      let nextTrip = { ...prev, passengers: newPassengers, stops: newStops, occupiedSeats: Math.max(0, prev.occupiedSeats - 1) };
-      
-      // Mark passenger fare as earned
-      const newEarnings = nextTrip.earningsBreakdown.map(e => 
-        e.passengerId === passengerId ? { ...e, status: "earned" as const } : e
-      );
-      nextTrip.earningsBreakdown = newEarnings;
-
-      return advanceStopIndex(nextTrip);
-    });
-  }, []);
-
-  const toggleAllowMatches = useCallback(() => {
-    setActiveSharedTrip(prev => {
-      if (!prev) return prev;
-      return { ...prev, allowAdditionalMatches: !prev.allowAdditionalMatches };
-    });
-  }, []);
-
-  const simulateNewMatch = useCallback(() => {
-    setActiveSharedTrip(prev => {
-      if (!prev) return prev;
-      if (!prev.allowAdditionalMatches) return prev;
-      
-      const newPassengerId = "p-2-" + Date.now();
-      const newPassenger = {
-        id: newPassengerId,
-        firstName: "Michael",
-        lastName: "T",
-        displayName: "Michael T.",
-        phone: "+256 700 999 888",
-        rating: 4.95,
-        seatCount: 1,
-        pickupStopId: "s-3",
-        dropoffStopId: "s-4",
-        status: "queued" as const,
-        joinedSequence: prev.passengers.length + 1,
-        fareContribution: 4.20,
-      };
-
-      const newPickupStop = {
-        id: "s-3",
-        type: "pickup" as const,
-        passengerId: newPassengerId,
-        label: "Pickup Michael T.",
-        address: "Kisementi",
-        eta: "14:15",
-        status: "upcoming" as const,
-        sequenceOrder: prev.stops.length + 1,
-        legDistance: "0.8 km",
-        legDuration: "2 min",
-      };
-
-      const newDropoffStop = {
-        id: "s-4",
-        type: "dropoff" as const,
-        passengerId: newPassengerId,
-        label: "Drop-off Michael T.",
-        address: "Ntinda",
-        eta: "14:45",
-        status: "upcoming" as const,
-        sequenceOrder: prev.stops.length + 2,
-        legDistance: "4.1 km",
-        legDuration: "12 min",
-      };
-
-      // We need to inject these into the stops array.
-      // For simplicity, we inject the pickup right after the current stop, and dropoff at the end.
-      const currentStops = [...prev.stops];
-      currentStops.splice(prev.currentStopIndex + 1, 0, newPickupStop);
-      currentStops.push(newDropoffStop);
-
-      // Re-sequence
-      currentStops.forEach((stop, i) => {
-        stop.sequenceOrder = i + 1;
-      });
-
-      const newEarnings = [...prev.earningsBreakdown, {
-        id: "eb-" + newPassengerId,
+  return {
+    ...trip,
+    passengers: [...trip.passengers, newPassenger],
+    stops: sequencedStops,
+    earningsBreakdown: [
+      ...trip.earningsBreakdown,
+      {
+        id: `eb-${newPassengerId}`,
         type: "added_pickup" as const,
         passengerId: newPassengerId,
         title: "Added Pickup (Michael T.)",
-        amount: 4.20,
-        status: "pending" as const
-      }];
+        amount: 4.2,
+        status: "pending" as const,
+      },
+    ],
+    estimatedTotalEarnings: trip.estimatedTotalEarnings + 4.2,
+    allowAdditionalMatches: false,
+  };
+}
+
+export function SharedTripsProvider({ children }: { children: ReactNode }) {
+  const {
+    sharedRidesEnabled,
+    setSharedRidesEnabled,
+    activeTrip,
+    activeSharedTrip,
+    setActiveSharedTrip,
+    updateActiveSharedTrip,
+    acceptSharedJob,
+  } = useStore();
+
+  const hydrateSharedTripById = useCallback(
+    (jobId: string) => {
+      if (!jobId) {
+        return false;
+      }
+      if (activeSharedTrip?.id === jobId) {
+        return true;
+      }
+      return acceptSharedJob(jobId);
+    },
+    [acceptSharedJob, activeSharedTrip?.id]
+  );
+
+  const canMutateSharedChain = useCallback(
+    (trip: SharedTrip) =>
+      activeTrip.tripId === trip.id &&
+      activeTrip.jobType === "shared" &&
+      activeTrip.status !== "completed" &&
+      activeTrip.status !== "cancelled",
+    [activeTrip]
+  );
+
+  const arriveAtCurrentStop = useCallback(() => {
+    updateActiveSharedTrip((prev) => {
+      if (!canMutateSharedChain(prev)) {
+        return prev;
+      }
+      const nextStops = [...prev.stops];
+      const currentStop = nextStops[prev.currentStopIndex];
+
+      if (!currentStop || currentStop.status !== "upcoming") {
+        return prev;
+      }
+
+      nextStops[prev.currentStopIndex] = {
+        ...currentStop,
+        status: "current",
+        waitTimerStartedAt: currentStop.type === "pickup" ? Date.now() : undefined,
+      };
 
       return {
         ...prev,
-        passengers: [...prev.passengers, newPassenger],
-        stops: currentStops,
-        earningsBreakdown: newEarnings,
-        estimatedTotalEarnings: prev.estimatedTotalEarnings + 4.20,
-        allowAdditionalMatches: false // Only allow one simulation for the demo
+        status: prev.status === "accepted" ? "in_progress" : prev.status,
+        stops: nextStops,
       };
     });
-  }, []);
+  }, [updateActiveSharedTrip, canMutateSharedChain]);
 
-  const value = useMemo(() => ({
-    sharedRidesEnabled,
-    setSharedRidesEnabled,
-    activeSharedTrip,
-    setActiveSharedTrip,
-    arriveAtCurrentStop,
-    markRiderOnboard,
-    markRiderNoShow,
-    markRiderDroppedOff,
-    simulateNewMatch,
-    toggleAllowMatches
-  }), [
-    sharedRidesEnabled, 
-    activeSharedTrip, 
-    arriveAtCurrentStop, 
-    markRiderOnboard, 
-    markRiderNoShow, 
-    markRiderDroppedOff, 
-    simulateNewMatch,
-    toggleAllowMatches
-  ]);
+  const markRiderOnboard = useCallback(
+    (passengerId: string) => {
+      updateActiveSharedTrip((prev) => {
+        if (!canMutateSharedChain(prev)) {
+          return prev;
+        }
+        const nextPassengers = prev.passengers.map((passenger) =>
+          passenger.id === passengerId
+            ? { ...passenger, status: "onboard" as const }
+            : passenger
+        );
+
+        const nextStops = [...prev.stops];
+        nextStops[prev.currentStopIndex] = {
+          ...nextStops[prev.currentStopIndex],
+          status: "completed",
+        };
+
+        const nextTrip: SharedTrip = {
+          ...prev,
+          passengers: nextPassengers,
+          stops: nextStops,
+          occupiedSeats: prev.occupiedSeats + 1,
+        };
+
+        const advancedTrip = advanceStopIndex(nextTrip);
+        if (advancedTrip.chainStatus === "completed") {
+          return advancedTrip;
+        }
+
+        // Match insertion is explicitly triggered by pickup confirmation events
+        // while taking-matches mode is enabled.
+        if (!advancedTrip.allowAdditionalMatches) {
+          return advancedTrip;
+        }
+        return insertAdditionalMatch(advancedTrip);
+      });
+    },
+    [updateActiveSharedTrip, canMutateSharedChain]
+  );
+
+  const markRiderNoShow = useCallback(
+    (passengerId: string) => {
+      updateActiveSharedTrip((prev) => {
+        if (!canMutateSharedChain(prev)) {
+          return prev;
+        }
+        const currentIndex = prev.currentStopIndex;
+        const currentStopId = prev.stops[currentIndex]?.id;
+
+        const nextPassengers = prev.passengers.map((passenger) =>
+          passenger.id === passengerId
+            ? { ...passenger, status: "no_show" as const }
+            : passenger
+        );
+
+        const skippedStops = prev.stops.map((stop, index) => {
+          if (index !== currentIndex) {
+            return stop;
+          }
+
+          return {
+            ...stop,
+            status: "skipped" as const,
+          };
+        });
+
+        const nextStops = skippedStops
+          .filter((stop) => {
+            if (stop.id === currentStopId) {
+              return true;
+            }
+
+            return !(stop.passengerId === passengerId && stop.type === "dropoff");
+          })
+          .map((stop, index) => ({
+            ...stop,
+            sequenceOrder: index + 1,
+          }));
+
+        const noShowFee = {
+          id: `eb-ns-${Date.now()}`,
+          type: "no_show_fee" as const,
+          passengerId,
+          title: "No-Show Fee",
+          amount: 3,
+          status: "earned" as const,
+        };
+
+        const nextTrip: SharedTrip = {
+          ...prev,
+          passengers: nextPassengers,
+          stops: nextStops,
+          earningsBreakdown: [...prev.earningsBreakdown, noShowFee],
+          estimatedTotalEarnings: prev.estimatedTotalEarnings + noShowFee.amount,
+        };
+
+        return advanceStopIndex(nextTrip);
+      });
+    },
+    [updateActiveSharedTrip, canMutateSharedChain]
+  );
+
+  const markRiderDroppedOff = useCallback(
+    (passengerId: string) => {
+      updateActiveSharedTrip((prev) => {
+        if (!canMutateSharedChain(prev)) {
+          return prev;
+        }
+        const nextPassengers = prev.passengers.map((passenger) =>
+          passenger.id === passengerId
+            ? { ...passenger, status: "dropped_off" as const }
+            : passenger
+        );
+
+        const nextStops = [...prev.stops];
+        nextStops[prev.currentStopIndex] = {
+          ...nextStops[prev.currentStopIndex],
+          status: "completed",
+        };
+
+        const nextEarnings = prev.earningsBreakdown.map((entry) =>
+          entry.passengerId === passengerId
+            ? { ...entry, status: "earned" as const }
+            : entry
+        );
+
+        const nextTrip: SharedTrip = {
+          ...prev,
+          passengers: nextPassengers,
+          stops: nextStops,
+          occupiedSeats: Math.max(0, prev.occupiedSeats - 1),
+          earningsBreakdown: nextEarnings,
+        };
+
+        return advanceStopIndex(nextTrip);
+      });
+    },
+    [updateActiveSharedTrip, canMutateSharedChain]
+  );
+
+  const toggleAllowMatches = useCallback(() => {
+    updateActiveSharedTrip((prev) => {
+      if (!canMutateSharedChain(prev)) {
+        return prev;
+      }
+      return {
+        ...prev,
+        allowAdditionalMatches: !prev.allowAdditionalMatches,
+      };
+    });
+  }, [updateActiveSharedTrip, canMutateSharedChain]);
+
+  const simulateNewMatch = useCallback(() => {
+    updateActiveSharedTrip((prev) => {
+      if (!canMutateSharedChain(prev)) {
+        return prev;
+      }
+      return insertAdditionalMatch(prev);
+    });
+  }, [updateActiveSharedTrip, canMutateSharedChain]);
+
+  const value = useMemo(
+    () => ({
+      sharedRidesEnabled,
+      setSharedRidesEnabled,
+      activeSharedTrip,
+      setActiveSharedTrip,
+      acceptSharedJob,
+      hydrateSharedTripById,
+      arriveAtCurrentStop,
+      markRiderOnboard,
+      markRiderNoShow,
+      markRiderDroppedOff,
+      simulateNewMatch,
+      toggleAllowMatches,
+    }),
+    [
+      sharedRidesEnabled,
+      setSharedRidesEnabled,
+      activeSharedTrip,
+      setActiveSharedTrip,
+      acceptSharedJob,
+      hydrateSharedTripById,
+      arriveAtCurrentStop,
+      markRiderOnboard,
+      markRiderNoShow,
+      markRiderDroppedOff,
+      simulateNewMatch,
+      toggleAllowMatches,
+    ]
+  );
 
   return <SharedTripsContext.Provider value={value}>{children}</SharedTripsContext.Provider>;
 }

@@ -1,12 +1,13 @@
-import { SAMPLE_IDS } from "../data/constants";
+import { buildPrivateTripRoute } from "../data/constants";
 import {
 AlertTriangle,
 ChevronLeft,
 Info
 } from "lucide-react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – CancelReason Driver – Cancel Ride Reason Screen (v1)
 // Screen for selecting a reason when cancelling a ride (non no-show cases as well).
@@ -27,8 +28,67 @@ export default function CancelReason() {
   const [selectedReason, setSelectedReason] = useState("");
   const [notes, setNotes] = useState("");
   const navigate = useNavigate();
+  const { tripId: routeTripId } = useParams();
+  const { activeTrip, transitionActiveTripStage } = useStore();
+  const tripId = routeTripId || activeTrip.tripId;
 
   const canSubmit = Boolean(selectedReason);
+
+  const resolveResumeStage = () => {
+    if (!tripId || activeTrip.tripId !== tripId) {
+      return "navigate_to_pickup";
+    }
+
+    if (activeTrip.stage === "arrived_pickup") {
+      return "arrived_pickup";
+    }
+    if (activeTrip.stage === "waiting_for_passenger") {
+      return "waiting_for_passenger";
+    }
+    if (activeTrip.stage === "rider_verified") {
+      return "start_drive";
+    }
+    if (activeTrip.stage === "start_drive") {
+      return "start_drive";
+    }
+    if (activeTrip.stage === "in_progress") {
+      return "in_progress";
+    }
+
+    return "navigate_to_pickup";
+  };
+
+  const handleConfirm = () => {
+    if (!canSubmit) {
+      return;
+    }
+
+    if (!tripId) {
+      navigate("/driver/jobs/list");
+      return;
+    }
+
+    if (activeTrip.tripId === tripId && activeTrip.jobType === "ride") {
+      transitionActiveTripStage("cancel_reason");
+    }
+
+    navigate(buildPrivateTripRoute("cancel_details", tripId), {
+      state: {
+        reason: selectedReason,
+        notes,
+      },
+    });
+  };
+
+  const handleKeepRide = () => {
+    if (!tripId) {
+      navigate("/driver/jobs/list");
+      return;
+    }
+
+    const resumeStage = resolveResumeStage();
+    navigate(buildPrivateTripRoute(resumeStage, tripId));
+  };
 
   return (
     <div className="flex flex-col h-full ">
@@ -101,7 +161,7 @@ export default function CancelReason() {
              <button
                disabled={!canSubmit}
                type="button"
-               onClick={() => navigate("/driver/dashboard/offline")}
+               onClick={handleConfirm}
                className={`w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest transition-all ${
                  canSubmit
                    ? "bg-red-600 text-white shadow-xl shadow-red-900/20 hover:bg-red-700"
@@ -112,7 +172,7 @@ export default function CancelReason() {
              </button>
               <button
                 type="button"
-                onClick={() => navigate(`/driver/trip/${SAMPLE_IDS.trip}/navigation`)}
+                onClick={handleKeepRide}
                 className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest border-2 border-orange-500/10 bg-cream text-slate-500 hover:border-orange-500/30 transition-all"
               >
                 Keep Ride

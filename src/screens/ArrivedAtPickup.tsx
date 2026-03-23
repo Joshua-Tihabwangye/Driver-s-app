@@ -1,4 +1,4 @@
-import { SAMPLE_IDS } from "../data/constants";
+import { buildPrivateTripRoute } from "../data/constants";
 import {
 ChevronLeft,
 Clock,
@@ -8,8 +8,9 @@ MessageCircle,
 Phone
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – ArrivedAtPickup Driver App – Arrived at Pickup Point (v2)
 // State after the driver marks "I've arrived" at the pickup location, with
@@ -42,6 +43,29 @@ export default function ArrivedAtPickup() {
   const [jobType, setJobType] = useState("ride");
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const navigate = useNavigate();
+  const { tripId: routeTripId } = useParams();
+  const { activeTrip, transitionActiveTripStage } = useStore();
+  const tripId = routeTripId || activeTrip.tripId;
+
+  const navigateToStage = (
+    stage: "cancel_reason" | "waiting_for_passenger",
+    transitionStage?: "waiting_for_passenger"
+  ) => {
+    if (!tripId) {
+      navigate("/driver/jobs/list");
+      return;
+    }
+
+    if (
+      transitionStage &&
+      activeTrip.tripId === tripId &&
+      activeTrip.jobType === "ride"
+    ) {
+      transitionActiveTripStage(transitionStage);
+    }
+
+    navigate(buildPrivateTripRoute(stage, tripId));
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -211,17 +235,19 @@ export default function ArrivedAtPickup() {
             <div className="flex space-x-3">
               <button
                 type="button"
-                onClick={() => navigate(`/driver/trip/${SAMPLE_IDS.trip}/cancel/reason`)}
+                onClick={() => navigateToStage("cancel_reason")}
                 className="flex-1 rounded-full py-4 text-[11px] font-black uppercase tracking-widest border-2 border-orange-500/10 text-slate-400 hover:bg-white hover:border-orange-500/30 transition-all flex items-center justify-center"
               >
                 Cancel
               </button>
               <button
                 type="button"
-                onClick={() => navigate(`/driver/trip/${SAMPLE_IDS.trip}/in-progress`)}
+                onClick={() =>
+                  navigateToStage("waiting_for_passenger", "waiting_for_passenger")
+                }
                 className="flex-[2] rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-orange-500 text-white shadow-xl shadow-orange-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center"
               >
-                Start Trip
+                Continue
               </button>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { SAMPLE_IDS } from "../data/constants";
+import { buildPrivateTripRoute } from "../data/constants";
 import {
 ChevronLeft,
 Clock,
@@ -9,8 +9,9 @@ Navigation,
 ShieldCheck
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – RideInProgress Driver App – Ride in Progress (v2)
 // Main in-trip screen while driving with rider on board, now job-type aware for:
@@ -29,6 +30,9 @@ export default function RideInProgress() {
   const navigate = useNavigate();
   const [jobType, setJobType] = useState("ride");
   const [tripState, setTripState] = useState<"active" | "reached">("active");
+  const { tripId: routeTripId } = useParams();
+  const { activeTrip, completeActiveTrip } = useStore();
+  const tripId = routeTripId || activeTrip.tripId;
 
   useEffect(() => {
     if (tripState === "active") {
@@ -85,6 +89,24 @@ export default function RideInProgress() {
     rightLine1 = "Time in trip: 04:02";
     rightLine2 = "Arrived at location";
   }
+
+  const handleEndTrip = () => {
+    if (!tripId) {
+      navigate("/driver/jobs/list");
+      return;
+    }
+
+    if (activeTrip.tripId === tripId && activeTrip.jobType === "ride") {
+      completeActiveTrip();
+    }
+
+    navigate(buildPrivateTripRoute("completed", tripId), {
+      state: {
+        jobType,
+        tripId,
+      },
+    });
+  };
 
   return (
     <div className="flex flex-col h-full ">
@@ -218,7 +240,7 @@ export default function RideInProgress() {
           {tripState === "reached" ? (
             <button
                type="button"
-               onClick={() => navigate(`/driver/trip/${SAMPLE_IDS.trip}/completed`)}
+               onClick={handleEndTrip}
                className="w-full rounded-[2rem] bg-orange-500 py-4 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-orange-500/20 active:scale-95 transition-transform"
             >
                End Trip

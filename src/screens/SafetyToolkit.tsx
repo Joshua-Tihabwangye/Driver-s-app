@@ -10,6 +10,7 @@ ShieldCheck
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useJobs } from "../context/JobsContext";
+import { useStore } from "../context/StoreContext";
 import { resolveSafetyRideId } from "../utils/rideIdResolver";
 
 // EVzone Driver App – SafetyToolkit Driver – Safety Toolkit Screen (v2)
@@ -23,7 +24,12 @@ import { resolveSafetyRideId } from "../utils/rideIdResolver";
 export default function SafetyToolkit() {
   const navigate = useNavigate();
   const { allJobs } = useJobs();
-  const shareRideId = resolveSafetyRideId(allJobs);
+  const { activeSharedTrip, activeTrip } = useStore();
+  const shareRideId = resolveSafetyRideId(
+    allJobs,
+    activeTrip.tripId,
+    activeSharedTrip?.id
+  );
 
 
   return (

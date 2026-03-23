@@ -16,6 +16,13 @@ import type { JobCategory } from "../data/types";
 
 function TripRow({ trip, onClick }: any) {
   const { from, to, amount, jobType, date, time } = trip;
+  const parsedAmount =
+    typeof amount === "number" ? amount : Number.parseFloat(String(amount));
+  const amountLabel = Number.isFinite(parsedAmount)
+    ? `$${parsedAmount.toFixed(2)}`
+    : amount !== "—"
+    ? `$${amount}`
+    : "—";
   return (
     <button
       type="button"
@@ -39,7 +46,7 @@ function TripRow({ trip, onClick }: any) {
       </div>
       <div className="flex flex-col items-end space-y-2">
         <span className="text-[15px] font-medium text-slate-900 dark:text-white">
-          {amount !== "—" ? `$${amount}` : "—"}
+          {amountLabel}
         </span>
         {jobType === "shared" && (
           <span className="bg-orange-500/10 text-orange-600 border border-orange-500/20 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md mt-1 shadow-sm">Shared Ride</span>

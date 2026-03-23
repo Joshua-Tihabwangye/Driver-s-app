@@ -14,7 +14,7 @@ Plane,
 ShoppingCart,
 Truck
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 
@@ -85,6 +85,7 @@ export default function DriverPreferences() {
   const location = useLocation();
   const { sharedRidesEnabled, setSharedRidesEnabled } = useSharedTrips();
   const { driverRoleConfig, assignableJobTypes, enableDualMode } = useStore();
+  const isRideCapable = assignableJobTypes.includes("ride");
   const ROLE_LABELS = {
     "ride-only": "Rider-only",
     "delivery-only": "Delivery-only",
@@ -127,11 +128,27 @@ export default function DriverPreferences() {
   // Toggleable state for requirements
   const [requirements, setRequirements] = useState([
     { id: "shopping", icon: ShoppingCart, label: "Shopping & Errands", color: "#f97316", active: true },
-    { id: "shared", icon: Bus, label: "Ride sharing", color: "#f77f00", active: sharedRidesEnabled },
+    { id: "shared", icon: Bus, label: "Ride sharing", color: "#f77f00", active: sharedRidesEnabled && isRideCapable },
     { id: "long", icon: Clock, label: "Long Distance", color: "#2196F3", active: false },
     { id: "partner", icon: ShoppingCart, label: "Shopping Partner", color: "#f97316", active: true },
     { id: "surge", icon: Car, label: "Surge", color: "#ef4444", active: false },
   ]);
+
+  useEffect(() => {
+    if (!isRideCapable && sharedRidesEnabled) {
+      setSharedRidesEnabled(false);
+    }
+  }, [isRideCapable, sharedRidesEnabled, setSharedRidesEnabled]);
+
+  useEffect(() => {
+    setRequirements((prev) =>
+      prev.map((requirement) =>
+        requirement.id === "shared"
+          ? { ...requirement, active: sharedRidesEnabled && isRideCapable }
+          : requirement
+      )
+    );
+  }, [sharedRidesEnabled, isRideCapable]);
 
   const toggleArea = (index) => {
     setAreas((prev) => prev.map((a, i) => (i === index ? { ...a, active: !a.active } : a)));
@@ -146,7 +163,9 @@ export default function DriverPreferences() {
        if (i === index) {
           const toggled = !r.active;
           if (r.id === "shared") {
-             setSharedRidesEnabled(toggled);
+             const nextSharedState = toggled && isRideCapable;
+             setSharedRidesEnabled(nextSharedState);
+             return { ...r, active: nextSharedState };
           }
           return { ...r, active: toggled };
        }

@@ -8,6 +8,8 @@ X
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useSharedTrips } from "../context/SharedTripsContext";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – RideSharingNotification Driver App – Ride Sharing Notification Popup (v1)
 // Map view with a popup explaining ride sharing / pooled rides and offering opt-in.
@@ -16,6 +18,21 @@ import PageHeader from "../components/PageHeader";
 
 export default function RideSharingNotification() {
   const navigate = useNavigate();
+  const { setSharedRidesEnabled } = useSharedTrips();
+  const { canAcceptJobType } = useStore();
+
+  const handleEnable = () => {
+    setSharedRidesEnabled(true);
+
+    if (!canAcceptJobType("ride")) {
+      navigate("/driver/preferences", {
+        state: { returnTo: "/driver/map/online/variant" },
+      });
+      return;
+    }
+
+    navigate("/driver/map/online/variant");
+  };
 
   return (
     <div className="flex flex-col h-full ">
@@ -97,7 +114,7 @@ export default function RideSharingNotification() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => navigate("/driver/map/online/variant")}
+                    onClick={handleEnable}
                     className="flex-1 rounded-full bg-orange-500 py-3 text-[10px] font-black uppercase tracking-widest text-white shadow-xl shadow-orange-500/20 active:scale-95 transition-all"
                   >
                     Enable

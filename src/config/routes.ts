@@ -55,10 +55,8 @@ import RideRequestIncoming from "../screens/RideRequestIncoming";
 import RideRequestRich from "../screens/RideRequestRich";
 import RideRequestsList from "../screens/RideRequestsList";
 import RideRequestsPrompt from "../screens/RideRequestsPrompt";
-import ActiveRideWithAdditional from "../screens/ActiveRideWithAdditional";
 import NavigateToPickup from "../screens/NavigateToPickup";
 import NavigationInProgress from "../screens/NavigationInProgress";
-import EnRouteDetails from "../screens/EnRouteDetails";
 import ArrivedAtPickup from "../screens/ArrivedAtPickup";
 import WaitingForPassenger from "../screens/WaitingForPassenger";
 import CancelNoShow from "../screens/CancelNoShow";
@@ -133,7 +131,6 @@ import SettingsPrivacy from "../screens/SettingsPrivacy";
 import SettingsDeleteAccount from "../screens/SettingsDeleteAccount";
 import DocumentCenter from "../screens/DocumentCenter";
 import DestinationFilter from "../screens/DestinationFilter";
-import TripDetails from "../screens/TripDetails";
 import SuperAppHome from "../screens/SuperAppHome";
 
 export interface ScreenConfig {
@@ -197,11 +194,9 @@ export const SCREENS: ScreenConfig[] = [
   { id: "RideRequestRich", label: "Incoming Ride Request (Rich)", path: "/driver/jobs/incoming/rich", Component: RideRequestRich },
   { id: "RideRequestsList", label: "Ride Requests List", path: "/driver/jobs/list", Component: RideRequestsList },
   { id: "RideRequestsPrompt", label: "Ride Requests Prompt", path: "/driver/jobs/prompt", Component: RideRequestsPrompt },
-  { id: "ActiveRideWithAdditional", label: "Active Ride with Additional Requests", path: "/driver/jobs/active-with-additional", Component: ActiveRideWithAdditional },
   // Navigation & trip
   { id: "NavigateToPickup", label: "Navigate to Pick-Up Location", path: "/driver/trip/:tripId/navigate-to-pickup", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/navigate-to-pickup`, Component: NavigateToPickup },
   { id: "NavigationInProgress", label: "Navigation in Progress", path: "/driver/trip/:tripId/navigation", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/navigation`, Component: NavigationInProgress },
-  { id: "EnRouteDetails", label: "En Route to Pickup – Details", path: "/driver/trip/:tripId/en-route-details", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/en-route-details`, Component: EnRouteDetails },
   { id: "ArrivedAtPickup", label: "Arrived at Pickup Point", path: "/driver/trip/:tripId/arrived", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/arrived`, Component: ArrivedAtPickup },
   { id: "WaitingForPassenger", label: "Waiting for Passenger", path: "/driver/trip/:tripId/waiting", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/waiting`, Component: WaitingForPassenger },
   { id: "CancelNoShow", label: "Cancel Ride – Passenger No-Show", path: "/driver/trip/:tripId/cancel/no-show", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/cancel/no-show`, Component: CancelNoShow },
@@ -289,7 +284,6 @@ export const SCREENS: ScreenConfig[] = [
   { id: "SettingsDelete", label: "Settings – Delete Account", path: "/driver/settings/delete-account", Component: SettingsDeleteAccount },
   { id: "Documents", label: "Document Center", path: "/driver/documents", Component: DocumentCenter },
   { id: "DestinationFilter", label: "Destination Filter", path: "/driver/navigation/destination", Component: DestinationFilter },
-  { id: "TripDetails", label: "Trip Details", path: "/driver/trip/:tripId/details", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/details`, Component: TripDetails },
 ];
 
 /**

@@ -1,4 +1,4 @@
-import { SAMPLE_IDS } from "../data/constants";
+import { buildPrivateTripRoute } from "../data/constants";
 import {
 ChevronLeft,
 Clock,
@@ -8,8 +8,9 @@ ShieldCheck,
 User
 } from "lucide-react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – StartDrive Driver App – Start Drive (v2)
 // Screen shown just before starting the trip, after rider verification.
@@ -27,6 +28,31 @@ const JOB_TYPES = ["ride", "delivery", "rental", "tour", "ambulance"];
 export default function StartDrive() {
   const navigate = useNavigate();
   const [jobType, setJobType] = useState("ride"); // ride | delivery | rental | tour | ambulance
+  const { tripId: routeTripId } = useParams();
+  const { activeTrip, transitionActiveTripStage } = useStore();
+  const tripId = routeTripId || activeTrip.tripId;
+
+  const handleStart = () => {
+    if (!tripId) {
+      navigate("/driver/jobs/list");
+      return;
+    }
+
+    if (activeTrip.tripId === tripId && activeTrip.jobType === "ride") {
+      transitionActiveTripStage("in_progress");
+    }
+
+    navigate(buildPrivateTripRoute("in_progress", tripId));
+  };
+
+  const handleBackToVerification = () => {
+    if (!tripId) {
+      navigate("/driver/jobs/list");
+      return;
+    }
+
+    navigate(buildPrivateTripRoute("rider_verification", tripId));
+  };
 
   const jobTypeLabelMap = {
     ride: "Ride",
@@ -227,10 +253,18 @@ export default function StartDrive() {
         {/* CTA */}
         <section className="space-y-4">
           <div className="flex flex-col space-y-3">
-             <button className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-orange-500 text-white shadow-xl shadow-orange-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
+             <button
+                type="button"
+                onClick={handleStart}
+                className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-orange-500 text-white shadow-xl shadow-orange-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+              >
                 {primaryCtaText}
              </button>
-             <button type="button" onClick={() => navigate(`/driver/trip/${SAMPLE_IDS.trip}/verify-rider`)} className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest border-2 border-orange-500/10 text-slate-400 hover:bg-white hover:border-orange-500/30 transition-all">
+             <button
+               type="button"
+               onClick={handleBackToVerification}
+               className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest border-2 border-orange-500/10 text-slate-400 hover:bg-white hover:border-orange-500/30 transition-all"
+             >
                 Back to verification
              </button>
           </div>

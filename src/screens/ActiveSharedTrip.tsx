@@ -10,25 +10,59 @@ import {
   CheckCircle2,
   AlertCircle
 } from "lucide-react";
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 
 import { useSharedTrips } from "../context/SharedTripsContext";
+import { useStore } from "../context/StoreContext";
 
 export default function ActiveSharedTrip() {
   const navigate = useNavigate();
+  const { tripId: routeTripId } = useParams();
   const { 
     activeSharedTrip, 
+    hydrateSharedTripById,
     arriveAtCurrentStop, 
     markRiderOnboard, 
     markRiderNoShow, 
     markRiderDroppedOff, 
-    simulateNewMatch,
     toggleAllowMatches 
   } = useSharedTrips();
+  const { activeTrip, completeActiveSharedTrip } = useStore();
 
   const [waitTimer, setWaitTimer] = useState<number | null>(null);
+  const completedTripRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!routeTripId) {
+      return;
+    }
+
+    if (activeSharedTrip?.id === routeTripId) {
+      return;
+    }
+
+    if (activeTrip.tripId === routeTripId && activeTrip.status === "completed") {
+      navigate(`/driver/trip/${routeTripId}/completed`, {
+        replace: true,
+        state: {
+          jobType: "shared",
+          tripId: routeTripId,
+        },
+      });
+      return;
+    }
+
+    hydrateSharedTripById(routeTripId);
+  }, [
+    routeTripId,
+    activeSharedTrip?.id,
+    activeTrip.tripId,
+    activeTrip.status,
+    hydrateSharedTripById,
+    navigate,
+  ]);
 
   // Sync wait timer state
   useEffect(() => {
@@ -57,12 +91,41 @@ export default function ActiveSharedTrip() {
     }
   }, [activeSharedTrip, activeSharedTrip?.currentStopIndex, activeSharedTrip?.stops]);
 
-  if (!activeSharedTrip) {
+  useEffect(() => {
+    if (!activeSharedTrip || activeSharedTrip.chainStatus !== "completed") {
+      return;
+    }
+    if (completedTripRef.current === activeSharedTrip.id) {
+      return;
+    }
+
+    const completedTripId =
+      completeActiveSharedTrip() || activeSharedTrip.id || routeTripId || null;
+    if (!completedTripId) {
+      return;
+    }
+
+    completedTripRef.current = completedTripId;
+    navigate(`/driver/trip/${completedTripId}/completed`, {
+      replace: true,
+      state: {
+        jobType: "shared",
+        tripId: completedTripId,
+      },
+    });
+  }, [activeSharedTrip, completeActiveSharedTrip, navigate, routeTripId]);
+
+  if (!activeSharedTrip || (routeTripId && activeSharedTrip.id !== routeTripId)) {
     return (
       <div className="flex flex-col h-full bg-slate-50 items-center justify-center p-6 text-center space-y-4">
         <AlertCircle className="h-10 w-10 text-slate-400" />
-        <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight">No Active Shared Trip</h2>
-        <button onClick={() => navigate(-1)} className="text-orange-500 font-bold">Go Back</button>
+        <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight">Shared Trip Unavailable</h2>
+        <button
+          onClick={() => navigate("/driver/jobs/list")}
+          className="rounded-full bg-slate-900 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white"
+        >
+          Back to Requests
+        </button>
       </div>
     );
   }
@@ -70,6 +133,21 @@ export default function ActiveSharedTrip() {
   const currentStop = activeSharedTrip.stops[activeSharedTrip.currentStopIndex];
   const passengerForStop = activeSharedTrip.passengers.find(p => p.id === currentStop?.passengerId);
   const isChainCompleted = activeSharedTrip.chainStatus === "completed";
+
+  if (!currentStop && !isChainCompleted) {
+    return (
+      <div className="flex flex-col h-full bg-slate-50 items-center justify-center p-6 text-center space-y-4">
+        <AlertCircle className="h-10 w-10 text-slate-400" />
+        <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight">Route Sync Pending</h2>
+        <button
+          onClick={() => navigate("/driver/jobs/list")}
+          className="rounded-full bg-slate-900 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white"
+        >
+          Back to Requests
+        </button>
+      </div>
+    );
+  }
 
   const formatTimer = (secs: number) => {
     const m = Math.floor(secs / 60);
@@ -160,10 +238,14 @@ export default function ActiveSharedTrip() {
               <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto" />
               <h2 className="text-xl font-black text-slate-900 tracking-tight uppercase">Chain Completed</h2>
               <button 
-                onClick={() => navigate('/driver/dashboard/online')}
+                onClick={() =>
+                  navigate(`/driver/trip/${activeSharedTrip.id}/completed`, {
+                    state: { jobType: "shared", tripId: activeSharedTrip.id },
+                  })
+                }
                 className="w-full rounded-full bg-slate-900 text-white py-4 font-black uppercase tracking-widest hover:bg-slate-800 transition-all"
               >
-                Return to Dashboard
+                Open Completion Summary
               </button>
             </div>
           ) : (
@@ -200,14 +282,14 @@ export default function ActiveSharedTrip() {
                 {currentStop.status === "current" && currentStop.type === "pickup" && (
                   <div className="flex space-x-3">
                     <button 
-                      onClick={() => markRiderOnboard(passengerForStop!.id)}
+                      onClick={() => passengerForStop && markRiderOnboard(passengerForStop.id)}
                       className="flex-1 rounded-[2rem] bg-orange-500 py-4 text-[11px] font-black uppercase tracking-widest text-slate-900 shadow-xl active:scale-[0.98]"
                     >
                       Confirm Pickup
                     </button>
                     {waitTimer === 0 && (
                       <button 
-                        onClick={() => markRiderNoShow(passengerForStop!.id)}
+                        onClick={() => passengerForStop && markRiderNoShow(passengerForStop.id)}
                         className="rounded-[2rem] border-2 border-red-500 text-red-500 px-6 py-4 text-[11px] font-black uppercase tracking-widest hover:bg-red-50 active:scale-[0.98]"
                       >
                         No Show
@@ -218,7 +300,7 @@ export default function ActiveSharedTrip() {
 
                 {currentStop.status === "current" && currentStop.type === "dropoff" && (
                   <button 
-                    onClick={() => markRiderDroppedOff(passengerForStop!.id)}
+                    onClick={() => passengerForStop && markRiderDroppedOff(passengerForStop.id)}
                     className="w-full rounded-[2rem] bg-blue-500 py-4 text-[11px] font-black uppercase tracking-widest text-white shadow-xl active:scale-[0.98]"
                   >
                     Confirm Drop-off

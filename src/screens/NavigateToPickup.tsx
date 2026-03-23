@@ -1,4 +1,4 @@
-import { SAMPLE_IDS } from "../data/constants";
+import { buildPrivateTripRoute } from "../data/constants";
 import {
 ChevronLeft,
 Clock,
@@ -8,8 +8,9 @@ Navigation,
 Phone
 } from "lucide-react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – NavigateToPickup Driver App – Navigate to Pick-Up Location (v2)
 // Navigate-to-pickup view with job type awareness and special variants for
@@ -28,6 +29,36 @@ export default function NavigateToPickup() {
   const [jobType, setJobType] = useState("ride"); // "ride" | "delivery" | "rental" | "tour" | "ambulance"
   const [hasArrived, setHasArrived] = useState(false);
   const navigate = useNavigate();
+  const { tripId: routeTripId } = useParams();
+  const { activeTrip, transitionActiveTripStage } = useStore();
+  const tripId = routeTripId || activeTrip.tripId;
+
+  const navigateToTripStage = (stage: "arrived_pickup" | "cancel_reason") => {
+    if (!tripId) {
+      navigate("/driver/jobs/list");
+      return;
+    }
+
+    if (
+      stage === "arrived_pickup" &&
+      activeTrip.tripId === tripId &&
+      activeTrip.jobType === "ride"
+    ) {
+      transitionActiveTripStage(stage);
+    }
+
+    const routeStage = stage === "arrived_pickup" ? "arrived_pickup" : "cancel_reason";
+    navigate(buildPrivateTripRoute(routeStage, tripId));
+  };
+
+  const handleOpenNavigation = () => {
+    if (!tripId) {
+      navigate("/driver/jobs/list");
+      return;
+    }
+
+    navigate(buildPrivateTripRoute("navigation", tripId));
+  };
 
   const jobTypeLabelMap = {
     ride: "Ride",
@@ -193,7 +224,7 @@ export default function NavigateToPickup() {
             <div className="flex space-x-3 pt-2">
               <button
                 type="button"
-                onClick={() => navigate(`/driver/trip/${SAMPLE_IDS.trip}/cancel/reason`)}
+                onClick={() => navigateToTripStage("cancel_reason")}
                 className="flex-1 rounded-full py-4 text-[11px] font-black uppercase tracking-widest border-2 border-orange-500/10 text-slate-400 hover:bg-orange-50 hover:border-orange-500/30 transition-all flex items-center justify-center"
               >
                 Cancel
@@ -201,7 +232,7 @@ export default function NavigateToPickup() {
               {hasArrived ? (
                 <button
                   type="button"
-                  onClick={() => navigate(`/driver/trip/${SAMPLE_IDS.trip}/arrived`)}
+                  onClick={() => navigateToTripStage("arrived_pickup")}
                   className="flex-[2] rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-brand-active text-white shadow-xl shadow-brand-active/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center animate-in fade-in zoom-in-95 duration-300"
                 >
                   Continue to Pickup
@@ -216,6 +247,15 @@ export default function NavigateToPickup() {
                 </button>
               )}
             </div>
+            {!hasArrived && (
+              <button
+                type="button"
+                onClick={handleOpenNavigation}
+                className="w-full rounded-full py-3 text-[10px] font-black uppercase tracking-widest border border-slate-200 bg-white text-slate-600 hover:border-slate-300 transition-all"
+              >
+                Open Live Navigation
+              </button>
+            )}
           </div>
 
           <div className="bg-[#f0fff4]/50 rounded-3xl p-4 text-center border-2 border-orange-500/10">

@@ -1,4 +1,4 @@
-import { SAMPLE_IDS } from "../data/constants";
+import { buildPrivateTripRoute, SAMPLE_IDS } from "../data/constants";
 import {
 Car,
 ChevronLeft,
@@ -9,8 +9,9 @@ Phone,
 User
 } from "lucide-react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – RentalJobOverview Rental Job Overview / On Rental Screen (v1)
 // Long-duration rental view for chauffeur / car rental jobs.
@@ -44,6 +45,9 @@ function StatusChip({ label, active, onClick }) {
 export default function RentalJobOverview() {
   const [status, setStatus] = useState("On rental");
   const navigate = useNavigate();
+  const { jobId } = useParams();
+  const { activeTrip } = useStore();
+  const tripRef = activeTrip.tripId || jobId || SAMPLE_IDS.trip;
 
   return (
     <div className="flex flex-col min-h-full ">
@@ -179,13 +183,17 @@ export default function RentalJobOverview() {
         {/* CTAs */}
         <section className="space-y-3 pb-8">
           <button
-            onClick={() => navigate(`/driver/trip/${SAMPLE_IDS.trip}/navigation`)}
+            onClick={() => navigate(buildPrivateTripRoute("navigation", tripRef))}
             className="w-full rounded-[2rem] bg-emerald-500 px-6 py-5 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-emerald-500/20 active:scale-[0.98] transition-all"
           >
             Start Navigation
           </button>
           <button
-            onClick={() => navigate(`/driver/trip/${SAMPLE_IDS.trip}/completed`)}
+            onClick={() =>
+              navigate(buildPrivateTripRoute("completed", tripRef), {
+                state: { jobType: "rental", tripId: tripRef },
+              })
+            }
             className="w-full rounded-[2rem] border-2 border-slate-900 bg-white px-6 py-5 text-[11px] font-black uppercase tracking-widest text-slate-900 active:scale-[0.98] transition-all"
           >
             End Rental

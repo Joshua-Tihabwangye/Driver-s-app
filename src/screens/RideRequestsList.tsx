@@ -12,7 +12,12 @@ import { useStore } from "../context/StoreContext";
 import PageHeader from "../components/PageHeader";
 import StatusChip from "../components/StatusChip";
 import EmptyState from "../components/EmptyState";
-import { JOB_FILTERS, PERIOD_OPTIONS, getYearOptions, JOB_DETAIL_ROUTES } from "../data/constants";
+import {
+  JOB_FILTERS,
+  PERIOD_OPTIONS,
+  getYearOptions,
+  buildJobDetailRoute,
+} from "../data/constants";
 import type { JobCategory } from "../data/types";
 
 // EVzone Driver App – RideRequestsList Unified Job Requests
@@ -130,7 +135,7 @@ export default function RideRequestsList() {
   const [selectedYear, setSelectedYear] = useState(String(new Date().getFullYear()));
   const [selectedQuarter, setSelectedQuarter] = useState("Q1");
   const navigate = useNavigate();
-  const { pendingJobs, attendJob } = useJobs();
+  const { pendingJobs } = useJobs();
   const { assignableJobTypes } = useStore();
   const yearOptions = getYearOptions();
   const availableFilters = JOB_FILTERS.filter(
@@ -170,11 +175,13 @@ export default function RideRequestsList() {
   const displayPeriodLabel = period === "quarter" ? `${selectedQuarter} ${selectedYear}` : period === "year" ? selectedYear : periodLabel;
 
   const handleCardClick = (job: any) => {
-    if (job.jobType !== "delivery") {
-      attendJob(job.id);
-    }
-    const route = JOB_DETAIL_ROUTES[job.jobType] || JOB_DETAIL_ROUTES.default;
-    navigate(route, { state: { jobType: job.jobType } });
+    const route = buildJobDetailRoute(job.jobType, job.id);
+    navigate(route, {
+      state: {
+        jobType: job.jobType,
+        jobId: job.id,
+      },
+    });
   };
 
   return (
