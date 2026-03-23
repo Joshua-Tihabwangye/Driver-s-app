@@ -16,6 +16,7 @@ import {
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { AUTH_LANDING_ROUTE, useAuth } from "../context/AuthContext";
 
 function MenuSection({
   title,
@@ -78,6 +79,12 @@ function MenuItem({
 
 export default function MoreMenu() {
   const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate(AUTH_LANDING_ROUTE, { replace: true });
+  };
 
   return (
     <div className="flex flex-col h-full bg-transparent">
@@ -137,7 +144,7 @@ export default function MoreMenu() {
             icon={SlidersHorizontal}
             label="Preferences"
             description="Driver defaults and app behavior"
-            onClick={() => navigate("/driver/preferences")}
+            onClick={() => navigate("/driver/preferences", { state: { returnTo: "/driver/more" } })}
             themeColor="green"
           />
           <MenuItem
@@ -190,7 +197,7 @@ export default function MoreMenu() {
             icon={LogOut}
             label="Logout Account"
             description="Return to the landing screen"
-            onClick={() => navigate("/")}
+            onClick={handleLogout}
             variant="danger"
           />
           <p className="text-center text-[10px] text-slate-300 mt-8 uppercase tracking-[0.25em] font-bold">

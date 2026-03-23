@@ -25,6 +25,8 @@ const services = [
   { key: "wallet", label: "Wallet Agent", icon: Wallet2, color: "#2196F3" },
 ];
 
+const DRIVER_SERVICE_KEY = "driver";
+
 
 function ServiceTile({ icon: Icon, label, color, onClick, selected }) {
   return (
@@ -55,6 +57,12 @@ function ServiceTile({ icon: Icon, label, color, onClick, selected }) {
 export default function RegisterServices() {
   const navigate = useNavigate();
   const [selectedService, setSelectedService] = useState<string | null>(null);
+  const isDriverSelected = selectedService === DRIVER_SERVICE_KEY;
+
+  const handleRegisterNow = () => {
+    if (!isDriverSelected) return;
+    navigate("/auth/register", { state: { selectedService } });
+  };
 
   return (
     <div className="flex flex-col min-h-full ">
@@ -101,10 +109,10 @@ export default function RegisterServices() {
 
           <button
             type="button"
-            onClick={() => navigate("/auth/register", { state: { selectedService } })}
-            disabled={!selectedService}
+            onClick={handleRegisterNow}
+            disabled={!isDriverSelected}
             className={`relative z-10 w-full rounded-2xl py-4 text-sm font-black uppercase tracking-widest transition-all ${
-              selectedService
+              isDriverSelected
                 ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20 hover:bg-orange-600 active:scale-[0.98]"
                 : "bg-slate-200 text-slate-500 cursor-not-allowed"
             }`}

@@ -1,10 +1,9 @@
 import {
-AlertTriangle,
-Check,
-ChevronLeft,
-MapPin,
-Target,
-X
+  AlertTriangle,
+  Check,
+  MapPin,
+  Target,
+  X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
@@ -22,7 +21,7 @@ export default function ConfirmPickupLocation() {
       <PageHeader 
         title="Pickup Location" 
         subtitle="Driver · Deliveries" 
-        onBack={() => navigate(-1)} 
+        onBack={() => navigate("/driver/delivery/pickup/confirm")} 
       />
 
       <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-6">
@@ -81,11 +80,19 @@ export default function ConfirmPickupLocation() {
 
         {/* Actions */}
         <section className="space-y-4 pb-12">
-          <button className="w-full rounded-[2rem] bg-orange-500 py-5 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-orange-200/50 flex items-center justify-center active:scale-[0.98] transition-all hover:bg-orange-600">
+          <button
+            type="button"
+            onClick={() => navigate("/driver/delivery/pickup/qr")}
+            className="w-full rounded-[2rem] bg-orange-500 py-5 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-orange-200/50 flex items-center justify-center active:scale-[0.98] transition-all hover:bg-orange-600"
+          >
             <Check className="h-5 w-5 mr-3" />
             Yes, Confirm My Location
           </button>
-          <button className="w-full rounded-[2rem] border-2 border-slate-900 bg-white py-5 text-[11px] font-black uppercase tracking-widest text-slate-900 active:scale-[0.98] transition-all hover:bg-slate-50">
+          <button
+            type="button"
+            onClick={() => navigate("/driver/delivery/pickup/confirm")}
+            className="w-full rounded-[2rem] border-2 border-slate-900 bg-white py-5 text-[11px] font-black uppercase tracking-widest text-slate-900 active:scale-[0.98] transition-all hover:bg-slate-50"
+          >
             <X className="h-5 w-5 mr-3" />
             No, Keep Original Pin
           </button>

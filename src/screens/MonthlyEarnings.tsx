@@ -1,12 +1,8 @@
 import {
-Calendar,
-ChevronDown,
-ChevronLeft,
-DollarSign,
-LineChart,
-TrendingUp
+  Calendar,
+  ChevronDown,
+  TrendingUp,
 } from "lucide-react";
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 
@@ -24,7 +20,7 @@ const MONTH_DATA = [
 
 export default function MonthlyEarnings() {
   const navigate = useNavigate();
-  const [month] = useState("August 2025");
+  const month = "August 2025";
 
   const total = MONTH_DATA.reduce((acc, d) => acc + d.total, 0).toFixed(2);
 
@@ -39,11 +35,35 @@ export default function MonthlyEarnings() {
       <PageHeader 
         title="Monthly Earnings" 
         subtitle="Earnings Summary" 
-        onBack={() => navigate(-1)} 
+        onBack={() => navigate("/driver/earnings/overview")} 
       />
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
+        <section className="grid grid-cols-3 gap-2">
+          <button
+            type="button"
+            onClick={() => navigate("/driver/earnings/overview")}
+            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-[10px] font-black uppercase tracking-widest text-slate-600"
+          >
+            Overview
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate("/driver/earnings/weekly")}
+            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-[10px] font-black uppercase tracking-widest text-slate-600"
+          >
+            Weekly
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate("/driver/earnings/monthly")}
+            className="rounded-xl bg-slate-900 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-white"
+          >
+            Monthly
+          </button>
+        </section>
+
         {/* Monthly summary card */}
         <section className="rounded-[2.5rem] bg-slate-900 text-white p-6 space-y-4 shadow-2xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110" />

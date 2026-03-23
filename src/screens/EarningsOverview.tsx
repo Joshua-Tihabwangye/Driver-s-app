@@ -79,7 +79,30 @@ export default function EarningsOverview() {
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
-        
+        <section className="grid grid-cols-3 gap-2">
+          <button
+            type="button"
+            onClick={() => navigate("/driver/earnings/overview")}
+            className="rounded-xl bg-slate-900 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-white"
+          >
+            Overview
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate("/driver/earnings/weekly")}
+            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-[10px] font-black uppercase tracking-widest text-slate-600"
+          >
+            Weekly
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate("/driver/earnings/monthly")}
+            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-[10px] font-black uppercase tracking-widest text-slate-600"
+          >
+            Monthly
+          </button>
+        </section>
+
         {/* Period Selector */}
         <div className="flex justify-between items-center bg-white dark:bg-slate-900 px-4 py-3 rounded-2xl shadow-sm border border-slate-100">
            <span className="text-[11px] font-black uppercase tracking-widest text-slate-500">Analysis Period</span>

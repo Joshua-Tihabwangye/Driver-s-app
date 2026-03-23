@@ -1,21 +1,94 @@
 import { Moon, Sun } from "lucide-react";
+import { ReactNode } from "react";
 import {
   Navigate,
   Route,
   Routes,
+  useLocation,
 } from "react-router-dom";
 import AppPhoneShell from "./components/AppPhoneShell";
 import SupervisorQAMode from "./components/SupervisorQAMode";
-import { useTheme } from "./context/ThemeContext";
 import { SCREENS } from "./config/routes";
+import {
+  AUTHENTICATED_HOME_ROUTE,
+  AUTH_LANDING_ROUTE,
+  AUTH_LOGIN_ROUTE,
+  useAuth,
+} from "./context/AuthContext";
+import { useTheme } from "./context/ThemeContext";
+import ForgotPassword from "./screens/ForgotPassword";
 import LandingPage from "./screens/LandingPage";
 import Login from "./screens/Login";
+import OTPVerification from "./screens/OTPVerification";
 
-const DEFAULT_SCREEN = SCREENS.find((s) => s.id === "RegisterServices") || SCREENS[0];
+const AUTH_ROUTES_WITHOUT_SHELL = new Set([
+  "/auth/forgot-password",
+  "/auth/verify-otp",
+]);
+
+const PUBLIC_SCREEN_IDS = new Set([
+  "SuperAppHome",
+  "RegisterServices",
+  "Registration",
+  "DriverRegistration",
+  "DriverProfileOnboarding",
+  "DriverPreferences",
+  "DocumentUpload",
+  "DocumentReview",
+  "DocumentRejected",
+  "DocumentVerified",
+  "IdentityVerification",
+  "FaceCapture",
+  "ImageUpload",
+  "MyVehicles",
+  "MyVehiclesManage",
+  "VehicleDetails",
+  "BusinessVehicles",
+  "VehicleAccessories",
+  "TrainingIntro",
+  "TrainingInfoSession",
+  "EarningsTutorial",
+  "TrainingQuiz",
+  "TrainingQuizAnswer",
+  "TrainingQuizPassed",
+  "TrainingCompletion",
+]);
+
+function GuestOnlyRoute({ children }: { children: ReactNode }) {
+  const { isLoggedIn } = useAuth();
+  if (isLoggedIn) {
+    return <Navigate to={AUTHENTICATED_HOME_ROUTE} replace />;
+  }
+
+  return <>{children}</>;
+}
+
+function RequireAuth({ children }: { children: ReactNode }) {
+  const { isLoggedIn } = useAuth();
+  const location = useLocation();
+
+  if (!isLoggedIn) {
+    const from = `${location.pathname}${location.search}${location.hash}`;
+    return (
+      <Navigate
+        to={AUTH_LOGIN_ROUTE}
+        replace
+        state={{ from }}
+      />
+    );
+  }
+
+  return <>{children}</>;
+}
 
 export default function App() {
+  const { isLoggedIn } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const showSupervisorQaMode = !import.meta.env.PROD;
+  const appShellScreens = SCREENS.filter(
+    (screen) => !AUTH_ROUTES_WITHOUT_SHELL.has(screen.path)
+  );
+  const fallbackRoute = isLoggedIn ? AUTHENTICATED_HOME_ROUTE : AUTH_LANDING_ROUTE;
 
   return (
     <div className={`app-root ${isDark ? "dark" : ""}`}>
@@ -33,36 +106,65 @@ export default function App() {
 
       <Routes>
         {/* Auth Flow - No Shell */}
-        <Route path="/" element={<Navigate to="/landing" replace />} />
-        <Route path="/landing" element={<LandingPage />} />
-        <Route path="/auth/login" element={<Login />} />
-
-        {/* App Flow - Mobile Phone View */}
         <Route
-          path="/*"
+          path="/"
+          element={<Navigate to={fallbackRoute} replace />}
+        />
+        <Route
+          path={AUTH_LANDING_ROUTE}
           element={
-            <AppPhoneShell>
-              <Routes>
-                {SCREENS.map((screen) => (
-                  <Route
-                    key={screen.id}
-                    path={screen.path}
-                    element={<screen.Component />}
-                  />
-                ))}
-                <Route
-                  path="*"
-                  element={
-                    <Navigate
-                      to={DEFAULT_SCREEN.previewPath ?? DEFAULT_SCREEN.path}
-                      replace
-                    />
-                  }
-                />
-              </Routes>
-            </AppPhoneShell>
+            <GuestOnlyRoute>
+              <LandingPage />
+            </GuestOnlyRoute>
           }
         />
+        <Route
+          path={AUTH_LOGIN_ROUTE}
+          element={
+            <GuestOnlyRoute>
+              <Login />
+            </GuestOnlyRoute>
+          }
+        />
+        <Route
+          path="/auth/forgot-password"
+          element={
+            <GuestOnlyRoute>
+              <ForgotPassword />
+            </GuestOnlyRoute>
+          }
+        />
+        <Route
+          path="/auth/verify-otp"
+          element={
+            <GuestOnlyRoute>
+              <OTPVerification />
+            </GuestOnlyRoute>
+          }
+        />
+
+        {/* App Flow - Mobile Phone View */}
+        {appShellScreens.map((screen) => {
+          const shellElement = (
+            <AppPhoneShell>
+              <screen.Component />
+            </AppPhoneShell>
+          );
+
+          return (
+            <Route
+              key={screen.id}
+              path={screen.path}
+              element={
+                PUBLIC_SCREEN_IDS.has(screen.id)
+                  ? shellElement
+                  : <RequireAuth>{shellElement}</RequireAuth>
+              }
+            />
+          );
+        })}
+
+        <Route path="*" element={<Navigate to={fallbackRoute} replace />} />
       </Routes>
     </div>
   );

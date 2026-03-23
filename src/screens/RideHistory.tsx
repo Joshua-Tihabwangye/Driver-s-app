@@ -1,5 +1,4 @@
 import {
-  Share2,
   CheckCircle2,
   History as HistoryIcon
 } from "lucide-react";
@@ -8,14 +7,14 @@ import { useStore } from "../context/StoreContext";
 import PageHeader from "../components/PageHeader";
 import StatusChip from "../components/StatusChip";
 import EmptyState from "../components/EmptyState";
-import { JOB_FILTERS, JOB_HISTORY_ROUTES } from "../data/constants";
+import { JOB_FILTERS, buildJobHistoryRoute } from "../data/constants";
 import { useNavigate } from "react-router-dom";
 import type { JobCategory } from "../data/types";
 
 // EVzone Driver App – RideHistory Driver – Ride History
 // Shows ONLY attended/completed jobs from the centralized context.
 
-function TripRow({ trip, onClick, navigate }: any) {
+function TripRow({ trip, onClick }: any) {
   const { from, to, amount, jobType, date, time } = trip;
   return (
     <button
@@ -116,8 +115,7 @@ export default function RideHistory() {
             <TripRow
               key={trip.id}
               trip={trip}
-              navigate={navigate}
-              onClick={() => navigate((JOB_HISTORY_ROUTES[trip.jobType] || JOB_HISTORY_ROUTES.default) + trip.id)}
+              onClick={() => navigate(buildJobHistoryRoute(trip.jobType, trip.id))}
             />
           ))}
 

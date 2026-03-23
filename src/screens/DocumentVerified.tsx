@@ -1,14 +1,19 @@
 import {
-Car,
 CheckCircle2,
-ChevronLeft,
 ClipboardCheck,
 FileBadge2,
 IdCard,
 Info
 } from "lucide-react";
+import { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
+import {
+  areAllRequiredDocumentsUploaded,
+  getFirstMissingDocumentKey,
+  readStoredDocumentState,
+} from "../utils/documentVerificationState";
 
 // EVzone Driver App – DocumentVerified Driver Personal – All Documents Verified
 // Green curved header design. ALL original functionality preserved:
@@ -37,6 +42,28 @@ function ApprovedRow({ icon: Icon, title, subtitle }) {
 
 export default function DocumentVerified() {
   const navigate = useNavigate();
+  const { onboardingCheckpoints, setOnboardingCheckpoint } = useStore();
+  const documentState = useMemo(() => readStoredDocumentState(), []);
+  const allDocumentsVerified = areAllRequiredDocumentsUploaded(documentState);
+  const trainingCompleted = onboardingCheckpoints.trainingCompleted;
+
+  useEffect(() => {
+    if (!allDocumentsVerified) {
+      setOnboardingCheckpoint("documentsVerified", false);
+      const firstMissing = getFirstMissingDocumentKey(documentState) ?? "id";
+      navigate(`/driver/onboarding/profile/documents/upload?focus=${firstMissing}`, {
+        replace: true,
+      });
+      return;
+    }
+
+    setOnboardingCheckpoint("documentsVerified", true);
+  }, [allDocumentsVerified, documentState, navigate, setOnboardingCheckpoint]);
+
+  const primaryCtaRoute = trainingCompleted
+    ? "/driver/dashboard/online"
+    : "/driver/training/intro";
+  const primaryCtaLabel = trainingCompleted ? "Go Online" : "Start Training";
 
   return (
     <div className="flex flex-col min-h-full ">
@@ -81,22 +108,29 @@ export default function DocumentVerified() {
             <ApprovedRow
               icon={IdCard}
               title="National ID"
-              subtitle="Identity confirmed"
+              subtitle={
+                documentState.id.fileName
+                  ? `Saved file: ${documentState.id.fileName}`
+                  : "Identity confirmed"
+              }
             />
             <ApprovedRow
               icon={FileBadge2}
               title="Driver's License"
-              subtitle="Valid & in good standing"
+              subtitle={
+                documentState.license.fileName
+                  ? `Saved file: ${documentState.license.fileName}`
+                  : "Valid & in good standing"
+              }
             />
             <ApprovedRow
               icon={ClipboardCheck}
               title="Conduct Clearance"
-              subtitle="Background check passed"
-            />
-            <ApprovedRow
-              icon={Car}
-              title="Vehicle Documents"
-              subtitle="Registration & Insurance"
+              subtitle={
+                documentState.police.fileName
+                  ? `Saved file: ${documentState.police.fileName}`
+                  : "Background check passed"
+              }
             />
           </div>
         </section>
@@ -111,9 +145,9 @@ export default function DocumentVerified() {
                What's Next?
             </p>
             <div className="font-medium space-y-1">
-              <p>• Complete your driver training in Preferences.</p>
-              <p>• Once done, toggle 'Go Online' to start receiving trips.</p>
-              <p>• Review our community guidelines for best practices.</p>
+              <p>• Start the onboarding training track now.</p>
+              <p>• Finish training to unlock the Go Online gateway.</p>
+              <p>• You can return to profile anytime to review progress.</p>
             </div>
           </div>
         </section>
@@ -122,17 +156,17 @@ export default function DocumentVerified() {
         <section className="pt-4 pb-12 flex flex-col gap-3">
           <button
             type="button"
-            onClick={() => navigate("/driver/training/intro")}
+            onClick={() => navigate(primaryCtaRoute)}
             className="w-full rounded-2xl bg-orange-500 py-4 text-sm font-black text-white shadow-xl shadow-orange-500/20 hover:bg-orange-600 active:scale-[0.98] transition-all uppercase tracking-widest"
           >
-            Start Training
+            {primaryCtaLabel}
           </button>
           <button
             type="button"
-            onClick={() => navigate("/driver/dashboard/offline")}
+            onClick={() => navigate("/driver/onboarding/profile")}
             className="w-full rounded-2xl py-4 text-xs font-black text-slate-400 bg-white border border-slate-200 shadow-sm hover:bg-slate-50 active:scale-95 transition-all uppercase tracking-widest"
           >
-             Back to Dashboard
+             Back to Profile
           </button>
         </section>
       </main>

@@ -1,10 +1,8 @@
 import {
-AlertTriangle,
-Check,
-ChevronLeft,
-MapPin,
-Package,
-X
+  AlertTriangle,
+  Check,
+  Package,
+  X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
@@ -73,11 +71,19 @@ export default function PickupConfirmation() {
 
         {/* Actions */}
         <section className="space-y-4 pb-12">
-          <button className="w-full rounded-[2rem] bg-orange-500 py-5 text-sm font-black uppercase tracking-widest text-white shadow-xl shadow-orange-200/50 flex items-center justify-center active:scale-[0.98] transition-all hover:bg-orange-600">
+          <button
+            type="button"
+            onClick={() => navigate("/driver/delivery/pickup/qr")}
+            className="w-full rounded-[2rem] bg-orange-500 py-5 text-sm font-black uppercase tracking-widest text-white shadow-xl shadow-orange-200/50 flex items-center justify-center active:scale-[0.98] transition-all hover:bg-orange-600"
+          >
             <Check className="h-5 w-5 mr-3" />
             Yes, All Items Picked Up
           </button>
-          <button className="w-full rounded-[2rem] border-2 border-slate-900 bg-white py-5 text-sm font-black uppercase tracking-widest text-slate-900 active:scale-[0.98] transition-all hover:bg-slate-50">
+          <button
+            type="button"
+            onClick={() => navigate("/driver/delivery/pickup/confirm-location")}
+            className="w-full rounded-[2rem] border-2 border-slate-900 bg-white py-5 text-sm font-black uppercase tracking-widest text-slate-900 active:scale-[0.98] transition-all hover:bg-slate-50"
+          >
             <X className="h-5 w-5 mr-3" />
             Not Yet, Go Back
           </button>

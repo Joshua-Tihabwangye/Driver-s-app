@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext, useState, useMemo, useCallback } from "react";
+import { createContext, ReactNode, useContext, useState, useMemo, useCallback, useEffect } from "react";
 import type {
   Job,
   TripRecord,
@@ -24,6 +24,28 @@ export interface DriverRoleConfig {
   coreRole: DriverCoreRole;
   programs: DriverProgramFlags;
   onboardingComplete: boolean;
+}
+
+export type OnboardingCheckpointId =
+  | "roleSelected"
+  | "documentsVerified"
+  | "identityVerified"
+  | "vehicleReady"
+  | "trainingCompleted";
+
+export interface OnboardingCheckpointState {
+  roleSelected: boolean;
+  documentsVerified: boolean;
+  identityVerified: boolean;
+  vehicleReady: boolean;
+  trainingCompleted: boolean;
+}
+
+export interface OnboardingBlocker {
+  id: OnboardingCheckpointId;
+  title: string;
+  description: string;
+  route: string;
 }
 
 export interface DriverRoleUpdateInput {
@@ -53,6 +75,10 @@ interface StoreContextType {
   dashboardMetrics: DashboardMetrics;
   recentEarnings: typeof MOCK_EARNINGS;
   driverRoleConfig: DriverRoleConfig;
+  onboardingCheckpoints: OnboardingCheckpointState;
+  onboardingBlockers: OnboardingBlocker[];
+  canGoOnline: boolean;
+  primaryOnboardingRoute: string;
   assignableJobTypes: JobCategory[];
   canAcceptJobType: (jobType: JobCategory) => boolean;
 
@@ -66,6 +92,10 @@ interface StoreContextType {
   addRevenueEvent: (event: RevenueEvent) => void;
   updateDriverRoleConfig: (input: DriverRoleUpdateInput) => DriverRoleUpdateResult;
   enableDualMode: () => void;
+  setOnboardingCheckpoint: (
+    checkpoint: OnboardingCheckpointId,
+    isComplete?: boolean
+  ) => void;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -84,6 +114,53 @@ const ROLE_BASE_JOB_TYPES: Record<DriverCoreRole, JobCategory[]> = {
   "rental-only": ["rental"],
   "tour-only": ["tour"],
   "ambulance-only": ["ambulance"],
+};
+
+const ONBOARDING_CHECKPOINT_ORDER: OnboardingCheckpointId[] = [
+  "roleSelected",
+  "documentsVerified",
+  "trainingCompleted",
+];
+
+const ONBOARDING_CHECKPOINTS_STORAGE_KEY = "driver_onboarding_checkpoints";
+
+const DEFAULT_ONBOARDING_CHECKPOINTS: OnboardingCheckpointState = {
+  roleSelected: true,
+  documentsVerified: false,
+  identityVerified: true,
+  vehicleReady: true,
+  trainingCompleted: false,
+};
+
+const ONBOARDING_CHECKPOINT_META: Record<
+  OnboardingCheckpointId,
+  Omit<OnboardingBlocker, "id">
+> = {
+  roleSelected: {
+    title: "Driver Registration",
+    description: "Select your driver role and service category.",
+    route: "/driver/register",
+  },
+  documentsVerified: {
+    title: "Document Verification",
+    description: "Upload and verify required driver documents.",
+    route: "/driver/onboarding/profile/documents/upload",
+  },
+  identityVerified: {
+    title: "Identity Verification",
+    description: "Complete face and identity checks.",
+    route: "/driver/preferences/identity",
+  },
+  vehicleReady: {
+    title: "Vehicle Setup",
+    description: "Add and verify at least one active vehicle.",
+    route: "/driver/vehicles",
+  },
+  trainingCompleted: {
+    title: "Safety Training",
+    description: "Finish required onboarding training modules.",
+    route: "/driver/training/intro",
+  },
 };
 
 function validateDriverRoleConfig(
@@ -122,6 +199,27 @@ function getAssignableJobTypes(config: DriverRoleUpdateInput): JobCategory[] {
   }
 
   return Array.from(assignableSet);
+}
+
+function readStoredOnboardingCheckpoints(): OnboardingCheckpointState {
+  if (typeof window === "undefined") {
+    return DEFAULT_ONBOARDING_CHECKPOINTS;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(ONBOARDING_CHECKPOINTS_STORAGE_KEY);
+    if (!raw) {
+      return DEFAULT_ONBOARDING_CHECKPOINTS;
+    }
+
+    const parsed = JSON.parse(raw) as Partial<OnboardingCheckpointState>;
+    return {
+      ...DEFAULT_ONBOARDING_CHECKPOINTS,
+      ...parsed,
+    };
+  } catch {
+    return DEFAULT_ONBOARDING_CHECKPOINTS;
+  }
 }
 
 // Helper to filter dates (mock simplified logic for demonstration)
@@ -164,11 +262,63 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     { id: "r6", tripId: "t6", timestamp: Date.now() - 86400000 * 10, type: "base", amount: 35000, label: "Private Ride", category: "ride" },
   ]);
   const [activeSharedTrip, setActiveSharedTrip] = useState<SharedTrip | null>(null);
-  const [driverRoleConfig, setDriverRoleConfig] = useState<DriverRoleConfig>({
+  const [driverRoleSelection, setDriverRoleSelection] = useState<DriverRoleUpdateInput>({
     coreRole: "dual-mode",
     programs: { ...DEFAULT_PROGRAM_FLAGS },
-    onboardingComplete: false,
   });
+  const [onboardingCheckpoints, setOnboardingCheckpoints] =
+    useState<OnboardingCheckpointState>(() => readStoredOnboardingCheckpoints());
+
+  const setOnboardingCheckpoint = useCallback(
+    (checkpoint: OnboardingCheckpointId, isComplete = true) => {
+      setOnboardingCheckpoints((prev) => {
+        if (prev[checkpoint] === isComplete) {
+          return prev;
+        }
+
+        return {
+          ...prev,
+          [checkpoint]: isComplete,
+        };
+      });
+    },
+    []
+  );
+
+  const onboardingBlockers = useMemo<OnboardingBlocker[]>(
+    () =>
+      ONBOARDING_CHECKPOINT_ORDER.filter(
+        (checkpointId) => !onboardingCheckpoints[checkpointId]
+      ).map((checkpointId) => ({
+        id: checkpointId,
+        ...ONBOARDING_CHECKPOINT_META[checkpointId],
+      })),
+    [onboardingCheckpoints]
+  );
+
+  const canGoOnline = onboardingBlockers.length === 0;
+  const primaryOnboardingRoute =
+    onboardingBlockers[0]?.route || "/driver/dashboard/online";
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.localStorage.setItem(
+      ONBOARDING_CHECKPOINTS_STORAGE_KEY,
+      JSON.stringify(onboardingCheckpoints)
+    );
+  }, [onboardingCheckpoints]);
+
+  const driverRoleConfig = useMemo<DriverRoleConfig>(
+    () => ({
+      coreRole: driverRoleSelection.coreRole,
+      programs: driverRoleSelection.programs,
+      onboardingComplete: canGoOnline,
+    }),
+    [driverRoleSelection, canGoOnline]
+  );
 
   // Actions
   const addJob = useCallback((job: Job) => setJobs(prev => [job, ...prev]), []);
@@ -206,31 +356,37 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         return validation;
       }
 
-      setDriverRoleConfig({
+      setDriverRoleSelection({
         coreRole: input.coreRole,
         programs: { ...input.programs },
-        onboardingComplete: true,
       });
+      setOnboardingCheckpoints((prev) => ({
+        ...prev,
+        roleSelected: true,
+      }));
 
       return { ok: true };
     },
     []
   );
   const enableDualMode = useCallback(() => {
-    setDriverRoleConfig((prev) => ({
+    setDriverRoleSelection((prev) => ({
       ...prev,
       coreRole: "dual-mode",
-      onboardingComplete: true,
+    }));
+    setOnboardingCheckpoints((prev) => ({
+      ...prev,
+      roleSelected: true,
     }));
   }, []);
 
   const assignableJobTypes = useMemo(
     () =>
       getAssignableJobTypes({
-        coreRole: driverRoleConfig.coreRole,
-        programs: driverRoleConfig.programs,
+        coreRole: driverRoleSelection.coreRole,
+        programs: driverRoleSelection.programs,
       }),
-    [driverRoleConfig]
+    [driverRoleSelection]
   );
   const canAcceptJobType = useCallback(
     (jobType: JobCategory) => assignableJobTypes.includes(jobType),
@@ -302,6 +458,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     dashboardMetrics,
     recentEarnings,
     driverRoleConfig,
+    onboardingCheckpoints,
+    onboardingBlockers,
+    canGoOnline,
+    primaryOnboardingRoute,
     assignableJobTypes,
     canAcceptJobType,
     addJob,
@@ -313,6 +473,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     addRevenueEvent,
     updateDriverRoleConfig,
     enableDualMode,
+    setOnboardingCheckpoint,
   };
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

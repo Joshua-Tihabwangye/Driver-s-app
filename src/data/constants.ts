@@ -49,16 +49,23 @@ export const JOB_DETAIL_ROUTES: Record<JobCategory | "default", string> = {
   default: "/driver/jobs/incoming",
 };
 
-export const JOB_HISTORY_ROUTES: Record<JobCategory | "default", string> = {
-  ride: "/driver/history/ride/",
-  delivery: "/driver/history/delivery/",
-  rental: "/driver/history/rental/",
-  tour: "/driver/history/tour/",
-  shuttle: "/driver/help/shuttle-link/",
-  ambulance: `/driver/ambulance/job/${SAMPLE_IDS.job}/status`,
-  shared: "/driver/history/shared/",
-  default: "/driver/history/ride/",
+export type JobRouteBuilder = (jobId: string) => string;
+
+export const JOB_HISTORY_ROUTE_BUILDERS: Record<JobCategory | "default", JobRouteBuilder> = {
+  ride: (jobId) => `/driver/history/ride/${jobId}`,
+  delivery: (jobId) => `/driver/history/delivery/${jobId}`,
+  rental: (jobId) => `/driver/history/rental/${jobId}`,
+  tour: (jobId) => `/driver/history/tour/${jobId}`,
+  shuttle: () => "/driver/help/shuttle-link",
+  ambulance: (jobId) => `/driver/ambulance/job/${jobId}/status`,
+  shared: (jobId) => `/driver/history/shared/${jobId}`,
+  default: (jobId) => `/driver/history/ride/${jobId}`,
 };
+
+export function buildJobHistoryRoute(jobType: JobCategory, jobId: string): string {
+  const routeBuilder = JOB_HISTORY_ROUTE_BUILDERS[jobType] || JOB_HISTORY_ROUTE_BUILDERS.default;
+  return routeBuilder(jobId);
+}
 
 // ── Job Category Color Map ───────────────────────────────
 export const JOB_CATEGORY_STYLES: Record<JobCategory, { bg: string; border: string; text: string; label: string }> = {

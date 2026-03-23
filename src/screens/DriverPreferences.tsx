@@ -15,7 +15,7 @@ ShoppingCart,
 Truck
 } from "lucide-react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 
 import { useSharedTrips } from "../context/SharedTripsContext";
@@ -82,6 +82,7 @@ function RequirementCard({ icon: Icon, label, color, active, onClick }) {
 
 export default function DriverPreferences() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { sharedRidesEnabled, setSharedRidesEnabled } = useSharedTrips();
   const { driverRoleConfig, assignableJobTypes, enableDualMode } = useStore();
   const ROLE_LABELS = {
@@ -152,6 +153,10 @@ export default function DriverPreferences() {
        return r;
     }));
   };
+
+  const redirectAfterSave =
+    (location.state as { returnTo?: string } | null)?.returnTo ||
+    "/driver/dashboard/online";
 
   return (
     <div className="flex flex-col min-h-full ">
@@ -249,7 +254,7 @@ export default function DriverPreferences() {
         <section className="pt-4 pb-12">
           <button
             type="button"
-            onClick={() => navigate("/driver/dashboard/online")}
+            onClick={() => navigate(redirectAfterSave)}
             className="w-full rounded-2xl bg-orange-500 py-4 text-sm font-black text-white shadow-xl shadow-orange-500/20 hover:bg-orange-600 active:scale-[0.98] transition-all uppercase tracking-widest"
           >
             Save Preferences

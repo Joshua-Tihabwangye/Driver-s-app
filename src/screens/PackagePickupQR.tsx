@@ -1,9 +1,8 @@
 import {
-CheckCircle2,
-ChevronLeft,
-Info,
-Package,
-QrCode
+  CheckCircle2,
+  Info,
+  Package,
+  QrCode,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
@@ -21,7 +20,7 @@ export default function PackagePickupQR() {
       <PageHeader 
         title="Pickup Verify" 
         subtitle="Driver · Deliveries" 
-        onBack={() => navigate(-1)} 
+        onBack={() => navigate("/driver/delivery/pickup/confirm")} 
       />
 
       <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-6">
@@ -84,6 +83,21 @@ export default function PackagePickupQR() {
               </p>
             </div>
           </div>
+
+          <button
+            type="button"
+            onClick={() => navigate("/driver/delivery/pickup/confirmed")}
+            className="w-full rounded-[2rem] bg-orange-500 py-5 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-orange-200/50 flex items-center justify-center active:scale-[0.98] transition-all hover:bg-orange-600"
+          >
+            Mark Scan Complete
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate("/driver/delivery/pickup/confirm-location")}
+            className="w-full rounded-[2rem] border-2 border-slate-900 bg-white py-5 text-[11px] font-black uppercase tracking-widest text-slate-900 active:scale-[0.98] transition-all hover:bg-slate-50"
+          >
+            Need to Confirm Location
+          </button>
         </section>
       </main>
     </div>

@@ -1,5 +1,7 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – TrainingCompletion Preferences – Content Completion Screen
 // Redesigned to match Screenshot 0.
@@ -8,6 +10,11 @@ import PageHeader from "../components/PageHeader";
 
 export default function TrainingCompletion() {
   const navigate = useNavigate();
+  const { setOnboardingCheckpoint } = useStore();
+
+  useEffect(() => {
+    setOnboardingCheckpoint("trainingCompleted", true);
+  }, [setOnboardingCheckpoint]);
 
   return (
     <div className="flex flex-col h-full ">
@@ -68,18 +75,18 @@ export default function TrainingCompletion() {
         <div className="w-full space-y-4 flex flex-col items-center">
           <button
             type="button"
-            onClick={() => navigate("/driver/training/info-session")}
+            onClick={() => navigate("/driver/dashboard/online")}
             className="w-full rounded-2xl bg-orange-500 py-5 text-sm font-black text-white shadow-2xl shadow-orange-500/20 hover:bg-orange-600 active:scale-[0.98] transition-all uppercase tracking-widest"
           >
-            Review Insights
+            Go Online
           </button>
 
           <button
             type="button"
-            onClick={() => navigate("/driver/preferences")}
+            onClick={() => navigate("/driver/onboarding/profile")}
             className="text-xs font-black text-slate-400 hover:text-slate-600 transition-colors uppercase tracking-[0.2em]"
           >
-            Return Home
+            Back to Profile
           </button>
         </div>
       </main>

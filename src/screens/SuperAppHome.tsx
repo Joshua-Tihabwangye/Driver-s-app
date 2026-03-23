@@ -13,33 +13,6 @@ import PageHeader from "../components/PageHeader";
 // EVzone Driver App – SuperAppHome Home (Super App Landing)
 // Standardized Super App landing screen.
 
-const services = [
-  {
-    key: "school",
-    label: "School",
-    subtitle: "Transport & students",
-    icon: GraduationCap,
-  },
-  {
-    key: "driver",
-    label: "EVzone Driver",
-    subtitle: "Drive & deliver",
-    icon: Car,
-  },
-  {
-    key: "charging",
-    label: "EVzone Charging",
-    subtitle: "Stations & vehicles",
-    icon: BatteryCharging,
-  },
-  {
-    key: "seller",
-    label: "EVzone Seller",
-    subtitle: "Business dashboard",
-    icon: Store,
-  },
-];
-
 function ServiceCard({ icon: Icon, title, subtitle, onClick, tone }: any) {
   const bg = tone === "green" ? "bg-emerald-50" : "bg-orange-50";
   const iconColor = tone === "green" ? "text-emerald-500" : "text-orange-500";
@@ -67,7 +40,7 @@ export default function SuperAppHome() {
 
   const serviceRoutes: Record<string, string> = {
     school: "/driver/safety/hub",
-    driver: "/driver/dashboard/active",
+    driver: "/driver/dashboard/offline",
     charging: "/driver/vehicles",
     seller: "/driver/delivery/orders-dashboard",
   };

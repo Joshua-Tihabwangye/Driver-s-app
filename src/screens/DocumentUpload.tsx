@@ -7,9 +7,17 @@ Info,
 ShieldCheck,
 Upload
 } from "lucide-react";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState, type ChangeEvent } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
+import {
+  areAllRequiredDocumentsUploaded,
+  persistDocumentState,
+  readStoredDocumentState,
+  type DocumentUploadKey,
+  type DocumentUploadState,
+} from "../utils/documentVerificationState";
 
 // EVzone Driver App – DocumentUpload Driver Personal – Document Verification
 // Green curved header design. ALL original functionality preserved:
@@ -72,25 +80,50 @@ function DocItem({
 
 export default function DocumentUpload() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { setOnboardingCheckpoint } = useStore();
+  const focusedDoc = useMemo(() => {
+    const query = new URLSearchParams(location.search);
+    const focus = query.get("focus");
+    if (focus === "id" || focus === "license" || focus === "police") {
+      return focus;
+    }
+    return null;
+  }, [location.search]);
   
-  const [docs, setDocs] = useState({
-    id: { status: "Uploaded", emphasise: false, fileName: "national-id.pdf" },
-    license: { status: "Missing", emphasise: true, fileName: "" },
-    police: { status: "Missing", emphasise: false, fileName: "" }
-});
+  const [docs, setDocs] = useState<DocumentUploadState>(() => readStoredDocumentState());
+  const allRequiredUploaded = areAllRequiredDocumentsUploaded(docs);
 
-  const handleFileSelected = (key, event) => {
+  useEffect(() => {
+    setOnboardingCheckpoint("documentsVerified", allRequiredUploaded);
+  }, [allRequiredUploaded, setOnboardingCheckpoint]);
+
+  const handleFileSelected = (key: DocumentUploadKey, event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    setDocs((prev) => ({
-      ...prev,
-      [key]: { ...prev[key], status: "Uploaded", emphasise: false, fileName: file.name }
-}));
+
+    setDocs((prev) => {
+      const next = {
+        ...prev,
+        [key]: { ...prev[key], status: "Uploaded", emphasise: false, fileName: file.name },
+      };
+      persistDocumentState(next);
+      return next;
+    });
   };
 
-  const triggerFilePick = (key) => {
+  const triggerFilePick = (key: DocumentUploadKey) => {
     const input = document.getElementById(`doc-upload-${key}`);
     if (input) input.click();
+  };
+
+  const handleSubmitDocuments = () => {
+    if (!allRequiredUploaded) {
+      return;
+    }
+
+    setOnboardingCheckpoint("documentsVerified", true);
+    navigate("/driver/onboarding/profile");
   };
 
   return (
@@ -136,7 +169,7 @@ export default function DocumentUpload() {
               title="National ID"
               subtitle="Front and back, all corners"
               status={docs.id.status}
-              emphasise={docs.id.emphasise}
+              emphasise={docs.id.emphasise || focusedDoc === "id"}
               fileName={docs.id.fileName}
               onClick={() => triggerFilePick("id")}
             />
@@ -145,7 +178,7 @@ export default function DocumentUpload() {
               title="Driver's License"
               subtitle="Valid and not expired"
               status={docs.license.status}
-              emphasise={docs.license.emphasise}
+              emphasise={docs.license.emphasise || focusedDoc === "license"}
               fileName={docs.license.fileName}
               onClick={() => triggerFilePick("license")}
             />
@@ -154,7 +187,7 @@ export default function DocumentUpload() {
               title="Conduct Clearance"
               subtitle="Issued within 6 months"
               status={docs.police.status}
-              emphasise={docs.police.emphasise}
+              emphasise={docs.police.emphasise || focusedDoc === "police"}
               fileName={docs.police.fileName}
               onClick={() => triggerFilePick("police")}
             />
@@ -204,13 +237,21 @@ export default function DocumentUpload() {
          <section className="pt-4 pb-12">
           <button
             type="button"
-            onClick={() =>
-              navigate("/driver/onboarding/profile/documents/review")
-            }
-            className="w-full rounded-2xl bg-brand-secondary text-white py-4 text-sm font-black shadow-xl shadow-brand-secondary/20 hover:bg-brand-secondary/90 active:scale-[0.98] transition-all uppercase tracking-widest"
+            disabled={!allRequiredUploaded}
+            onClick={handleSubmitDocuments}
+            className={`w-full rounded-2xl py-4 text-sm font-black shadow-xl active:scale-[0.98] transition-all uppercase tracking-widest ${
+              allRequiredUploaded
+                ? "bg-brand-secondary text-white shadow-brand-secondary/20 hover:bg-brand-secondary/90"
+                : "bg-slate-200 text-slate-500 shadow-none cursor-not-allowed"
+            }`}
           >
-            Submit for Review
+            Save Documents & Continue
           </button>
+          {!allRequiredUploaded && (
+            <p className="mt-2 text-center text-[10px] font-bold uppercase tracking-tight text-slate-400">
+              Upload all required documents to proceed.
+            </p>
+          )}
         </section>
       </main>
     </div>

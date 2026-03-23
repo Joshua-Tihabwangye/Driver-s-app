@@ -13,10 +13,15 @@ import {
   Star,
   User
 } from "lucide-react";
+import { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import StatusChip from "../components/StatusChip";
 import { useStore } from "../context/StoreContext";
+import {
+  areAllRequiredDocumentsUploaded,
+  readStoredDocumentState,
+} from "../utils/documentVerificationState";
 
 // EVzone Driver App – DriverProfileOnboarding Driver Personnel
 // Standardized Driver Personnel / Onboarding dashboard.
@@ -46,8 +51,44 @@ function DocRow({ icon: Icon, title, description, statusLabel, color, onClick }:
 
 export default function DriverProfileOnboarding() {
   const navigate = useNavigate();
-  const { driverRoleConfig } = useStore();
-  const canGoOnline = driverRoleConfig.onboardingComplete;
+  const {
+    canGoOnline,
+    onboardingBlockers,
+    onboardingCheckpoints,
+    setOnboardingCheckpoint,
+  } = useStore();
+  const documentState = useMemo(() => readStoredDocumentState(), []);
+  const blockerCount = onboardingBlockers.length;
+  const documentsComplete = areAllRequiredDocumentsUploaded(documentState);
+  const trainingComplete = onboardingCheckpoints.trainingCompleted;
+
+  useEffect(() => {
+    setOnboardingCheckpoint("documentsVerified", documentsComplete);
+  }, [documentsComplete, setOnboardingCheckpoint]);
+
+  const gatewayAction = useMemo(() => {
+    if (!documentsComplete) {
+      return {
+        label: "Resolve Required Actions",
+        route: "/driver/dashboard/required-actions",
+        note: "Complete onboarding requirements before going live.",
+      };
+    }
+
+    if (!trainingComplete) {
+      return {
+        label: "View Verified Documents",
+        route: "/driver/onboarding/profile/documents/verified",
+        note: "Documents complete. Continue to training to unlock online mode.",
+      };
+    }
+
+    return {
+      label: "Go Online",
+      route: "/driver/dashboard/online",
+      note: "All requirements cleared for live tracking.",
+    };
+  }, [documentsComplete, trainingComplete]);
 
   return (
     <div className="flex flex-col min-h-full bg-transparent">
@@ -130,13 +171,29 @@ export default function DriverProfileOnboarding() {
         </section>
 
         {/* Status alert */}
-        <section className="rounded-3xl bg-amber-50/50 border border-amber-100/50 p-5 flex items-start space-x-3">
-          <div className="mt-0.5 bg-amber-100 p-1.5 rounded-xl">
-            <AlertCircle className="h-4 w-4 text-amber-600" />
+        <section className={`rounded-3xl border p-5 flex items-start space-x-3 ${
+          canGoOnline
+            ? "bg-emerald-50/60 border-emerald-100/80"
+            : "bg-amber-50/50 border-amber-100/50"
+        }`}>
+          <div className={`mt-0.5 p-1.5 rounded-xl ${
+            canGoOnline ? "bg-emerald-100" : "bg-amber-100"
+          }`}>
+            <AlertCircle className={`h-4 w-4 ${
+              canGoOnline ? "text-emerald-600" : "text-amber-600"
+            }`} />
           </div>
-          <div className="shrink text-[11px] text-amber-900">
-            <p className="font-black text-xs mb-1 uppercase tracking-tight">Setup Incomplete</p>
-            <p className="font-medium opacity-70">Upload all required documents and finish the training quiz to unlock shifts.</p>
+          <div className={`shrink text-[11px] ${
+            canGoOnline ? "text-emerald-900" : "text-amber-900"
+          }`}>
+            <p className="font-black text-xs mb-1 uppercase tracking-tight">
+              {canGoOnline ? "Setup Complete" : "Setup Incomplete"}
+            </p>
+            <p className="font-medium opacity-70">
+              {canGoOnline
+                ? "All onboarding requirements are complete. You can now go online."
+                : `Complete ${blockerCount} required step${blockerCount === 1 ? "" : "s"} to unlock shifts.`}
+            </p>
           </div>
         </section>
 
@@ -173,23 +230,57 @@ export default function DriverProfileOnboarding() {
             <DocRow
               icon={IdCard}
               title="Driving Permit"
-              description="Valid primary document"
-              statusLabel="Review"
-              onClick={() => navigate("/driver/onboarding/profile/documents/upload")}
+              description={
+                documentState.license.status === "Uploaded"
+                  ? "Saved and ready for activation"
+                  : "Upload required permit"
+              }
+              statusLabel={
+                documentState.license.status === "Uploaded" ? "Verified" : "Review"
+              }
+              onClick={() =>
+                navigate(
+                  documentsComplete
+                    ? "/driver/onboarding/profile/documents/verified"
+                    : "/driver/onboarding/profile/documents/upload?focus=license"
+                )
+              }
             />
             <DocRow
               icon={CreditCard}
               title="National ID"
-              description="Identity verification"
-              statusLabel="Verified"
-              onClick={() => navigate("/driver/preferences/identity")}
+              description={
+                documentState.id.status === "Uploaded"
+                  ? "Saved and ready for activation"
+                  : "Re-upload for verification"
+              }
+              statusLabel={documentState.id.status === "Uploaded" ? "Verified" : "Pending"}
+              onClick={() =>
+                navigate(
+                  documentsComplete
+                    ? "/driver/onboarding/profile/documents/verified"
+                    : "/driver/onboarding/profile/documents/upload?focus=id"
+                )
+              }
             />
             <DocRow
               icon={FileBadge2}
               title="Conduct Cert"
-              description="Good conduct clearance"
-              statusLabel="Pending"
-              onClick={() => navigate("/driver/onboarding/profile/documents/upload")}
+              description={
+                documentState.police.status === "Uploaded"
+                  ? "Saved and ready for activation"
+                  : "Upload good conduct clearance"
+              }
+              statusLabel={
+                documentState.police.status === "Uploaded" ? "Verified" : "Pending"
+              }
+              onClick={() =>
+                navigate(
+                  documentsComplete
+                    ? "/driver/onboarding/profile/documents/verified"
+                    : "/driver/onboarding/profile/documents/upload?focus=police"
+                )
+              }
             />
           </div>
         </section>
@@ -240,7 +331,7 @@ export default function DriverProfileOnboarding() {
 
         {/* Navigation Blocks */}
         <section className="grid grid-cols-1 gap-3">
-          <button onClick={() => navigate("/driver/preferences")} className="flex items-center gap-4 bg-cream p-5 rounded-3xl border-2 border-orange-500/10 shadow-sm text-left group active:scale-95 hover:scale-[1.01] hover:border-orange-500/30 transition-all">
+          <button onClick={() => navigate("/driver/preferences", { state: { returnTo: "/driver/onboarding/profile" } })} className="flex items-center gap-4 bg-cream p-5 rounded-3xl border-2 border-orange-500/10 shadow-sm text-left group active:scale-95 hover:scale-[1.01] hover:border-orange-500/30 transition-all">
              <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center border border-orange-50 shadow-sm">
                 <SettingsIcon className="h-6 w-6 text-orange-500" />
              </div>
@@ -265,17 +356,17 @@ export default function DriverProfileOnboarding() {
         <section className="pt-4 pb-12">
           <button
             type="button"
-            onClick={() => navigate("/driver/dashboard/online")}
-            disabled={!canGoOnline}
-            className={`w-full rounded-2xl py-4 text-sm font-black shadow-lg transition-all active:scale-[0.98] uppercase tracking-widest ${canGoOnline
+            onClick={() => navigate(gatewayAction.route)}
+            className={`w-full rounded-2xl py-4 text-sm font-black shadow-lg transition-all active:scale-[0.98] uppercase tracking-widest ${
+              gatewayAction.label === "Go Online"
                 ? "bg-orange-500 text-white shadow-orange-500/20 hover:bg-orange-600"
-                : "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
-              }`}
+                : "bg-slate-900 text-white shadow-slate-900/20 hover:bg-slate-800"
+            }`}
           >
-            Go Online
+            {gatewayAction.label}
           </button>
           <p className="mt-2 text-center text-[10px] text-slate-400 font-bold uppercase tracking-tight">
-            Requirements pending approval for live tracking.
+            {gatewayAction.note}
           </p>
         </section>
       </main>

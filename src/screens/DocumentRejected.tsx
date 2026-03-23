@@ -6,9 +6,10 @@ Info,
 Upload,
 XCircle
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – DocumentRejected Driver Personal – Document Rejected
 // Green curved header design. ALL original functionality preserved:
@@ -48,6 +49,11 @@ function RejectedDocRow({ icon: Icon, title, reason, onClick, status = "Rejected
 
 export default function DocumentRejected() {
   const navigate = useNavigate();
+  const { setOnboardingCheckpoint } = useStore();
+
+  useEffect(() => {
+    setOnboardingCheckpoint("documentsVerified", false);
+  }, [setOnboardingCheckpoint]);
 
   const [docs, setDocs] = useState({
     license: { status: "Rejected", fileName: "" },

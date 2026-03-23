@@ -1,7 +1,11 @@
 import { ArrowLeft,ArrowRight,Chrome,Eye,EyeOff,Lock,Mail } from "lucide-react";
 import React,{ useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useLocation,useNavigate } from "react-router-dom";
+import {
+  AUTHENTICATED_HOME_ROUTE,
+  AUTH_LOGIN_ROUTE,
+  useAuth,
+} from "../context/AuthContext";
 
 /**
  * Premium Login Screen for Vehicle Owners and Drivers.
@@ -9,15 +13,21 @@ import { useAuth } from "../context/AuthContext";
  */
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const redirectState = location.state as { from?: string } | null;
+  const postLoginRoute =
+    redirectState?.from && redirectState.from !== AUTH_LOGIN_ROUTE
+      ? redirectState.from
+      : AUTHENTICATED_HOME_ROUTE;
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     login();
-    navigate("/app/register-services");
+    navigate(postLoginRoute, { replace: true });
   };
 
   return (
@@ -89,7 +99,13 @@ export default function Login() {
           </div>
 
           <div className="flex justify-end pr-1">
-            <button type="button" className="text-[11px] font-black text-[#03cd8c] hover:underline uppercase tracking-wider">Recovery Options</button>
+            <button
+              type="button"
+              onClick={() => navigate("/auth/forgot-password")}
+              className="text-[11px] font-black text-[#03cd8c] hover:underline uppercase tracking-wider"
+            >
+              Recovery Options
+            </button>
           </div>
 
           <button

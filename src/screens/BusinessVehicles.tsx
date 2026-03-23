@@ -108,6 +108,14 @@ export default function BusinessVehicles() {
 
         {/* Info & actions */}
         <section className="space-y-4 pt-1 pb-12">
+          <button
+            type="button"
+            onClick={() => navigate("/driver/vehicles")}
+            className="w-full rounded-2xl py-4 text-xs font-black bg-white border border-slate-200 text-slate-500 shadow-sm active:scale-95 transition-all flex items-center justify-center uppercase tracking-widest"
+          >
+            Back to My Vehicles
+          </button>
+
           <div className="rounded-3xl border border-blue-50 bg-blue-50/30 p-5 flex items-start space-x-3">
             <div className="mt-0.5 bg-blue-100 p-1.5 rounded-xl">
               <ShieldCheck className="h-4 w-4 text-blue-600" />
@@ -126,6 +134,13 @@ export default function BusinessVehicles() {
             >
               <AlertTriangle className="h-4 w-4 mr-2" />
               Report Fleet Incident
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/driver/delivery/pickup/confirm")}
+              className="w-full rounded-2xl py-4 text-xs font-black bg-orange-500 text-white shadow-sm active:scale-95 transition-all flex items-center justify-center uppercase tracking-widest"
+            >
+              Open Pickup Flow
             </button>
             <button
               type="button"

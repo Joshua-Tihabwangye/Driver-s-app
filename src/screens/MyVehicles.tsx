@@ -140,6 +140,13 @@ export default function MyVehicles() {
         <section className="pt-2 pb-12">
           <button
             type="button"
+            onClick={() => navigate("/driver/vehicles/business")}
+            className="mb-3 w-full rounded-2xl border border-slate-200 bg-white py-4 text-sm font-black text-slate-700 shadow-sm active:scale-[0.98] transition-all flex items-center justify-center uppercase tracking-widest"
+          >
+            View Partner Fleet
+          </button>
+          <button
+            type="button"
             onClick={() => navigate(`/driver/vehicles/${SAMPLE_IDS.vehicle}`)}
             className="w-full rounded-2xl bg-[#F77F00] py-4 text-sm font-black text-white shadow-xl shadow-orange-500/20 active:scale-[0.98] transition-all flex items-center justify-center uppercase tracking-widest"
           >

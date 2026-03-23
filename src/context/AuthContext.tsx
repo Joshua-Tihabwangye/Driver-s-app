@@ -1,5 +1,10 @@
 import React,{ createContext,useContext,useEffect,useState } from "react";
 
+export const AUTH_STORAGE_KEY = "isLoggedIn";
+export const AUTH_LOGIN_ROUTE = "/auth/login";
+export const AUTH_LANDING_ROUTE = "/landing";
+export const AUTHENTICATED_HOME_ROUTE = "/driver/dashboard/offline";
+
 interface AuthContextType {
   isLoggedIn: boolean;
   login: () => void;
@@ -15,7 +20,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    return localStorage.getItem("isLoggedIn") === "true";
+    return localStorage.getItem(AUTH_STORAGE_KEY) === "true";
   });
 
   const [user, setUser] = useState<{ name: string; initials: string; email: string } | null>(null);
@@ -34,12 +39,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = () => {
     setIsLoggedIn(true);
-    localStorage.setItem("isLoggedIn", "true");
+    localStorage.setItem(AUTH_STORAGE_KEY, "true");
   };
 
   const logout = () => {
     setIsLoggedIn(false);
-    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem(AUTH_STORAGE_KEY);
   };
 
   return (

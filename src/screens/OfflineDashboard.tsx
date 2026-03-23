@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – OfflineDashboard Driver App – Dashboard (Offline State)
 // Driver dashboard when offline, showing status + any blocking issues.
@@ -37,6 +38,10 @@ function IssueRow({ title, text, type, onClick }: any) {
 
 export default function OfflineDashboard() {
   const navigate = useNavigate();
+  const { canGoOnline, onboardingBlockers } = useStore();
+  const goOnlineTarget = canGoOnline
+    ? "/driver/dashboard/online"
+    : "/driver/dashboard/required-actions";
 
   return (
     <div className="flex flex-col h-full bg-transparent">
@@ -64,14 +69,16 @@ export default function OfflineDashboard() {
 
           <button
             type="button"
-            onClick={() => navigate("/driver/dashboard/online")}
+            onClick={() => navigate(goOnlineTarget)}
             className="relative z-10 w-full rounded-2xl bg-brand-active py-4 text-xs font-black text-slate-900 hover:bg-brand-active/90 active:scale-95 transition-all shadow-xl shadow-brand-active/20 uppercase tracking-widest"
           >
-            Go Online
+            {canGoOnline ? "Go Online" : "View Required Actions"}
           </button>
           
           <p className="relative z-10 text-[11px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed">
-            Ensure vehicle docs are verified before going online to receive requests.
+            {canGoOnline
+              ? "All onboarding checks are complete. You can start receiving requests."
+              : "Complete required onboarding steps before receiving requests."}
           </p>
         </section>
 
@@ -80,12 +87,24 @@ export default function OfflineDashboard() {
           <div className="px-1">
             <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Attention Required</h2>
           </div>
-          <IssueRow 
-            title="Identity Verification"
-            text="Please complete your face verification. You have 72 hours remaining."
-            type="info"
-            onClick={() => navigate("/driver/preferences/identity")}
-          />
+          {onboardingBlockers.length === 0 ? (
+            <IssueRow
+              title="All Required Steps Completed"
+              text="No blockers found. You can now switch to online mode."
+              type="info"
+              onClick={() => navigate("/driver/dashboard/online")}
+            />
+          ) : (
+            onboardingBlockers.map((blocker) => (
+              <IssueRow
+                key={blocker.id}
+                title={blocker.title}
+                text={blocker.description}
+                type="blocking"
+                onClick={() => navigate(blocker.route)}
+              />
+            ))
+          )}
         </section>
 
         {/* Info / Tips */}

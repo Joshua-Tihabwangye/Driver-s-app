@@ -1,8 +1,7 @@
 // ── Route Configuration ──────────────────────────────────
 // Extracted from App.tsx for clean separation of routing config from rendering.
 
-import React from "react";
-import { Navigate } from "react-router-dom";
+import type { ComponentType } from "react";
 import { SAMPLE_IDS } from "../data/constants";
 
 // ── Screen Imports ──────────────────────────────────────
@@ -43,6 +42,9 @@ import RequiredActionsDashboard from "../screens/RequiredActionsDashboard";
 import OnlineDashboard from "../screens/OnlineDashboard";
 import SearchingForRide from "../screens/SearchingForRide";
 import AnalyticsDashboard from "../screens/AnalyticsDashboard";
+import EarningsOverview from "../screens/EarningsOverview";
+import WeeklyEarnings from "../screens/WeeklyEarnings";
+import MonthlyEarnings from "../screens/MonthlyEarnings";
 import SearchScreen from "../screens/SearchScreen";
 import MapSettings from "../screens/MapSettings";
 import EarningsGoals from "../screens/EarningsGoals";
@@ -131,32 +133,19 @@ import SettingsDeleteAccount from "../screens/SettingsDeleteAccount";
 import DocumentCenter from "../screens/DocumentCenter";
 import DestinationFilter from "../screens/DestinationFilter";
 import TripDetails from "../screens/TripDetails";
+import SuperAppHome from "../screens/SuperAppHome";
 
 export interface ScreenConfig {
   id: string;
   label: string;
   path: string;
   previewPath?: string;
-  Component: React.ComponentType;
-}
-
-function RedirectToRegisterServices() {
-  return React.createElement(Navigate, {
-    to: "/app/register-services",
-    replace: true,
-  });
-}
-
-function RedirectToAnalytics() {
-  return React.createElement(Navigate, {
-    to: "/driver/analytics",
-    replace: true,
-  });
+  Component: ComponentType;
 }
 
 export const SCREENS: ScreenConfig[] = [
   // Super app & registration
-  { id: "SuperAppHome", label: "Home (Super App)", path: "/app/home", Component: RedirectToRegisterServices },
+  { id: "SuperAppHome", label: "Home (Super App)", path: "/app/home", Component: SuperAppHome },
   { id: "RegisterServices", label: "Register Services", path: "/app/register-services", Component: RegisterServices },
   { id: "Registration", label: "Registration", path: "/auth/register", Component: Registration },
   { id: "DriverRegistration", label: "Registration – EVzone Driver", path: "/driver/register", Component: DriverRegistration },
@@ -193,9 +182,9 @@ export const SCREENS: ScreenConfig[] = [
   { id: "OnlineDashboard", label: "Online Dashboard (Active)", path: "/driver/dashboard/online", Component: OnlineDashboard },
   { id: "SearchingForRide", label: "Searching for Ride", path: "/driver/map/searching", Component: SearchingForRide },
   { id: "AnalyticsDashboard", label: "Analytics Dashboard", path: "/driver/analytics", Component: AnalyticsDashboard },
-  { id: "EarningsOverview", label: "Earnings Overview", path: "/driver/earnings/overview", Component: RedirectToAnalytics },
-  { id: "WeeklyEarnings", label: "Weekly Earnings Summary", path: "/driver/earnings/weekly", Component: RedirectToAnalytics },
-  { id: "MonthlyEarnings", label: "Monthly Earnings Summary", path: "/driver/earnings/monthly", Component: RedirectToAnalytics },
+  { id: "EarningsOverview", label: "Earnings Overview", path: "/driver/earnings/overview", Component: EarningsOverview },
+  { id: "WeeklyEarnings", label: "Weekly Earnings Summary", path: "/driver/earnings/weekly", Component: WeeklyEarnings },
+  { id: "MonthlyEarnings", label: "Monthly Earnings Summary", path: "/driver/earnings/monthly", Component: MonthlyEarnings },
   { id: "SearchScreen", label: "Search Screen", path: "/driver/search", Component: SearchScreen },
   { id: "MapSettings", label: "Map Settings & Report Issues", path: "/driver/map/settings", Component: MapSettings },
   { id: "EarningsGoals", label: "Set Weekly Earning Goal", path: "/driver/earnings/goals", Component: EarningsGoals },

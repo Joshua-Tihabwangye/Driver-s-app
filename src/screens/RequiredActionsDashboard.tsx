@@ -8,6 +8,7 @@ ShieldCheck
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore, type OnboardingCheckpointId } from "../context/StoreContext";
 
 // EVzone Driver App – RequiredActionsDashboard Driver App – Required Actions (Alert Dashboard) (v1)
 // Shows blocking / important actions that must be completed before going fully online.
@@ -36,8 +37,19 @@ function ActionRow({ icon: Icon, title, text, type, onClick }) {
   );
 }
 
+const BLOCKER_ICON_MAP: Record<OnboardingCheckpointId, any> = {
+  roleSelected: ShieldCheck,
+  documentsVerified: FileText,
+  identityVerified: ShieldCheck,
+  vehicleReady: ShieldCheck,
+  trainingCompleted: BookOpenCheck,
+};
+
 export default function RequiredActionsDashboard() {
   const navigate = useNavigate();
+  const { onboardingBlockers, canGoOnline } = useStore();
+  const blockerCount = onboardingBlockers.length;
+
   return (
     <div className="flex flex-col h-full ">
       {/* Hide scrollbar */}
@@ -70,11 +82,15 @@ export default function RequiredActionsDashboard() {
             </div>
             <div className="flex flex-col">
               <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-400">Account Restricted</span>
-              <p className="text-base font-black tracking-tight mt-0.5 text-white">Incomplete Setup Detected</p>
+              <p className="text-base font-black tracking-tight mt-0.5 text-white">
+                {canGoOnline ? "Setup Complete" : "Incomplete Setup Detected"}
+              </p>
             </div>
           </div>
           <p className="text-[11px] text-slate-400 font-medium leading-relaxed">
-            Safety and regulatory requirements must be completed before you can start receiving ride requests. Please address the items below.
+            {canGoOnline
+              ? "All required onboarding steps are complete. You can now switch to online mode."
+              : `Complete ${blockerCount} required onboarding step${blockerCount === 1 ? "" : "s"} before receiving ride requests.`}
           </p>
         </section>
 
@@ -83,20 +99,34 @@ export default function RequiredActionsDashboard() {
           <div className="px-1">
             <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 font-black">Mandatory Steps</h2>
           </div>
-          <ActionRow
-            icon={FileText}
-            title="Driver License Photo"
-            text="Please upload a clearer photo of your driver license (front and back) for verification."
-            onClick={() => navigate("/driver/onboarding/profile/documents/upload")}
-            type="blocking"
-          />
-          <ActionRow
-            icon={BookOpenCheck}
-            title="Safety Training"
-            text="Finish the EV-Safety & Crisis Management module to unlock all service areas."
-            onClick={() => navigate("/driver/training/intro")}
-            type="blocking"
-          />
+          {onboardingBlockers.length === 0 ? (
+            <div className="rounded-2xl border-2 border-emerald-500/20 bg-emerald-50 px-4 py-4 text-[11px] text-emerald-900">
+              <p className="font-black text-xs uppercase tracking-widest">
+                No blockers remaining
+              </p>
+              <p className="mt-1 font-medium">
+                Your onboarding requirements are complete.
+              </p>
+              <button
+                type="button"
+                onClick={() => navigate("/driver/dashboard/online")}
+                className="mt-3 w-full rounded-xl bg-emerald-600 py-3 text-[10px] font-black uppercase tracking-widest text-white"
+              >
+                Continue to Online Dashboard
+              </button>
+            </div>
+          ) : (
+            onboardingBlockers.map((blocker) => (
+              <ActionRow
+                key={blocker.id}
+                icon={BLOCKER_ICON_MAP[blocker.id]}
+                title={blocker.title}
+                text={blocker.description}
+                onClick={() => navigate(blocker.route)}
+                type="blocking"
+              />
+            ))
+          )}
         </section>
 
         <section className="space-y-4 pt-1 pb-12">
