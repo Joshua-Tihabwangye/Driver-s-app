@@ -27,6 +27,40 @@ const services = [
 
 const DRIVER_SERVICE_KEY = "driver";
 
+function GoogleLogo({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 18 18" aria-hidden="true">
+      <path
+        fill="#EA4335"
+        d="M9 3.48c1.69 0 2.84.73 3.49 1.34l2.54-2.54C13.46.83 11.42 0 9 0 5.48 0 2.44 2.02.96 4.96l2.95 2.29C4.62 5.16 6.64 3.48 9 3.48z"
+      />
+      <path
+        fill="#4285F4"
+        d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84c-.21 1.12-.84 2.07-1.8 2.71v2.25h2.92c1.71-1.57 2.68-3.89 2.68-6.6z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M3.91 10.75a5.41 5.41 0 0 1 0-3.5V4.96H.96a9 9 0 0 0 0 8.08l2.95-2.29z"
+      />
+      <path
+        fill="#34A853"
+        d="M9 18c2.42 0 4.46-.8 5.95-2.2l-2.92-2.25c-.81.54-1.84.86-3.03.86-2.36 0-4.38-1.59-5.09-3.73H.96v2.29A9 9 0 0 0 9 18z"
+      />
+    </svg>
+  );
+}
+
+function AppleLogo({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M16.365 1.43c0 1.14-.42 2.24-1.1 3.04-.7.84-1.84 1.5-2.99 1.4-.15-1.12.4-2.3 1.09-3.09.76-.89 2.01-1.51 3-1.35zM20.54 17.02c-.52 1.18-.77 1.7-1.44 2.78-.94 1.51-2.26 3.4-3.9 3.42-1.45.02-1.82-.93-3.78-.92-1.96.01-2.36.94-3.8.93-1.64-.02-2.89-1.72-3.83-3.22C1.14 15.74.88 10.76 2.5 8.28c1.16-1.77 2.98-2.81 4.69-2.81 1.75 0 2.85.95 4.29.95 1.4 0 2.25-.96 4.28-.96 1.52 0 3.13.83 4.28 2.25-3.76 2.06-3.15 7.42.5 9.31z"
+      />
+    </svg>
+  );
+}
+
 
 function ServiceTile({ icon: Icon, label, color, onClick, selected }) {
   return (
@@ -62,6 +96,11 @@ export default function RegisterServices() {
   const handleRegisterNow = () => {
     if (!isDriverSelected) return;
     navigate("/auth/register", { state: { selectedService } });
+  };
+
+  const handleSignUp = (provider: "evzone" | "google" | "apple") => {
+    if (!isDriverSelected) return;
+    navigate("/driver/register", { state: { selectedService, signUpProvider: provider } });
   };
 
   return (
@@ -119,6 +158,51 @@ export default function RegisterServices() {
           >
             Register Now
           </button>
+
+          <div className="relative z-10 space-y-3">
+            <button
+              type="button"
+              onClick={() => handleSignUp("evzone")}
+              disabled={!isDriverSelected}
+              className={`flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-sm font-black transition-all ${
+                isDriverSelected
+                  ? "bg-[#03cd8c] text-white shadow-lg shadow-[#03cd8c]/25 hover:bg-[#02ba7f] active:scale-[0.98]"
+                  : "bg-slate-200 text-slate-500 cursor-not-allowed"
+              }`}
+            >
+              <Car className="h-4 w-4" />
+              Sign up with EVzone Account
+            </button>
+
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => handleSignUp("google")}
+                disabled={!isDriverSelected}
+                className={`flex items-center justify-center gap-2 rounded-xl border py-3 text-xs font-black transition-all ${
+                  isDriverSelected
+                    ? "border-[#dadce0] bg-white text-[#3c4043] hover:bg-[#f8f9fa] active:scale-[0.98]"
+                    : "border-slate-200 bg-slate-100 text-slate-500 cursor-not-allowed"
+                }`}
+              >
+                <GoogleLogo className="h-4 w-4" />
+                Google
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSignUp("apple")}
+                disabled={!isDriverSelected}
+                className={`flex items-center justify-center gap-2 rounded-xl border py-3 text-xs font-black transition-all ${
+                  isDriverSelected
+                    ? "border-black bg-black text-white hover:bg-[#1a1a1a] active:scale-[0.98]"
+                    : "border-slate-200 bg-slate-100 text-slate-500 cursor-not-allowed"
+                }`}
+              >
+                <AppleLogo className="h-4 w-4" />
+                Apple
+              </button>
+            </div>
+          </div>
           
           <p className="relative z-10 text-[11px] text-slate-500 leading-relaxed font-medium px-2">
             Unlock the full potential of your business by registering with us to

@@ -167,15 +167,6 @@ export default function DriverRegistration() {
           <h2 className="text-lg font-black text-slate-900 tracking-tight">John Doe</h2>
         </section>
 
-        {/* Driver Information section header */}
-        <section className="bg-cream rounded-3xl p-6 border-2 border-orange-500/10 shadow-sm">
-          <h3 className="text-[10px] font-black text-orange-500 uppercase tracking-[0.2em] mb-1">Driver Information</h3>
-          <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
-            Complete your profile by providing essential business information, enabling seamless
-            communication and access to our services.
-          </p>
-        </section>
-
         {/* EVzone Driver card */}
         <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-cream p-8 text-center shadow-sm space-y-4 hover:border-orange-500/30 transition-all">
           <div className="flex justify-center">

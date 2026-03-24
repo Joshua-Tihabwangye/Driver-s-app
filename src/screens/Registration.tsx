@@ -91,34 +91,6 @@ export default function Registration() {
           </h2>
         </section>
 
-        {/* Info display rows (read-only summary) */}
-        <section className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-1">
-          <div className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
-            <span className="text-[11px] uppercase font-black text-slate-400 tracking-widest">Country</span>
-            <span className="text-xs font-black text-slate-800 tracking-tight">{country || "Uganda"}</span>
-          </div>
-          <div className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
-            <span className="text-[11px] uppercase font-black text-slate-400 tracking-widest">Birth</span>
-            <span className="text-xs font-black text-slate-800 tracking-tight">{dob || "19.05.1989"}</span>
-          </div>
-          <div className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
-            <span className="text-[11px] uppercase font-black text-slate-400 tracking-widest">Email</span>
-            <span className="text-xs font-black text-slate-800 tracking-tight">{email || "johndoe45@gmail.com"}</span>
-          </div>
-          <div className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
-            <span className="text-[11px] uppercase font-black text-slate-400 tracking-widest">Mobile</span>
-            <span className="text-xs font-black text-slate-800 tracking-tight">{phone || "+256 8868564885"}</span>
-          </div>
-          <div className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
-            <span className="text-[11px] uppercase font-black text-slate-400 tracking-widest">Address</span>
-            <span className="max-w-[65%] truncate text-right text-xs font-black text-slate-800 tracking-tight">
-              {streetAddress
-                ? `${streetAddress}, ${city}`
-                : "Kampala, Uganda"}
-            </span>
-          </div>
-        </section>
-
         {/* Divider */}
         <div className="h-1 w-12 bg-orange-500/20 mx-auto rounded-full" />
 
