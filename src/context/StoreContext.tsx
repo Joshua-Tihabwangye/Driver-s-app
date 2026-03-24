@@ -41,6 +41,12 @@ export interface DriverProfile {
   memberSinceYear: number;
 }
 
+export interface DriverPreferences {
+  areaIds: string[];
+  serviceIds: string[];
+  requirementIds: string[];
+}
+
 export type OnboardingCheckpointId =
   | "roleSelected"
   | "documentsVerified"
@@ -148,6 +154,7 @@ interface StoreContextType {
   recentEarnings: typeof MOCK_EARNINGS;
   driverRoleConfig: DriverRoleConfig;
   driverProfile: DriverProfile;
+  driverPreferences: DriverPreferences;
   driverProfilePhoto: string | null;
   onboardingCheckpoints: OnboardingCheckpointState;
   onboardingBlockers: OnboardingBlocker[];
@@ -174,6 +181,8 @@ interface StoreContextType {
   updateDriverRoleConfig: (input: DriverRoleUpdateInput) => DriverRoleUpdateResult;
   setDriverProfile: (profile: DriverProfile) => void;
   updateDriverProfile: (patch: Partial<DriverProfile>) => void;
+  setDriverPreferences: (preferences: DriverPreferences) => void;
+  updateDriverPreferences: (patch: Partial<DriverPreferences>) => void;
   setDriverProfilePhoto: (photo: string | null) => void;
   enableDualMode: () => void;
   setOnboardingCheckpoint: (
@@ -225,6 +234,7 @@ const DELIVERY_WORKFLOW_STORAGE_KEY = "driver_delivery_workflow";
 const SHARED_RIDES_ENABLED_STORAGE_KEY = "driver_shared_rides_enabled";
 const ACTIVE_TRIP_STORAGE_KEY = "driver_active_trip_state";
 const DRIVER_PROFILE_STORAGE_KEY = "driver_profile";
+const DRIVER_PREFERENCES_STORAGE_KEY = "driver_preferences";
 const DRIVER_PROFILE_PHOTO_STORAGE_KEY = "driver_profile_photo";
 
 const DEFAULT_ONBOARDING_CHECKPOINTS: OnboardingCheckpointState = {
@@ -267,6 +277,14 @@ function createDefaultDriverProfile(): DriverProfile {
     postalCode: "",
     landmark: "",
     memberSinceYear: new Date().getFullYear(),
+  };
+}
+
+function createDefaultDriverPreferences(): DriverPreferences {
+  return {
+    areaIds: ["downtown", "countryside"],
+    serviceIds: ["airport-rides", "ambulance-driver"],
+    requirementIds: ["shopping", "partner"],
   };
 }
 
@@ -435,6 +453,49 @@ function readStoredDriverProfile(): DriverProfile {
           : fallback.postalCode,
       landmark: typeof parsed.landmark === "string" ? parsed.landmark : fallback.landmark,
       memberSinceYear,
+    };
+  } catch {
+    return fallback;
+  }
+}
+
+function readStoredDriverPreferences(): DriverPreferences {
+  const fallback = createDefaultDriverPreferences();
+  if (typeof window === "undefined") {
+    return fallback;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(DRIVER_PREFERENCES_STORAGE_KEY);
+    if (!raw) {
+      return fallback;
+    }
+
+    const parsed = JSON.parse(raw) as Partial<DriverPreferences>;
+    const sanitizeIds = (value: unknown, defaultIds: string[]) => {
+      if (!Array.isArray(value)) {
+        return [...defaultIds];
+      }
+
+      const uniqueIds = new Set<string>();
+      value.forEach((entry) => {
+        if (typeof entry !== "string") {
+          return;
+        }
+        const id = entry.trim();
+        if (!id) {
+          return;
+        }
+        uniqueIds.add(id);
+      });
+
+      return Array.from(uniqueIds);
+    };
+
+    return {
+      areaIds: sanitizeIds(parsed.areaIds, fallback.areaIds),
+      serviceIds: sanitizeIds(parsed.serviceIds, fallback.serviceIds),
+      requirementIds: sanitizeIds(parsed.requirementIds, fallback.requirementIds),
     };
   } catch {
     return fallback;
@@ -741,6 +802,49 @@ function mapSharedEarningTypeToRevenueType(
   return "other";
 }
 
+function parseTripAmount(amount: TripRecord["amount"]): number {
+  if (typeof amount === "number") {
+    return Number.isFinite(amount) ? amount : 0;
+  }
+
+  const parsed = Number.parseFloat(String(amount).replace(/[^\d.]/g, ""));
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function toMiddayTimestamp(date: string): number {
+  const parsed = Date.parse(`${date}T12:00:00`);
+  return Number.isFinite(parsed) ? parsed : Date.now();
+}
+
+function labelForJobType(jobType: JobCategory): string {
+  if (jobType === "ride") return "Private Ride";
+  if (jobType === "shared") return "Shared Ride";
+  if (jobType === "delivery") return "Delivery";
+  if (jobType === "rental") return "Rental";
+  if (jobType === "tour") return "Tour";
+  if (jobType === "ambulance") return "Ambulance";
+  return "Shuttle";
+}
+
+function revenueTypeForJobType(jobType: JobCategory): RevenueEvent["type"] {
+  if (jobType === "shared") {
+    return "shared_addon";
+  }
+  return "base";
+}
+
+function buildSeedRevenueEventsFromTrips(trips: TripRecord[]): RevenueEvent[] {
+  return trips.map((trip, index) => ({
+    id: `seed-rev-${trip.id}-${index + 1}`,
+    tripId: trip.id,
+    timestamp: toMiddayTimestamp(trip.date),
+    type: revenueTypeForJobType(trip.jobType),
+    amount: parseTripAmount(trip.amount),
+    label: labelForJobType(trip.jobType),
+    category: trip.jobType,
+  }));
+}
+
 const DELIVERY_WORKFLOW_STAGE_ORDER: Record<DeliveryWorkflowStage, number> = {
   idle: 0,
   accepted: 1,
@@ -780,15 +884,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [periodFilter, setPeriodFilter] = useState<PeriodFilter>("day");
   const [jobs, setJobs] = useState<Job[]>(initialJobs);
   const [trips, setTrips] = useState<TripRecord[]>(MOCK_COMPLETED_TRIPS);
-  const [revenueEvents, setRevenueEvents] = useState<RevenueEvent[]>([
-    // Prepulate some today revenue for demonstration
-    { id: "r1", tripId: "t1", timestamp: Date.now() - 3600000, type: "base", amount: 28000, label: "Private Ride", category: "ride" },
-    { id: "r2", tripId: "t2", timestamp: Date.now() - 7200000, type: "shared_addon", amount: 42500, label: "Shared Ride", category: "shared" },
-    { id: "r3", tripId: "t3", timestamp: Date.now() - 14400000, type: "base", amount: 15600, label: "Delivery", category: "delivery" },
-    { id: "r4", tripId: "t4", timestamp: Date.now() - 86400000 * 2, type: "base", amount: 120000, label: "Rental", category: "rental" },
-    { id: "r5", tripId: "t5", timestamp: Date.now() - 86400000 * 5, type: "base", amount: 250000, label: "Tour", category: "tour" },
-    { id: "r6", tripId: "t6", timestamp: Date.now() - 86400000 * 10, type: "base", amount: 35000, label: "Private Ride", category: "ride" },
-  ]);
+  const [revenueEvents, setRevenueEvents] = useState<RevenueEvent[]>(
+    () => buildSeedRevenueEventsFromTrips(MOCK_COMPLETED_TRIPS)
+  );
   const [sharedRidesEnabled, setSharedRidesEnabled] = useState<boolean>(() =>
     readStoredSharedRidesEnabled()
   );
@@ -802,6 +900,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   });
   const [driverProfile, setDriverProfile] = useState<DriverProfile>(() =>
     readStoredDriverProfile()
+  );
+  const [driverPreferences, setDriverPreferences] = useState<DriverPreferences>(() =>
+    readStoredDriverPreferences()
   );
   const [onboardingCheckpoints, setOnboardingCheckpoints] =
     useState<OnboardingCheckpointState>(() => readStoredOnboardingCheckpoints());
@@ -830,6 +931,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const updateDriverProfile = useCallback((patch: Partial<DriverProfile>) => {
     setDriverProfile((prev) => ({
+      ...prev,
+      ...patch,
+    }));
+  }, []);
+
+  const updateDriverPreferences = useCallback((patch: Partial<DriverPreferences>) => {
+    setDriverPreferences((prev) => ({
       ...prev,
       ...patch,
     }));
@@ -904,6 +1012,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       JSON.stringify(driverProfile)
     );
   }, [driverProfile]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.localStorage.setItem(
+      DRIVER_PREFERENCES_STORAGE_KEY,
+      JSON.stringify(driverPreferences)
+    );
+  }, [driverPreferences]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -1586,6 +1705,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     recentEarnings,
     driverRoleConfig,
     driverProfile,
+    driverPreferences,
     driverProfilePhoto,
     onboardingCheckpoints,
     onboardingBlockers,
@@ -1610,6 +1730,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     updateDriverRoleConfig,
     setDriverProfile,
     updateDriverProfile,
+    setDriverPreferences,
+    updateDriverPreferences,
     setDriverProfilePhoto,
     enableDualMode,
     setOnboardingCheckpoint,

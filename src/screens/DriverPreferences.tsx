@@ -1,57 +1,230 @@
 import {
-Ambulance,
-Briefcase,
-Building2,
-Bus,
-Car,
-ChevronLeft,
-ClipboardCheck,
-Clock,
-GraduationCap,
-MapPin,
-Package,
-Plane,
-ShoppingCart,
-Truck
+  Ambulance,
+  Building2,
+  Bus,
+  Car,
+  ClipboardCheck,
+  Clock,
+  GraduationCap,
+  MapPin,
+  Package,
+  Plane,
+  ShoppingCart,
+  Truck,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import type { LucideIcon } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
-
+import type { DriverCoreRole } from "../data/types";
 import { useSharedTrips } from "../context/SharedTripsContext";
 import { useStore } from "../context/StoreContext";
 
-// EVzone Driver App – DriverPreferences Preferences
-// New design: green curved header, toggleable Areas/Services/Requirements cards, green nav.
-// Functionality: all items are clickable and toggle their active state (green ↔ white).
-// Done button navigates. All routing preserved from original.
+interface PreferenceOption {
+  id: string;
+  icon: LucideIcon;
+  label: string;
+  color: string;
+}
 
+interface AreaCardProps extends PreferenceOption {
+  active: boolean;
+  onClick: () => void;
+}
 
-function AreaCard({ icon: Icon, label, color, active, onClick }) {
+interface ServiceChipProps extends PreferenceOption {
+  active: boolean;
+  onClick: () => void;
+}
+
+interface RequirementCardProps extends PreferenceOption {
+  active: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+}
+
+type TaskCategoryKey =
+  | "ride"
+  | "delivery"
+  | "rental"
+  | "tour"
+  | "ambulance";
+
+interface TaskCategoryOption {
+  id: TaskCategoryKey;
+  icon: LucideIcon;
+  label: string;
+  description: string;
+}
+
+const AREA_OPTIONS: PreferenceOption[] = [
+  { id: "downtown", icon: Building2, label: "Down Town", color: "#f97316" },
+  { id: "city-center", icon: Building2, label: "City Center", color: "#2196F3" },
+  { id: "suburbs", icon: Building2, label: "Suburbs", color: "#f97316" },
+  { id: "gated-community", icon: Building2, label: "Gated Community", color: "#f77f00" },
+  { id: "countryside", icon: Building2, label: "Country Side", color: "#f97316" },
+  { id: "hospitals", icon: Building2, label: "Hospitals", color: "#2196F3" },
+  { id: "beachfront", icon: MapPin, label: "Beachfront", color: "#f77f00" },
+];
+
+const SERVICE_OPTIONS: PreferenceOption[] = [
+  { id: "airport-rides", icon: Truck, label: "Airport Rides", color: "#f97316" },
+  { id: "tourist-drives", icon: GraduationCap, label: "Tourist drives", color: "#f77f00" },
+  { id: "ambulance-driver", icon: Ambulance, label: "Ambulance driver", color: "#ef4444" },
+  { id: "taxi-services", icon: Bus, label: "Taxi services", color: "#2196F3" },
+  { id: "motorcycle-rides", icon: Car, label: "Motorcycle rides", color: "#f97316" },
+  { id: "logistics", icon: Package, label: "Logistics", color: "#f77f00" },
+  { id: "inter-city", icon: Plane, label: "Inter-City", color: "#2196F3" },
+];
+
+const REQUIREMENT_OPTIONS: PreferenceOption[] = [
+  { id: "shopping", icon: ShoppingCart, label: "Shopping & Errands", color: "#f97316" },
+  { id: "shared", icon: Bus, label: "Ride sharing", color: "#f77f00" },
+  { id: "long-distance", icon: Clock, label: "Long Distance", color: "#2196F3" },
+  { id: "shopping-partner", icon: ShoppingCart, label: "Shopping Partner", color: "#f97316" },
+  { id: "surge", icon: Car, label: "Surge", color: "#ef4444" },
+];
+
+const TASK_CATEGORY_OPTIONS: TaskCategoryOption[] = [
+  {
+    id: "ride",
+    icon: Car,
+    label: "Ride",
+    description: "Passenger trips",
+  },
+  {
+    id: "delivery",
+    icon: Package,
+    label: "Delivery",
+    description: "Food and parcel",
+  },
+  {
+    id: "rental",
+    icon: Truck,
+    label: "Rental",
+    description: "Hourly chauffeur",
+  },
+  {
+    id: "tour",
+    icon: GraduationCap,
+    label: "Tour",
+    description: "Scheduled tours",
+  },
+  {
+    id: "ambulance",
+    icon: Ambulance,
+    label: "Ambulance",
+    description: "Emergency transport",
+  },
+];
+
+const PRIMARY_ROLE_BY_CATEGORY: Record<TaskCategoryKey, DriverCoreRole> = {
+  ride: "ride-only",
+  delivery: "delivery-only",
+  rental: "rental-only",
+  tour: "tour-only",
+  ambulance: "ambulance-only",
+};
+
+function deriveTaskCategoriesFromRoleConfig(
+  coreRole: DriverCoreRole,
+  programs: {
+    rental: boolean;
+    tour: boolean;
+    ambulance: boolean;
+  }
+): Record<TaskCategoryKey, boolean> {
+  return {
+    ride: coreRole === "ride-only" || coreRole === "dual-mode",
+    delivery: coreRole === "delivery-only" || coreRole === "dual-mode",
+    rental: coreRole === "rental-only" || programs.rental,
+    tour: coreRole === "tour-only" || programs.tour,
+    ambulance: coreRole === "ambulance-only" || programs.ambulance,
+  };
+}
+
+function buildProjectedTaskAllocation(
+  taskCategories: Record<TaskCategoryKey, boolean>,
+  sharedRidesEnabled: boolean
+): string[] {
+  const allocation = new Set<string>();
+
+  if (taskCategories.ride) allocation.add("ride");
+  if (taskCategories.delivery) allocation.add("delivery");
+  if (taskCategories.rental) allocation.add("rental");
+  if (taskCategories.tour) allocation.add("tour");
+  if (taskCategories.ambulance) allocation.add("ambulance");
+  if (sharedRidesEnabled && taskCategories.ride) allocation.add("shared");
+
+  return Array.from(allocation);
+}
+
+function deriveRoleLabelFromTaskCategories(
+  taskCategories: Record<TaskCategoryKey, boolean>
+): string {
+  const orderedKeys: TaskCategoryKey[] = [
+    "ride",
+    "delivery",
+    "rental",
+    "tour",
+    "ambulance",
+  ];
+  const labelByKey: Record<TaskCategoryKey, string> = {
+    ride: "Ride",
+    delivery: "Delivery",
+    rental: "Rental",
+    tour: "Tour",
+    ambulance: "Ambulance",
+  };
+
+  const selectedLabels = orderedKeys
+    .filter((key) => taskCategories[key])
+    .map((key) => labelByKey[key]);
+
+  if (selectedLabels.length === 0) {
+    return "No Role Selected";
+  }
+
+  return selectedLabels.join(" + ");
+}
+
+function toggleInList(ids: string[], id: string): string[] {
+  if (ids.includes(id)) {
+    return ids.filter((item) => item !== id);
+  }
+  return [...ids, id];
+}
+
+function AreaCard({ icon: Icon, label, color, active, onClick }: AreaCardProps) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`flex flex-col items-center justify-center rounded-2xl py-3 px-2 transition-all active:scale-[0.96] ${active
+      className={`flex flex-col items-center justify-center rounded-2xl py-3 px-2 transition-all active:scale-[0.96] ${
+        active
           ? "bg-orange-500 text-white shadow-md shadow-orange-500/20"
           : "bg-white border border-slate-100 text-slate-700 shadow-[0_1px_4px_rgba(0,0,0,0.04)] hover:border-orange-500/30"
-        }`}
+      }`}
     >
-      <Icon className={`h-6 w-6 mb-1.5 ${active ? "text-white" : ""}`} style={!active ? { color } : {}} />
+      <Icon
+        className={`h-6 w-6 mb-1.5 ${active ? "text-white" : ""}`}
+        style={!active ? { color } : {}}
+      />
       <span className="text-[10px] font-semibold text-center leading-tight">{label}</span>
     </button>
   );
 }
 
-function ServiceChip({ icon: Icon, label, color, active, onClick }) {
+function ServiceChip({ icon: Icon, label, color, active, onClick }: ServiceChipProps) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium transition-all active:scale-[0.96] ${active
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium transition-all active:scale-[0.96] ${
+        active
           ? "bg-orange-500 text-white"
           : "bg-white border border-slate-200 text-slate-700 hover:border-orange-500/30"
-        }`}
+      }`}
     >
       <Icon className="h-3.5 w-3.5" style={!active ? { color } : {}} />
       {label}
@@ -59,22 +232,40 @@ function ServiceChip({ icon: Icon, label, color, active, onClick }) {
   );
 }
 
-function RequirementCard({ icon: Icon, label, color, active, onClick }) {
+function RequirementCard({
+  icon: Icon,
+  label,
+  color,
+  active,
+  disabled = false,
+  onClick,
+}: RequirementCardProps) {
   return (
     <button
       type="button"
+      disabled={disabled}
       onClick={onClick}
-      className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 transition-all active:scale-[0.98] ${active
-          ? "bg-orange-500 text-white"
-          : "bg-white border border-slate-100 text-slate-700 shadow-[0_1px_4px_rgba(0,0,0,0.04)] hover:border-orange-500/30"
-        }`}
+      className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 transition-all ${
+        disabled
+          ? "cursor-not-allowed border border-slate-200 bg-slate-100 text-slate-400"
+          : active
+          ? "bg-orange-500 text-white active:scale-[0.98]"
+          : "bg-white border border-slate-100 text-slate-700 shadow-[0_1px_4px_rgba(0,0,0,0.04)] hover:border-orange-500/30 active:scale-[0.98]"
+      }`}
     >
-      <Icon className={`h-4 w-4 flex-shrink-0 ${active ? "text-white" : ""}`} style={!active ? { color } : {}} />
+      <Icon
+        className={`h-4 w-4 flex-shrink-0 ${active && !disabled ? "text-white" : ""}`}
+        style={!active || disabled ? { color } : {}}
+      />
       <span className="text-[11px] font-medium">{label}</span>
       {label === "Ride sharing" && (
-         <span className={`ml-auto text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${active ? "bg-white text-orange-500" : "bg-orange-50 text-orange-500"}`}>
-            New flow
-         </span>
+        <span
+          className={`ml-auto text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${
+            active ? "bg-white text-orange-500" : "bg-orange-50 text-orange-500"
+          }`}
+        >
+          New flow
+        </span>
       )}
     </button>
   );
@@ -84,111 +275,159 @@ export default function DriverPreferences() {
   const navigate = useNavigate();
   const location = useLocation();
   const { sharedRidesEnabled, setSharedRidesEnabled } = useSharedTrips();
-  const { driverRoleConfig, assignableJobTypes, enableDualMode } = useStore();
-  const isRideCapable = assignableJobTypes.includes("ride");
-  const ROLE_LABELS = {
-    "ride-only": "Rider-only",
-    "delivery-only": "Delivery-only",
-    "dual-mode": "Ride + Delivery",
-    "rental-only": "Rental-only",
-    "tour-only": "Tour-only",
-    "ambulance-only": "Ambulance-only",
-  } as const;
-  const specializedSelections =
-    Number(driverRoleConfig.programs.rental) +
-    Number(driverRoleConfig.programs.tour) +
-    Number(driverRoleConfig.programs.ambulance);
-  const roleLabel =
-    specializedSelections > 1
-      ? "Specialized Multi"
-      : ROLE_LABELS[driverRoleConfig.coreRole];
+  const {
+    driverRoleConfig,
+    driverPreferences,
+    updateDriverRoleConfig,
+    setDriverPreferences,
+  } = useStore();
+  const [taskCategoryError, setTaskCategoryError] = useState("");
+  const [taskCategories, setTaskCategories] = useState<Record<TaskCategoryKey, boolean>>(
+    () =>
+      deriveTaskCategoriesFromRoleConfig(
+        driverRoleConfig.coreRole,
+        driverRoleConfig.programs
+      )
+  );
+  const [sharedRidesDraft, setSharedRidesDraft] = useState(sharedRidesEnabled);
 
-  // Toggleable state for areas
-  const [areas, setAreas] = useState([
-    { icon: Building2, label: "Down Town", color: "#f97316", active: true },
-    { icon: Building2, label: "City Center", color: "#2196F3", active: false },
-    { icon: Building2, label: "Suburbs", color: "#f97316", active: false },
-    { icon: Building2, label: "Gated Community", color: "#f77f00", active: false },
-    { icon: Building2, label: "Country Side", color: "#f97316", active: true },
-    { icon: Building2, label: "Hospitals", color: "#2196F3", active: false },
-    { icon: MapPin, label: "Beachfront", color: "#f77f00", active: false },
-  ]);
+  const [selectedAreaIds, setSelectedAreaIds] = useState<string[]>(
+    driverPreferences.areaIds
+  );
+  const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>(
+    driverPreferences.serviceIds
+  );
+  const [selectedRequirementIds, setSelectedRequirementIds] = useState<string[]>(
+    driverPreferences.requirementIds.filter((id) => id !== "shared")
+  );
 
-  // Toggleable state for services
-  const [services, setServices] = useState([
-    { icon: Truck, label: "Airport Rides", color: "#f97316", active: true },
-    { icon: GraduationCap, label: "Tourist drives", color: "#f77f00", active: false },
-    { icon: Ambulance, label: "Ambulance driver", color: "#ef4444", active: true },
-    { icon: Bus, label: "Taxi services", color: "#2196F3", active: false },
-    { icon: Car, label: "Motorcycle rides", color: "#f97316", active: false },
-    { icon: Package, label: "Logistics", color: "#f77f00", active: false },
-    { icon: Plane, label: "Inter-City", color: "#2196F3", active: false },
-  ]);
+  const roleLabel = useMemo(
+    () => deriveRoleLabelFromTaskCategories(taskCategories),
+    [taskCategories]
+  );
+  const canUseSharedRide = taskCategories.ride;
+  const projectedTaskAllocation = useMemo(
+    () => buildProjectedTaskAllocation(taskCategories, sharedRidesDraft),
+    [taskCategories, sharedRidesDraft]
+  );
 
-  // Toggleable state for requirements
-  const [requirements, setRequirements] = useState([
-    { id: "shopping", icon: ShoppingCart, label: "Shopping & Errands", color: "#f97316", active: true },
-    { id: "shared", icon: Bus, label: "Ride sharing", color: "#f77f00", active: sharedRidesEnabled && isRideCapable },
-    { id: "long", icon: Clock, label: "Long Distance", color: "#2196F3", active: false },
-    { id: "partner", icon: ShoppingCart, label: "Shopping Partner", color: "#f97316", active: true },
-    { id: "surge", icon: Car, label: "Surge", color: "#ef4444", active: false },
-  ]);
-
-  useEffect(() => {
-    if (!isRideCapable && sharedRidesEnabled) {
-      setSharedRidesEnabled(false);
+  const redirectAfterSave = useMemo(() => {
+    const returnTo = (location.state as { returnTo?: string } | null)?.returnTo;
+    if (
+      typeof returnTo === "string" &&
+      returnTo.startsWith("/") &&
+      returnTo !== location.pathname
+    ) {
+      return returnTo;
     }
-  }, [isRideCapable, sharedRidesEnabled, setSharedRidesEnabled]);
+    return "/driver/more";
+  }, [location.pathname, location.state]);
 
   useEffect(() => {
-    setRequirements((prev) =>
-      prev.map((requirement) =>
-        requirement.id === "shared"
-          ? { ...requirement, active: sharedRidesEnabled && isRideCapable }
-          : requirement
+    setTaskCategories(
+      deriveTaskCategoriesFromRoleConfig(
+        driverRoleConfig.coreRole,
+        driverRoleConfig.programs
       )
     );
-  }, [sharedRidesEnabled, isRideCapable]);
+  }, [driverRoleConfig.coreRole, driverRoleConfig.programs]);
 
-  const toggleArea = (index) => {
-    setAreas((prev) => prev.map((a, i) => (i === index ? { ...a, active: !a.active } : a)));
+  useEffect(() => {
+    setSharedRidesDraft(sharedRidesEnabled);
+  }, [sharedRidesEnabled]);
+
+  useEffect(() => {
+    if (!taskCategories.ride && sharedRidesDraft) {
+      setSharedRidesDraft(false);
+    }
+  }, [taskCategories.ride, sharedRidesDraft]);
+
+  const toggleArea = (id: string) => {
+    setSelectedAreaIds((prev) => toggleInList(prev, id));
   };
 
-  const toggleService = (index) => {
-    setServices((prev) => prev.map((s, i) => (i === index ? { ...s, active: !s.active } : s)));
+  const toggleService = (id: string) => {
+    setSelectedServiceIds((prev) => toggleInList(prev, id));
   };
 
-  const toggleRequirement = (index) => {
-    setRequirements((prev) => prev.map((r, i) => {
-       if (i === index) {
-          const toggled = !r.active;
-          if (r.id === "shared") {
-             const nextSharedState = toggled && isRideCapable;
-             setSharedRidesEnabled(nextSharedState);
-             return { ...r, active: nextSharedState };
-          }
-          return { ...r, active: toggled };
-       }
-       return r;
+  const toggleTaskCategory = (id: TaskCategoryKey) => {
+    setTaskCategories((prev) => ({
+      ...prev,
+      [id]: !prev[id],
     }));
+    setTaskCategoryError("");
   };
 
-  const redirectAfterSave =
-    (location.state as { returnTo?: string } | null)?.returnTo ||
-    "/driver/dashboard/online";
+  const toggleRequirement = (id: string) => {
+    if (id === "shared") {
+      if (!canUseSharedRide) {
+        return;
+      }
+      setSharedRidesDraft((prev) => !prev);
+      return;
+    }
+
+    setSelectedRequirementIds((prev) => toggleInList(prev, id));
+  };
+
+  const handleBack = () => {
+    navigate(redirectAfterSave, { replace: true });
+  };
+
+  const handleSavePreferences = () => {
+    const selectedTaskKeys = (Object.keys(taskCategories) as TaskCategoryKey[]).filter(
+      (key) => taskCategories[key]
+    );
+
+    if (selectedTaskKeys.length === 0) {
+      setTaskCategoryError("Select at least one task category.");
+      return;
+    }
+
+    const hasRide = taskCategories.ride;
+    const hasDelivery = taskCategories.delivery;
+    const nextCoreRole: DriverCoreRole =
+      hasRide && hasDelivery
+        ? "dual-mode"
+        : hasRide
+        ? "ride-only"
+        : hasDelivery
+        ? "delivery-only"
+        : PRIMARY_ROLE_BY_CATEGORY[selectedTaskKeys[0]];
+
+    const roleUpdateResult = updateDriverRoleConfig({
+      coreRole: nextCoreRole,
+      programs: {
+        rental: taskCategories.rental,
+        tour: taskCategories.tour,
+        ambulance: taskCategories.ambulance,
+        shuttle: false,
+      },
+    });
+
+    if (!roleUpdateResult.ok) {
+      setTaskCategoryError(roleUpdateResult.error || "Unable to update task categories.");
+      return;
+    }
+
+    setSharedRidesEnabled(sharedRidesDraft && taskCategories.ride);
+    setDriverPreferences({
+      areaIds: selectedAreaIds,
+      serviceIds: selectedServiceIds,
+      requirementIds: selectedRequirementIds.filter((id) => id !== "shared"),
+    });
+    navigate(redirectAfterSave, { replace: true });
+  };
 
   return (
     <div className="flex flex-col min-h-full ">
-
-      <PageHeader 
-        title="Preferences" 
-        subtitle="Settings" 
-        onBack={() => navigate(-1)} 
+      <PageHeader
+        title="Preferences"
+        subtitle="Settings"
+        onBack={handleBack}
       />
 
-      {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 space-y-8">
-        {/* Role mode section */}
         <section className="space-y-4">
           <div className="flex items-center justify-between px-1">
             <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
@@ -200,28 +439,54 @@ export default function DriverPreferences() {
           </div>
           <div className="rounded-[2rem] border border-slate-100 bg-white p-4 shadow-sm space-y-3">
             <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
-              Task allocation: {assignableJobTypes.join(", ")}
+              Task allocation: {projectedTaskAllocation.join(", ")}
             </p>
-            {driverRoleConfig.coreRole !== "dual-mode" && (
-              <button
-                type="button"
-                onClick={enableDualMode}
-                className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-emerald-700 hover:bg-emerald-100"
-              >
-                Enable Ride + Delivery
-              </button>
+            <div className="grid grid-cols-2 gap-2">
+              {TASK_CATEGORY_OPTIONS.map((option) => {
+                const active = taskCategories[option.id];
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => toggleTaskCategory(option.id)}
+                    className={`rounded-xl border px-3 py-3 text-left transition-all ${
+                      active
+                        ? "border-orange-500 bg-orange-50 shadow-sm"
+                        : "border-slate-200 bg-white hover:border-orange-300"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <option.icon
+                        className={`h-4 w-4 ${active ? "text-orange-500" : "text-slate-400"}`}
+                      />
+                      <span className="text-[11px] font-black uppercase tracking-tight text-slate-900">
+                        {option.label}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-[10px] font-medium text-slate-500">
+                      {option.description}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+            {taskCategoryError && (
+              <p className="text-[10px] font-black uppercase tracking-widest text-red-600">
+                {taskCategoryError}
+              </p>
             )}
           </div>
         </section>
 
-        {/* Areas section */}
         <section className="space-y-4">
           <div className="flex items-center justify-between px-1">
             <div className="flex items-center gap-2">
               <div className="p-1.5 bg-orange-50 rounded-lg">
                 <MapPin className="h-4 w-4 text-orange-500" />
               </div>
-              <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Target Areas</h2>
+              <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
+                Target Areas
+              </h2>
             </div>
             <button
               type="button"
@@ -231,49 +496,73 @@ export default function DriverPreferences() {
               Manage
             </button>
           </div>
-          
+
           <div className="grid grid-cols-3 gap-3">
-            {areas.map((area, i) => (
-              <AreaCard key={i} {...area} onClick={() => toggleArea(i)} />
+            {AREA_OPTIONS.map((area) => (
+              <AreaCard
+                key={area.id}
+                {...area}
+                active={selectedAreaIds.includes(area.id)}
+                onClick={() => toggleArea(area.id)}
+              />
             ))}
           </div>
         </section>
 
-        {/* Services section */}
         <section className="space-y-4">
           <div className="flex items-center gap-2 px-1">
-             <div className="p-1.5 bg-blue-50 rounded-lg">
-                <Truck className="h-4 w-4 text-blue-600" />
-             </div>
-             <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Available Services</h2>
+            <div className="p-1.5 bg-blue-50 rounded-lg">
+              <Truck className="h-4 w-4 text-blue-600" />
+            </div>
+            <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
+              Available Services
+            </h2>
           </div>
           <div className="flex flex-wrap gap-2.5">
-            {services.map((s, i) => (
-              <ServiceChip key={i} {...s} onClick={() => toggleService(i)} />
+            {SERVICE_OPTIONS.map((service) => (
+              <ServiceChip
+                key={service.id}
+                {...service}
+                active={selectedServiceIds.includes(service.id)}
+                onClick={() => toggleService(service.id)}
+              />
             ))}
           </div>
         </section>
 
-        {/* Requirements section */}
         <section className="space-y-4">
           <div className="flex items-center gap-2 px-1">
-             <div className="p-1.5 bg-amber-50 rounded-lg">
-                <ClipboardCheck className="h-4 w-4 text-amber-600" />
-             </div>
-             <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Working Requirements</h2>
+            <div className="p-1.5 bg-amber-50 rounded-lg">
+              <ClipboardCheck className="h-4 w-4 text-amber-600" />
+            </div>
+            <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
+              Working Requirements
+            </h2>
           </div>
           <div className="grid grid-cols-1 gap-3">
-            {requirements.map((r, i) => (
-              <RequirementCard key={i} {...r} onClick={() => toggleRequirement(i)} />
-            ))}
+            {REQUIREMENT_OPTIONS.map((requirement) => {
+              const isShared = requirement.id === "shared";
+              const active = isShared
+                ? sharedRidesDraft && canUseSharedRide
+                : selectedRequirementIds.includes(requirement.id);
+
+              return (
+                <RequirementCard
+                  key={requirement.id}
+                  {...requirement}
+                  active={active}
+                  disabled={isShared && !canUseSharedRide}
+                  onClick={() => toggleRequirement(requirement.id)}
+                />
+              );
+            })}
           </div>
         </section>
 
-        {/* Done button */}
         <section className="pt-4 pb-12">
           <button
             type="button"
-            onClick={() => navigate(redirectAfterSave)}
+            onClick={handleSavePreferences}
             className="w-full rounded-2xl bg-orange-500 py-4 text-sm font-black text-white shadow-xl shadow-orange-500/20 hover:bg-orange-600 active:scale-[0.98] transition-all uppercase tracking-widest"
           >
             Save Preferences

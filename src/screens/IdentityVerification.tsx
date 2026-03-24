@@ -125,7 +125,11 @@ export default function IdentityVerification() {
         <section className="pt-4 pb-12">
           <button
             type="button"
-            onClick={() => navigate("/driver/preferences")}
+            onClick={() =>
+              navigate("/driver/preferences", {
+                state: { returnTo: "/driver/preferences/identity/face-capture" },
+              })
+            }
             className={`w-full rounded-2xl py-4 text-sm font-black shadow-xl transition-all uppercase tracking-widest ${isDark
                 ? "bg-orange-600 text-white shadow-orange-900/40 hover:bg-orange-500"
                 : "bg-orange-500 text-white shadow-orange-500/20 hover:bg-orange-600"

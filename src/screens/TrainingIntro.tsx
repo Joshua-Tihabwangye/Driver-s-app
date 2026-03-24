@@ -102,7 +102,11 @@ export default function TrainingIntro() {
 
             <button
               type="button"
-              onClick={() => navigate("/driver/preferences")}
+              onClick={() =>
+                navigate("/driver/preferences", {
+                  state: { returnTo: "/driver/training/intro" },
+                })
+              }
               className="w-full rounded-2xl py-4 text-xs font-black text-slate-400 bg-white border border-slate-200 shadow-sm hover:bg-slate-50 active:scale-95 transition-all uppercase tracking-widest"
             >
               Resume later

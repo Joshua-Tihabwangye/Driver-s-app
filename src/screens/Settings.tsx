@@ -21,7 +21,8 @@ export default function Settings() {
         
         <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
           <button
-            onClick={() => navigate(-1)}
+            type="button"
+            onClick={() => navigate("/driver/more")}
             className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg active:scale-95 transition-transform"
           >
             <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-white" />
