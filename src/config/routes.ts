@@ -19,7 +19,6 @@ import DocumentVerified from "../screens/DocumentVerified";
 import AmbulanceJobStatus from "../screens/AmbulanceJobStatus";
 import JobTypesLegend from "../screens/JobTypesLegend";
 import ShuttleLinkInfo from "../screens/ShuttleLinkInfo";
-import IdentityVerification from "../screens/IdentityVerification";
 import FaceCapture from "../screens/FaceCapture";
 import ImageUpload from "../screens/ImageUpload";
 import MyVehicles from "../screens/MyVehicles";
@@ -152,7 +151,6 @@ export const SCREENS: ScreenConfig[] = [
   { id: "DocumentReview", label: "Document Under Review", path: "/driver/onboarding/profile/documents/review", Component: DocumentReview },
   { id: "DocumentRejected", label: "Document Rejected", path: "/driver/onboarding/profile/documents/rejected", Component: DocumentRejected },
   { id: "DocumentVerified", label: "All Documents Verified", path: "/driver/onboarding/profile/documents/verified", Component: DocumentVerified },
-  { id: "IdentityVerification", label: "Identity Verification", path: "/driver/preferences/identity", Component: IdentityVerification },
   { id: "FaceCapture", label: "Face Capture", path: "/driver/preferences/identity/face-capture", Component: FaceCapture },
   { id: "ImageUpload", label: "Upload Your Image", path: "/driver/preferences/identity/upload-image", Component: ImageUpload },
   { id: "MyVehicles", label: "My Vehicles", path: "/driver/vehicles", Component: MyVehicles },

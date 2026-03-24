@@ -15,9 +15,11 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useStore } from "../context/StoreContext";
 
 export default function Profile() {
   const navigate = useNavigate();
+  const { driverProfilePhoto } = useStore();
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState({
     name: "John Driver",
@@ -80,14 +82,25 @@ export default function Profile() {
         <div className="flex flex-col items-center pt-1 mb-2">
           <div className="relative group">
             <div className="flex h-28 w-28 items-center justify-center rounded-[2.5rem] bg-slate-900 border-4 border-emerald-500/20 text-4xl font-bold text-white shadow-2xl group-hover:scale-105 transition-all duration-500 overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/20 to-orange-500/20" />
-              <span className="relative z-10 font-black text-emerald-500">JD</span>
+              {driverProfilePhoto ? (
+                <img
+                  src={driverProfilePhoto}
+                  alt="Driver profile"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <>
+                  <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/20 to-orange-500/20" />
+                  <span className="relative z-10 font-black text-emerald-500">JD</span>
+                </>
+              )}
             </div>
             <div className="absolute -top-1 -right-1 bg-white dark:bg-slate-800 p-1.5 rounded-full shadow-lg border border-emerald-100">
               <ShieldCheck className="h-5 w-5 text-emerald-500 fill-emerald-500/10" />
             </div>
             <button
               type="button"
+              onClick={() => navigate("/driver/preferences/identity/upload-image")}
               className="absolute -bottom-2 -right-2 flex h-10 w-10 items-center justify-center rounded-full bg-orange-500 text-white border-4 border-white shadow-lg active:scale-95 transition-transform"
             >
               <Camera className="h-4 w-4" />
@@ -198,7 +211,7 @@ export default function Profile() {
           {/* Identity Card */}
           <button
             type="button"
-            onClick={() => navigate("/driver/preferences/identity")}
+            onClick={() => navigate("/driver/preferences/identity/face-capture")}
             className="w-full rounded-[2.5rem] bg-slate-900 border border-slate-800 px-5 py-5 flex items-center justify-between group active:scale-[0.98] hover:border-emerald-500/20 hover:shadow-lg transition-all overflow-hidden relative"
           >
             <div className="absolute top-0 right-0 p-4 opacity-10">

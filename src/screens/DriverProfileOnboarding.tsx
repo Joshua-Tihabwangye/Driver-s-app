@@ -2,18 +2,18 @@ import {
   AlertCircle,
   Camera,
   Car,
+  CheckCircle2,
   CreditCard,
   FileBadge2,
   FileText,
   IdCard,
   Link2,
-  MapPin,
-  Settings as SettingsIcon,
+  Plus,
   ShieldCheck,
-  Star,
+  Trash2,
   User
 } from "lucide-react";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import StatusChip from "../components/StatusChip";
@@ -52,10 +52,67 @@ function DocRow({ icon: Icon, title, description, statusLabel, color, onClick }:
   );
 }
 
+interface SocialLinkEntry {
+  id: string;
+  platform: string;
+  username: string;
+  url: string;
+}
+
+const SOCIAL_LINKS_STORAGE_KEY = "driver_social_links";
+
+function createSocialLinkEntry(): SocialLinkEntry {
+  return {
+    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    platform: "",
+    username: "",
+    url: "",
+  };
+}
+
+function readStoredSocialLinks(): SocialLinkEntry[] {
+  if (typeof window === "undefined") {
+    return [createSocialLinkEntry()];
+  }
+
+  try {
+    const raw = window.localStorage.getItem(SOCIAL_LINKS_STORAGE_KEY);
+    if (!raw) {
+      return [createSocialLinkEntry()];
+    }
+
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) {
+      return [createSocialLinkEntry()];
+    }
+
+    const sanitized = parsed
+      .filter((item) => item && typeof item === "object")
+      .map((item) => {
+        const candidate = item as Partial<SocialLinkEntry>;
+        return {
+          id:
+            typeof candidate.id === "string" && candidate.id.trim()
+              ? candidate.id
+              : createSocialLinkEntry().id,
+          platform: typeof candidate.platform === "string" ? candidate.platform : "",
+          username: typeof candidate.username === "string" ? candidate.username : "",
+          url: typeof candidate.url === "string" ? candidate.url : "",
+        };
+      });
+
+    return sanitized.length > 0 ? sanitized : [createSocialLinkEntry()];
+  } catch {
+    return [createSocialLinkEntry()];
+  }
+}
+
 export default function DriverProfileOnboarding() {
   const navigate = useNavigate();
   const {
     canGoOnline,
+    driverRoleConfig,
+    driverProfilePhoto,
     onboardingBlockers,
     onboardingCheckpoints,
     setOnboardingCheckpoint,
@@ -64,6 +121,25 @@ export default function DriverProfileOnboarding() {
   const blockerCount = onboardingBlockers.length;
   const documentsComplete = areAllRequiredDocumentsUploaded(documentState);
   const trainingComplete = onboardingCheckpoints.trainingCompleted;
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [cameraError, setCameraError] = useState("");
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const [isSocialEditorOpen, setIsSocialEditorOpen] = useState(false);
+  const [isInfoBreakdownsOpen, setIsInfoBreakdownsOpen] = useState(false);
+  const [socialLinks, setSocialLinks] = useState<SocialLinkEntry[]>(() => readStoredSocialLinks());
+
+  const closeCamera = () => {
+    setIsCameraOpen(false);
+    setCameraError("");
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+  };
 
   const getDocumentStatusLabel = (key: DocumentUploadKey) => {
     const entry = documentState[key];
@@ -97,6 +173,59 @@ export default function DriverProfileOnboarding() {
     setOnboardingCheckpoint("documentsVerified", documentsComplete);
   }, [documentsComplete, setOnboardingCheckpoint]);
 
+  useEffect(() => {
+    if (!isCameraOpen) return;
+
+    let isCancelled = false;
+
+    const startCamera = async () => {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        setCameraError("Camera is not supported on this browser.");
+        return;
+      }
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "user" },
+          audio: false,
+        });
+
+        if (isCancelled) {
+          stream.getTracks().forEach((track) => track.stop());
+          return;
+        }
+
+        streamRef.current = stream;
+        setCameraError("");
+
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          await videoRef.current.play().catch(() => undefined);
+        }
+      } catch {
+        setCameraError("Camera access denied. Allow permission and try again.");
+      }
+    };
+
+    startCamera();
+
+    return () => {
+      isCancelled = true;
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+      }
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
+    };
+  }, [isCameraOpen]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(SOCIAL_LINKS_STORAGE_KEY, JSON.stringify(socialLinks));
+  }, [socialLinks]);
+
   const gatewayAction = useMemo(() => {
     if (!documentsComplete) {
       return {
@@ -108,9 +237,9 @@ export default function DriverProfileOnboarding() {
 
     if (!trainingComplete) {
       return {
-        label: "View Verified Documents",
-        route: "/driver/onboarding/profile/documents/verified",
-        note: "Documents complete. Continue to training to unlock online mode.",
+        label: "Go to Training Sessions",
+        route: "/driver/training/info-session",
+        note: "Documents complete. Finish training sessions to unlock online mode.",
       };
     }
 
@@ -120,6 +249,183 @@ export default function DriverProfileOnboarding() {
       note: "All requirements cleared for live tracking.",
     };
   }, [documentsComplete, trainingComplete]);
+
+  type BreakdownItem = {
+    id: string;
+    label: string;
+    detail: string;
+    present: boolean;
+    route: string;
+  };
+
+  const documentSides = useMemo(
+    () => [
+      {
+        id: "license-front",
+        label: "Driving Permit (Front)",
+        copy: documentState.license.front,
+        uploadRoute: "/driver/onboarding/profile/documents/upload?focus=license",
+      },
+      {
+        id: "license-back",
+        label: "Driving Permit (Back)",
+        copy: documentState.license.back,
+        uploadRoute: "/driver/onboarding/profile/documents/upload?focus=license",
+      },
+      {
+        id: "id-front",
+        label: "National ID (Front)",
+        copy: documentState.id.front,
+        uploadRoute: "/driver/onboarding/profile/documents/upload?focus=id",
+      },
+      {
+        id: "id-back",
+        label: "National ID (Back)",
+        copy: documentState.id.back,
+        uploadRoute: "/driver/onboarding/profile/documents/upload?focus=id",
+      },
+      {
+        id: "police-front",
+        label: "Conduct Cert (Front)",
+        copy: documentState.police.front,
+        uploadRoute: "/driver/onboarding/profile/documents/upload?focus=police",
+      },
+      {
+        id: "police-back",
+        label: "Conduct Cert (Back)",
+        copy: documentState.police.back,
+        uploadRoute: "/driver/onboarding/profile/documents/upload?focus=police",
+      },
+    ],
+    [documentState]
+  );
+
+  const uploadedDocumentSideCount = useMemo(
+    () => documentSides.filter((item) => item.copy.status === "Uploaded").length,
+    [documentSides]
+  );
+
+  const infoBreakdownItems = useMemo<BreakdownItem[]>(() => {
+    const checkpointItems: BreakdownItem[] = [
+      {
+        id: "role-selected",
+        label: "Driver Role Selection",
+        detail: onboardingCheckpoints.roleSelected
+          ? `Selected core role: ${driverRoleConfig.coreRole}.`
+          : "Service category has not been selected yet.",
+        present: onboardingCheckpoints.roleSelected,
+        route: "/driver/register",
+      },
+      {
+        id: "documents-verified",
+        label: "Documents Verification",
+        detail: onboardingCheckpoints.documentsVerified
+          ? "All required documents are uploaded."
+          : `${uploadedDocumentSideCount}/6 required document sides uploaded.`,
+        present: onboardingCheckpoints.documentsVerified,
+        route: "/driver/onboarding/profile/documents/upload",
+      },
+      {
+        id: "identity-verified",
+        label: "Identity Verification",
+        detail: onboardingCheckpoints.identityVerified
+          ? "Identity checks are completed."
+          : "Face and identity checks are still pending.",
+        present: onboardingCheckpoints.identityVerified,
+        route: "/driver/preferences/identity/upload-image",
+      },
+      {
+        id: "vehicle-ready",
+        label: "Vehicle Setup",
+        detail: onboardingCheckpoints.vehicleReady
+          ? "At least one active vehicle is available."
+          : "No active vehicle setup found.",
+        present: onboardingCheckpoints.vehicleReady,
+        route: "/driver/vehicles",
+      },
+      {
+        id: "training-completed",
+        label: "Training Sessions",
+        detail: onboardingCheckpoints.trainingCompleted
+          ? "Training sessions are completed."
+          : "Training sessions are not completed yet.",
+        present: onboardingCheckpoints.trainingCompleted,
+        route: "/driver/training/info-session",
+      },
+    ];
+
+    const docItems: BreakdownItem[] = documentSides.map((item) => {
+      const isUploaded = item.copy.status === "Uploaded";
+      const detail =
+        item.copy.status === "Uploaded"
+          ? item.copy.fileName
+            ? `Uploaded: ${item.copy.fileName}`
+            : "Uploaded."
+          : item.copy.status === "Rejected"
+          ? item.copy.error
+            ? `Rejected: ${item.copy.error}`
+            : "Rejected. Re-upload required."
+          : "Missing upload.";
+
+      return {
+        id: item.id,
+        label: item.label,
+        detail,
+        present: isUploaded,
+        route: item.uploadRoute,
+      };
+    });
+
+    return [...checkpointItems, ...docItems];
+  }, [
+    documentSides,
+    driverRoleConfig.coreRole,
+    onboardingCheckpoints.documentsVerified,
+    onboardingCheckpoints.identityVerified,
+    onboardingCheckpoints.roleSelected,
+    onboardingCheckpoints.trainingCompleted,
+    onboardingCheckpoints.vehicleReady,
+    uploadedDocumentSideCount,
+  ]);
+
+  const presentInfoItems = useMemo(
+    () => infoBreakdownItems.filter((item) => item.present),
+    [infoBreakdownItems]
+  );
+  const missingInfoItems = useMemo(
+    () => infoBreakdownItems.filter((item) => !item.present),
+    [infoBreakdownItems]
+  );
+  const completedSocialLinksCount = useMemo(
+    () =>
+      socialLinks.filter(
+        (entry) => entry.username.trim().length > 0 && entry.url.trim().length > 0
+      ).length,
+    [socialLinks]
+  );
+
+  const updateSocialLink = (
+    id: string,
+    field: "platform" | "username" | "url",
+    value: string
+  ) => {
+    setSocialLinks((prev) =>
+      prev.map((entry) => (entry.id === id ? { ...entry, [field]: value } : entry))
+    );
+  };
+
+  const addSocialLink = () => {
+    setSocialLinks((prev) => [...prev, createSocialLinkEntry()]);
+  };
+
+  const removeSocialLink = (id: string) => {
+    setSocialLinks((prev) => {
+      if (prev.length === 1) {
+        return [{ ...prev[0], platform: "", username: "", url: "" }];
+      }
+      return prev.filter((entry) => entry.id !== id);
+    });
+  };
 
   return (
     <div className="flex flex-col min-h-full bg-transparent">
@@ -136,19 +442,23 @@ export default function DriverProfileOnboarding() {
         <section className={`rounded-[2.5rem] bg-cream border-2 border-brand-active/10 p-5 flex items-center space-x-4 shadow-sm hover:shadow-md hover:border-brand-active/30 transition-all dark:bg-slate-900`}>
           <div className="relative">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-brand-active/20">
-              <User className="h-7 w-7 text-brand-active" />
+              {driverProfilePhoto ? (
+                <img
+                  src={driverProfilePhoto}
+                  alt="Driver profile"
+                  className="h-full w-full rounded-2xl object-cover"
+                />
+              ) : (
+                <User className="h-7 w-7 text-brand-active" />
+              )}
             </div>
             <span className="absolute -bottom-1 -right-1 inline-flex items-center rounded-lg bg-brand-active px-1.5 py-0.5 text-[8px] font-black text-white shadow-lg uppercase tracking-tighter">
               EV Zone
             </span>
           </div>
           <div className="flex-1">
-            <div className="flex items-center justify-between mb-0.5">
+            <div className="flex items-center mb-0.5">
               <span className="text-sm font-black text-slate-900 tracking-tight">John Doe</span>
-              <div className="flex items-center text-[11px] font-black text-slate-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100">
-                <Star className="mr-1 h-3 w-3 text-amber-500 fill-amber-500" />
-                <span>4.92</span>
-              </div>
             </div>
             <span className="text-[10px] uppercase font-black text-slate-400 tracking-widest">Kampala · Since 2025</span>
             <div className="mt-2.5 flex items-center gap-1.5">
@@ -174,7 +484,11 @@ export default function DriverProfileOnboarding() {
           </div>
           
           <div className="flex justify-center">
-            <button className="h-20 w-20 rounded-[2rem] bg-white border-2 border-dashed border-orange-200 flex items-center justify-center group-hover:bg-orange-50/50 group-hover:border-orange-500/30 transition-all active:scale-95 shadow-sm">
+            <button
+              type="button"
+              onClick={() => setIsCameraOpen(true)}
+              className="h-20 w-20 rounded-[2rem] bg-white border-2 border-dashed border-orange-200 flex items-center justify-center group-hover:bg-orange-50/50 group-hover:border-orange-500/30 transition-all active:scale-95 shadow-sm"
+            >
               <Camera className="h-8 w-8 text-slate-300 group-hover:text-orange-500" />
             </button>
           </div>
@@ -186,7 +500,11 @@ export default function DriverProfileOnboarding() {
         </section>
 
         {/* Variables section */}
-        <section className="rounded-3xl border-2 border-orange-500/10 bg-cream p-6 text-center space-y-4 shadow-sm hover:border-orange-500/30 transition-all">
+        <button
+          type="button"
+          onClick={() => setIsSocialEditorOpen(true)}
+          className="w-full rounded-3xl border-2 border-orange-500/10 bg-cream p-6 text-center space-y-4 shadow-sm hover:border-orange-500/30 transition-all"
+        >
           <div className="flex justify-center">
             <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center border border-orange-50 shadow-sm">
               <Link2 className="h-6 w-6 text-orange-500" />
@@ -195,11 +513,13 @@ export default function DriverProfileOnboarding() {
           <div>
              <h4 className="text-xs font-black text-slate-900 tracking-tight uppercase mb-1">Social Variables</h4>
              <p className="text-[11px] text-slate-400 font-medium leading-relaxed px-4">
-               Link your social media to enhance your driver profile visibility.
+               Open table and add usernames plus profile links.
              </p>
           </div>
-          <p className="text-[11px] font-black text-orange-500 tracking-tight">vehicles.evzone@driver.com</p>
-        </section>
+          <p className="text-[11px] font-black text-orange-500 tracking-tight">
+            {completedSocialLinksCount} profile link{completedSocialLinksCount === 1 ? "" : "s"} saved
+          </p>
+        </button>
 
         {/* Status alert */}
         <section className={`rounded-3xl border p-5 flex items-start space-x-3 ${
@@ -226,21 +546,6 @@ export default function DriverProfileOnboarding() {
                 : `Complete ${blockerCount} required step${blockerCount === 1 ? "" : "s"} to unlock shifts.`}
             </p>
           </div>
-        </section>
-
-        {/* KYC Verification */}
-        <section className="rounded-[2.5rem] bg-slate-900 border-2 border-orange-500/20 p-8 space-y-6 text-white text-center shadow-xl relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/20 rounded-full blur-3xl -mr-16 -mt-16 transition-transform group-hover:scale-110" />
-          <p className="text-xs font-black leading-relaxed opacity-95 relative z-10 px-2 tracking-tight">
-            Complete your KYC verification to unlock income transfers and premium features.
-          </p>
-          <button
-            type="button"
-            onClick={() => navigate("/driver/preferences/identity")}
-            className="relative z-10 w-full rounded-2xl bg-orange-500 px-6 py-4 text-xs font-black text-white shadow-lg hover:shadow-xl active:scale-95 transition-all uppercase tracking-widest border border-orange-400"
-          >
-            Update Your KYC
-          </button>
         </section>
 
         {/* Documents & checks */}
@@ -300,72 +605,230 @@ export default function DriverProfileOnboarding() {
           </div>
         </section>
 
-        {/* Training progress */}
-        <section className="rounded-[2.5rem] bg-slate-900 p-6 flex items-center justify-between text-white shadow-2xl">
-          <div className="space-y-3">
-            <div>
-              <span className="text-[10px] font-black uppercase text-brand-active tracking-[0.2em]">Training Hub</span>
-              <h4 className="text-base font-black tracking-tight mt-1">2 of 4 Completed</h4>
-            </div>
-            <button
-              type="button"
-              onClick={() => navigate("/driver/training/intro")}
-              className="inline-flex items-center rounded-xl bg-brand-active px-4 py-2.5 text-[11px] font-black text-white hover:bg-brand-active/90 transition-colors uppercase tracking-widest"
-            >
-              Resume Track
-            </button>
-          </div>
-          <div className="relative h-20 w-20">
-            <svg className="h-20 w-20 -rotate-90" viewBox="0 0 36 36">
-              <circle
-                className="text-white/10"
-                stroke="currentColor"
-                strokeWidth="4"
-                fill="none"
-                cx="18"
-                cy="18"
-                r="16"
-              />
-              <circle
-                className="text-brand-active"
-                stroke="currentColor"
-                strokeWidth="4"
-                strokeLinecap="round"
-                fill="none"
-                strokeDasharray="50, 100"
-                cx="18"
-                cy="18"
-                r="16"
-              />
-            </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-xs font-black">50%</span>
-            </div>
-          </div>
+        {/* Info Breakdowns */}
+        <section className="space-y-3">
+          <button
+            type="button"
+            onClick={() => setIsInfoBreakdownsOpen((prev) => !prev)}
+            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 flex items-center justify-between text-left hover:border-orange-300 transition-colors"
+          >
+            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">
+              Info Breakdowns
+            </span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">
+              {isInfoBreakdownsOpen ? "Hide" : "Show"} · {presentInfoItems.length} Present · {missingInfoItems.length} Missing
+            </span>
+          </button>
+
+          {isInfoBreakdownsOpen && (
+            <>
+              <div className="rounded-3xl border border-emerald-100 bg-emerald-50/50 p-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                  <h4 className="text-xs font-black uppercase tracking-widest text-emerald-700">
+                    Present
+                  </h4>
+                </div>
+                {presentInfoItems.length === 0 ? (
+                  <p className="text-[11px] font-medium text-emerald-800">No completed information yet.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {presentInfoItems.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => navigate(item.route)}
+                        className="w-full rounded-2xl border border-emerald-100 bg-white/80 px-3 py-2 text-left hover:border-emerald-300 transition-colors"
+                      >
+                        <p className="text-[11px] font-black uppercase tracking-tight text-slate-900">{item.label}</p>
+                        <p className="text-[11px] font-medium text-slate-600">{item.detail}</p>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="rounded-3xl border border-amber-100 bg-amber-50/60 p-4 space-y-2">
+                <h4 className="text-xs font-black uppercase tracking-widest text-amber-700">
+                  Missing
+                </h4>
+                {missingInfoItems.length === 0 ? (
+                  <p className="text-[11px] font-medium text-amber-900">
+                    No missing information. You are all set.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {missingInfoItems.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => navigate(item.route)}
+                        className="w-full rounded-2xl border border-amber-100 bg-white/80 px-3 py-2 text-left hover:border-amber-300 transition-colors"
+                      >
+                        <p className="text-[11px] font-black uppercase tracking-tight text-slate-900">{item.label}</p>
+                        <p className="text-[11px] font-medium text-slate-600">{item.detail}</p>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </section>
 
-        {/* Navigation Blocks */}
-        <section className="grid grid-cols-1 gap-3">
-          <button onClick={() => navigate("/driver/preferences", { state: { returnTo: "/driver/onboarding/profile" } })} className="flex items-center gap-4 bg-cream p-5 rounded-3xl border-2 border-orange-500/10 shadow-sm text-left group active:scale-95 hover:scale-[1.01] hover:border-orange-500/30 transition-all">
-             <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center border border-orange-50 shadow-sm">
-                <SettingsIcon className="h-6 w-6 text-orange-500" />
-             </div>
-             <div>
-                <span className="block text-sm font-black text-slate-900 tracking-tight uppercase">Preferences</span>
-                <span className="text-[11px] text-slate-400 font-medium">Configure your driving profile</span>
-             </div>
-          </button>
-  
-          <button onClick={() => navigate("/driver/onboarding/profile")} className="flex items-center gap-4 bg-cream p-5 rounded-3xl border-2 border-orange-500/10 shadow-sm text-left group active:scale-95 hover:scale-[1.01] hover:border-orange-500/30 transition-all">
-             <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center border border-orange-50 shadow-sm">
-                <MapPin className="h-6 w-6 text-orange-500" />
-             </div>
-             <div>
-                <span className="block text-sm font-black text-slate-900 tracking-tight uppercase">Info Breakdowns</span>
-                <span className="text-[11px] text-slate-400 font-medium">Account setup details</span>
-             </div>
-          </button>
-        </section>
+        {isCameraOpen && (
+          <section className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 px-6">
+            <div className="w-full max-w-sm rounded-3xl bg-white p-4 shadow-2xl space-y-4">
+              <div>
+                <h3 className="text-sm font-black uppercase tracking-widest text-slate-900">
+                  Identity Camera
+                </h3>
+                <p className="mt-1 text-[11px] font-medium text-slate-500">
+                  Center your face in the frame.
+                </p>
+              </div>
+
+              <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-black">
+                {cameraError ? (
+                  <div className="flex h-full items-center justify-center px-4 text-center text-[11px] font-semibold text-white/90">
+                    {cameraError}
+                  </div>
+                ) : (
+                  <video
+                    ref={videoRef}
+                    className="h-full w-full object-cover"
+                    autoPlay
+                    playsInline
+                    muted
+                  />
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={closeCamera}
+                  className="rounded-xl border border-slate-200 py-3 text-xs font-black uppercase tracking-widest text-slate-600"
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    closeCamera();
+                    navigate("/driver/preferences/identity/face-capture");
+                  }}
+                  className="rounded-xl bg-orange-500 py-3 text-xs font-black uppercase tracking-widest text-white"
+                >
+                  Continue
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {isSocialEditorOpen && (
+          <section className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 px-4">
+            <div className="w-full max-w-3xl rounded-3xl bg-white p-4 shadow-2xl max-h-[80vh] overflow-y-auto space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-black uppercase tracking-widest text-slate-900">
+                    Social Variables Table
+                  </h3>
+                  <p className="mt-1 text-[11px] text-slate-500 font-medium">
+                    Add username and URL for each account.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsSocialEditorOpen(false)}
+                  className="rounded-xl border border-slate-200 px-3 py-2 text-[11px] font-black uppercase tracking-widest text-slate-600"
+                >
+                  Close
+                </button>
+              </div>
+
+              <div className="overflow-x-auto rounded-2xl border border-slate-200">
+                <table className="min-w-[720px] w-full">
+                  <thead className="bg-slate-50">
+                    <tr>
+                      <th className="px-3 py-2 text-left text-[10px] font-black uppercase tracking-widest text-slate-500">Platform</th>
+                      <th className="px-3 py-2 text-left text-[10px] font-black uppercase tracking-widest text-slate-500">Username</th>
+                      <th className="px-3 py-2 text-left text-[10px] font-black uppercase tracking-widest text-slate-500">Profile URL</th>
+                      <th className="px-3 py-2 text-center text-[10px] font-black uppercase tracking-widest text-slate-500">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {socialLinks.map((entry) => (
+                      <tr key={entry.id} className="border-t border-slate-100">
+                        <td className="px-3 py-2">
+                          <input
+                            type="text"
+                            value={entry.platform}
+                            onChange={(event) =>
+                              updateSocialLink(entry.id, "platform", event.target.value)
+                            }
+                            placeholder="e.g. Instagram"
+                            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-medium text-slate-800 focus:border-orange-500 focus:outline-none"
+                          />
+                        </td>
+                        <td className="px-3 py-2">
+                          <input
+                            type="text"
+                            value={entry.username}
+                            onChange={(event) =>
+                              updateSocialLink(entry.id, "username", event.target.value)
+                            }
+                            placeholder="@yourname"
+                            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-medium text-slate-800 focus:border-orange-500 focus:outline-none"
+                          />
+                        </td>
+                        <td className="px-3 py-2">
+                          <input
+                            type="url"
+                            value={entry.url}
+                            onChange={(event) =>
+                              updateSocialLink(entry.id, "url", event.target.value)
+                            }
+                            placeholder="https://..."
+                            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-medium text-slate-800 focus:border-orange-500 focus:outline-none"
+                          />
+                        </td>
+                        <td className="px-3 py-2 text-center">
+                          <button
+                            type="button"
+                            onClick={() => removeSocialLink(entry.id)}
+                            className="inline-flex items-center justify-center rounded-lg border border-red-200 bg-red-50 p-2 text-red-600 hover:bg-red-100"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="flex items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={addSocialLink}
+                  className="inline-flex items-center gap-2 rounded-xl border border-orange-200 bg-orange-50 px-4 py-2 text-[11px] font-black uppercase tracking-widest text-orange-600"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Row
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsSocialEditorOpen(false)}
+                  className="rounded-xl bg-orange-500 px-4 py-2 text-[11px] font-black uppercase tracking-widest text-white"
+                >
+                  Save & Close
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Go Online button */}
         <section className="pt-4 pb-12">
@@ -373,8 +836,7 @@ export default function DriverProfileOnboarding() {
             type="button"
             onClick={() => navigate(gatewayAction.route)}
             className={`w-full rounded-2xl py-4 text-sm font-black shadow-lg transition-all active:scale-[0.98] uppercase tracking-widest ${
-              gatewayAction.label === "Go Online" ||
-              (gatewayAction.label === "View Verified Documents" && documentsComplete)
+              gatewayAction.label === "Go Online" || gatewayAction.label === "Go to Training Sessions"
                 ? "bg-orange-500 text-white shadow-orange-500/20 hover:bg-orange-600"
                 : "bg-slate-900 text-white shadow-slate-900/20 hover:bg-slate-800"
             }`}

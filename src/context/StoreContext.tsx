@@ -133,6 +133,7 @@ interface StoreContextType {
   dashboardMetrics: DashboardMetrics;
   recentEarnings: typeof MOCK_EARNINGS;
   driverRoleConfig: DriverRoleConfig;
+  driverProfilePhoto: string | null;
   onboardingCheckpoints: OnboardingCheckpointState;
   onboardingBlockers: OnboardingBlocker[];
   canGoOnline: boolean;
@@ -156,6 +157,7 @@ interface StoreContextType {
   completeTrip: (trip: TripRecord, revenue: RevenueEvent[]) => void;
   addRevenueEvent: (event: RevenueEvent) => void;
   updateDriverRoleConfig: (input: DriverRoleUpdateInput) => DriverRoleUpdateResult;
+  setDriverProfilePhoto: (photo: string | null) => void;
   enableDualMode: () => void;
   setOnboardingCheckpoint: (
     checkpoint: OnboardingCheckpointId,
@@ -197,6 +199,7 @@ const ROLE_BASE_JOB_TYPES: Record<DriverCoreRole, JobCategory[]> = {
 const ONBOARDING_CHECKPOINT_ORDER: OnboardingCheckpointId[] = [
   "roleSelected",
   "documentsVerified",
+  "identityVerified",
   "trainingCompleted",
 ];
 
@@ -204,11 +207,12 @@ const ONBOARDING_CHECKPOINTS_STORAGE_KEY = "driver_onboarding_checkpoints";
 const DELIVERY_WORKFLOW_STORAGE_KEY = "driver_delivery_workflow";
 const SHARED_RIDES_ENABLED_STORAGE_KEY = "driver_shared_rides_enabled";
 const ACTIVE_TRIP_STORAGE_KEY = "driver_active_trip_state";
+const DRIVER_PROFILE_PHOTO_STORAGE_KEY = "driver_profile_photo";
 
 const DEFAULT_ONBOARDING_CHECKPOINTS: OnboardingCheckpointState = {
   roleSelected: true,
   documentsVerified: false,
-  identityVerified: true,
+  identityVerified: false,
   vehicleReady: true,
   trainingCompleted: false,
 };
@@ -281,8 +285,8 @@ const ONBOARDING_CHECKPOINT_META: Record<
   },
   identityVerified: {
     title: "Identity Verification",
-    description: "Complete face and identity checks.",
-    route: "/driver/preferences/identity",
+    description: "Upload a profile photo.",
+    route: "/driver/preferences/identity/upload-image",
   },
   vehicleReady: {
     title: "Vehicle Setup",
@@ -357,6 +361,19 @@ function readStoredOnboardingCheckpoints(): OnboardingCheckpointState {
     };
   } catch {
     return DEFAULT_ONBOARDING_CHECKPOINTS;
+  }
+}
+
+function readStoredDriverProfilePhoto(): string | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(DRIVER_PROFILE_PHOTO_STORAGE_KEY);
+    return raw && raw.trim().length > 0 ? raw : null;
+  } catch {
+    return null;
   }
 }
 
@@ -708,6 +725,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   });
   const [onboardingCheckpoints, setOnboardingCheckpoints] =
     useState<OnboardingCheckpointState>(() => readStoredOnboardingCheckpoints());
+  const [driverProfilePhoto, setDriverProfilePhoto] = useState<string | null>(() =>
+    readStoredDriverProfilePhoto()
+  );
   const [deliveryWorkflow, setDeliveryWorkflow] = useState<DeliveryWorkflowState>(() =>
     readStoredDeliveryWorkflow()
   );
@@ -786,6 +806,32 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       JSON.stringify(activeTrip)
     );
   }, [activeTrip]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    if (!driverProfilePhoto) {
+      window.localStorage.removeItem(DRIVER_PROFILE_PHOTO_STORAGE_KEY);
+      return;
+    }
+
+    window.localStorage.setItem(DRIVER_PROFILE_PHOTO_STORAGE_KEY, driverProfilePhoto);
+  }, [driverProfilePhoto]);
+
+  useEffect(() => {
+    const hasProfilePhoto = Boolean(driverProfilePhoto && driverProfilePhoto.trim().length > 0);
+    setOnboardingCheckpoints((prev) => {
+      if (prev.identityVerified === hasProfilePhoto) {
+        return prev;
+      }
+      return {
+        ...prev,
+        identityVerified: hasProfilePhoto,
+      };
+    });
+  }, [driverProfilePhoto]);
 
   const driverRoleConfig = useMemo<DriverRoleConfig>(
     () => ({
@@ -1441,6 +1487,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     dashboardMetrics,
     recentEarnings,
     driverRoleConfig,
+    driverProfilePhoto,
     onboardingCheckpoints,
     onboardingBlockers,
     canGoOnline,
@@ -1462,6 +1509,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     completeTrip,
     addRevenueEvent,
     updateDriverRoleConfig,
+    setDriverProfilePhoto,
     enableDualMode,
     setOnboardingCheckpoint,
     acceptRideJob,

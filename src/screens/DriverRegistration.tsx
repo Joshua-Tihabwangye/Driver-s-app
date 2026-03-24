@@ -68,7 +68,12 @@ const PRIMARY_ROLE_BY_OPTION: Record<ServiceOptionKey, DriverCoreRole> = {
 
 export default function DriverRegistration() {
   const navigate = useNavigate();
-  const { updateDriverRoleConfig, driverRoleConfig, setOnboardingCheckpoint } = useStore();
+  const {
+    updateDriverRoleConfig,
+    driverRoleConfig,
+    setOnboardingCheckpoint,
+    driverProfilePhoto,
+  } = useStore();
   const [selectedServices, setSelectedServices] = useState<Record<ServiceOptionKey, boolean>>({
     ride:
       driverRoleConfig.coreRole === "ride-only" ||
@@ -154,7 +159,15 @@ export default function DriverRegistration() {
         <section className="flex flex-col items-center">
           <div className="relative mb-3">
             <div className="h-24 w-24 rounded-[2rem] bg-slate-100 border-[4px] border-orange-500 flex items-center justify-center overflow-hidden shadow-xl shadow-orange-100">
-              <User className="h-12 w-12 text-slate-400" />
+              {driverProfilePhoto ? (
+                <img
+                  src={driverProfilePhoto}
+                  alt="Driver profile"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <User className="h-12 w-12 text-slate-400" />
+              )}
             </div>
             <button
               type="button"

@@ -1,7 +1,3 @@
-import {
-  Pencil,
-  User,
-} from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
@@ -9,7 +5,7 @@ import { useStore } from "../context/StoreContext";
 import { resetStoredDocumentState } from "../utils/documentVerificationState";
 
 // EVzone Driver App – Registration Registration (profile page)
-// New design: green curved header, profile photo, info rows, accordions, green bottom nav.
+// New design: green curved header, info sections, form fields, green bottom nav.
 // Original functionality preserved: form inputs, validation, accordion expand/collapse, routing.
 
 
@@ -72,23 +68,15 @@ export default function Registration() {
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6">
-        {/* Profile photo + name */}
-        <section className="flex flex-col items-center">
-          <div className="relative mb-3 group">
-            <div className="h-24 w-24 rounded-[2rem] bg-slate-100 border-[4px] border-orange-500 flex items-center justify-center overflow-hidden shadow-xl shadow-orange-100 group-hover:scale-105 transition-transform duration-300">
-              <User className="h-12 w-12 text-slate-400" />
-            </div>
-            <button
-              type="button"
-              onClick={() => navigate("/driver/preferences/identity/upload-image")}
-              className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 border-2 border-white shadow-lg active:scale-90 transition-all"
-            >
-              <Pencil className="h-3.5 w-3.5 text-white" />
-            </button>
-          </div>
-          <h2 className="text-lg font-black text-slate-900 tracking-tight flex items-center">
-            {fullName || "John Doe"} <span className="ml-1.5 opacity-40">✏️</span>
+        {/* Registration overview */}
+        <section className="rounded-3xl border border-orange-200 bg-orange-50/60 px-5 py-4">
+          <h2 className="text-sm font-black uppercase tracking-wider text-orange-600">
+            Registration Details
           </h2>
+          <p className="mt-1 text-[11px] font-medium leading-relaxed text-slate-700">
+            Enter your personal information on this page. In the next step, you will choose your
+            driver service category and continue onboarding.
+          </p>
         </section>
 
         {/* Divider */}
