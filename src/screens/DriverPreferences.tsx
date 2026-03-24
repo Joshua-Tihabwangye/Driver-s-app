@@ -16,9 +16,16 @@ import type { LucideIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
-import type { DriverCoreRole } from "../data/types";
 import { useSharedTrips } from "../context/SharedTripsContext";
 import { useStore } from "../context/StoreContext";
+import {
+  buildProjectedTaskAllocation,
+  deriveRoleConfigFromTaskCategorySelection,
+  deriveTaskCategorySelectionFromAssignableJobTypes,
+  formatJobCategoryList,
+  formatTaskCategorySelectionLabel,
+  type TaskCategoryKey,
+} from "../utils/taskCategories";
 
 interface PreferenceOption {
   id: string;
@@ -42,13 +49,6 @@ interface RequirementCardProps extends PreferenceOption {
   disabled?: boolean;
   onClick: () => void;
 }
-
-type TaskCategoryKey =
-  | "ride"
-  | "delivery"
-  | "rental"
-  | "tour"
-  | "ambulance";
 
 interface TaskCategoryOption {
   id: TaskCategoryKey;
@@ -117,76 +117,6 @@ const TASK_CATEGORY_OPTIONS: TaskCategoryOption[] = [
     description: "Emergency transport",
   },
 ];
-
-const PRIMARY_ROLE_BY_CATEGORY: Record<TaskCategoryKey, DriverCoreRole> = {
-  ride: "ride-only",
-  delivery: "delivery-only",
-  rental: "rental-only",
-  tour: "tour-only",
-  ambulance: "ambulance-only",
-};
-
-function deriveTaskCategoriesFromRoleConfig(
-  coreRole: DriverCoreRole,
-  programs: {
-    rental: boolean;
-    tour: boolean;
-    ambulance: boolean;
-  }
-): Record<TaskCategoryKey, boolean> {
-  return {
-    ride: coreRole === "ride-only" || coreRole === "dual-mode",
-    delivery: coreRole === "delivery-only" || coreRole === "dual-mode",
-    rental: coreRole === "rental-only" || programs.rental,
-    tour: coreRole === "tour-only" || programs.tour,
-    ambulance: coreRole === "ambulance-only" || programs.ambulance,
-  };
-}
-
-function buildProjectedTaskAllocation(
-  taskCategories: Record<TaskCategoryKey, boolean>,
-  sharedRidesEnabled: boolean
-): string[] {
-  const allocation = new Set<string>();
-
-  if (taskCategories.ride) allocation.add("ride");
-  if (taskCategories.delivery) allocation.add("delivery");
-  if (taskCategories.rental) allocation.add("rental");
-  if (taskCategories.tour) allocation.add("tour");
-  if (taskCategories.ambulance) allocation.add("ambulance");
-  if (sharedRidesEnabled && taskCategories.ride) allocation.add("shared");
-
-  return Array.from(allocation);
-}
-
-function deriveRoleLabelFromTaskCategories(
-  taskCategories: Record<TaskCategoryKey, boolean>
-): string {
-  const orderedKeys: TaskCategoryKey[] = [
-    "ride",
-    "delivery",
-    "rental",
-    "tour",
-    "ambulance",
-  ];
-  const labelByKey: Record<TaskCategoryKey, string> = {
-    ride: "Ride",
-    delivery: "Delivery",
-    rental: "Rental",
-    tour: "Tour",
-    ambulance: "Ambulance",
-  };
-
-  const selectedLabels = orderedKeys
-    .filter((key) => taskCategories[key])
-    .map((key) => labelByKey[key]);
-
-  if (selectedLabels.length === 0) {
-    return "No Role Selected";
-  }
-
-  return selectedLabels.join(" + ");
-}
 
 function toggleInList(ids: string[], id: string): string[] {
   if (ids.includes(id)) {
@@ -276,18 +206,14 @@ export default function DriverPreferences() {
   const location = useLocation();
   const { sharedRidesEnabled, setSharedRidesEnabled } = useSharedTrips();
   const {
-    driverRoleConfig,
+    assignableJobTypes,
     driverPreferences,
     updateDriverRoleConfig,
     setDriverPreferences,
   } = useStore();
   const [taskCategoryError, setTaskCategoryError] = useState("");
   const [taskCategories, setTaskCategories] = useState<Record<TaskCategoryKey, boolean>>(
-    () =>
-      deriveTaskCategoriesFromRoleConfig(
-        driverRoleConfig.coreRole,
-        driverRoleConfig.programs
-      )
+    () => deriveTaskCategorySelectionFromAssignableJobTypes(assignableJobTypes)
   );
   const [sharedRidesDraft, setSharedRidesDraft] = useState(sharedRidesEnabled);
 
@@ -302,13 +228,17 @@ export default function DriverPreferences() {
   );
 
   const roleLabel = useMemo(
-    () => deriveRoleLabelFromTaskCategories(taskCategories),
+    () => formatTaskCategorySelectionLabel(taskCategories),
     [taskCategories]
   );
-  const canUseSharedRide = taskCategories.ride;
+  const isRideCapable = taskCategories.ride;
   const projectedTaskAllocation = useMemo(
     () => buildProjectedTaskAllocation(taskCategories, sharedRidesDraft),
     [taskCategories, sharedRidesDraft]
+  );
+  const projectedTaskAllocationLabel = useMemo(
+    () => formatJobCategoryList(projectedTaskAllocation),
+    [projectedTaskAllocation]
   );
 
   const redirectAfterSave = useMemo(() => {
@@ -325,22 +255,19 @@ export default function DriverPreferences() {
 
   useEffect(() => {
     setTaskCategories(
-      deriveTaskCategoriesFromRoleConfig(
-        driverRoleConfig.coreRole,
-        driverRoleConfig.programs
-      )
+      deriveTaskCategorySelectionFromAssignableJobTypes(assignableJobTypes)
     );
-  }, [driverRoleConfig.coreRole, driverRoleConfig.programs]);
+  }, [assignableJobTypes]);
 
   useEffect(() => {
     setSharedRidesDraft(sharedRidesEnabled);
   }, [sharedRidesEnabled]);
 
   useEffect(() => {
-    if (!taskCategories.ride && sharedRidesDraft) {
+    if (!isRideCapable && sharedRidesDraft) {
       setSharedRidesDraft(false);
     }
-  }, [taskCategories.ride, sharedRidesDraft]);
+  }, [isRideCapable, sharedRidesDraft]);
 
   const toggleArea = (id: string) => {
     setSelectedAreaIds((prev) => toggleInList(prev, id));
@@ -360,10 +287,12 @@ export default function DriverPreferences() {
 
   const toggleRequirement = (id: string) => {
     if (id === "shared") {
-      if (!canUseSharedRide) {
+      if (!isRideCapable) {
         return;
       }
-      setSharedRidesDraft((prev) => !prev);
+      const toggled = !sharedRidesDraft;
+      const nextSharedState = toggled && isRideCapable;
+      setSharedRidesDraft(nextSharedState);
       return;
     }
 
@@ -384,26 +313,13 @@ export default function DriverPreferences() {
       return;
     }
 
-    const hasRide = taskCategories.ride;
-    const hasDelivery = taskCategories.delivery;
-    const nextCoreRole: DriverCoreRole =
-      hasRide && hasDelivery
-        ? "dual-mode"
-        : hasRide
-        ? "ride-only"
-        : hasDelivery
-        ? "delivery-only"
-        : PRIMARY_ROLE_BY_CATEGORY[selectedTaskKeys[0]];
+    const nextRoleConfig = deriveRoleConfigFromTaskCategorySelection(taskCategories);
+    if (!nextRoleConfig) {
+      setTaskCategoryError("Select at least one task category.");
+      return;
+    }
 
-    const roleUpdateResult = updateDriverRoleConfig({
-      coreRole: nextCoreRole,
-      programs: {
-        rental: taskCategories.rental,
-        tour: taskCategories.tour,
-        ambulance: taskCategories.ambulance,
-        shuttle: false,
-      },
-    });
+    const roleUpdateResult = updateDriverRoleConfig(nextRoleConfig);
 
     if (!roleUpdateResult.ok) {
       setTaskCategoryError(roleUpdateResult.error || "Unable to update task categories.");
@@ -439,7 +355,7 @@ export default function DriverPreferences() {
           </div>
           <div className="rounded-[2rem] border border-slate-100 bg-white p-4 shadow-sm space-y-3">
             <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
-              Task allocation: {projectedTaskAllocation.join(", ")}
+              Task allocation: {projectedTaskAllocationLabel}
             </p>
             <div className="grid grid-cols-2 gap-2">
               {TASK_CATEGORY_OPTIONS.map((option) => {
@@ -543,7 +459,7 @@ export default function DriverPreferences() {
             {REQUIREMENT_OPTIONS.map((requirement) => {
               const isShared = requirement.id === "shared";
               const active = isShared
-                ? sharedRidesDraft && canUseSharedRide
+                ? sharedRidesDraft && isRideCapable
                 : selectedRequirementIds.includes(requirement.id);
 
               return (
@@ -551,7 +467,7 @@ export default function DriverPreferences() {
                   key={requirement.id}
                   {...requirement}
                   active={active}
-                  disabled={isShared && !canUseSharedRide}
+                  disabled={isShared && !isRideCapable}
                   onClick={() => toggleRequirement(requirement.id)}
                 />
               );

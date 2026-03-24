@@ -1,14 +1,47 @@
-import React from "react";
+import { useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Box, User, Navigation, Clock, ShieldCheck, CheckCircle2, FileText } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
 
+function toAmount(value: string | number): number {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : 0;
+  }
+  const parsed = Number.parseFloat(String(value).replace(/[^\d.]/g, ""));
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 export default function DeliveryDetailsView() {
   const { tripId } = useParams();
   const navigate = useNavigate();
   const { trips } = useStore();
-  const trip = trips.find(t => t.id === tripId) || { id: "demo", amount: 15.00, date: "Today", pickup: "Warehouse A", dropoff: "Client B", jobType: "delivery", distance: "8 km", duration: "20 min" };
+  const trip = useMemo(
+    () => trips.find((entry) => entry.id === tripId && entry.jobType === "delivery") || null,
+    [trips, tripId]
+  );
+
+  if (!trip) {
+    return (
+      <div className="flex flex-col h-full bg-slate-50">
+        <PageHeader title="Delivery Details" onBack={() => navigate("/driver/history/rides")} />
+        <main className="flex-1 flex items-center justify-center px-4 py-6">
+          <div className="rounded-[2rem] border border-slate-100 bg-white p-6 text-center space-y-4 shadow-sm">
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              Delivery record not found
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate("/driver/history/rides")}
+              className="rounded-full bg-slate-900 px-5 py-3 text-[10px] font-black uppercase tracking-widest text-white"
+            >
+              Back to History
+            </button>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full bg-slate-50">
@@ -21,7 +54,7 @@ export default function DeliveryDetailsView() {
            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -mr-16 -mt-16" />
            <span className="text-[10px] uppercase font-black tracking-widest text-slate-400 bg-slate-100 px-3 py-1 rounded-full">Parcel Delivery</span>
            <span className="text-4xl font-black text-slate-900 tracking-tighter">
-             ${typeof trip.amount === 'number' ? trip.amount.toFixed(2) : trip.amount}
+             ${toAmount(trip.amount).toFixed(2)}
            </span>
            <span className="flex items-center text-xs font-bold text-emerald-500 uppercase tracking-widest mt-1">
              <CheckCircle2 className="h-3 w-3 mr-1" /> Delivered
@@ -73,14 +106,14 @@ export default function DeliveryDetailsView() {
               <div className="relative z-10 flex flex-col space-y-1">
                 <div className="absolute -left-[29px] top-1 h-3 w-3 rounded-full bg-slate-900 ring-4 ring-white" />
                 <span className="text-[10px] uppercase font-bold tracking-widest text-slate-500">Pickup</span>
-                <span className="text-sm font-black text-slate-900">{trip.pickup || "Store Warehouse"}</span>
+                <span className="text-sm font-black text-slate-900">{trip.from}</span>
                 <span className="text-[10px] font-bold text-slate-400">09:00 AM</span>
               </div>
 
               <div className="relative z-10 flex flex-col space-y-1">
                 <div className="absolute -left-[29px] top-1 h-3 w-3 rounded-full bg-blue-500 ring-4 ring-white" />
                 <span className="text-[10px] uppercase font-bold tracking-widest text-blue-500">Drop-off</span>
-                <span className="text-sm font-black text-slate-900">{trip.dropoff || "Client House"}</span>
+                <span className="text-sm font-black text-slate-900">{trip.to}</span>
                 <span className="text-[10px] font-bold text-slate-400 flex items-center">
                   09:45 AM <FileText className="h-3 w-3 ml-2 mr-1"/> Signature Collected
                 </span>
@@ -92,14 +125,14 @@ export default function DeliveryDetailsView() {
                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Distance</span>
                  <div className="flex items-center text-slate-900">
                    <Navigation className="h-3 w-3 mr-1 text-brand-secondary" />
-                   <span className="text-sm font-black">{trip.distance || "8.5 km"}</span>
+                   <span className="text-sm font-black">{trip.distance || "N/A"}</span>
                  </div>
               </div>
               <div className="flex flex-col">
                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Duration</span>
                  <div className="flex items-center text-slate-900">
                    <Clock className="h-3 w-3 mr-1 text-orange-500" />
-                   <span className="text-sm font-black">{trip.duration || "45 min"}</span>
+                   <span className="text-sm font-black">{trip.duration || "N/A"}</span>
                  </div>
               </div>
            </div>

@@ -14,6 +14,8 @@ function check(name, condition, detail) {
 
 const storeContext = read("src/context/StoreContext.tsx");
 const jobsContext = read("src/context/JobsContext.tsx");
+const constants = read("src/data/constants.ts");
+const taskCategories = read("src/utils/taskCategories.ts");
 const driverPreferences = read("src/screens/DriverPreferences.tsx");
 const incoming = read("src/screens/RideRequestIncoming.tsx");
 const rich = read("src/screens/RideRequestRich.tsx");
@@ -23,75 +25,76 @@ const rideIdResolver = read("src/utils/rideIdResolver.ts");
 const tripCompletion = read("src/screens/TripCompletion.tsx");
 const sharedDetails = read("src/screens/SharedRideDetails.tsx");
 
-// 1) Shared toggle ON/OFF behavior
 check(
   "Shared eligibility gate includes ride capability + shared toggle",
-  storeContext.includes('config.sharedRidesEnabled && assignableSet.has("ride")'),
-  "Store assignable logic must gate shared by ride capability and toggle"
+  taskCategories.includes('config.sharedRidesEnabled && assignableSet.has("ride")'),
+  "Task category assignable logic must gate shared by ride capability and toggle"
 );
+
 check(
-  "Preferences enforces shared toggle only when ride-capable",
+  "Preferences clamps shared toggle by ride capability",
   driverPreferences.includes("const nextSharedState = toggled && isRideCapable"),
-  "DriverPreferences shared toggle should clamp by isRideCapable"
+  "DriverPreferences should only allow shared enablement when ride is selected"
 );
 
-// 2) Shared request visibility
 check(
-  "Pending job filter uses explicit shared eligibility",
-  jobsContext.includes("if (job.jobType === \"shared\")") &&
+  "Pending job filter applies explicit shared eligibility",
+  jobsContext.includes('if (job.jobType === "shared")') &&
     jobsContext.includes("return sharedEligible;"),
-  "JobsContext pending filter must apply shared eligibility"
+  "JobsContext pending list must gate shared requests by eligibility"
 );
 
-// 3) Rich/incoming accept parity
 check(
-  "Incoming accept uses acceptSharedJob(jobId)",
+  "Incoming accept uses canonical shared bootstrap route",
   incoming.includes("acceptSharedJob(nextSharedJobId)") &&
-    incoming.includes("/driver/trip/${nextSharedJobId}/active"),
-  "RideRequestIncoming shared accept should bootstrap from selected job"
-);
-check(
-  "Rich accept uses acceptSharedJob(jobId)",
-  rich.includes("acceptSharedJob(nextSharedJobId)") &&
-    rich.includes("/driver/trip/${nextSharedJobId}/active"),
-  "RideRequestRich shared accept should bootstrap from selected job"
+    incoming.includes('buildAcceptedJobRoute("shared", nextSharedJobId)'),
+  "RideRequestIncoming should accept shared jobs from selected request ids"
 );
 
-// 4) Full multi-stop completion
 check(
-  "Shared context has event-driven match insertion helper",
+  "Rich accept uses canonical shared bootstrap route",
+  rich.includes("acceptSharedJob(nextSharedJobId)") &&
+    rich.includes('buildAcceptedJobRoute("shared", nextSharedJobId)'),
+  "RideRequestRich should accept shared jobs from selected request ids"
+);
+
+check(
+  "Shared context keeps event-driven additional-match insertion",
   sharedTrips.includes("function insertAdditionalMatch") &&
     sharedTrips.includes("return insertAdditionalMatch(advancedTrip);"),
-  "SharedTripsContext should insert matches on pickup event when taking matches is on"
+  "SharedTripsContext should insert additional matches during active chain progression"
 );
+
 check(
-  "Active shared trip finalization calls completion persistence",
+  "Active shared trip finalization persists completion",
   activeSharedTrip.includes("completeActiveSharedTrip()") &&
     activeSharedTrip.includes("/driver/trip/${completedTripId}/completed"),
-  "ActiveSharedTrip should persist final completion and route to summary"
+  "ActiveSharedTrip should persist shared completion before completion summary route"
 );
 
-// 5) Shared history appearance
 check(
-  "Store completion persists shared trip and revenue events",
-  storeContext.includes("jobType: \"shared\"") &&
-    storeContext.includes("category: \"shared\""),
-  "Store completion should append shared trip history + shared revenue"
+  "Store completion persists shared trip and shared revenue events",
+  storeContext.includes("const completeActiveSharedTrip = useCallback(() => {") &&
+    storeContext.includes('jobType: "shared"') &&
+    storeContext.includes('category: "shared"'),
+  "Store should persist shared completion into trips + revenue ledgers"
 );
+
 check(
-  "Trip completion routes shared flow to shared details",
-  tripCompletion.includes("/driver/history/shared/${completedTripId}"),
-  "TripCompletion should link shared completion to shared history details"
+  "Shared completion details route resolves via canonical history builder",
+  tripCompletion.includes("buildJobHistoryRoute(resolvedJobType") &&
+    constants.includes('shared: (jobId) => `/driver/history/shared/${jobId}`'),
+  "TripCompletion should route shared flow to shared history details through constants builders"
 );
+
 check(
   "Shared details screen resolves strict shared trip by id",
-  sharedDetails.includes("entry.id === tripId && entry.jobType === \"shared\""),
-  "SharedRideDetails should not fallback to unrelated trips"
+  sharedDetails.includes('entry.id === tripId && entry.jobType === "shared"'),
+  "SharedRideDetails should not fallback to unrelated records"
 );
 
-// Safety/contacts alignment
 check(
-  "Safety ride id resolver accepts active shared trip id",
+  "Safety ride id resolver prioritizes active shared context",
   rideIdResolver.includes("activeSharedTripId") &&
     rideIdResolver.includes("if (activeSharedJob)"),
   "rideIdResolver should prioritize active shared trip while chain is active"

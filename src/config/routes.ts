@@ -85,6 +85,7 @@ import SharedRideDetails from "../screens/SharedRideDetails";
 import DeliveryDetailsView from "../screens/DeliveryDetailsView";
 import RentalDetailsView from "../screens/RentalDetailsView";
 import TourDetailsView from "../screens/TourDetailsView";
+import AmbulanceDetailsView from "../screens/AmbulanceDetailsView";
 import SafetyHub from "../screens/SafetyHub";
 import SafetyHubExpanded from "../screens/SafetyHubExpanded";
 import DrivingHours from "../screens/DrivingHours";
@@ -224,6 +225,7 @@ export const SCREENS: ScreenConfig[] = [
   { id: "DeliveryDetailsView", label: "Delivery Details", path: "/driver/history/delivery/:tripId", previewPath: `/driver/history/delivery/${SAMPLE_IDS.job}`, Component: DeliveryDetailsView },
   { id: "RentalDetailsView", label: "Rental Details", path: "/driver/history/rental/:tripId", previewPath: `/driver/history/rental/${SAMPLE_IDS.job}`, Component: RentalDetailsView },
   { id: "TourDetailsView", label: "Tour Details", path: "/driver/history/tour/:tripId", previewPath: `/driver/history/tour/${SAMPLE_IDS.tour}`, Component: TourDetailsView },
+  { id: "AmbulanceDetailsView", label: "Ambulance Details", path: "/driver/history/ambulance/:tripId", previewPath: `/driver/history/ambulance/${SAMPLE_IDS.job}`, Component: AmbulanceDetailsView },
   // Safety hub additions
   { id: "SafetyHub", label: "Safety Hub", path: "/driver/safety/hub", Component: SafetyHub },
   { id: "SafetyHubExpanded", label: "Safety Hub – Expanded", path: "/driver/safety/hub/expanded", Component: SafetyHubExpanded },

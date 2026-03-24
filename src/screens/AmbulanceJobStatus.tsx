@@ -1,13 +1,14 @@
-import { SAMPLE_IDS } from "../data/constants";
 import {
 Ambulance,
 ChevronLeft,
 Hospital,
 ShieldCheck
 } from "lucide-react";
-import { useEffect,useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect,useMemo,useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { buildPrivateTripRoute } from "../data/constants";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – AmbulanceJobStatus Ambulance Job Status Screen (v2)
 // In-progress view tailored for Ambulance runs.
@@ -43,6 +44,53 @@ export default function AmbulanceJobStatus() {
   const [onSceneSeconds, setOnSceneSeconds] = useState(0);
   const [, setTransportSeconds] = useState(0);
   const navigate = useNavigate();
+  const { jobId } = useParams<{ jobId: string }>();
+  const {
+    jobs,
+    trips,
+    activeTrip,
+    acceptSpecializedJob,
+    completeActiveTrip,
+    completeTrip,
+    updateJobStatus,
+  } = useStore();
+  const ambulanceJob = useMemo(
+    () =>
+      jobId
+        ? jobs.find((job) => job.id === jobId && job.jobType === "ambulance") || null
+        : null,
+    [jobs, jobId]
+  );
+  const isThisAmbulanceJobActive = Boolean(
+    jobId &&
+      activeTrip.tripId === jobId &&
+      activeTrip.jobType === "ambulance" &&
+      activeTrip.status !== "completed" &&
+      activeTrip.status !== "cancelled"
+  );
+
+  useEffect(() => {
+    if (!jobId || !ambulanceJob || isThisAmbulanceJobActive) {
+      return;
+    }
+    if (ambulanceJob.status === "pending" || ambulanceJob.status === "attended") {
+      acceptSpecializedJob(jobId, "ambulance");
+    }
+  }, [jobId, ambulanceJob, isThisAmbulanceJobActive, acceptSpecializedJob]);
+
+  const ensureAmbulanceFlowTripId = () => {
+    if (!jobId) {
+      return null;
+    }
+    if (isThisAmbulanceJobActive) {
+      return jobId;
+    }
+    if (acceptSpecializedJob(jobId, "ambulance")) {
+      return jobId;
+    }
+    // Keep CTA progression alive even when role or active-session guards reject activation.
+    return jobId;
+  };
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -76,7 +124,69 @@ export default function AmbulanceJobStatus() {
   };
 
   const handleOpenCompletion = () => {
-    navigate(`/driver/trip/${SAMPLE_IDS.trip}/completed`);
+    const activeAmbulanceTripId = ensureAmbulanceFlowTripId();
+    if (!activeAmbulanceTripId) {
+      return;
+    }
+
+    let completedTripId: string | null = null;
+    if (
+      activeTrip.tripId === activeAmbulanceTripId &&
+      activeTrip.jobType === "ambulance" &&
+      activeTrip.status !== "completed" &&
+      activeTrip.status !== "cancelled"
+    ) {
+      completedTripId = completeActiveTrip();
+    }
+
+    if (!completedTripId) {
+      completedTripId = activeAmbulanceTripId;
+      updateJobStatus(completedTripId, "completed");
+
+      const alreadyRecorded = trips.some((trip) => trip.id === completedTripId);
+      if (!alreadyRecorded && ambulanceJob) {
+        const completedAt = Date.now();
+        const parsedFare = Number.parseFloat(
+          ambulanceJob.fare.replace(/[^\d.]/g, "")
+        );
+        const amount = Number.isFinite(parsedFare)
+          ? Number(parsedFare.toFixed(2))
+          : 0;
+
+        completeTrip(
+          {
+            id: completedTripId,
+            from: ambulanceJob.from,
+            to: ambulanceJob.to,
+            date: new Date(completedAt).toISOString().slice(0, 10),
+            time: new Date(completedAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            amount,
+            jobType: "ambulance",
+            status: "completed",
+            distance: ambulanceJob.distance,
+            duration: ambulanceJob.duration,
+          },
+          [
+            {
+              id: `rev-${completedTripId}-ambulance-fallback`,
+              tripId: completedTripId,
+              timestamp: completedAt,
+              type: "base",
+              amount,
+              label: "Ambulance",
+              category: "ambulance",
+            },
+          ]
+        );
+      }
+    }
+
+    navigate(buildPrivateTripRoute("completed", completedTripId), {
+      state: { jobType: "ambulance", tripId: completedTripId },
+    });
   };
 
   const handlePrimaryClick = () => {
@@ -86,6 +196,32 @@ export default function AmbulanceJobStatus() {
       handleOpenCompletion();
     }
   };
+
+  if (!jobId || !ambulanceJob) {
+    return (
+      <div className="flex flex-col min-h-full bg-[#fcf8f8]">
+        <PageHeader
+          title="Ambulance Status"
+          subtitle="Active Mission"
+          onBack={() => navigate(-1)}
+        />
+        <main className="flex-1 px-6 pt-8 pb-16 flex items-center justify-center">
+          <div className="rounded-[2rem] border border-slate-100 bg-white p-6 text-center space-y-4 shadow-sm">
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              Ambulance job not found
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate("/driver/jobs/list")}
+              className="rounded-full bg-slate-900 px-5 py-3 text-[10px] font-black uppercase tracking-widest text-white"
+            >
+              Open Requests
+            </button>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-full bg-[#fcf8f8]">

@@ -8,11 +8,14 @@ import {
   ShieldCheck,
   Wifi
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import OfflineConfirmModal from "../components/OfflineConfirmModal";
+import { useJobs } from "../context/JobsContext";
 import { useStore } from "../context/StoreContext";
+import { buildJobDetailRoute } from "../data/constants";
+import { formatJobCategoryList } from "../utils/taskCategories";
 
 // EVzone Driver App – OnlineDashboard Online Dashboard (Active Mode)
 // Restoration of the original design from Driver-s-app.
@@ -38,9 +41,31 @@ function QuickAction({ icon: Icon, label, sub, onClick }: any) {
 export default function OnlineDashboard() {
   const navigate = useNavigate();
   const { dashboardMetrics, assignableJobTypes } = useStore();
+  const { pendingJobs } = useJobs();
   const { onlineTime, jobsCount, earningsAmount } = dashboardMetrics;
   const [showOfflineModal, setShowOfflineModal] = useState(false);
   const hasDelivery = assignableJobTypes.includes("delivery");
+  const activeCategoryLabel = useMemo(
+    () => formatJobCategoryList(assignableJobTypes),
+    [assignableJobTypes]
+  );
+  const latestDeliveryJobId = useMemo(
+    () => {
+      const latestDeliveryJob = pendingJobs.reduce((latest, job) => {
+        if (job.jobType !== "delivery") {
+          return latest;
+        }
+        if (!latest) {
+          return job;
+        }
+        const latestRequestedAt = Number(latest.requestedAt || 0);
+        const currentRequestedAt = Number(job.requestedAt || 0);
+        return currentRequestedAt > latestRequestedAt ? job : latest;
+      }, null as (typeof pendingJobs)[number] | null);
+      return latestDeliveryJob?.id || null;
+    },
+    [pendingJobs]
+  );
 
   return (
     <div className="flex flex-col h-full bg-transparent">
@@ -109,6 +134,11 @@ export default function OnlineDashboard() {
         <p className="text-[11px] text-slate-400 leading-relaxed font-bold uppercase tracking-tight bg-white p-5 rounded-[2rem] border border-emerald-500/10 shadow-inner">
           <span className="text-emerald-500 mr-1">TIP:</span> Drive towards areas with higher demand to get more requests. Keep your acceptance rate high for bonus eligibility.
         </p>
+        <section className="rounded-2xl border border-orange-100 bg-orange-50/70 px-4 py-3">
+          <p className="text-[10px] font-black uppercase tracking-widest text-orange-700">
+            Active Categories: {activeCategoryLabel}
+          </p>
+        </section>
 
         {/* Mini map preview */}
         <button
@@ -165,11 +195,15 @@ export default function OnlineDashboard() {
                 icon={Package}
                 label="Deliveries"
                 sub="Package Orders"
-                onClick={() =>
-                  navigate("/driver/jobs/incoming", {
-                    state: { jobType: "delivery" },
-                  })
-                }
+                onClick={() => {
+                  if (!latestDeliveryJobId) {
+                    navigate("/driver/jobs/list?category=delivery");
+                    return;
+                  }
+                  navigate(buildJobDetailRoute("delivery", latestDeliveryJobId), {
+                    state: { jobType: "delivery", jobId: latestDeliveryJobId },
+                  });
+                }}
               />
             )}
             <button

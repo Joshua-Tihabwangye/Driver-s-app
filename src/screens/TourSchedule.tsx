@@ -6,8 +6,11 @@ ChevronRight,
 Clock,
 Map
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { buildPrivateTripRoute } from "../data/constants";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – TourSchedule Tour – Today’s Schedule Screen (v1)
 // Daily schedule for a multi-day tour.
@@ -17,7 +20,15 @@ import PageHeader from "../components/PageHeader";
 // - CTA: tap a segment -> open navigation flow (NavigateToPickup / RideInProgress) in the real app
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-const SEGMENTS = [
+type TourSegment = {
+  id: number;
+  time: string;
+  title: string;
+  description: string;
+  status: "completed" | "in-progress" | "upcoming";
+};
+
+const SEGMENTS: TourSegment[] = [
   {
     id: 1,
     time: "09:00–10:00",
@@ -38,11 +49,16 @@ const SEGMENTS = [
     title: "Hotel → Safari lodge",
     description: "Drive guests to the lodge, check-in and handover.",
     status: "upcoming"
-},
+  },
 ];
 
-
-function SegmentRow({ segment, onClick }) {
+function SegmentRow({
+  segment,
+  onClick,
+}: {
+  segment: TourSegment;
+  onClick: (segment: TourSegment) => void;
+}) {
   const { time, title, description, status } = segment;
 
   const statusLabel =
@@ -93,13 +109,158 @@ function SegmentRow({ segment, onClick }) {
 
 export default function TourSchedule() {
   const navigate = useNavigate();
+  const { tourId } = useParams<{ tourId: string }>();
+  const {
+    jobs,
+    trips,
+    activeTrip,
+    acceptSpecializedJob,
+    completeActiveTrip,
+    completeTrip,
+    updateJobStatus,
+  } = useStore();
+  const tourJob = useMemo(
+    () =>
+      tourId
+        ? jobs.find((job) => job.id === tourId && job.jobType === "tour") || null
+        : null,
+    [jobs, tourId]
+  );
+  const isThisTourActive = Boolean(
+    tourId &&
+      activeTrip.tripId === tourId &&
+      activeTrip.jobType === "tour" &&
+      activeTrip.status !== "completed" &&
+      activeTrip.status !== "cancelled"
+  );
+
+  useEffect(() => {
+    if (!tourId || !tourJob || isThisTourActive) {
+      return;
+    }
+    if (tourJob.status === "pending" || tourJob.status === "attended") {
+      acceptSpecializedJob(tourId, "tour");
+    }
+  }, [tourId, tourJob, isThisTourActive, acceptSpecializedJob]);
+
+  const ensureTourFlowTripId = () => {
+    if (!tourId) {
+      return null;
+    }
+    if (isThisTourActive) {
+      return tourId;
+    }
+    if (acceptSpecializedJob(tourId, "tour")) {
+      return tourId;
+    }
+    // Keep CTA progression alive even when role or active-session guards reject activation.
+    return tourId;
+  };
+
+  if (!tourId || !tourJob) {
+    return (
+      <div className="flex flex-col min-h-full ">
+        <PageHeader
+          title="Today's Schedule"
+          subtitle="Driver · Tour"
+          onBack={() => navigate(-1)}
+        />
+        <main className="flex-1 px-6 pt-8 pb-16 flex items-center justify-center">
+          <div className="rounded-[2rem] border border-slate-100 bg-white p-6 text-center space-y-4 shadow-sm">
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              Tour job not found
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate("/driver/jobs/list")}
+              className="rounded-full bg-slate-900 px-5 py-3 text-[10px] font-black uppercase tracking-widest text-white"
+            >
+              Open Requests
+            </button>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   const completedCount = SEGMENTS.filter((s) => s.status === "completed").length;
   const totalCount = SEGMENTS.length;
   const progressPercent = Math.round((completedCount / totalCount) * 100);
 
-  const handleSegmentClick = () => {
-    // In the real app, this would navigate to NavigateToPickup / RideInProgress
+  const handleSegmentClick = (segment: TourSegment) => {
+    const activeTourTripId = ensureTourFlowTripId();
+    if (!activeTourTripId) {
+      return;
+    }
+    navigate(buildPrivateTripRoute("navigation", activeTourTripId), {
+      state: {
+        jobType: "tour",
+        tripId: activeTourTripId,
+        segment,
+      },
+    });
+  };
+
+  const handleCompleteTour = () => {
+    const activeTourTripId = ensureTourFlowTripId();
+    if (!activeTourTripId) {
+      return;
+    }
+
+    let completedTripId: string | null = null;
+    if (
+      activeTrip.tripId === activeTourTripId &&
+      activeTrip.jobType === "tour" &&
+      activeTrip.status !== "completed" &&
+      activeTrip.status !== "cancelled"
+    ) {
+      completedTripId = completeActiveTrip();
+    }
+
+    if (!completedTripId) {
+      completedTripId = activeTourTripId;
+      updateJobStatus(completedTripId, "completed");
+
+      const alreadyRecorded = trips.some((trip) => trip.id === completedTripId);
+      if (!alreadyRecorded && tourJob) {
+        const completedAt = Date.now();
+        const parsedFare = Number.parseFloat(tourJob.fare.replace(/[^\d.]/g, ""));
+        const amount = Number.isFinite(parsedFare) ? Number(parsedFare.toFixed(2)) : 72.5;
+
+        completeTrip(
+          {
+            id: completedTripId,
+            from: tourJob.from,
+            to: tourJob.to,
+            date: new Date(completedAt).toISOString().slice(0, 10),
+            time: new Date(completedAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            amount,
+            jobType: "tour",
+            status: "completed",
+            distance: tourJob.distance,
+            duration: tourJob.duration,
+          },
+          [
+            {
+              id: `rev-${completedTripId}-tour-fallback`,
+              tripId: completedTripId,
+              timestamp: completedAt,
+              type: "base",
+              amount,
+              label: "Tour",
+              category: "tour",
+            },
+          ]
+        );
+      }
+    }
+
+    navigate(buildPrivateTripRoute("completed", completedTripId), {
+      state: { jobType: "tour", tripId: completedTripId },
+    });
   };
 
   return (
@@ -170,6 +331,16 @@ export default function TourSchedule() {
              Follow today's segments in order to keep guests on time. Tapping a 
              segment will open specific navigation.
            </p>
+        </section>
+
+        <section className="pb-8">
+          <button
+            type="button"
+            onClick={handleCompleteTour}
+            className="w-full rounded-[2rem] bg-orange-500 px-6 py-5 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-orange-500/20 active:scale-[0.98] transition-all"
+          >
+            Complete Tour
+          </button>
         </section>
       </main>
     </div>

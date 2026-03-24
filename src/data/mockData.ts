@@ -67,6 +67,9 @@ export const MOCK_COMPLETED_TRIPS: import('./types').TripRecord[] = [
   { id: "tr-103", from: "Bugolobi", to: "Luzira", date: "2026-03-19", time: "04:45 PM", amount: "15000", jobType: "ride", status: "completed" },
   { id: "tr-104", from: "Makerere", to: "Wandegeya", date: "2026-03-19", time: "02:10 PM", amount: "5500", jobType: "delivery", status: "completed" },
   { id: "tr-105", from: "City Square", to: "Kololo", date: "2026-03-18", time: "11:20 AM", amount: "9000", jobType: "shared", status: "completed" },
+  { id: "tr-106", from: "Sheraton Hotel", to: "Speke Resort", date: "2026-03-18", time: "06:40 PM", amount: "64800", jobType: "rental", status: "completed", distance: "31 km", duration: "4h booking" },
+  { id: "tr-107", from: "Airport", to: "Safari Lodge", date: "2026-03-17", time: "05:25 PM", amount: "72500", jobType: "tour", status: "completed", distance: "42 km", duration: "Day 2 of 5" },
+  { id: "tr-108", from: "Near Acacia Road", to: "City Hospital", date: "2026-03-17", time: "08:14 AM", amount: "0", jobType: "ambulance", status: "completed", distance: "3.1 km", duration: "8 min" },
 ];
 
 // ── Delivery Routes ──────────────────────────────────────

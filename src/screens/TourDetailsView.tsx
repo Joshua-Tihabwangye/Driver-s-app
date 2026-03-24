@@ -1,14 +1,47 @@
-import React from "react";
+import { useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { User, Clock, ShieldCheck, Map, MapPin, Camera, Sparkles } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
 
+function toAmount(value: string | number): number {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : 0;
+  }
+  const parsed = Number.parseFloat(String(value).replace(/[^\d.]/g, ""));
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 export default function TourDetailsView() {
   const { tripId } = useParams();
   const navigate = useNavigate();
   const { trips } = useStore();
-  const trip = trips.find(t => t.id === tripId) || { id: "demo", amount: 220.00, date: "Today", pickup: "Hotel", dropoff: "Hotel", jobType: "tour", duration: "Day Trip" };
+  const trip = useMemo(
+    () => trips.find((entry) => entry.id === tripId && entry.jobType === "tour") || null,
+    [trips, tripId]
+  );
+
+  if (!trip) {
+    return (
+      <div className="flex flex-col h-full bg-slate-50">
+        <PageHeader title="Tour Excursion Summary" onBack={() => navigate("/driver/history/rides")} />
+        <main className="flex-1 flex items-center justify-center px-4 py-6">
+          <div className="rounded-[2rem] border border-slate-100 bg-white p-6 text-center space-y-4 shadow-sm">
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              Tour record not found
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate("/driver/history/rides")}
+              className="rounded-full bg-slate-900 px-5 py-3 text-[10px] font-black uppercase tracking-widest text-white"
+            >
+              Back to History
+            </button>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full bg-slate-50">
@@ -21,7 +54,7 @@ export default function TourDetailsView() {
            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full -mr-16 -mt-16" />
            <span className="text-[10px] uppercase font-black tracking-widest text-slate-400 bg-slate-100 px-3 py-1 rounded-full text-amber-600">Chartered Tour</span>
            <span className="text-4xl font-black text-slate-900 tracking-tighter">
-             ${typeof trip.amount === 'number' ? trip.amount.toFixed(2) : trip.amount}
+             ${toAmount(trip.amount).toFixed(2)}
            </span>
            <span className="flex items-center text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">
              <Sparkles className="h-3 w-3 mr-1 text-amber-500" /> Finished
@@ -59,7 +92,7 @@ export default function TourDetailsView() {
               <div className="relative z-10 flex flex-col space-y-1">
                 <div className="absolute -left-[29px] top-1 h-3 w-3 rounded-full bg-slate-900 ring-4 ring-white" />
                 <span className="text-[10px] uppercase font-bold tracking-widest text-slate-500">Pickup</span>
-                <span className="text-sm font-black text-slate-900">{trip.pickup || "Sheraton Hotel"}</span>
+                <span className="text-sm font-black text-slate-900">{trip.from}</span>
                 <span className="text-[10px] font-bold text-slate-400">09:00 AM</span>
               </div>
 
@@ -84,7 +117,7 @@ export default function TourDetailsView() {
               <div className="relative z-10 flex flex-col space-y-1">
                 <div className="absolute -left-[29px] top-1 h-3 w-3 rounded-full bg-emerald-500 ring-4 ring-white" />
                 <span className="text-[10px] uppercase font-bold tracking-widest text-emerald-500">Return Drop-off</span>
-                <span className="text-sm font-black text-slate-900">{trip.dropoff || "Sheraton Hotel"}</span>
+                <span className="text-sm font-black text-slate-900">{trip.to}</span>
                 <span className="text-[10px] font-bold text-slate-400 flex items-center">
                   03:00 PM • Tour concludes
                 </span>

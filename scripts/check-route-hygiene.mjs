@@ -13,6 +13,7 @@ function check(name, condition, detail) {
 }
 
 const routes = read("src/config/routes.ts");
+const appRoutes = read("src/App.tsx");
 const navigateToPickup = read("src/screens/NavigateToPickup.tsx");
 const navigationInProgress = read("src/screens/NavigationInProgress.tsx");
 const rentalJobOverview = read("src/screens/RentalJobOverview.tsx");
@@ -28,6 +29,21 @@ for (const routeId of removedDeadRouteIds) {
     `Removed dead route registration: ${routeId}`,
     !routes.includes(`id: "${routeId}"`),
     `Route id "${routeId}" should not be registered in SCREENS`
+  );
+}
+
+const removedLegacyPaths = [
+  "/app/home",
+  "/driver/jobs/active-with-additional",
+  "/driver/trip/:tripId/en-route-details",
+];
+
+for (const legacyPath of removedLegacyPaths) {
+  check(
+    `Removed legacy app alias route: ${legacyPath}`,
+    !appRoutes.includes(`path="${legacyPath}"`) &&
+      !appRoutes.includes(`path='${legacyPath}'`),
+    `Legacy alias "${legacyPath}" should not remain in App routes`
   );
 }
 
@@ -49,7 +65,7 @@ const requiredRideRoutes = [
 check(
   "Core ride/shared workflow routes are still registered",
   requiredRideRoutes.every((token) => routes.includes(token)),
-  "SCREENS must keep only canonical private/shared workflow route nodes"
+  "SCREENS must keep canonical private/shared workflow route nodes"
 );
 
 check(
@@ -73,12 +89,13 @@ check(
 );
 
 check(
-  "Rental overview links to canonical trip routes (no hard-coded sample literals)",
-  rentalJobOverview.includes('buildPrivateTripRoute("navigation", tripRef)') &&
-    rentalJobOverview.includes('buildPrivateTripRoute("completed", tripRef)') &&
-    !rentalJobOverview.includes("/driver/trip/${SAMPLE_IDS.trip}/navigation") &&
-    !rentalJobOverview.includes("/driver/trip/${SAMPLE_IDS.trip}/completed"),
-  "Rental overview should use route builders and tripRef for consistency"
+  "Rental overview links to canonical trip routes (no sample ids)",
+  /const ensureRental[A-Za-z]+ = \(\) =>/.test(rentalJobOverview) &&
+    rentalJobOverview.includes('acceptSpecializedJob(jobId, "rental")') &&
+    rentalJobOverview.includes('buildPrivateTripRoute("navigation", activeRentalTripId)') &&
+    rentalJobOverview.includes('buildPrivateTripRoute("completed", completedTripId)') &&
+    !rentalJobOverview.includes("SAMPLE_IDS"),
+  "Rental overview should resolve real rental job ids and route through canonical builders"
 );
 
 console.log("\nRoute hygiene checks passed.");

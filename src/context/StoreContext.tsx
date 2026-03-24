@@ -12,6 +12,7 @@ import type {
 } from "../data/types";
 import { MOCK_EARNINGS, MOCK_COMPLETED_TRIPS, MOCK_SHARED_TRIPS } from "../data/mockData";
 import { SAMPLE_IDS } from "../data/constants";
+import { getAssignableJobTypesFromRoleConfig } from "../utils/taskCategories";
 
 export interface DashboardMetrics {
   onlineTime: string;
@@ -190,6 +191,10 @@ interface StoreContextType {
     isComplete?: boolean
   ) => void;
   acceptRideJob: (jobId: string) => boolean;
+  acceptSpecializedJob: (
+    jobId: string,
+    jobType: "rental" | "tour" | "ambulance"
+  ) => boolean;
   transitionActiveTripStage: (nextStage: TripWorkflowStage) => boolean;
   completeActiveTrip: () => string | null;
   cancelActiveTrip: (
@@ -213,15 +218,6 @@ const DEFAULT_PROGRAM_FLAGS: DriverProgramFlags = {
   shuttle: false,
 };
 
-const ROLE_BASE_JOB_TYPES: Record<DriverCoreRole, JobCategory[]> = {
-  "ride-only": ["ride"],
-  "delivery-only": ["delivery"],
-  "dual-mode": ["ride", "delivery"],
-  "rental-only": ["rental"],
-  "tour-only": ["tour"],
-  "ambulance-only": ["ambulance"],
-};
-
 const ONBOARDING_CHECKPOINT_ORDER: OnboardingCheckpointId[] = [
   "roleSelected",
   "documentsVerified",
@@ -230,6 +226,7 @@ const ONBOARDING_CHECKPOINT_ORDER: OnboardingCheckpointId[] = [
 ];
 
 const ONBOARDING_CHECKPOINTS_STORAGE_KEY = "driver_onboarding_checkpoints";
+const DRIVER_ROLE_SELECTION_STORAGE_KEY = "driver_role_selection";
 const DELIVERY_WORKFLOW_STORAGE_KEY = "driver_delivery_workflow";
 const SHARED_RIDES_ENABLED_STORAGE_KEY = "driver_shared_rides_enabled";
 const ACTIVE_TRIP_STORAGE_KEY = "driver_active_trip_state";
@@ -371,30 +368,6 @@ function validateDriverRoleConfig(
   return { ok: true };
 }
 
-function getAssignableJobTypes(
-  config: DriverRoleUpdateInput & { sharedRidesEnabled: boolean }
-): JobCategory[] {
-  const assignableSet = new Set<JobCategory>(ROLE_BASE_JOB_TYPES[config.coreRole]);
-
-  if (config.programs.rental) {
-    assignableSet.add("rental");
-  }
-  if (config.programs.tour) {
-    assignableSet.add("tour");
-  }
-  if (config.programs.ambulance) {
-    assignableSet.add("ambulance");
-  }
-  if (config.programs.shuttle) {
-    assignableSet.add("shuttle");
-  }
-  if (config.sharedRidesEnabled && assignableSet.has("ride")) {
-    assignableSet.add("shared");
-  }
-
-  return Array.from(assignableSet);
-}
-
 function readStoredOnboardingCheckpoints(): OnboardingCheckpointState {
   if (typeof window === "undefined") {
     return DEFAULT_ONBOARDING_CHECKPOINTS;
@@ -413,6 +386,54 @@ function readStoredOnboardingCheckpoints(): OnboardingCheckpointState {
     };
   } catch {
     return DEFAULT_ONBOARDING_CHECKPOINTS;
+  }
+}
+
+function readStoredDriverRoleSelection(): DriverRoleUpdateInput {
+  const fallback: DriverRoleUpdateInput = {
+    coreRole: "dual-mode",
+    programs: { ...DEFAULT_PROGRAM_FLAGS },
+  };
+
+  if (typeof window === "undefined") {
+    return fallback;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(DRIVER_ROLE_SELECTION_STORAGE_KEY);
+    if (!raw) {
+      return fallback;
+    }
+
+    const parsed = JSON.parse(raw) as Partial<DriverRoleUpdateInput>;
+    const parsedCoreRole = parsed.coreRole;
+    const parsedPrograms = parsed.programs;
+    const validRoles: DriverCoreRole[] = [
+      "ride-only",
+      "delivery-only",
+      "dual-mode",
+      "rental-only",
+      "tour-only",
+      "ambulance-only",
+    ];
+
+    const coreRole = validRoles.includes(parsedCoreRole as DriverCoreRole)
+      ? (parsedCoreRole as DriverCoreRole)
+      : fallback.coreRole;
+
+    const programs: DriverProgramFlags = {
+      rental: Boolean(parsedPrograms?.rental),
+      tour: Boolean(parsedPrograms?.tour),
+      ambulance: Boolean(parsedPrograms?.ambulance),
+      shuttle: Boolean(parsedPrograms?.shuttle),
+    };
+
+    return {
+      coreRole,
+      programs,
+    };
+  } catch {
+    return fallback;
   }
 }
 
@@ -833,6 +854,27 @@ function revenueTypeForJobType(jobType: JobCategory): RevenueEvent["type"] {
   return "base";
 }
 
+type SpecializedJobType = Extract<JobCategory, "rental" | "tour" | "ambulance">;
+
+const SPECIALIZED_JOB_FARE_FALLBACKS: Record<SpecializedJobType, number> = {
+  rental: 64.8,
+  tour: 72.5,
+  ambulance: 0,
+};
+
+function resolveJobRevenueAmount(job: Job): number {
+  const parsedFare = Number.parseFloat(job.fare.replace(/[^\d.]/g, ""));
+  if (Number.isFinite(parsedFare)) {
+    return Number(parsedFare.toFixed(2));
+  }
+
+  if (job.jobType === "rental" || job.jobType === "tour" || job.jobType === "ambulance") {
+    return SPECIALIZED_JOB_FARE_FALLBACKS[job.jobType];
+  }
+
+  return 0;
+}
+
 function buildSeedRevenueEventsFromTrips(trips: TripRecord[]): RevenueEvent[] {
   return trips.map((trip, index) => ({
     id: `seed-rev-${trip.id}-${index + 1}`,
@@ -894,10 +936,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [activeTrip, setActiveTrip] = useState<ActiveTripState>(() =>
     readStoredActiveTrip()
   );
-  const [driverRoleSelection, setDriverRoleSelection] = useState<DriverRoleUpdateInput>({
-    coreRole: "dual-mode",
-    programs: { ...DEFAULT_PROGRAM_FLAGS },
-  });
+  const [driverRoleSelection, setDriverRoleSelection] = useState<DriverRoleUpdateInput>(() =>
+    readStoredDriverRoleSelection()
+  );
   const [driverProfile, setDriverProfile] = useState<DriverProfile>(() =>
     readStoredDriverProfile()
   );
@@ -968,6 +1009,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       JSON.stringify(onboardingCheckpoints)
     );
   }, [onboardingCheckpoints]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.localStorage.setItem(
+      DRIVER_ROLE_SELECTION_STORAGE_KEY,
+      JSON.stringify(driverRoleSelection)
+    );
+  }, [driverRoleSelection]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -1243,9 +1295,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       )
     );
 
-    if (relatedJob && relatedJob.jobType === "ride") {
-      const baseFare = Number.parseFloat(relatedJob.fare.replace(/[^\d.]/g, ""));
-      const amount = Number.isFinite(baseFare) ? Number(baseFare.toFixed(2)) : 0;
+    if (
+      relatedJob &&
+      relatedJob.jobType !== "shared" &&
+      relatedJob.jobType !== "shuttle"
+    ) {
+      const amount = resolveJobRevenueAmount(relatedJob);
 
       const completedTripRecord: TripRecord = {
         id: tripId,
@@ -1257,7 +1312,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           minute: "2-digit",
         }),
         amount,
-        jobType: "ride",
+        jobType: relatedJob.jobType,
         status: "completed",
         distance: relatedJob.distance,
         duration: relatedJob.duration,
@@ -1270,24 +1325,22 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         return [completedTripRecord, ...prev];
       });
 
-      if (amount > 0) {
-        const revenueEvent: RevenueEvent = {
-          id: `rev-${tripId}-base`,
-          tripId,
-          timestamp: completedAt,
-          type: "base",
-          amount,
-          label: "Private Ride",
-          category: "ride",
-        };
+      const revenueEvent: RevenueEvent = {
+        id: `rev-${tripId}-${relatedJob.jobType}`,
+        tripId,
+        timestamp: completedAt,
+        type: revenueTypeForJobType(relatedJob.jobType),
+        amount,
+        label: labelForJobType(relatedJob.jobType),
+        category: relatedJob.jobType,
+      };
 
-        setRevenueEvents((prev) => {
-          if (prev.some((event) => event.id === revenueEvent.id)) {
-            return prev;
-          }
-          return [revenueEvent, ...prev];
-        });
-      }
+      setRevenueEvents((prev) => {
+        if (prev.some((event) => event.id === revenueEvent.id)) {
+          return prev;
+        }
+        return [revenueEvent, ...prev];
+      });
     }
 
     return tripId;
@@ -1452,6 +1505,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }));
 
     if (deliveryWorkflow.activeJobId) {
+      const completedAt = Date.now();
+      const relatedJob = jobs.find(
+        (job) =>
+          job.id === deliveryWorkflow.activeJobId &&
+          job.jobType === "delivery"
+      );
+
       setJobs((prev) =>
         prev.map((job) =>
           job.id === deliveryWorkflow.activeJobId
@@ -1459,8 +1519,51 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             : job
         )
       );
+
+      if (relatedJob) {
+        const amount = resolveJobRevenueAmount(relatedJob);
+        const tripId = relatedJob.id;
+        const completedTripRecord: TripRecord = {
+          id: tripId,
+          from: relatedJob.from,
+          to: relatedJob.to,
+          date: new Date(completedAt).toISOString().slice(0, 10),
+          time: new Date(completedAt).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          amount,
+          jobType: "delivery",
+          status: "completed",
+          distance: relatedJob.distance,
+          duration: relatedJob.duration,
+        };
+
+        const revenueEvent: RevenueEvent = {
+          id: `rev-${tripId}-delivery`,
+          tripId,
+          timestamp: completedAt,
+          type: revenueTypeForJobType("delivery"),
+          amount,
+          label: labelForJobType("delivery"),
+          category: "delivery",
+        };
+
+        setTrips((prev) => {
+          if (prev.some((trip) => trip.id === tripId)) {
+            return prev;
+          }
+          return [completedTripRecord, ...prev];
+        });
+        setRevenueEvents((prev) => {
+          if (prev.some((event) => event.id === revenueEvent.id)) {
+            return prev;
+          }
+          return [revenueEvent, ...prev];
+        });
+      }
     }
-  }, [deliveryWorkflow.activeJobId, deliveryWorkflow.stage]);
+  }, [deliveryWorkflow.activeJobId, deliveryWorkflow.stage, jobs]);
 
   const resetDeliveryWorkflow = useCallback(() => {
     setDeliveryWorkflow(DEFAULT_DELIVERY_WORKFLOW);
@@ -1468,7 +1571,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const assignableJobTypes = useMemo(
     () =>
-      getAssignableJobTypes({
+      getAssignableJobTypesFromRoleConfig({
         coreRole: driverRoleSelection.coreRole,
         programs: driverRoleSelection.programs,
         sharedRidesEnabled,
@@ -1484,6 +1587,55 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return assignableJobTypes.includes(jobType);
     },
     [assignableJobTypes, rideCapable, sharedRidesEnabled]
+  );
+  const acceptSpecializedJob = useCallback(
+    (jobId: string, jobType: SpecializedJobType) => {
+      if (!canAcceptJobType(jobType)) {
+        return false;
+      }
+
+      const targetJob = jobs.find(
+        (job) =>
+          job.id === jobId &&
+          job.jobType === jobType &&
+          (job.status === "pending" || job.status === "attended")
+      );
+
+      if (!targetJob) {
+        return false;
+      }
+
+      if (
+        activeTrip.tripId &&
+        activeTrip.tripId !== jobId &&
+        activeTrip.status !== "completed" &&
+        activeTrip.status !== "cancelled"
+      ) {
+        return false;
+      }
+
+      const now = Date.now();
+
+      setJobs((prev) =>
+        prev.map((job) =>
+          job.id === jobId ? { ...job, status: "attended" } : job
+        )
+      );
+      setActiveTrip({
+        tripId: jobId,
+        jobType,
+        stage: "in_progress",
+        status: "in_progress",
+        timestamps: {
+          acceptedAt: now,
+          startedAt: now,
+          updatedAt: now,
+        },
+      });
+
+      return true;
+    },
+    [jobs, canAcceptJobType, activeTrip]
   );
   const acceptSharedJob = useCallback(
     (jobId: string) => {
@@ -1736,6 +1888,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     enableDualMode,
     setOnboardingCheckpoint,
     acceptRideJob,
+    acceptSpecializedJob,
     transitionActiveTripStage,
     completeActiveTrip,
     cancelActiveTrip,

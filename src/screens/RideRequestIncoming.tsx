@@ -1,4 +1,4 @@
-import { buildAcceptedJobRoute, SAMPLE_IDS } from "../data/constants";
+import { buildAcceptedJobRoute } from "../data/constants";
 import {
 Check,
 ChevronLeft,
@@ -115,10 +115,11 @@ export default function RideRequestIncoming() {
   const navigate = useNavigate();
   const {
     jobs,
-    updateJobStatus,
     acceptRideJob,
     acceptDeliveryJob,
+    acceptSpecializedJob,
     acceptSharedJob,
+    deliveryWorkflow,
     resetDeliveryWorkflow,
   } = useStore();
 
@@ -219,6 +220,21 @@ export default function RideRequestIncoming() {
   // Primary action label
   const primaryCta = isShuttle ? "Open Shuttle Driver App" : "Accept";
 
+  const handleContactAction = () => {
+    if (
+      jobType === "delivery" &&
+      deliveryWorkflow.routeId &&
+      deliveryWorkflow.stopId
+    ) {
+      navigate(
+        `/driver/delivery/route/${deliveryWorkflow.routeId}/stop/${deliveryWorkflow.stopId}/contact`
+      );
+      return;
+    }
+
+    window.location.href = "tel:+256700000111";
+  };
+
   const handleAccept = () => {
     if (isShuttle) {
       navigate(buildAcceptedJobRoute("shuttle", requestedJobId || ""));
@@ -253,9 +269,14 @@ export default function RideRequestIncoming() {
       accepted = acceptRideJob(selectedJob.id);
     } else if (jobType === "delivery") {
       accepted = acceptDeliveryJob(selectedJob.id);
+    } else if (
+      jobType === "rental" ||
+      jobType === "tour" ||
+      jobType === "ambulance"
+    ) {
+      accepted = acceptSpecializedJob(selectedJob.id, jobType);
     } else {
-      updateJobStatus(selectedJob.id, "attended");
-      accepted = true;
+      accepted = false;
     }
 
     if (!accepted) {
@@ -386,7 +407,7 @@ export default function RideRequestIncoming() {
               {!isShuttle && (
                 <button
                   type="button"
-                  onClick={() => navigate(`/driver/delivery/route/${SAMPLE_IDS.route}/stop/${SAMPLE_IDS.stop}/contact`)}
+                  onClick={handleContactAction}
                   className="inline-flex items-center rounded-full border border-slate-300 bg-white px-3 py-1 text-[10px] text-slate-700 hover:bg-slate-50 transition-colors shadow-sm"
                 >
                   <Phone className="h-3.5 w-3.5 mr-2" />

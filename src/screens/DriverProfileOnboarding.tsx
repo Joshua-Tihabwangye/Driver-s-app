@@ -25,6 +25,7 @@ import {
   readStoredDocumentState,
   type DocumentUploadKey,
 } from "../utils/documentVerificationState";
+import { formatPrimaryTaskRoleLabelFromAssignable } from "../utils/taskCategories";
 
 // EVzone Driver App – DriverProfileOnboarding Driver Personnel
 // Standardized Driver Personnel / Onboarding dashboard.
@@ -111,7 +112,7 @@ export default function DriverProfileOnboarding() {
   const navigate = useNavigate();
   const {
     canGoOnline,
-    driverRoleConfig,
+    assignableJobTypes,
     driverProfile,
     driverProfilePhoto,
     onboardingBlockers,
@@ -134,6 +135,10 @@ export default function DriverProfileOnboarding() {
   const driverCityLabel =
     driverProfile.city.trim().length > 0 ? driverProfile.city.trim() : "City Not Set";
   const driverSinceYear = driverProfile.memberSinceYear || new Date().getFullYear();
+  const onboardingRoleLabel = useMemo(
+    () => formatPrimaryTaskRoleLabelFromAssignable(assignableJobTypes),
+    [assignableJobTypes]
+  );
 
   const closeCamera = () => {
     setIsCameraOpen(false);
@@ -360,7 +365,7 @@ export default function DriverProfileOnboarding() {
         id: "role-selected",
         label: "Driver Role Selection",
         detail: onboardingCheckpoints.roleSelected
-          ? `Selected core role: ${driverRoleConfig.coreRole}.`
+          ? `Task categories enabled: ${onboardingRoleLabel}.`
           : "Service category has not been selected yet.",
         present: onboardingCheckpoints.roleSelected,
         route: "/driver/register",
@@ -432,7 +437,7 @@ export default function DriverProfileOnboarding() {
     driverProfile.email,
     driverProfile.fullName,
     driverProfile.phone,
-    driverRoleConfig.coreRole,
+    onboardingRoleLabel,
     onboardingCheckpoints.documentsVerified,
     onboardingCheckpoints.identityVerified,
     onboardingCheckpoints.roleSelected,
@@ -517,6 +522,11 @@ export default function DriverProfileOnboarding() {
               {driverCityLabel} · Since {driverSinceYear}
             </span>
             <div className="mt-2.5 flex items-center gap-1.5">
+              <div className="flex items-center gap-1 rounded-lg bg-orange-50 px-2 py-1 border border-orange-100/60">
+                <span className="text-[9px] font-black text-orange-600 uppercase tracking-tight">
+                  {onboardingRoleLabel}
+                </span>
+              </div>
               <div className="flex items-center gap-1 rounded-lg bg-blue-50 px-2 py-1 border border-blue-100/50">
                 <ShieldCheck className="h-3 w-3 text-blue-600" />
                 <span className="text-[9px] font-black text-blue-700 uppercase">Verified</span>

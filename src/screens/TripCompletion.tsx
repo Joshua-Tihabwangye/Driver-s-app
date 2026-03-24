@@ -57,12 +57,11 @@ export default function TripCompletion({
     ? `${completedTrip.date} · ${completedTrip.time}`
     : "Completed just now";
 
-  const detailsRoute =
-    completedTripId && resolvedJobType === "shared"
-      ? `/driver/history/shared/${completedTripId}`
-      : completedTrip
-      ? buildJobHistoryRoute(resolvedJobType, completedTrip.id)
-      : "/driver/history/rides";
+  const detailsRoute = completedTrip
+    ? buildJobHistoryRoute(resolvedJobType, completedTrip.id)
+    : completedTripId
+    ? buildJobHistoryRoute(resolvedJobType, completedTripId)
+    : "/driver/history/rides";
 
   const isShared = resolvedJobType === "shared";
   const isAmbulance = resolvedJobType === "ambulance";

@@ -33,7 +33,6 @@ const PUBLIC_SCREEN_IDS = new Set([
   "DocumentReview",
   "DocumentRejected",
   "DocumentVerified",
-  "IdentityVerification",
   "FaceCapture",
   "ImageUpload",
   "MyVehicles",
@@ -109,8 +108,8 @@ export default function App() {
           element={<Navigate to={AUTH_LOGIN_ROUTE} replace />}
         />
         <Route
-          path="/app/home"
-          element={<Navigate to={AUTH_LOGIN_ROUTE} replace />}
+          path="/driver/preferences/identity"
+          element={<Navigate to="/driver/preferences/identity/upload-image" replace />}
         />
         <Route
           path="/auth/forgot-password"

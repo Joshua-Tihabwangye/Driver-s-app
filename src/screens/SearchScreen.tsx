@@ -1,4 +1,4 @@
-import { SAMPLE_IDS } from "../data/constants";
+import { buildJobDetailRoute } from "../data/constants";
 import {
   AlertTriangle,
   Ambulance,
@@ -12,9 +12,11 @@ import {
   Search,
   User
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useJobs } from "../context/JobsContext";
+import type { JobCategory } from "../data/types";
 
 // EVzone Driver App – SearchScreen Driver App – Search Screen (v2)
 // Generic search across locations, jobs, and riders.
@@ -181,6 +183,7 @@ export default function SearchScreen() {
   const [mode, setMode] = useState("all");
   const [jobTab, setJobTab] = useState("all");
   const navigate = useNavigate();
+  const { pendingJobs } = useJobs();
 
   const handleModeChange = (m) => {
     setMode(m);
@@ -190,24 +193,47 @@ export default function SearchScreen() {
     setJobTab(t);
   };
 
-  const jobRouteMap = {
-    ride: "/driver/jobs/incoming",
-    delivery: "/driver/jobs/incoming",
-    rental: `/driver/rental/job/${SAMPLE_IDS.job}`,
-    tour: `/driver/tour/${SAMPLE_IDS.tour}/today`,
-    ambulance: "/driver/ambulance/incoming",
-    shuttle: "/driver/help/shuttle-link",
-    all: "/driver/jobs/list"
-};
+  const latestPendingByType = useMemo(() => {
+    const map = new Map<JobCategory, { id: string; requestedAt: number }>();
+    for (const job of pendingJobs) {
+      const requestedAt = Number(job.requestedAt || 0);
+      const existing = map.get(job.jobType);
+      if (!existing || requestedAt > existing.requestedAt) {
+        map.set(job.jobType, { id: job.id, requestedAt });
+      }
+    }
 
-  const handleJobNavigate = (type) => {
-    const route = jobRouteMap[type] || jobRouteMap.all;
-    if (route === "/driver/jobs/incoming") {
-      navigate(route, { state: { jobType: type === "all" ? "ride" : type } });
+    const latestIds = new Map<JobCategory, string>();
+    for (const [jobType, entry] of map.entries()) {
+      latestIds.set(jobType, entry.id);
+    }
+    return latestIds;
+  }, [pendingJobs]);
+
+  const handleJobNavigate = (type: string) => {
+    if (type === "all") {
+      navigate("/driver/jobs/list");
       return;
     }
 
-    navigate(route);
+    if (type === "shuttle") {
+      navigate("/driver/help/shuttle-link");
+      return;
+    }
+
+    const jobType = type as JobCategory;
+    const selectedJobId = latestPendingByType.get(jobType);
+    if (!selectedJobId) {
+      navigate(`/driver/jobs/list?category=${jobType}`);
+      return;
+    }
+
+    navigate(buildJobDetailRoute(jobType, selectedJobId), {
+      state: {
+        jobType,
+        jobId: selectedJobId,
+      },
+    });
   };
 
   const handleLocationNavigate = () => navigate("/driver/map/online");

@@ -1,19 +1,25 @@
-import { SAMPLE_IDS } from "../data/constants";
+import { useMemo } from "react";
+import { buildJobDetailRoute } from "../data/constants";
 import {
   Activity,
   Ambulance,
+  Bus,
   Briefcase,
   Car,
   Clock,
   DollarSign,
   Map,
   Package,
-  TrendingUp
+  TrendingUp,
+  Users,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";
+import { useJobs } from "../context/JobsContext";
 import { useStore } from "../context/StoreContext";
+import type { JobCategory } from "../data/types";
+import { ASSIGNABLE_JOB_TYPE_ORDER } from "../utils/taskCategories";
 
 // EVzone Driver App – ActiveDashboard Driver App – Active Dashboard (Online Mode)
 // Performance dashboard showing online time, trips, earnings and job mix.
@@ -43,9 +49,61 @@ function JobMixPill({ icon: Icon, label, value, onClick }: { icon: any; label: s
 
 export default function ActiveDashboard() {
   const navigate = useNavigate();
-  const { dashboardMetrics } = useStore();
+  const { dashboardMetrics, assignableJobTypes } = useStore();
+  const { pendingJobs } = useJobs();
   const { onlineTime, jobsCount, earningsAmount, jobMix } = dashboardMetrics;
   const totalJobs = jobsCount;
+  const latestPendingByType = useMemo(() => {
+    const map = new globalThis.Map<JobCategory, { id: string; requestedAt: number }>();
+    for (const job of pendingJobs) {
+      const requestedAt = Number(job.requestedAt || 0);
+      const existing = map.get(job.jobType);
+      if (!existing || requestedAt > existing.requestedAt) {
+        map.set(job.jobType, { id: job.id, requestedAt });
+      }
+    }
+
+    const latestIds = new globalThis.Map<JobCategory, string>();
+    for (const [jobType, entry] of map.entries()) {
+      latestIds.set(jobType, entry.id);
+    }
+    return latestIds;
+  }, [pendingJobs]);
+
+  const navigateToLatestJob = (jobType: JobCategory) => {
+    const selectedJobId = latestPendingByType.get(jobType);
+    if (!selectedJobId) {
+      navigate(`/driver/jobs/list?category=${jobType}`);
+      return;
+    }
+    navigate(buildJobDetailRoute(jobType, selectedJobId), {
+      state: {
+        jobType,
+        jobId: selectedJobId,
+      },
+    });
+  };
+
+  const dashboardPillConfigs: Record<
+    JobCategory,
+    { icon: any; label: string; value: number }
+  > = {
+    ride: { icon: Car, label: "Rides", value: jobMix.ride },
+    delivery: { icon: Package, label: "Cargo", value: jobMix.delivery },
+    rental: { icon: Briefcase, label: "Rentals", value: jobMix.rental },
+    tour: { icon: Map, label: "Tours", value: jobMix.tour },
+    ambulance: { icon: Ambulance, label: "Emergency", value: jobMix.ambulance },
+    shared: { icon: Users, label: "Shared", value: jobMix.shared },
+    shuttle: { icon: Bus, label: "Shuttle", value: jobMix.shuttle },
+  };
+
+  const visiblePillCategories = useMemo(
+    () =>
+      ASSIGNABLE_JOB_TYPE_ORDER.filter((jobType) =>
+        assignableJobTypes.includes(jobType)
+      ),
+    [assignableJobTypes]
+  );
 
   return (
     <div className="flex flex-col h-full bg-transparent">
@@ -134,42 +192,19 @@ export default function ActiveDashboard() {
           </div>
           
           <div className="grid grid-cols-2 gap-3">
-            <JobMixPill
-              icon={Car}
-              label="Rides"
-              value={jobMix.ride}
-              onClick={() => navigate("/driver/jobs/list")}
-            />
-            <JobMixPill
-              icon={Package}
-              label="Cargo"
-              value={jobMix.delivery}
-              onClick={() =>
-                navigate("/driver/jobs/incoming", {
-                  state: { jobType: "delivery" },
-                })
-              }
-            />
-            <JobMixPill
-              icon={Briefcase}
-              label="Rentals"
-              value={jobMix.rental}
-              onClick={() => navigate(`/driver/rental/job/${SAMPLE_IDS.job}`)}
-            />
-            <JobMixPill
-              icon={Map}
-              label="Tours"
-              value={jobMix.tour}
-              onClick={() => navigate(`/driver/tour/${SAMPLE_IDS.tour}/today`)}
-            />
+            {visiblePillCategories.map((jobType) => {
+              const config = dashboardPillConfigs[jobType];
+              return (
+                <JobMixPill
+                  key={jobType}
+                  icon={config.icon}
+                  label={config.label}
+                  value={config.value}
+                  onClick={() => navigateToLatestJob(jobType)}
+                />
+              );
+            })}
           </div>
-          
-          <JobMixPill
-            icon={Ambulance}
-            label="Emergency"
-            value={jobMix.ambulance}
-            onClick={() => navigate(`/driver/ambulance/job/${SAMPLE_IDS.job}/status`)}
-          />
 
           <div className="bg-cream p-5 rounded-3xl border-2 border-orange-500/10 shadow-sm">
              <p className="text-[10px] text-slate-400 leading-relaxed font-bold uppercase tracking-tight">

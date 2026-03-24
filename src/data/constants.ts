@@ -1,15 +1,16 @@
 import type { JobCategory } from "./types";
+import { JOB_CATEGORY_LABELS } from "../utils/taskCategories";
 
 // ── Job Category Filters ─────────────────────────────────
 export const JOB_FILTERS: { key: string; label: string }[] = [
   { key: "all", label: "All" },
-  { key: "ride", label: "Ride" },
-  { key: "delivery", label: "Delivery" },
-  { key: "rental", label: "Rental" },
-  { key: "shuttle", label: "Shuttle" },
-  { key: "tour", label: "Tour" },
-  { key: "ambulance", label: "Ambulance" },
-  { key: "shared", label: "Shared" },
+  { key: "ride", label: JOB_CATEGORY_LABELS.ride },
+  { key: "delivery", label: JOB_CATEGORY_LABELS.delivery },
+  { key: "rental", label: JOB_CATEGORY_LABELS.rental },
+  { key: "shuttle", label: JOB_CATEGORY_LABELS.shuttle },
+  { key: "tour", label: JOB_CATEGORY_LABELS.tour },
+  { key: "ambulance", label: JOB_CATEGORY_LABELS.ambulance },
+  { key: "shared", label: JOB_CATEGORY_LABELS.shared },
 ];
 
 // ── Period Options ────────────────────────────────────────
@@ -138,7 +139,7 @@ export const JOB_HISTORY_ROUTE_BUILDERS: Record<JobCategory | "default", JobRout
   rental: (jobId) => `/driver/history/rental/${jobId}`,
   tour: (jobId) => `/driver/history/tour/${jobId}`,
   shuttle: () => "/driver/help/shuttle-link",
-  ambulance: (jobId) => `/driver/ambulance/job/${jobId}/status`,
+  ambulance: (jobId) => `/driver/history/ambulance/${jobId}`,
   shared: (jobId) => `/driver/history/shared/${jobId}`,
   default: (jobId) => `/driver/history/ride/${jobId}`,
 };

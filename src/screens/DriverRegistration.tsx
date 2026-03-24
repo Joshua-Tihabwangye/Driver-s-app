@@ -8,12 +8,16 @@ import {
   ShieldCheck,
   User
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
-import type { DriverCoreRole } from "../data/types";
+import type { JobCategory } from "../data/types";
 import { resetStoredDocumentState } from "../utils/documentVerificationState";
+import {
+  deriveRoleConfigFromTaskCategorySelection,
+  deriveTaskCategorySelectionFromAssignableJobTypes,
+} from "../utils/taskCategories";
 
 // EVzone Driver App – DriverRegistration Registration – Driver Information
 // Standardized Driver Profile registration screen.
@@ -58,43 +62,41 @@ const SERVICE_OPTIONS = [
 
 type ServiceOptionKey = (typeof SERVICE_OPTIONS)[number]["key"];
 
-const PRIMARY_ROLE_BY_OPTION: Record<ServiceOptionKey, DriverCoreRole> = {
-  ride: "ride-only",
-  delivery: "delivery-only",
-  rental: "rental-only",
-  tour: "tour-only",
-  ambulance: "ambulance-only",
-};
+function deriveSelectedServicesFromAssignableJobTypes(
+  assignableJobTypes: JobCategory[]
+): Record<ServiceOptionKey, boolean> {
+  const taskSelection =
+    deriveTaskCategorySelectionFromAssignableJobTypes(assignableJobTypes);
+
+  return {
+    ride: taskSelection.ride,
+    delivery: taskSelection.delivery,
+    rental: taskSelection.rental,
+    tour: taskSelection.tour,
+    ambulance: taskSelection.ambulance,
+  };
+}
 
 export default function DriverRegistration() {
   const navigate = useNavigate();
   const {
     updateDriverRoleConfig,
     driverRoleConfig,
+    assignableJobTypes,
     setOnboardingCheckpoint,
     driverProfile,
     driverProfilePhoto,
   } = useStore();
   const driverDisplayName =
     driverProfile.fullName.trim().length > 0 ? driverProfile.fullName.trim() : "Driver";
-  const [selectedServices, setSelectedServices] = useState<Record<ServiceOptionKey, boolean>>({
-    ride:
-      driverRoleConfig.coreRole === "ride-only" ||
-      driverRoleConfig.coreRole === "dual-mode",
-    delivery:
-      driverRoleConfig.coreRole === "delivery-only" ||
-      driverRoleConfig.coreRole === "dual-mode",
-    rental:
-      driverRoleConfig.coreRole === "rental-only" ||
-      driverRoleConfig.programs.rental,
-    tour:
-      driverRoleConfig.coreRole === "tour-only" ||
-      driverRoleConfig.programs.tour,
-    ambulance:
-      driverRoleConfig.coreRole === "ambulance-only" ||
-      driverRoleConfig.programs.ambulance,
-  });
+  const [selectedServices, setSelectedServices] = useState<Record<ServiceOptionKey, boolean>>(
+    () => deriveSelectedServicesFromAssignableJobTypes(assignableJobTypes)
+  );
   const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    setSelectedServices(deriveSelectedServicesFromAssignableJobTypes(assignableJobTypes));
+  }, [assignableJobTypes]);
 
   const handleServiceToggle = (optionKey: ServiceOptionKey) => {
     setSelectedServices((prev) => ({
@@ -114,25 +116,13 @@ export default function DriverRegistration() {
       return;
     }
 
-    const hasRide = selectedServices.ride;
-    const hasDelivery = selectedServices.delivery;
-    const primaryRole =
-      hasRide && hasDelivery
-        ? "dual-mode"
-        : hasRide
-        ? "ride-only"
-        : hasDelivery
-        ? "delivery-only"
-        : PRIMARY_ROLE_BY_OPTION[selectedKeys[0]];
-    const updateResult = updateDriverRoleConfig({
-      coreRole: primaryRole,
-      programs: {
-        rental: selectedServices.rental,
-        tour: selectedServices.tour,
-        ambulance: selectedServices.ambulance,
-        shuttle: false,
-      },
-    });
+    const nextRoleConfig = deriveRoleConfigFromTaskCategorySelection(selectedServices);
+    if (!nextRoleConfig) {
+      setErrorMessage("Select at least one service category.");
+      return;
+    }
+
+    const updateResult = updateDriverRoleConfig(nextRoleConfig);
 
     if (!updateResult.ok) {
       setErrorMessage(updateResult.error || "Unable to save onboarding role.");

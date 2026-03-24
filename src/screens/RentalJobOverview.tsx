@@ -1,4 +1,4 @@
-import { buildPrivateTripRoute, SAMPLE_IDS } from "../data/constants";
+import { buildPrivateTripRoute } from "../data/constants";
 import {
 Car,
 ChevronLeft,
@@ -8,7 +8,7 @@ MapPin,
 Phone,
 User
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
@@ -45,9 +45,159 @@ function StatusChip({ label, active, onClick }) {
 export default function RentalJobOverview() {
   const [status, setStatus] = useState("On rental");
   const navigate = useNavigate();
-  const { jobId } = useParams();
-  const { activeTrip } = useStore();
-  const tripRef = activeTrip.tripId || jobId || SAMPLE_IDS.trip;
+  const { jobId } = useParams<{ jobId: string }>();
+  const {
+    jobs,
+    trips,
+    activeTrip,
+    acceptSpecializedJob,
+    completeActiveTrip,
+    completeTrip,
+    updateJobStatus,
+  } = useStore();
+  const rentalJob = useMemo(
+    () =>
+      jobId
+        ? jobs.find((job) => job.id === jobId && job.jobType === "rental") || null
+        : null,
+    [jobs, jobId]
+  );
+  const isThisRentalActive = Boolean(
+    jobId &&
+      activeTrip.tripId === jobId &&
+      activeTrip.jobType === "rental" &&
+      activeTrip.status !== "completed" &&
+      activeTrip.status !== "cancelled"
+  );
+
+  useEffect(() => {
+    if (!jobId || !rentalJob || isThisRentalActive) {
+      return;
+    }
+    if (rentalJob.status === "pending" || rentalJob.status === "attended") {
+      acceptSpecializedJob(jobId, "rental");
+    }
+  }, [jobId, rentalJob, isThisRentalActive, acceptSpecializedJob]);
+
+  const ensureRentalFlowTripId = () => {
+    if (!jobId) {
+      return null;
+    }
+    if (isThisRentalActive) {
+      return jobId;
+    }
+    if (acceptSpecializedJob(jobId, "rental")) {
+      return jobId;
+    }
+    // Keep CTA progression alive even when role or active-session guards reject activation.
+    return jobId;
+  };
+
+  if (!jobId || !rentalJob) {
+    return (
+      <div className="flex flex-col min-h-full ">
+        <PageHeader
+          title="Job Overview"
+          subtitle="Driver · Rental"
+          onBack={() => navigate(-1)}
+        />
+        <main className="flex-1 px-6 pt-8 pb-16 flex items-center justify-center">
+          <div className="rounded-[2rem] border border-slate-100 bg-white p-6 text-center space-y-4 shadow-sm">
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              Rental job not found
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate("/driver/jobs/list")}
+              className="rounded-full bg-slate-900 px-5 py-3 text-[10px] font-black uppercase tracking-widest text-white"
+            >
+              Open Requests
+            </button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  const handleStartNavigation = () => {
+    const activeRentalTripId = ensureRentalFlowTripId();
+    if (!activeRentalTripId) {
+      return;
+    }
+    navigate(buildPrivateTripRoute("navigation", activeRentalTripId), {
+      state: {
+        jobType: "rental",
+        tripId: activeRentalTripId,
+        rentalStatus: status,
+      },
+    });
+  };
+
+  const handleEndRental = () => {
+    const activeRentalTripId = ensureRentalFlowTripId();
+    if (!activeRentalTripId) {
+      return;
+    }
+
+    let completedTripId: string | null = null;
+    if (
+      activeTrip.tripId === activeRentalTripId &&
+      activeTrip.jobType === "rental" &&
+      activeTrip.status !== "completed" &&
+      activeTrip.status !== "cancelled"
+    ) {
+      completedTripId = completeActiveTrip();
+    }
+
+    if (!completedTripId) {
+      completedTripId = activeRentalTripId;
+      updateJobStatus(completedTripId, "completed");
+
+      const alreadyRecorded = trips.some((trip) => trip.id === completedTripId);
+      if (!alreadyRecorded && rentalJob) {
+        const completedAt = Date.now();
+        const parsedFare = Number.parseFloat(
+          rentalJob.fare.replace(/[^\d.]/g, "")
+        );
+        const amount = Number.isFinite(parsedFare)
+          ? Number(parsedFare.toFixed(2))
+          : 64.8;
+
+        completeTrip(
+          {
+            id: completedTripId,
+            from: rentalJob.from,
+            to: rentalJob.to,
+            date: new Date(completedAt).toISOString().slice(0, 10),
+            time: new Date(completedAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            amount,
+            jobType: "rental",
+            status: "completed",
+            distance: rentalJob.distance,
+            duration: rentalJob.duration,
+          },
+          [
+            {
+              id: `rev-${completedTripId}-rental-fallback`,
+              tripId: completedTripId,
+              timestamp: completedAt,
+              type: "base",
+              amount,
+              label: "Rental",
+              category: "rental",
+            },
+          ]
+        );
+      }
+    }
+
+    navigate(buildPrivateTripRoute("completed", completedTripId), {
+      state: { jobType: "rental", tripId: completedTripId },
+    });
+  };
 
   return (
     <div className="flex flex-col min-h-full ">
@@ -183,17 +333,13 @@ export default function RentalJobOverview() {
         {/* CTAs */}
         <section className="space-y-3 pb-8">
           <button
-            onClick={() => navigate(buildPrivateTripRoute("navigation", tripRef))}
+            onClick={handleStartNavigation}
             className="w-full rounded-[2rem] bg-emerald-500 px-6 py-5 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-emerald-500/20 active:scale-[0.98] transition-all"
           >
             Start Navigation
           </button>
           <button
-            onClick={() =>
-              navigate(buildPrivateTripRoute("completed", tripRef), {
-                state: { jobType: "rental", tripId: tripRef },
-              })
-            }
+            onClick={handleEndRental}
             className="w-full rounded-[2rem] border-2 border-slate-900 bg-white px-6 py-5 text-[11px] font-black uppercase tracking-widest text-slate-900 active:scale-[0.98] transition-all"
           >
             End Rental

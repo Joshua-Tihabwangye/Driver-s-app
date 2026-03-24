@@ -351,10 +351,10 @@ export default function AnalyticsDashboard() {
     });
   }, [assignableJobTypes, totalsByCategory, totalRevenue]);
 
-  const topCategory = useMemo(() => {
+  const topCategory = useMemo<JobCategory | null>(() => {
     const candidates = assignableJobTypes.filter((type) => type !== "shared");
     if (candidates.length === 0) {
-      return "N/A";
+      return null;
     }
     return candidates.reduce((best, current) =>
       totalsByCategory.revenue[current] > totalsByCategory.revenue[best]
@@ -372,6 +372,12 @@ export default function AnalyticsDashboard() {
     }
     return Math.max(12, totalTrips * 0.6).toFixed(1);
   }, [period, totalTrips]);
+
+  const topCategoryLabel = topCategory ? CATEGORY_LABELS[topCategory] : "No Data";
+  const activeCategoriesLabel =
+    assignableJobTypes.length > 0
+      ? assignableJobTypes.map((type) => CATEGORY_LABELS[type]).join(", ")
+      : "None selected";
 
   const periodLabels: Record<Period, string> = {
     today: "Day",
@@ -480,9 +486,15 @@ export default function AnalyticsDashboard() {
             value={
               assignableJobTypes.includes("delivery")
                 ? String(deliveryCount)
-                : CATEGORY_LABELS[topCategory]
+                : topCategoryLabel
             }
-            sub={assignableJobTypes.includes("delivery") ? "Parcels completed" : "Revenue leader"}
+            sub={
+              assignableJobTypes.includes("delivery")
+                ? "Parcels completed"
+                : topCategory
+                ? "Revenue leader"
+                : "No completed trips yet"
+            }
             color="#8b5cf6"
           />
         </div>
@@ -517,16 +529,6 @@ export default function AnalyticsDashboard() {
           </div>
         </section>
 
-        <section className="space-y-4 rounded-3xl border border-slate-50 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <h3 className="px-1 text-[11px] font-bold uppercase tracking-widest text-slate-400">
-              User Ratings
-            </h3>
-            <span className="text-xs font-black text-amber-500">{rating.toFixed(2)} ★</span>
-          </div>
-          <RatingsChart distribution={ratingDistribution} />
-        </section>
-
         <section className="space-y-4 rounded-3xl border border-slate-50 bg-white p-5 pb-6 shadow-sm">
           <h3 className="px-1 text-[11px] font-bold uppercase tracking-widest text-slate-400">
             Segment Composition
@@ -536,8 +538,7 @@ export default function AnalyticsDashboard() {
 
         <section className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3">
           <p className="text-[10px] font-black uppercase tracking-widest text-emerald-700">
-            Active categories:{" "}
-            {assignableJobTypes.map((type) => CATEGORY_LABELS[type]).join(", ")}
+            Active categories: {activeCategoriesLabel}
           </p>
         </section>
       </main>

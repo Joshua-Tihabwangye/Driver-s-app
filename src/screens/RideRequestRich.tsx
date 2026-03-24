@@ -95,11 +95,12 @@ export default function RideRequestRich() {
   const routeState = (location.state as RequestRouteState | null) || null;
   const {
     jobs,
-    updateJobStatus,
     acceptRideJob,
     acceptDeliveryJob,
+    acceptSpecializedJob,
     acceptSharedJob,
     resetDeliveryWorkflow,
+    deliveryWorkflow,
   } = useStore();
   const [timeLeft, setTimeLeft] = useState(20);
   // Preview-only job type toggle so you can see all states in the canvas
@@ -201,6 +202,21 @@ export default function RideRequestRich() {
 
   const primaryCta = isShuttle ? "Open Shuttle Driver App" : "Accept";
 
+  const handleSignal = () => {
+    if (
+      jobType === "delivery" &&
+      deliveryWorkflow.routeId &&
+      deliveryWorkflow.stopId
+    ) {
+      navigate(
+        `/driver/delivery/route/${deliveryWorkflow.routeId}/stop/${deliveryWorkflow.stopId}/contact`
+      );
+      return;
+    }
+
+    window.location.href = "tel:+256700000111";
+  };
+
   const handleAccept = () => {
     if (isShuttle) {
       navigate(buildAcceptedJobRoute("shuttle", requestedJobId || ""));
@@ -235,9 +251,14 @@ export default function RideRequestRich() {
       accepted = acceptRideJob(selectedJob.id);
     } else if (jobType === "delivery") {
       accepted = acceptDeliveryJob(selectedJob.id);
+    } else if (
+      jobType === "rental" ||
+      jobType === "tour" ||
+      jobType === "ambulance"
+    ) {
+      accepted = acceptSpecializedJob(selectedJob.id, jobType);
     } else {
-      updateJobStatus(selectedJob.id, "attended");
-      accepted = true;
+      accepted = false;
     }
 
     if (!accepted) {
@@ -374,7 +395,11 @@ export default function RideRequestRich() {
                 Intercept Target: 19:05
               </span>
               {!isShuttle && (
-                <button className="inline-flex items-center rounded-full border border-slate-700 px-3 py-1 text-[10px] hover:bg-white/5 transition-colors">
+                <button
+                  type="button"
+                  onClick={handleSignal}
+                  className="inline-flex items-center rounded-full border border-slate-700 px-3 py-1 text-[10px] hover:bg-white/5 transition-colors"
+                >
                   <Phone className="h-3.5 w-3.5 mr-2" />
                   Signal
                 </button>

@@ -1,4 +1,4 @@
-import { SAMPLE_IDS } from "../data/constants";
+import { buildAcceptedJobRoute } from "../data/constants";
 import {
 AlertTriangle,
 ChevronLeft,
@@ -6,9 +6,10 @@ Clock,
 MapPin,
 ShieldCheck
 } from "lucide-react";
-import { useEffect,useState } from "react";
+import { useEffect,useMemo,useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – AmbulanceIncoming Ambulance Job Incoming Screen (v1)
 // Specialized incoming view for Ambulance jobs.
@@ -26,12 +27,37 @@ export default function AmbulanceIncoming() {
   const [code] = useState("Code 1");
   const [timeLeft, setTimeLeft] = useState(20);
   const navigate = useNavigate();
+  const { jobs, acceptSpecializedJob } = useStore();
+  const pendingAmbulanceJob = useMemo(
+    () =>
+      jobs.find(
+        (job) =>
+          job.jobType === "ambulance" &&
+          (job.status === "pending" || job.status === "attended")
+      ) || null,
+    [jobs]
+  );
 
   useEffect(() => {
     if (timeLeft <= 0) return;
     const id = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
     return () => clearTimeout(id);
   }, [timeLeft]);
+
+  const handleAccept = () => {
+    if (!pendingAmbulanceJob) {
+      navigate("/driver/jobs/list");
+      return;
+    }
+    const accepted = acceptSpecializedJob(pendingAmbulanceJob.id, "ambulance");
+    if (!accepted) {
+      navigate("/driver/jobs/list");
+      return;
+    }
+    navigate(buildAcceptedJobRoute("ambulance", pendingAmbulanceJob.id), {
+      state: { jobType: "ambulance", jobId: pendingAmbulanceJob.id },
+    });
+  };
 
   return (
     <div className="flex flex-col min-h-full bg-[#fcf8f8]">
@@ -129,13 +155,13 @@ export default function AmbulanceIncoming() {
 
           <div className="grid grid-cols-2 gap-3">
             <button
-              onClick={() => navigate("/driver/dashboard/offline")}
+              onClick={() => navigate("/driver/jobs/list")}
               className="rounded-[2rem] border-2 border-slate-200 bg-white px-6 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400 active:scale-[0.98] transition-all"
             >
               Decline
             </button>
             <button
-              onClick={() => navigate(`/driver/ambulance/job/${SAMPLE_IDS.job}/status`)}
+              onClick={handleAccept}
               className="rounded-[2rem] bg-red-600 px-6 py-5 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-red-200 active:scale-[0.98] transition-all"
             >
               Accept
