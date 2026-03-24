@@ -12,12 +12,9 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
-import type { JobCategory } from "../data/types";
+import type { DriverCoreRole } from "../data/types";
 import { resetStoredDocumentState } from "../utils/documentVerificationState";
-import {
-  deriveRoleConfigFromTaskCategorySelection,
-  deriveTaskCategorySelectionFromAssignableJobTypes,
-} from "../utils/taskCategories";
+import type { DriverRoleUpdateInput } from "../context/StoreContext";
 
 // EVzone Driver App – DriverRegistration Registration – Driver Information
 // Standardized Driver Profile registration screen.
@@ -36,6 +33,13 @@ const SERVICE_OPTIONS = [
     desc: "Food and parcel deliveries.",
     icon: Package,
     role: "delivery-only",
+  },
+  {
+    key: "rides-delivery",
+    label: "Rides + Delivery",
+    desc: "Combined passenger and delivery requests.",
+    icon: Car,
+    role: "dual-mode",
   },
   {
     key: "rental",
@@ -62,66 +66,82 @@ const SERVICE_OPTIONS = [
 
 type ServiceOptionKey = (typeof SERVICE_OPTIONS)[number]["key"];
 
-function deriveSelectedServicesFromAssignableJobTypes(
-  assignableJobTypes: JobCategory[]
-): Record<ServiceOptionKey, boolean> {
-  const taskSelection =
-    deriveTaskCategorySelectionFromAssignableJobTypes(assignableJobTypes);
-
-  return {
-    ride: taskSelection.ride,
-    delivery: taskSelection.delivery,
-    rental: taskSelection.rental,
-    tour: taskSelection.tour,
-    ambulance: taskSelection.ambulance,
-  };
+function deriveSelectedServiceFromCoreRole(coreRole: DriverCoreRole): ServiceOptionKey | null {
+  if (coreRole === "ride-only") return "ride";
+  if (coreRole === "delivery-only") return "delivery";
+  if (coreRole === "dual-mode") return "rides-delivery";
+  if (coreRole === "rental-only") return "rental";
+  if (coreRole === "tour-only") return "tour";
+  if (coreRole === "ambulance-only") return "ambulance";
+  return null;
 }
+
+const ROLE_CONFIG_BY_SERVICE: Record<ServiceOptionKey, DriverRoleUpdateInput> = {
+  ride: {
+    coreRole: "ride-only",
+    programs: { rental: false, tour: false, ambulance: false, shuttle: false },
+  },
+  delivery: {
+    coreRole: "delivery-only",
+    programs: { rental: false, tour: false, ambulance: false, shuttle: false },
+  },
+  "rides-delivery": {
+    coreRole: "dual-mode",
+    programs: { rental: false, tour: false, ambulance: false, shuttle: false },
+  },
+  rental: {
+    coreRole: "rental-only",
+    programs: { rental: false, tour: false, ambulance: false, shuttle: false },
+  },
+  tour: {
+    coreRole: "tour-only",
+    programs: { rental: false, tour: false, ambulance: false, shuttle: false },
+  },
+  ambulance: {
+    coreRole: "ambulance-only",
+    programs: { rental: false, tour: false, ambulance: false, shuttle: false },
+  },
+};
 
 export default function DriverRegistration() {
   const navigate = useNavigate();
   const {
     updateDriverRoleConfig,
     driverRoleConfig,
-    assignableJobTypes,
     setOnboardingCheckpoint,
     driverProfile,
     driverProfilePhoto,
   } = useStore();
   const driverDisplayName =
     driverProfile.fullName.trim().length > 0 ? driverProfile.fullName.trim() : "Driver";
-  const [selectedServices, setSelectedServices] = useState<Record<ServiceOptionKey, boolean>>(
-    () => deriveSelectedServicesFromAssignableJobTypes(assignableJobTypes)
+  const [selectedServiceKey, setSelectedServiceKey] = useState<ServiceOptionKey | null>(
+    () => deriveSelectedServiceFromCoreRole(driverRoleConfig.coreRole)
   );
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    setSelectedServices(deriveSelectedServicesFromAssignableJobTypes(assignableJobTypes));
-  }, [assignableJobTypes]);
+    setSelectedServiceKey(deriveSelectedServiceFromCoreRole(driverRoleConfig.coreRole));
+  }, [driverRoleConfig.coreRole]);
 
   const handleServiceToggle = (optionKey: ServiceOptionKey) => {
-    setSelectedServices((prev) => ({
-      ...prev,
-      [optionKey]: !prev[optionKey],
-    }));
+    if (selectedServiceKey && selectedServiceKey !== optionKey) {
+      setErrorMessage(
+        "Uncheck the current category first before selecting a different one."
+      );
+      return;
+    }
+
+    setSelectedServiceKey((prev) => (prev === optionKey ? null : optionKey));
     setErrorMessage("");
   };
 
   const handleContinue = () => {
-    const selectedKeys = (Object.keys(selectedServices) as ServiceOptionKey[]).filter(
-      (key) => selectedServices[key]
-    );
-
-    if (selectedKeys.length === 0) {
-      setErrorMessage("Select at least one service category.");
+    if (!selectedServiceKey) {
+      setErrorMessage("Select one service category.");
       return;
     }
 
-    const nextRoleConfig = deriveRoleConfigFromTaskCategorySelection(selectedServices);
-    if (!nextRoleConfig) {
-      setErrorMessage("Select at least one service category.");
-      return;
-    }
-
+    const nextRoleConfig = ROLE_CONFIG_BY_SERVICE[selectedServiceKey];
     const updateResult = updateDriverRoleConfig(nextRoleConfig);
 
     if (!updateResult.ok) {
@@ -196,8 +216,15 @@ export default function DriverRegistration() {
             {SERVICE_OPTIONS.map((option) => (
               <label
                 key={option.key}
+                onClick={() => {
+                  if (selectedServiceKey && selectedServiceKey !== option.key) {
+                    setErrorMessage(
+                      "Uncheck the current category first before selecting a different one."
+                    );
+                  }
+                }}
                 className={`w-full rounded-2xl border-2 px-4 py-4 text-left flex items-start space-x-3 transition-all active:scale-[0.98] ${
-                  selectedServices[option.key]
+                  selectedServiceKey === option.key
                     ? "border-orange-500 bg-[#fffdf5] shadow-lg shadow-orange-500/5"
                     : "border-orange-500/10 bg-cream hover:border-orange-500/30"
                 }`}
@@ -205,19 +232,20 @@ export default function DriverRegistration() {
                 <div className="mt-1">
                   <input
                     type="checkbox"
-                    checked={selectedServices[option.key]}
+                    checked={selectedServiceKey === option.key}
                     onChange={() => handleServiceToggle(option.key)}
+                    disabled={Boolean(selectedServiceKey && selectedServiceKey !== option.key)}
                     className="h-5 w-5 rounded-lg border-orange-200 text-orange-500 focus:ring-orange-500 bg-white"
                   />
                 </div>
-                <div className={`mt-0.5 flex h-10 w-10 items-center justify-center rounded-xl ${selectedServices[option.key] ? "bg-white shadow-sm" : "bg-white/50 border border-orange-50"}`}>
-                  <option.icon className={`h-5 w-5 ${selectedServices[option.key] ? "text-orange-500" : "text-slate-400"}`} />
+                <div className={`mt-0.5 flex h-10 w-10 items-center justify-center rounded-xl ${selectedServiceKey === option.key ? "bg-white shadow-sm" : "bg-white/50 border border-orange-50"}`}>
+                  <option.icon className={`h-5 w-5 ${selectedServiceKey === option.key ? "text-orange-500" : "text-slate-400"}`} />
                 </div>
                 <div className="flex flex-col">
-                  <span className={`text-sm font-black tracking-tight ${selectedServices[option.key] ? "text-slate-900" : "text-slate-700"}`}>
+                  <span className={`text-sm font-black tracking-tight ${selectedServiceKey === option.key ? "text-slate-900" : "text-slate-700"}`}>
                     {option.label}
                   </span>
-                  <span className={`text-[11px] font-medium leading-tight mt-0.5 ${selectedServices[option.key] ? "text-slate-600" : "text-slate-400"}`}>
+                  <span className={`text-[11px] font-medium leading-tight mt-0.5 ${selectedServiceKey === option.key ? "text-slate-600" : "text-slate-400"}`}>
                     {option.desc}
                   </span>
                 </div>
@@ -237,7 +265,7 @@ export default function DriverRegistration() {
           </div>
           <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
              <p className="text-[10px] text-slate-400 leading-relaxed font-bold uppercase tracking-tight">
-                Ride and delivery are separate checkbox options. Select only the categories you want to receive tasks from.
+                Only one service category can stay active at a time. Uncheck the current category before choosing another one.
              </p>
           </div>
         </section>

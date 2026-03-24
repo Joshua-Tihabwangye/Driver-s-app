@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import BottomNav from "./BottomNav";
-import { useStore } from "../context/StoreContext";
+import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 
 interface AppPhoneShellProps {
@@ -24,7 +24,7 @@ function shouldTreatAsPhoneByUA() {
 
 export default function AppPhoneShell({ children }: AppPhoneShellProps) {
   const { isDark } = useTheme();
-  const { canGoOnline } = useStore();
+  const { isLoggedIn } = useAuth();
   const { pathname } = useLocation();
   const [isPhoneView, setIsPhoneView] = useState(() => {
     if (typeof window === "undefined") return true;
@@ -62,7 +62,7 @@ export default function AppPhoneShell({ children }: AppPhoneShellProps) {
     pathname.startsWith("/driver/onboarding") ||
     pathname.startsWith("/driver/preferences") ||
     pathname.startsWith("/driver/training");
-  const isVisible = isDriverRoute && canGoOnline && !isOnboardingRoute;
+  const isVisible = isDriverRoute && isLoggedIn && !isOnboardingRoute;
   const stageBackground = isDark
     ? "radial-gradient(1200px 520px at 85% -10%, rgba(16, 185, 129, 0.2), transparent 58%), radial-gradient(800px 480px at -8% 110%, rgba(30, 64, 175, 0.2), transparent 60%), linear-gradient(180deg, #020617 0%, #0b1120 100%)"
     : "radial-gradient(1100px 500px at 88% -15%, rgba(16, 185, 129, 0.22), transparent 60%), radial-gradient(780px 460px at -10% 110%, rgba(59, 130, 246, 0.16), transparent 62%), linear-gradient(180deg, #f0f4f8 0%, #e2e8f0 100%)";

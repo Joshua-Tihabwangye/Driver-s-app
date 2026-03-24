@@ -1,8 +1,15 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
 import { resetStoredDocumentState } from "../utils/documentVerificationState";
+import {
+  getRegisterServiceLabel,
+  readSelectedRegisterService,
+  saveDriverAuthAccount,
+  saveSelectedRegisterService,
+  type RegisterServiceKey,
+} from "../utils/registerServiceFlow";
 
 // EVzone Driver App – Registration Registration (profile page)
 // New design: green curved header, info sections, form fields, green bottom nav.
@@ -26,7 +33,14 @@ function Input({ label, type = "text", value, onChange, placeholder }) {
 
 export default function Registration() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { setOnboardingCheckpoint, driverProfile, setDriverProfile } = useStore();
+  const selectedServiceFromState = (
+    location.state as { selectedService?: RegisterServiceKey } | null
+  )?.selectedService;
+  const [selectedService] = useState<RegisterServiceKey | null>(() => {
+    return selectedServiceFromState || readSelectedRegisterService();
+  });
   const [fullName, setFullName] = useState(driverProfile.fullName);
   const [country, setCountry] = useState(driverProfile.country);
   const [dob, setDob] = useState(driverProfile.dob);
@@ -37,8 +51,29 @@ export default function Registration() {
   const [district, setDistrict] = useState(driverProfile.district);
   const [postalCode, setPostalCode] = useState(driverProfile.postalCode);
   const [landmark, setLandmark] = useState(driverProfile.landmark);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    if (!selectedService) {
+      return;
+    }
+
+    saveSelectedRegisterService(selectedService);
+  }, [selectedService]);
+
+  const selectedServiceLabel = useMemo(
+    () => getRegisterServiceLabel(selectedService),
+    [selectedService]
+  );
+
+  const hasPassword = password.trim().length > 0;
+  const hasConfirmPassword = confirmPassword.trim().length > 0;
+  const passwordsMatch = hasPassword && hasConfirmPassword && password === confirmPassword;
 
   const isValid =
+    Boolean(selectedService) &&
     fullName.trim().length > 0 &&
     country.trim().length > 0 &&
     dob.trim().length > 0 &&
@@ -46,10 +81,38 @@ export default function Registration() {
     phone.trim().length > 0 &&
     streetAddress.trim().length > 0 &&
     city.trim().length > 0 &&
-    district.trim().length > 0;
+    district.trim().length > 0 &&
+    hasPassword &&
+    hasConfirmPassword &&
+    passwordsMatch;
 
   const handleNext = () => {
-    if (!isValid) return;
+    if (!selectedService) {
+      setErrorMessage("Select a service first from Register Services.");
+      return;
+    }
+
+    if (!hasPassword) {
+      setErrorMessage("Password is required.");
+      return;
+    }
+
+    if (!hasConfirmPassword) {
+      setErrorMessage("Confirm password is required.");
+      return;
+    }
+
+    if (!passwordsMatch) {
+      setErrorMessage("Password and confirm password must match.");
+      return;
+    }
+
+    if (!isValid) {
+      setErrorMessage("Complete all required fields.");
+      return;
+    }
+
+    setErrorMessage("");
 
     setDriverProfile({
       ...driverProfile,
@@ -65,11 +128,19 @@ export default function Registration() {
       landmark: landmark.trim(),
     });
 
+    saveDriverAuthAccount({
+      fullName: fullName.trim(),
+      email: email.trim(),
+      phone: phone.trim(),
+      password,
+      selectedService,
+    });
+
     resetStoredDocumentState();
     setOnboardingCheckpoint("documentsVerified", false);
     setOnboardingCheckpoint("trainingCompleted", false);
 
-    navigate("/driver/register");
+    navigate("/driver/register", { state: { selectedService } });
   };
 
   return (
@@ -90,6 +161,13 @@ export default function Registration() {
             Enter your personal information on this page. In the next step, you will choose your
             driver service category and continue onboarding.
           </p>
+        </section>
+
+        <section className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+            Selected Service
+          </p>
+          <p className="mt-1 text-sm font-black text-slate-900">{selectedServiceLabel}</p>
         </section>
 
         {/* Divider */}
@@ -169,6 +247,26 @@ export default function Registration() {
               onChange={setLandmark}
               placeholder="e.g. Next to Acacia Mall"
             />
+            <Input
+              label="Password"
+              type="password"
+              value={password}
+              onChange={(value) => {
+                setPassword(value);
+                setErrorMessage("");
+              }}
+              placeholder="Create password"
+            />
+            <Input
+              label="Confirm Password"
+              type="password"
+              value={confirmPassword}
+              onChange={(value) => {
+                setConfirmPassword(value);
+                setErrorMessage("");
+              }}
+              placeholder="Confirm password"
+            />
           </div>
         </section>
 
@@ -198,6 +296,13 @@ export default function Registration() {
           >
             CONTINUE
           </button>
+          {errorMessage && (
+            <div className="mt-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-red-700">
+                {errorMessage}
+              </p>
+            </div>
+          )}
         </section>
       </main>
     </div>

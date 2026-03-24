@@ -16,7 +16,7 @@ import {
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
-import { AUTH_LOGIN_ROUTE, useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 import { useStore } from "../context/StoreContext";
 
 function MenuSection({
@@ -96,7 +96,7 @@ export default function MoreMenu() {
 
   const handleLogout = () => {
     logout();
-    navigate(AUTH_LOGIN_ROUTE, { replace: true });
+    navigate("/auth/login", { replace: true });
   };
 
   return (

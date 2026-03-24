@@ -1,4 +1,3 @@
-import { Moon, Sun } from "lucide-react";
 import { ReactNode } from "react";
 import {
   Navigate,
@@ -77,7 +76,7 @@ function RequireAuth({ children }: { children: ReactNode }) {
 }
 
 export default function App() {
-  const { isDark, toggleTheme } = useTheme();
+  const { isDark } = useTheme();
   const showSupervisorQaMode = !import.meta.env.PROD;
   const appShellScreens = SCREENS.filter(
     (screen) => !AUTH_ROUTES_WITHOUT_SHELL.has(screen.path)
@@ -85,16 +84,6 @@ export default function App() {
 
   return (
     <div className={`app-root ${isDark ? "dark" : ""}`}>
-      {/* Global Theme Toggle */}
-      <button
-        type="button"
-        onClick={toggleTheme}
-        className="fixed right-5 bottom-20 z-[9999] h-10 w-10 rounded-full bg-white/90 text-slate-600 shadow-lg backdrop-blur-lg transition-all active:scale-95 dark:bg-slate-800/90 dark:text-amber-300 dark:shadow-black/30"
-        title={isDark ? "Light Mode" : "Dark Mode"}
-      >
-        {isDark ? <Sun size={20} /> : <Moon size={20} />}
-      </button>
-
       {showSupervisorQaMode && <SupervisorQAMode />}
 
       <Routes>
