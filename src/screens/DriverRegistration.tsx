@@ -72,8 +72,11 @@ export default function DriverRegistration() {
     updateDriverRoleConfig,
     driverRoleConfig,
     setOnboardingCheckpoint,
+    driverProfile,
     driverProfilePhoto,
   } = useStore();
+  const driverDisplayName =
+    driverProfile.fullName.trim().length > 0 ? driverProfile.fullName.trim() : "Driver";
   const [selectedServices, setSelectedServices] = useState<Record<ServiceOptionKey, boolean>>({
     ride:
       driverRoleConfig.coreRole === "ride-only" ||
@@ -177,7 +180,7 @@ export default function DriverRegistration() {
               <Pencil className="h-3.5 w-3.5 text-white" />
             </button>
           </div>
-          <h2 className="text-lg font-black text-slate-900 tracking-tight">John Doe</h2>
+          <h2 className="text-lg font-black text-slate-900 tracking-tight">{driverDisplayName}</h2>
         </section>
 
         {/* EVzone Driver card */}

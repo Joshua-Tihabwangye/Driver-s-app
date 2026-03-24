@@ -112,6 +112,7 @@ export default function DriverProfileOnboarding() {
   const {
     canGoOnline,
     driverRoleConfig,
+    driverProfile,
     driverProfilePhoto,
     onboardingBlockers,
     onboardingCheckpoints,
@@ -128,6 +129,11 @@ export default function DriverProfileOnboarding() {
   const [isSocialEditorOpen, setIsSocialEditorOpen] = useState(false);
   const [isInfoBreakdownsOpen, setIsInfoBreakdownsOpen] = useState(false);
   const [socialLinks, setSocialLinks] = useState<SocialLinkEntry[]>(() => readStoredSocialLinks());
+  const driverDisplayName =
+    driverProfile.fullName.trim().length > 0 ? driverProfile.fullName.trim() : "Driver";
+  const driverCityLabel =
+    driverProfile.city.trim().length > 0 ? driverProfile.city.trim() : "City Not Set";
+  const driverSinceYear = driverProfile.memberSinceYear || new Date().getFullYear();
 
   const closeCamera = () => {
     setIsCameraOpen(false);
@@ -306,6 +312,49 @@ export default function DriverProfileOnboarding() {
   );
 
   const infoBreakdownItems = useMemo<BreakdownItem[]>(() => {
+    const profileItems: BreakdownItem[] = [
+      {
+        id: "profile-name",
+        label: "Full Name",
+        detail:
+          driverProfile.fullName.trim().length > 0
+            ? driverProfile.fullName.trim()
+            : "Name not provided yet.",
+        present: driverProfile.fullName.trim().length > 0,
+        route: "/auth/register",
+      },
+      {
+        id: "profile-phone",
+        label: "Phone Number",
+        detail:
+          driverProfile.phone.trim().length > 0
+            ? driverProfile.phone.trim()
+            : "Phone number not provided yet.",
+        present: driverProfile.phone.trim().length > 0,
+        route: "/auth/register",
+      },
+      {
+        id: "profile-email",
+        label: "Email Address",
+        detail:
+          driverProfile.email.trim().length > 0
+            ? driverProfile.email.trim()
+            : "Email address not provided yet.",
+        present: driverProfile.email.trim().length > 0,
+        route: "/auth/register",
+      },
+      {
+        id: "profile-city",
+        label: "Operational City",
+        detail:
+          driverProfile.city.trim().length > 0
+            ? driverProfile.city.trim()
+            : "City not provided yet.",
+        present: driverProfile.city.trim().length > 0,
+        route: "/auth/register",
+      },
+    ];
+
     const checkpointItems: BreakdownItem[] = [
       {
         id: "role-selected",
@@ -330,7 +379,7 @@ export default function DriverProfileOnboarding() {
         label: "Identity Verification",
         detail: onboardingCheckpoints.identityVerified
           ? "Identity checks are completed."
-          : "Face and identity checks are still pending.",
+          : "Profile photo is still missing.",
         present: onboardingCheckpoints.identityVerified,
         route: "/driver/preferences/identity/upload-image",
       },
@@ -376,9 +425,13 @@ export default function DriverProfileOnboarding() {
       };
     });
 
-    return [...checkpointItems, ...docItems];
+    return [...profileItems, ...checkpointItems, ...docItems];
   }, [
     documentSides,
+    driverProfile.city,
+    driverProfile.email,
+    driverProfile.fullName,
+    driverProfile.phone,
     driverRoleConfig.coreRole,
     onboardingCheckpoints.documentsVerified,
     onboardingCheckpoints.identityVerified,
@@ -458,9 +511,11 @@ export default function DriverProfileOnboarding() {
           </div>
           <div className="flex-1">
             <div className="flex items-center mb-0.5">
-              <span className="text-sm font-black text-slate-900 tracking-tight">John Doe</span>
+              <span className="text-sm font-black text-slate-900 tracking-tight">{driverDisplayName}</span>
             </div>
-            <span className="text-[10px] uppercase font-black text-slate-400 tracking-widest">Kampala · Since 2025</span>
+            <span className="text-[10px] uppercase font-black text-slate-400 tracking-widest">
+              {driverCityLabel} · Since {driverSinceYear}
+            </span>
             <div className="mt-2.5 flex items-center gap-1.5">
               <div className="flex items-center gap-1 rounded-lg bg-blue-50 px-2 py-1 border border-blue-100/50">
                 <ShieldCheck className="h-3 w-3 text-blue-600" />

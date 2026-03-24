@@ -25,16 +25,18 @@ function Input({ label, type = "text", value, onChange, placeholder }) {
 }
 
 export default function Registration() {
-  const [fullName, setFullName] = useState("");
-  const [country, setCountry] = useState("");
-  const [dob, setDob] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [streetAddress, setStreetAddress] = useState("");
-  const [city, setCity] = useState("");
-  const [district, setDistrict] = useState("");
-  const [postalCode, setPostalCode] = useState("");
-  const [landmark, setLandmark] = useState("");
+  const navigate = useNavigate();
+  const { setOnboardingCheckpoint, driverProfile, setDriverProfile } = useStore();
+  const [fullName, setFullName] = useState(driverProfile.fullName);
+  const [country, setCountry] = useState(driverProfile.country);
+  const [dob, setDob] = useState(driverProfile.dob);
+  const [email, setEmail] = useState(driverProfile.email);
+  const [phone, setPhone] = useState(driverProfile.phone);
+  const [streetAddress, setStreetAddress] = useState(driverProfile.streetAddress);
+  const [city, setCity] = useState(driverProfile.city);
+  const [district, setDistrict] = useState(driverProfile.district);
+  const [postalCode, setPostalCode] = useState(driverProfile.postalCode);
+  const [landmark, setLandmark] = useState(driverProfile.landmark);
 
   const isValid =
     fullName.trim().length > 0 &&
@@ -46,11 +48,22 @@ export default function Registration() {
     city.trim().length > 0 &&
     district.trim().length > 0;
 
-  const navigate = useNavigate();
-  const { setOnboardingCheckpoint } = useStore();
-
   const handleNext = () => {
     if (!isValid) return;
+
+    setDriverProfile({
+      ...driverProfile,
+      fullName: fullName.trim(),
+      country: country.trim(),
+      dob: dob.trim(),
+      email: email.trim(),
+      phone: phone.trim(),
+      streetAddress: streetAddress.trim(),
+      city: city.trim(),
+      district: district.trim(),
+      postalCode: postalCode.trim(),
+      landmark: landmark.trim(),
+    });
 
     resetStoredDocumentState();
     setOnboardingCheckpoint("documentsVerified", false);

@@ -27,6 +27,20 @@ export interface DriverRoleConfig {
   onboardingComplete: boolean;
 }
 
+export interface DriverProfile {
+  fullName: string;
+  country: string;
+  dob: string;
+  email: string;
+  phone: string;
+  streetAddress: string;
+  city: string;
+  district: string;
+  postalCode: string;
+  landmark: string;
+  memberSinceYear: number;
+}
+
 export type OnboardingCheckpointId =
   | "roleSelected"
   | "documentsVerified"
@@ -133,6 +147,7 @@ interface StoreContextType {
   dashboardMetrics: DashboardMetrics;
   recentEarnings: typeof MOCK_EARNINGS;
   driverRoleConfig: DriverRoleConfig;
+  driverProfile: DriverProfile;
   driverProfilePhoto: string | null;
   onboardingCheckpoints: OnboardingCheckpointState;
   onboardingBlockers: OnboardingBlocker[];
@@ -157,6 +172,8 @@ interface StoreContextType {
   completeTrip: (trip: TripRecord, revenue: RevenueEvent[]) => void;
   addRevenueEvent: (event: RevenueEvent) => void;
   updateDriverRoleConfig: (input: DriverRoleUpdateInput) => DriverRoleUpdateResult;
+  setDriverProfile: (profile: DriverProfile) => void;
+  updateDriverProfile: (patch: Partial<DriverProfile>) => void;
   setDriverProfilePhoto: (photo: string | null) => void;
   enableDualMode: () => void;
   setOnboardingCheckpoint: (
@@ -207,6 +224,7 @@ const ONBOARDING_CHECKPOINTS_STORAGE_KEY = "driver_onboarding_checkpoints";
 const DELIVERY_WORKFLOW_STORAGE_KEY = "driver_delivery_workflow";
 const SHARED_RIDES_ENABLED_STORAGE_KEY = "driver_shared_rides_enabled";
 const ACTIVE_TRIP_STORAGE_KEY = "driver_active_trip_state";
+const DRIVER_PROFILE_STORAGE_KEY = "driver_profile";
 const DRIVER_PROFILE_PHOTO_STORAGE_KEY = "driver_profile_photo";
 
 const DEFAULT_ONBOARDING_CHECKPOINTS: OnboardingCheckpointState = {
@@ -235,6 +253,22 @@ const DEFAULT_ACTIVE_TRIP: ActiveTripState = {
   status: "idle",
   timestamps: EMPTY_ACTIVE_TRIP_TIMESTAMPS,
 };
+
+function createDefaultDriverProfile(): DriverProfile {
+  return {
+    fullName: "",
+    country: "",
+    dob: "",
+    email: "",
+    phone: "",
+    streetAddress: "",
+    city: "",
+    district: "",
+    postalCode: "",
+    landmark: "",
+    memberSinceYear: new Date().getFullYear(),
+  };
+}
 
 const PRIVATE_TRIP_TRANSITIONS: Record<
   Exclude<TripWorkflowStage, "idle" | "shared_active">,
@@ -361,6 +395,49 @@ function readStoredOnboardingCheckpoints(): OnboardingCheckpointState {
     };
   } catch {
     return DEFAULT_ONBOARDING_CHECKPOINTS;
+  }
+}
+
+function readStoredDriverProfile(): DriverProfile {
+  const fallback = createDefaultDriverProfile();
+  if (typeof window === "undefined") {
+    return fallback;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(DRIVER_PROFILE_STORAGE_KEY);
+    if (!raw) {
+      return fallback;
+    }
+
+    const parsed = JSON.parse(raw) as Partial<DriverProfile>;
+    const memberSinceYear =
+      typeof parsed.memberSinceYear === "number" &&
+      Number.isFinite(parsed.memberSinceYear)
+        ? parsed.memberSinceYear
+        : fallback.memberSinceYear;
+
+    return {
+      fullName: typeof parsed.fullName === "string" ? parsed.fullName : fallback.fullName,
+      country: typeof parsed.country === "string" ? parsed.country : fallback.country,
+      dob: typeof parsed.dob === "string" ? parsed.dob : fallback.dob,
+      email: typeof parsed.email === "string" ? parsed.email : fallback.email,
+      phone: typeof parsed.phone === "string" ? parsed.phone : fallback.phone,
+      streetAddress:
+        typeof parsed.streetAddress === "string"
+          ? parsed.streetAddress
+          : fallback.streetAddress,
+      city: typeof parsed.city === "string" ? parsed.city : fallback.city,
+      district: typeof parsed.district === "string" ? parsed.district : fallback.district,
+      postalCode:
+        typeof parsed.postalCode === "string"
+          ? parsed.postalCode
+          : fallback.postalCode,
+      landmark: typeof parsed.landmark === "string" ? parsed.landmark : fallback.landmark,
+      memberSinceYear,
+    };
+  } catch {
+    return fallback;
   }
 }
 
@@ -723,6 +800,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     coreRole: "dual-mode",
     programs: { ...DEFAULT_PROGRAM_FLAGS },
   });
+  const [driverProfile, setDriverProfile] = useState<DriverProfile>(() =>
+    readStoredDriverProfile()
+  );
   const [onboardingCheckpoints, setOnboardingCheckpoints] =
     useState<OnboardingCheckpointState>(() => readStoredOnboardingCheckpoints());
   const [driverProfilePhoto, setDriverProfilePhoto] = useState<string | null>(() =>
@@ -747,6 +827,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     },
     []
   );
+
+  const updateDriverProfile = useCallback((patch: Partial<DriverProfile>) => {
+    setDriverProfile((prev) => ({
+      ...prev,
+      ...patch,
+    }));
+  }, []);
 
   const onboardingBlockers = useMemo<OnboardingBlocker[]>(
     () =>
@@ -806,6 +893,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       JSON.stringify(activeTrip)
     );
   }, [activeTrip]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.localStorage.setItem(
+      DRIVER_PROFILE_STORAGE_KEY,
+      JSON.stringify(driverProfile)
+    );
+  }, [driverProfile]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -1487,6 +1585,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     dashboardMetrics,
     recentEarnings,
     driverRoleConfig,
+    driverProfile,
     driverProfilePhoto,
     onboardingCheckpoints,
     onboardingBlockers,
@@ -1509,6 +1608,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     completeTrip,
     addRevenueEvent,
     updateDriverRoleConfig,
+    setDriverProfile,
+    updateDriverProfile,
     setDriverProfilePhoto,
     enableDualMode,
     setOnboardingCheckpoint,

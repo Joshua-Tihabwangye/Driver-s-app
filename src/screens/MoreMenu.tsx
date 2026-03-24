@@ -17,6 +17,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { AUTH_LOGIN_ROUTE, useAuth } from "../context/AuthContext";
+import { useStore } from "../context/StoreContext";
 
 function MenuSection({
   title,
@@ -80,6 +81,18 @@ function MenuItem({
 export default function MoreMenu() {
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const { driverProfile, driverProfilePhoto } = useStore();
+  const driverDisplayName =
+    driverProfile.fullName.trim().length > 0 ? driverProfile.fullName.trim() : "Driver";
+  const driverPhone =
+    driverProfile.phone.trim().length > 0 ? driverProfile.phone.trim() : "No phone added";
+  const profileInitials =
+    driverDisplayName
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() || "")
+      .join("") || "DR";
 
   const handleLogout = () => {
     logout();
@@ -100,14 +113,24 @@ export default function MoreMenu() {
           onClick={() => navigate("/driver/profile")}
           className="w-full flex items-center rounded-[2rem] bg-cream dark:bg-slate-800 px-5 py-4 shadow-sm active:scale-[0.98] transition-all group"
         >
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-active text-white text-lg font-bold mr-4 shrink-0 shadow-lg shadow-brand-active/20">
-            JD
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-active text-white text-lg font-bold mr-4 shrink-0 shadow-lg shadow-brand-active/20 overflow-hidden">
+            {driverProfilePhoto ? (
+              <img
+                src={driverProfilePhoto}
+                alt="Driver profile"
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              profileInitials
+            )}
           </div>
           <div className="flex-1 text-left">
             <p className="text-[15px] font-black text-slate-900">
-              John Driver
+              {driverDisplayName}
             </p>
-            <p className="text-[11px] text-slate-400 font-bold uppercase tracking-tight">+256 700 123 456</p>
+            <p className="text-[11px] text-slate-400 font-bold uppercase tracking-tight">
+              {driverPhone}
+            </p>
           </div>
           <ChevronRight className="h-5 w-5 text-slate-300 ml-2 shrink-0" />
         </button>

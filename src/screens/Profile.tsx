@@ -13,22 +13,61 @@ import {
   Star,
   User,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useStore } from "../context/StoreContext";
+import {
+  areAllRequiredDocumentsUploaded,
+  readStoredDocumentState,
+} from "../utils/documentVerificationState";
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { driverProfilePhoto } = useStore();
+  const {
+    driverProfilePhoto,
+    driverProfile,
+    updateDriverProfile,
+    onboardingCheckpoints,
+  } = useStore();
   const [isEditing, setIsEditing] = useState(false);
-  const [profile, setProfile] = useState({
-    name: "John Driver",
-    phone: "+256 700 123 456",
-    email: "john@evzone.com",
-    city: "Kampala",
-  });
+  const [profile, setProfile] = useState(() => ({
+    name: driverProfile.fullName,
+    phone: driverProfile.phone,
+    email: driverProfile.email,
+    city: driverProfile.city,
+  }));
+  const driverDisplayName =
+    profile.name.trim().length > 0 ? profile.name.trim() : "Driver";
+  const profileInitials =
+    driverDisplayName
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() || "")
+      .join("") || "DR";
+  const documentsComplete = areAllRequiredDocumentsUploaded(readStoredDocumentState());
+  const identityVerified = onboardingCheckpoints.identityVerified;
+
+  useEffect(() => {
+    if (isEditing) {
+      return;
+    }
+
+    setProfile({
+      name: driverProfile.fullName,
+      phone: driverProfile.phone,
+      email: driverProfile.email,
+      city: driverProfile.city,
+    });
+  }, [driverProfile, isEditing]);
 
   const handleSave = () => {
+    updateDriverProfile({
+      fullName: profile.name.trim(),
+      phone: profile.phone.trim(),
+      email: profile.email.trim(),
+      city: profile.city.trim(),
+    });
     setIsEditing(false);
   };
 
@@ -91,7 +130,7 @@ export default function Profile() {
               ) : (
                 <>
                   <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/20 to-orange-500/20" />
-                  <span className="relative z-10 font-black text-emerald-500">JD</span>
+                  <span className="relative z-10 font-black text-emerald-500">{profileInitials}</span>
                 </>
               )}
             </div>
@@ -106,7 +145,7 @@ export default function Profile() {
               <Camera className="h-4 w-4" />
             </button>
           </div>
-          <h2 className="mt-5 text-xl font-black text-slate-900 uppercase tracking-tight">{profile.name}</h2>
+          <h2 className="mt-5 text-xl font-black text-slate-900 uppercase tracking-tight">{driverDisplayName}</h2>
           <div className="flex items-center space-x-1.5 mt-1.5 bg-orange-50 px-3 py-1.5 rounded-full border border-orange-100 shadow-sm">
             <Star className="h-3.5 w-3.5 text-orange-500 fill-orange-500" />
             <span className="text-xs font-black text-slate-900 tracking-wider">4.92 RATING</span>
@@ -181,12 +220,22 @@ export default function Profile() {
               </div>
               <div className="flex flex-col items-start text-left">
                 <p className="text-[13px] font-black text-slate-900 uppercase tracking-tight">Compliance</p>
-                <p className="text-[10px] text-slate-400 font-medium tracking-tight">Manage legal documents</p>
+                <p className="text-[10px] text-slate-400 font-medium tracking-tight">
+                  {documentsComplete
+                    ? "All required documents are verified"
+                    : "Manage legal documents"}
+                </p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
-                 <div className="h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
-                 <span className="text-[9px] font-black text-orange-500 uppercase tracking-widest">Update</span>
+                 <div
+                   className={`h-2 w-2 rounded-full ${documentsComplete ? "bg-emerald-500" : "bg-orange-500 animate-pulse"}`}
+                 />
+                 <span
+                   className={`text-[9px] font-black uppercase tracking-widest ${documentsComplete ? "text-emerald-500" : "text-orange-500"}`}
+                 >
+                   {documentsComplete ? "Verified" : "Update"}
+                 </span>
             </div>
           </button>
 
@@ -211,7 +260,7 @@ export default function Profile() {
           {/* Identity Card */}
           <button
             type="button"
-            onClick={() => navigate("/driver/preferences/identity/face-capture")}
+            onClick={() => navigate("/driver/preferences/identity/upload-image")}
             className="w-full rounded-[2.5rem] bg-slate-900 border border-slate-800 px-5 py-5 flex items-center justify-between group active:scale-[0.98] hover:border-emerald-500/20 hover:shadow-lg transition-all overflow-hidden relative"
           >
             <div className="absolute top-0 right-0 p-4 opacity-10">
@@ -223,11 +272,21 @@ export default function Profile() {
               </div>
               <div className="flex flex-col items-start text-left">
                 <p className="text-[13px] font-black text-white uppercase tracking-tight">Identity Status</p>
-                <p className="text-[10px] text-slate-400 font-medium tracking-tight">Verified & active profile</p>
+                <p className="text-[10px] text-slate-400 font-medium tracking-tight">
+                  {identityVerified ? "Verified & active profile" : "Profile photo required"}
+                </p>
               </div>
             </div>
-            <div className="bg-emerald-500 rounded-full px-3 py-1 relative z-10 shadow-lg shadow-emerald-500/20">
-              <span className="text-[9px] font-black text-white uppercase tracking-widest">Secure</span>
+            <div
+              className={`rounded-full px-3 py-1 relative z-10 shadow-lg ${
+                identityVerified
+                  ? "bg-emerald-500 shadow-emerald-500/20"
+                  : "bg-orange-500 shadow-orange-500/20"
+              }`}
+            >
+              <span className="text-[9px] font-black text-white uppercase tracking-widest">
+                {identityVerified ? "Secure" : "Pending"}
+              </span>
             </div>
           </button>
         </section>

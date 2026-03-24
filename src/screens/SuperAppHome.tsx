@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – SuperAppHome Home (Super App Landing)
 // Standardized Super App landing screen.
@@ -37,6 +38,9 @@ function ServiceCard({ icon: Icon, title, subtitle, onClick, tone }: any) {
 
 export default function SuperAppHome() {
   const navigate = useNavigate();
+  const { driverProfile } = useStore();
+  const driverDisplayName =
+    driverProfile.fullName.trim().length > 0 ? driverProfile.fullName.trim() : "Driver";
 
   const serviceRoutes: Record<string, string> = {
     school: "/driver/safety/hub",
@@ -80,7 +84,7 @@ export default function SuperAppHome() {
             </div>
             <h2 className="text-2xl font-black tracking-tight mb-2">Student Bus Fees</h2>
             <p className="text-xs text-slate-400 leading-relaxed font-medium">
-              Contract for <span className="font-bold text-white">John Doe</span> is nearing expiry. Renew before
+              Contract for <span className="font-bold text-white">{driverDisplayName}</span> is nearing expiry. Renew before
               <span className="font-bold text-emerald-500"> 12 March</span> to maintain service.
             </p>
             <button
