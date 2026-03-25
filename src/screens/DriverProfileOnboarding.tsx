@@ -13,7 +13,7 @@ import {
   Trash2,
   User
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import StatusChip from "../components/StatusChip";
@@ -123,10 +123,6 @@ export default function DriverProfileOnboarding() {
   const blockerCount = onboardingBlockers.length;
   const documentsComplete = areAllRequiredDocumentsUploaded(documentState);
   const trainingComplete = onboardingCheckpoints.trainingCompleted;
-  const [isCameraOpen, setIsCameraOpen] = useState(false);
-  const [cameraError, setCameraError] = useState("");
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
   const [isSocialEditorOpen, setIsSocialEditorOpen] = useState(false);
   const [isInfoBreakdownsOpen, setIsInfoBreakdownsOpen] = useState(false);
   const [socialLinks, setSocialLinks] = useState<SocialLinkEntry[]>(() => readStoredSocialLinks());
@@ -139,18 +135,6 @@ export default function DriverProfileOnboarding() {
     () => formatPrimaryTaskRoleLabelFromAssignable(assignableJobTypes),
     [assignableJobTypes]
   );
-
-  const closeCamera = () => {
-    setIsCameraOpen(false);
-    setCameraError("");
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    }
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
-  };
 
   const getDocumentStatusLabel = (key: DocumentUploadKey) => {
     const entry = documentState[key];
@@ -183,54 +167,6 @@ export default function DriverProfileOnboarding() {
   useEffect(() => {
     setOnboardingCheckpoint("documentsVerified", documentsComplete);
   }, [documentsComplete, setOnboardingCheckpoint]);
-
-  useEffect(() => {
-    if (!isCameraOpen) return;
-
-    let isCancelled = false;
-
-    const startCamera = async () => {
-      if (!navigator.mediaDevices?.getUserMedia) {
-        setCameraError("Camera is not supported on this browser.");
-        return;
-      }
-
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "user" },
-          audio: false,
-        });
-
-        if (isCancelled) {
-          stream.getTracks().forEach((track) => track.stop());
-          return;
-        }
-
-        streamRef.current = stream;
-        setCameraError("");
-
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          await videoRef.current.play().catch(() => undefined);
-        }
-      } catch {
-        setCameraError("Camera access denied. Allow permission and try again.");
-      }
-    };
-
-    startCamera();
-
-    return () => {
-      isCancelled = true;
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop());
-        streamRef.current = null;
-      }
-      if (videoRef.current) {
-        videoRef.current.srcObject = null;
-      }
-    };
-  }, [isCameraOpen]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -551,7 +487,7 @@ export default function DriverProfileOnboarding() {
           <div className="flex justify-center">
             <button
               type="button"
-              onClick={() => setIsCameraOpen(true)}
+              onClick={() => navigate("/driver/preferences/identity/face-capture")}
               className="h-20 w-20 rounded-[2rem] bg-white border-2 border-dashed border-orange-200 flex items-center justify-center group-hover:bg-orange-50/50 group-hover:border-orange-500/30 transition-all active:scale-95 shadow-sm"
             >
               <Camera className="h-8 w-8 text-slate-300 group-hover:text-orange-500" />
@@ -741,61 +677,10 @@ export default function DriverProfileOnboarding() {
           )}
         </section>
 
-        {isCameraOpen && (
-          <section className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 px-6">
-            <div className="w-full max-w-sm rounded-3xl bg-white p-4 shadow-2xl space-y-4">
-              <div>
-                <h3 className="text-sm font-black uppercase tracking-widest text-slate-900">
-                  Identity Camera
-                </h3>
-                <p className="mt-1 text-[11px] font-medium text-slate-500">
-                  Center your face in the frame.
-                </p>
-              </div>
-
-              <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-black">
-                {cameraError ? (
-                  <div className="flex h-full items-center justify-center px-4 text-center text-[11px] font-semibold text-white/90">
-                    {cameraError}
-                  </div>
-                ) : (
-                  <video
-                    ref={videoRef}
-                    className="h-full w-full object-cover"
-                    autoPlay
-                    playsInline
-                    muted
-                  />
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={closeCamera}
-                  className="rounded-xl border border-slate-200 py-3 text-xs font-black uppercase tracking-widest text-slate-600"
-                >
-                  Close
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    closeCamera();
-                    navigate("/driver/preferences/identity/face-capture");
-                  }}
-                  className="rounded-xl bg-orange-500 py-3 text-xs font-black uppercase tracking-widest text-white"
-                >
-                  Continue
-                </button>
-              </div>
-            </div>
-          </section>
-        )}
-
         {isSocialEditorOpen && (
-          <section className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 px-4">
-            <div className="w-full max-w-3xl rounded-3xl bg-white p-4 shadow-2xl max-h-[80vh] overflow-y-auto space-y-4">
-              <div className="flex items-center justify-between">
+          <section className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/70 px-3 py-3 sm:items-center sm:px-4">
+            <div className="max-h-[85vh] w-full max-w-3xl space-y-4 overflow-y-auto rounded-3xl bg-white p-4 shadow-2xl sm:p-5">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <h3 className="text-sm font-black uppercase tracking-widest text-slate-900">
                     Social Variables Table
@@ -807,78 +692,148 @@ export default function DriverProfileOnboarding() {
                 <button
                   type="button"
                   onClick={() => setIsSocialEditorOpen(false)}
-                  className="rounded-xl border border-slate-200 px-3 py-2 text-[11px] font-black uppercase tracking-widest text-slate-600"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-[11px] font-black uppercase tracking-widest text-slate-600 sm:w-auto"
                 >
                   Close
                 </button>
               </div>
 
-              <div className="overflow-x-auto rounded-2xl border border-slate-200">
-                <table className="min-w-[720px] w-full">
-                  <thead className="bg-slate-50">
-                    <tr>
-                      <th className="px-3 py-2 text-left text-[10px] font-black uppercase tracking-widest text-slate-500">Platform</th>
-                      <th className="px-3 py-2 text-left text-[10px] font-black uppercase tracking-widest text-slate-500">Username</th>
-                      <th className="px-3 py-2 text-left text-[10px] font-black uppercase tracking-widest text-slate-500">Profile URL</th>
-                      <th className="px-3 py-2 text-center text-[10px] font-black uppercase tracking-widest text-slate-500">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {socialLinks.map((entry) => (
-                      <tr key={entry.id} className="border-t border-slate-100">
-                        <td className="px-3 py-2">
-                          <input
-                            type="text"
-                            value={entry.platform}
-                            onChange={(event) =>
-                              updateSocialLink(entry.id, "platform", event.target.value)
-                            }
-                            placeholder="e.g. Instagram"
-                            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-medium text-slate-800 focus:border-orange-500 focus:outline-none"
-                          />
-                        </td>
-                        <td className="px-3 py-2">
-                          <input
-                            type="text"
-                            value={entry.username}
-                            onChange={(event) =>
-                              updateSocialLink(entry.id, "username", event.target.value)
-                            }
-                            placeholder="@yourname"
-                            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-medium text-slate-800 focus:border-orange-500 focus:outline-none"
-                          />
-                        </td>
-                        <td className="px-3 py-2">
-                          <input
-                            type="url"
-                            value={entry.url}
-                            onChange={(event) =>
-                              updateSocialLink(entry.id, "url", event.target.value)
-                            }
-                            placeholder="https://..."
-                            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-medium text-slate-800 focus:border-orange-500 focus:outline-none"
-                          />
-                        </td>
-                        <td className="px-3 py-2 text-center">
-                          <button
-                            type="button"
-                            onClick={() => removeSocialLink(entry.id)}
-                            className="inline-flex items-center justify-center rounded-lg border border-red-200 bg-red-50 p-2 text-red-600 hover:bg-red-100"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </td>
+              <div className="rounded-2xl border border-slate-200">
+                <div className="hidden overflow-x-auto sm:block">
+                  <table className="min-w-[720px] w-full">
+                    <thead className="bg-slate-50">
+                      <tr>
+                        <th className="px-3 py-2 text-left text-[10px] font-black uppercase tracking-widest text-slate-500">Platform</th>
+                        <th className="px-3 py-2 text-left text-[10px] font-black uppercase tracking-widest text-slate-500">Username</th>
+                        <th className="px-3 py-2 text-left text-[10px] font-black uppercase tracking-widest text-slate-500">Profile URL</th>
+                        <th className="px-3 py-2 text-center text-[10px] font-black uppercase tracking-widest text-slate-500">Action</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {socialLinks.map((entry) => (
+                        <tr key={entry.id} className="border-t border-slate-100">
+                          <td className="px-3 py-2">
+                            <input
+                              type="text"
+                              value={entry.platform}
+                              onChange={(event) =>
+                                updateSocialLink(entry.id, "platform", event.target.value)
+                              }
+                              placeholder="e.g. Instagram"
+                              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-medium text-slate-800 focus:border-orange-500 focus:outline-none"
+                            />
+                          </td>
+                          <td className="px-3 py-2">
+                            <input
+                              type="text"
+                              value={entry.username}
+                              onChange={(event) =>
+                                updateSocialLink(entry.id, "username", event.target.value)
+                              }
+                              placeholder="@yourname"
+                              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-medium text-slate-800 focus:border-orange-500 focus:outline-none"
+                            />
+                          </td>
+                          <td className="px-3 py-2">
+                            <input
+                              type="url"
+                              value={entry.url}
+                              onChange={(event) =>
+                                updateSocialLink(entry.id, "url", event.target.value)
+                              }
+                              placeholder="https://..."
+                              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-medium text-slate-800 focus:border-orange-500 focus:outline-none"
+                            />
+                          </td>
+                          <td className="px-3 py-2 text-center">
+                            <button
+                              type="button"
+                              onClick={() => removeSocialLink(entry.id)}
+                              className="inline-flex items-center justify-center rounded-lg border border-red-200 bg-red-50 p-2 text-red-600 hover:bg-red-100"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="space-y-3 p-3 sm:hidden">
+                  {socialLinks.map((entry, index) => (
+                    <div
+                      key={entry.id}
+                      className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-3"
+                    >
+                      <div className="flex items-center justify-between">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                          Row {index + 1}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => removeSocialLink(entry.id)}
+                          className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-2 py-1 text-[10px] font-black uppercase tracking-widest text-red-600"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          Remove
+                        </button>
+                      </div>
+
+                      <label className="block space-y-1">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                          Platform
+                        </span>
+                        <input
+                          type="text"
+                          value={entry.platform}
+                          onChange={(event) =>
+                            updateSocialLink(entry.id, "platform", event.target.value)
+                          }
+                          placeholder="e.g. Instagram"
+                          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-800 focus:border-orange-500 focus:outline-none"
+                        />
+                      </label>
+
+                      <label className="block space-y-1">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                          Username
+                        </span>
+                        <input
+                          type="text"
+                          value={entry.username}
+                          onChange={(event) =>
+                            updateSocialLink(entry.id, "username", event.target.value)
+                          }
+                          placeholder="@yourname"
+                          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-800 focus:border-orange-500 focus:outline-none"
+                        />
+                      </label>
+
+                      <label className="block space-y-1">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                          Profile URL
+                        </span>
+                        <input
+                          type="url"
+                          value={entry.url}
+                          onChange={(event) =>
+                            updateSocialLink(entry.id, "url", event.target.value)
+                          }
+                          placeholder="https://..."
+                          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-800 focus:border-orange-500 focus:outline-none"
+                        />
+                      </label>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <button
                   type="button"
                   onClick={addSocialLink}
-                  className="inline-flex items-center gap-2 rounded-xl border border-orange-200 bg-orange-50 px-4 py-2 text-[11px] font-black uppercase tracking-widest text-orange-600"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-orange-200 bg-orange-50 px-4 py-2 text-[11px] font-black uppercase tracking-widest text-orange-600 sm:w-auto"
                 >
                   <Plus className="h-4 w-4" />
                   Add Row
@@ -886,7 +841,7 @@ export default function DriverProfileOnboarding() {
                 <button
                   type="button"
                   onClick={() => setIsSocialEditorOpen(false)}
-                  className="rounded-xl bg-orange-500 px-4 py-2 text-[11px] font-black uppercase tracking-widest text-white"
+                  className="w-full rounded-xl bg-orange-500 px-4 py-2 text-[11px] font-black uppercase tracking-widest text-white sm:w-auto"
                 >
                   Save & Close
                 </button>

@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 import { FormEvent, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import PageHeader from "../components/PageHeader";
 import { useAuth } from "../context/AuthContext";
 import { useStore } from "../context/StoreContext";
 import {
@@ -78,6 +77,50 @@ function ServiceTile({
         {label}
       </span>
     </button>
+  );
+}
+
+function GoogleLogoIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 48 48"
+      aria-hidden="true"
+      focusable="false"
+      className={className}
+    >
+      <path
+        fill="#FFC107"
+        d="M43.611 20.083H42V20H24v8h11.303C33.653 32.657 29.24 36 24 36c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.958 3.042l5.657-5.657C34.046 6.053 29.27 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"
+      />
+      <path
+        fill="#FF3D00"
+        d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.958 3.042l5.657-5.657C34.046 6.053 29.27 4 24 4c-7.682 0-14.41 4.337-17.694 10.691z"
+      />
+      <path
+        fill="#4CAF50"
+        d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.142 35.091 26.715 36 24 36c-5.219 0-9.618-3.317-11.283-7.946l-6.522 5.025C9.435 39.556 16.227 44 24 44z"
+      />
+      <path
+        fill="#1976D2"
+        d="M43.611 20.083H42V20H24v8h11.303c-1.019 2.93-3.087 5.314-5.878 6.57l6.19 5.238C35.18 40.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"
+      />
+    </svg>
+  );
+}
+
+function AppleLogoIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      aria-hidden="true"
+      focusable="false"
+      className={className}
+    >
+      <path
+        fill="currentColor"
+        d="M11.182.008c-.034-.038-1.259.015-2.202 1.168-.81.99-.8 2.092-.77 2.322.113.017 2.077.407 3.018-.765.954-1.187.894-2.293.954-2.725zM13.56 3.694c-.669-.783-1.71-1.236-2.705-1.236-1.36 0-1.94.652-2.866.652-.955 0-1.7-.65-2.877-.65-1.952 0-3.762 1.288-4.615 3.255-1.277 2.935-.301 7.265.907 8.925.58.783 1.26 1.664 2.153 1.633.867-.03 1.2-.56 2.255-.56 1.063 0 1.36.56 2.273.54.912-.015 1.49-.825 2.06-1.61.652-.93.92-1.84.93-1.886-.02-.01-1.78-.687-1.8-2.72-.016-1.7 1.39-2.512 1.454-2.55-.79-1.162-2.01-1.286-2.15-1.293z"
+      />
+    </svg>
   );
 }
 
@@ -209,11 +252,17 @@ export default function RegisterServices() {
 
   return (
     <div className="flex min-h-full flex-col">
-      <PageHeader title="Register Services" hideBack={true} />
+      <header className="shrink-0 px-4 pb-4 pt-8 sm:px-6">
+        <div className="mx-auto w-full max-w-[780px]">
+          <p className="truncate text-base font-black leading-tight tracking-tight text-slate-900">
+            Register Services
+          </p>
+        </div>
+      </header>
 
       <main className="flex-1 px-4 pb-16 pt-6 sm:px-6">
         {step === "service" ? (
-          <section className="mx-auto w-full max-w-[820px] space-y-5 transition-all duration-300">
+          <section className="mx-auto w-full max-w-[780px] space-y-5 transition-all duration-300">
             <div>
               <h2 className="text-sm font-black uppercase tracking-widest text-slate-900">
                 Step 1: Choose Service
@@ -223,7 +272,7 @@ export default function RegisterServices() {
               </p>
             </div>
 
-            <div className="mx-auto grid w-full max-w-[780px] grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3">
+            <div className="grid w-full grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3">
               {SERVICES.map((service) => (
                 <ServiceTile
                   key={service.key}
@@ -237,7 +286,7 @@ export default function RegisterServices() {
             </div>
           </section>
         ) : (
-          <section className="mx-auto w-full max-w-[820px] space-y-5 transition-all duration-300">
+          <section className="mx-auto w-full max-w-[780px] space-y-5 transition-all duration-300">
             <div className="rounded-3xl border border-orange-200 bg-orange-50/60 px-4 py-4 sm:px-5">
               <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
                 <div>
@@ -397,25 +446,27 @@ export default function RegisterServices() {
                     type="button"
                     onClick={() => handleProviderDirectRegistration("google")}
                     disabled={!supportsDriverAuth}
-                    className={`rounded-xl border py-3 text-xs font-black transition-all ${
+                    className={`flex items-center justify-center gap-2 rounded-xl border py-3 text-xs font-black transition-all ${
                       supportsDriverAuth
                         ? "border-[#dadce0] bg-white text-[#3c4043] hover:bg-[#f8f9fa] active:scale-[0.98]"
                         : "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-500"
                     }`}
                   >
-                    Google
+                    <GoogleLogoIcon className="h-4 w-4 shrink-0" />
+                    <span>Google</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => handleProviderDirectRegistration("apple")}
                     disabled={!supportsDriverAuth}
-                    className={`rounded-xl border py-3 text-xs font-black transition-all ${
+                    className={`flex items-center justify-center gap-2 rounded-xl border py-3 text-xs font-black transition-all ${
                       supportsDriverAuth
                         ? "border-black bg-black text-white hover:bg-[#1a1a1a] active:scale-[0.98]"
                         : "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-500"
                     }`}
                   >
-                    Apple
+                    <AppleLogoIcon className="h-4 w-4 shrink-0" />
+                    <span>Apple</span>
                   </button>
                 </div>
               </section>
