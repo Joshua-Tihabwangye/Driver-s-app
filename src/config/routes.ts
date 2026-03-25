@@ -158,7 +158,7 @@ export const SCREENS: ScreenConfig[] = [
   { id: "MyVehiclesManage", label: "My Vehicles (Manage)", path: "/driver/vehicles/manage", Component: MyVehicles },
   { id: "VehicleDetails", label: "Vehicles", path: "/driver/vehicles/:vehicleId", previewPath: `/driver/vehicles/${SAMPLE_IDS.vehicle}`, Component: VehicleDetails },
   { id: "BusinessVehicles", label: "Business Vehicles", path: "/driver/vehicles/business", Component: BusinessVehicles },
-  { id: "VehicleAccessories", label: "Vehicle Accessories", path: "/driver/vehicles/accessories", Component: VehicleAccessories },
+  { id: "VehicleAccessories", label: "Vehicle Accessories", path: "/driver/vehicles/:vehicleId/accessories", previewPath: `/driver/vehicles/${SAMPLE_IDS.vehicle}/accessories`, Component: VehicleAccessories },
   // Training & quiz
   { id: "TrainingIntro", label: "Intro to Driving with EVzone Ride", path: "/driver/training/intro", Component: TrainingIntro },
   { id: "TrainingInfoSession", label: "Info Session for Driver-Partners", path: "/driver/training/info-session", Component: TrainingInfoSession },

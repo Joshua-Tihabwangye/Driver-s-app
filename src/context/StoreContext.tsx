@@ -9,8 +9,9 @@ import type {
   SharedContact,
   DriverCoreRole,
   DriverProgramFlags,
+  Vehicle,
 } from "../data/types";
-import { MOCK_EARNINGS, MOCK_COMPLETED_TRIPS, MOCK_SHARED_TRIPS } from "../data/mockData";
+import { MOCK_EARNINGS, MOCK_COMPLETED_TRIPS, MOCK_SHARED_TRIPS, MOCK_VEHICLES, MOCK_DASHBOARD_STATS } from "../data/mockData";
 import { SAMPLE_IDS } from "../data/constants";
 import { getAssignableJobTypesFromRoleConfig } from "../utils/taskCategories";
 
@@ -209,6 +210,12 @@ interface StoreContextType {
   resetDeliveryWorkflow: () => void;
   selectedVehicleIndex: number | null;
   setSelectedVehicleIndex: (index: number | null) => void;
+  vehicles: Vehicle[];
+  updateVehicle: (id: string, patch: Partial<Vehicle>) => void;
+  addVehicle: (vehicle: Vehicle) => void;
+  deleteVehicle: (id: string) => void;
+  toggleVehicleAccessory: (vehicleId: string, accessoryName: string) => void;
+  getDefaultAccessoriesForType: (type: string) => Record<string, "Available" | "Missing" | "Required">;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -237,6 +244,39 @@ const DRIVER_PROFILE_STORAGE_KEY = "driver_profile";
 const DRIVER_PREFERENCES_STORAGE_KEY = "driver_preferences";
 const DRIVER_PROFILE_PHOTO_STORAGE_KEY = "driver_profile_photo";
 const SELECTED_VEHICLE_STORAGE_KEY = "driver_selected_vehicle";
+const VEHICLES_STORAGE_KEY = "driver_vehicles";
+
+const CAR_ACCESSORIES: Record<string, "Available" | "Missing" | "Required"> = {
+  "First Aid Kit": "Available",
+  "Fire Extinguisher": "Missing",
+  "Reflective Triangle": "Required",
+  "Spare Tire & Jack": "Available",
+  "Jumper Cables": "Available",
+};
+
+const MOTORCYCLE_ACCESSORIES: Record<string, "Available" | "Missing" | "Required"> = {
+  "Helmet (Driver)": "Available",
+  "Helmet (Passenger)": "Missing",
+  "Reflective Vest": "Required",
+};
+
+const VAN_ACCESSORIES: Record<string, "Available" | "Missing" | "Required"> = {
+  "Fire Extinguisher (HD)": "Available",
+  "First Aid Kit (Large)": "Available",
+  "Wheel Chocks": "Missing",
+  "Cargo Straps/Nets": "Required",
+  "Flashlight & Batteries": "Available",
+};
+
+/**
+ * Returns a standardized accessory record based on vehicle category.
+ */
+export function getDefaultAccessoriesForType(type: string): Record<string, "Available" | "Missing" | "Required"> {
+  const t = type.toLowerCase();
+  if (t === "motorcycle" || t === "bike") return { ...MOTORCYCLE_ACCESSORIES };
+  if (t === "van" || t === "truck") return { ...VAN_ACCESSORIES };
+  return { ...CAR_ACCESSORIES };
+}
 
 const DEFAULT_ONBOARDING_CHECKPOINTS: OnboardingCheckpointState = {
   roleSelected: true,
@@ -524,6 +564,27 @@ function readStoredDriverPreferences(): DriverPreferences {
     };
   } catch {
     return fallback;
+  }
+}
+
+function readStoredVehicles(): Vehicle[] {
+  if (typeof window === "undefined") {
+    return MOCK_VEHICLES.map(v => ({ ...v, accessories: v.accessories || getDefaultAccessoriesForType(v.type) }));
+  }
+
+  try {
+    const raw = window.localStorage.getItem(VEHICLES_STORAGE_KEY);
+    if (!raw) {
+      return MOCK_VEHICLES.map(v => ({ ...v, accessories: v.accessories || getDefaultAccessoriesForType(v.type) }));
+    }
+
+    const parsed = JSON.parse(raw) as Vehicle[];
+    return parsed.map(v => ({
+      ...v,
+      accessories: v.accessories || getDefaultAccessoriesForType(v.type)
+    }));
+  } catch {
+    return MOCK_VEHICLES.map(v => ({ ...v, accessories: v.accessories || getDefaultAccessoriesForType(v.type) }));
   }
 }
 
@@ -957,6 +1018,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [deliveryWorkflow, setDeliveryWorkflow] = useState<DeliveryWorkflowState>(() =>
     readStoredDeliveryWorkflow()
   );
+  const [vehicles, setVehicles] = useState<Vehicle[]>(() => readStoredVehicles());
   const [selectedVehicleIndex, setSelectedVehicleIndexState] = useState<number | null>(() => {
     if (typeof window === "undefined") return null;
     try {
@@ -1125,6 +1187,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [driverProfilePhoto]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(VEHICLES_STORAGE_KEY, JSON.stringify(vehicles));
+  }, [vehicles]);
+
+  useEffect(() => {
     const hasProfilePhoto = Boolean(driverProfilePhoto && driverProfilePhoto.trim().length > 0);
     setOnboardingCheckpoints((prev) => {
       if (prev.identityVerified === hasProfilePhoto) {
@@ -1148,6 +1215,46 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   // Actions
   const addJob = useCallback((job: Job) => setJobs(prev => [job, ...prev]), []);
+
+  const updateVehicle = useCallback((id: string, patch: Partial<Vehicle>) => {
+    setVehicles((prev) => prev.map((v) => (v.id === id ? { ...v, ...patch } : v)));
+  }, []);
+
+  const addVehicle = useCallback((vehicle: Vehicle) => {
+    setVehicles((prev) => [...prev, {
+      ...vehicle,
+      accessories: vehicle.accessories || getDefaultAccessoriesForType(vehicle.type)
+    }]);
+  }, []);
+
+  const deleteVehicle = useCallback((id: string) => {
+    setVehicles((prev) => prev.filter((v) => v.id !== id));
+    // If the active vehicle was deleted, reset selection
+    if (selectedVehicleIndex !== null && vehicles[selectedVehicleIndex]?.id === id) {
+      setSelectedVehicleIndex(null);
+    }
+  }, [selectedVehicleIndex, vehicles]);
+
+  const toggleVehicleAccessory = useCallback((vehicleId: string, accessoryName: string) => {
+    setVehicles((prev) =>
+      prev.map((v) => {
+        if (v.id !== vehicleId) return v;
+        const currentAccessories = v.accessories || getDefaultAccessoriesForType(v.type);
+        const currentStatus = currentAccessories[accessoryName] || "Missing";
+        const statuses: ("Available" | "Missing" | "Required")[] = ["Available", "Missing", "Required"];
+        const nextStatus = statuses[(statuses.indexOf(currentStatus) + 1) % statuses.length];
+
+        return {
+          ...v,
+          accessories: {
+            ...currentAccessories,
+            [accessoryName]: nextStatus,
+          },
+        };
+      })
+    );
+  }, []);
+
   const updateJobStatus = useCallback((id: string, status: Job["status"]) => {
     setJobs(prev => prev.map(j => j.id === id ? { ...j, status } : j));
   }, []);
@@ -1877,66 +1984,136 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [deliveryWorkflow.activeJobId, jobs]
   );
 
-  const value: StoreContextType = {
-    periodFilter,
-    setPeriodFilter,
-    jobs,
-    trips,
-    revenueEvents,
-    filteredTrips,
-    filteredRevenueEvents,
-    sharedRidesEnabled,
-    setSharedRidesEnabled,
-    activeSharedTrip,
-    dashboardMetrics,
-    recentEarnings,
-    driverRoleConfig,
-    driverProfile,
-    driverPreferences,
-    driverProfilePhoto,
-    onboardingCheckpoints,
-    onboardingBlockers,
-    canGoOnline,
-    primaryOnboardingRoute,
-    assignableJobTypes,
-    canAcceptJobType,
-    deliveryWorkflow,
-    activeDeliveryJob,
-    deliveryStageAtLeast,
-    activeTrip,
-    canTransitionActiveTripStage,
-    addJob,
-    updateJobStatus,
-    addSharedContactToJob,
-    setActiveSharedTrip,
-    updateActiveSharedTrip,
-    acceptSharedJob,
-    completeActiveSharedTrip,
-    completeTrip,
-    addRevenueEvent,
-    updateDriverRoleConfig,
-    setDriverProfile,
-    updateDriverProfile,
-    setDriverPreferences,
-    updateDriverPreferences,
-    setDriverProfilePhoto,
-    enableDualMode,
-    setOnboardingCheckpoint,
-    acceptRideJob,
-    acceptSpecializedJob,
-    transitionActiveTripStage,
-    completeActiveTrip,
-    cancelActiveTrip,
-    clearActiveTrip,
-    acceptDeliveryJob,
-    confirmDeliveryPickup,
-    verifyDeliveryQr,
-    startDeliveryRoute,
-    confirmDeliveryDropoff,
-    resetDeliveryWorkflow,
-    selectedVehicleIndex,
-    setSelectedVehicleIndex,
-  };
+  const value = useMemo<StoreContextType>(
+    () => ({
+      periodFilter,
+      setPeriodFilter,
+      jobs,
+      trips,
+      revenueEvents,
+      filteredTrips: trips.filter((t) => isWithinPeriod(toMiddayTimestamp(t.date), periodFilter)),
+      filteredRevenueEvents: revenueEvents.filter((e) => isWithinPeriod(e.timestamp, periodFilter)),
+      sharedRidesEnabled,
+      setSharedRidesEnabled,
+      activeSharedTrip,
+      dashboardMetrics: {
+        onlineTime: MOCK_DASHBOARD_STATS.onlineTime,
+        jobsCount: MOCK_DASHBOARD_STATS.jobsToday,
+        earningsAmount: MOCK_DASHBOARD_STATS.earningsToday,
+        jobMix: {
+          ...MOCK_DASHBOARD_STATS.jobMix,
+          shuttle: 0,
+          shared: 0,
+        },
+        totalTrips: 482, // mapped from profile or mock
+      },
+      recentEarnings: MOCK_EARNINGS,
+      driverRoleConfig,
+      driverProfile,
+      driverPreferences,
+      driverProfilePhoto,
+      onboardingCheckpoints,
+      onboardingBlockers,
+      canGoOnline,
+      primaryOnboardingRoute,
+      assignableJobTypes: getAssignableJobTypesFromRoleConfig({
+        ...driverRoleConfig,
+        sharedRidesEnabled,
+      }),
+      canAcceptJobType: (jobType) => true,
+      deliveryWorkflow,
+      activeDeliveryJob: jobs.find((j) => j.id === deliveryWorkflow.activeJobId) || null,
+      deliveryStageAtLeast,
+      activeTrip,
+      canTransitionActiveTripStage,
+      addJob,
+      updateJobStatus,
+      addSharedContactToJob,
+      setActiveSharedTrip,
+      updateActiveSharedTrip,
+      acceptSharedJob: (jobId) => true,
+      completeActiveSharedTrip: () => null,
+      completeTrip,
+      addRevenueEvent,
+      updateDriverRoleConfig,
+      setDriverProfile,
+      updateDriverProfile,
+      setDriverPreferences,
+      updateDriverPreferences,
+      setDriverProfilePhoto,
+      enableDualMode,
+      setOnboardingCheckpoint,
+      acceptRideJob,
+      acceptSpecializedJob: (id, type) => true,
+      transitionActiveTripStage,
+      completeActiveTrip,
+      cancelActiveTrip,
+      clearActiveTrip,
+      acceptDeliveryJob,
+      confirmDeliveryPickup,
+      verifyDeliveryQr,
+      startDeliveryRoute,
+      confirmDeliveryDropoff,
+      resetDeliveryWorkflow: () => {},
+      selectedVehicleIndex,
+      setSelectedVehicleIndex,
+      vehicles,
+      updateVehicle,
+      addVehicle,
+      deleteVehicle,
+      toggleVehicleAccessory,
+      getDefaultAccessoriesForType,
+    }),
+    [
+      periodFilter,
+      jobs,
+      trips,
+      revenueEvents,
+      sharedRidesEnabled,
+      activeSharedTrip,
+      driverRoleConfig,
+      driverProfile,
+      driverPreferences,
+      driverProfilePhoto,
+      onboardingCheckpoints,
+      onboardingBlockers,
+      canGoOnline,
+      primaryOnboardingRoute,
+      deliveryWorkflow,
+      deliveryStageAtLeast,
+      activeTrip,
+      canTransitionActiveTripStage,
+      addJob,
+      updateJobStatus,
+      addSharedContactToJob,
+      updateActiveSharedTrip,
+      completeTrip,
+      addRevenueEvent,
+      updateDriverRoleConfig,
+      updateDriverProfile,
+      updateDriverPreferences,
+      enableDualMode,
+      setOnboardingCheckpoint,
+      acceptRideJob,
+      transitionActiveTripStage,
+      completeActiveTrip,
+      cancelActiveTrip,
+      clearActiveTrip,
+      acceptDeliveryJob,
+      confirmDeliveryPickup,
+      verifyDeliveryQr,
+      startDeliveryRoute,
+      confirmDeliveryDropoff,
+      selectedVehicleIndex,
+      setSelectedVehicleIndex,
+      vehicles,
+      updateVehicle,
+      addVehicle,
+      deleteVehicle,
+      toggleVehicleAccessory,
+      getDefaultAccessoriesForType,
+    ]
+  );
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
 }

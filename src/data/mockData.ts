@@ -16,8 +16,39 @@ export const MOCK_PROFILE: UserProfile = {
 
 // ── Vehicles / Fleet ─────────────────────────────────────
 export const MOCK_VEHICLES: Vehicle[] = [
-  { id: "v123", make: "Toyota", model: "Fielder", year: 2020, plate: "UAX 123Y", type: "Sedan", status: "active" },
-  { id: "v124", make: "Nissan", model: "NV200", year: 2019, plate: "UAY 456Z", type: "Van", status: "active" },
+  { 
+    id: "v123", 
+    make: "Toyota", 
+    model: "Fielder", 
+    year: 2020, 
+    plate: "UAX 123Y", 
+    type: "Sedan", 
+    status: "active",
+    batterySize: "65 kWh",
+    range: "350 km"
+  },
+  { 
+    id: "v124", 
+    make: "Nissan", 
+    model: "NV200", 
+    year: 2019, 
+    plate: "UAY 456Z", 
+    type: "Van", 
+    status: "active",
+    batterySize: "40 kWh",
+    range: "200 km"
+  },
+  {
+    id: "v125",
+    make: "Zembo",
+    model: "Storm",
+    year: 2023,
+    plate: "UBK 789A",
+    type: "Motorcycle",
+    status: "active",
+    batterySize: "4 kWh",
+    range: "80 km"
+  }
 ];
 
 // ── Earnings ─────────────────────────────────────────────

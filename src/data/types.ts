@@ -52,6 +52,9 @@ export interface Vehicle {
   type: string;
   status: "active" | "inactive" | "maintenance";
   imageUrl?: string;
+  accessories?: Record<string, "Available" | "Missing" | "Required">;
+  batterySize?: string;
+  range?: string;
 }
 
 export interface EarningsEntry {
