@@ -1,28 +1,53 @@
 import { SAMPLE_IDS } from "../data/constants";
 import {
   CheckCircle2,
+  Circle,
   Info,
   Plus,
   Zap
 } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – MyVehicles My Vehicles
 // Redesigned with green curved header and vehicle image cards.
 // + Restored: EV-only banner, badge indicators, Info card from original
 
 
-function VehicleCard({ image, brand, model, badge, primary, onClick }) {
+function VehicleCard({ image, brand, model, badge, primary, selected, onSelect, onClick }) {
   return (
-    <div className="flex items-center space-x-4 rounded-xl border-2 border-orange-500/10 bg-cream p-3 shadow-sm hover:border-orange-500/30 hover:scale-[1.01] transition-all group">
+    <div className={`flex items-center space-x-4 rounded-xl border-2 p-3 shadow-sm hover:scale-[1.01] transition-all group ${
+      selected
+        ? "border-brand-active/40 bg-emerald-50/40 ring-1 ring-brand-active/20"
+        : "border-orange-500/10 bg-cream hover:border-orange-500/30"
+    }`}>
+      {/* Selection checkbox */}
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); onSelect(); }}
+        className="flex-shrink-0 flex items-center justify-center"
+        aria-label={selected ? "Selected" : "Select this vehicle"}
+      >
+        {selected ? (
+          <CheckCircle2 className="h-6 w-6 text-brand-active" />
+        ) : (
+          <Circle className="h-6 w-6 text-slate-300 group-hover:text-orange-400 transition-colors" />
+        )}
+      </button>
       <div className="h-16 w-24 flex-shrink-0 overflow-hidden rounded-lg bg-slate-50">
         <img src={image} alt={brand} className="h-full w-full object-contain p-1" />
       </div>
       <div className="flex flex-1 flex-col items-start overflow-hidden">
         <h3 className="text-sm font-bold text-slate-900 truncate w-full uppercase">{brand}</h3>
         <p className="text-[11px] text-slate-500 font-medium uppercase truncate w-full">{model}</p>
-        {primary && (
+        {selected && (
+          <span className="mt-1 inline-flex items-center rounded-full bg-brand-active/10 px-2 py-0.5 text-[10px] font-black text-brand-active uppercase tracking-tight">
+            <CheckCircle2 className="mr-1 h-3 w-3" /> Active Vehicle
+          </span>
+        )}
+        {!selected && primary && (
           <span className="mt-1 inline-flex items-center rounded-full bg-orange-50 px-2 py-0.5 text-[10px] font-medium text-orange-700">
             <CheckCircle2 className="mr-1 h-3 w-3" /> Primary vehicle
           </span>
@@ -46,6 +71,13 @@ function VehicleCard({ image, brand, model, badge, primary, onClick }) {
 
 export default function MyVehicles() {
   const navigate = useNavigate();
+  const { selectedVehicleIndex, setSelectedVehicleIndex } = useStore();
+  const [localSelectedIdx, setLocalSelectedIdx] = useState<number | null>(selectedVehicleIndex);
+
+  const handleSave = () => {
+    setSelectedVehicleIndex(localSelectedIdx);
+    navigate("/driver/onboarding/profile");
+  };
 
   const vehicles = [
     {
@@ -120,6 +152,8 @@ export default function MyVehicles() {
                  image={v.image}
                  badge={v.badge}
                  primary={v.primary}
+                 selected={localSelectedIdx === idx}
+                 onSelect={() => setLocalSelectedIdx(idx)}
                  onClick={() => navigate(`/driver/vehicles/${SAMPLE_IDS.vehicle}`)}
                />
              ))}
@@ -138,6 +172,16 @@ export default function MyVehicles() {
 
         {/* Floating Add Vehicle Button (Inline for shell consistency) */}
         <section className="pt-2 pb-12">
+          {localSelectedIdx !== null && (
+            <button
+              type="button"
+              onClick={handleSave}
+              className="mb-6 w-full rounded-2xl bg-brand-active py-4 text-sm font-black text-white shadow-xl shadow-brand-active/20 active:scale-[0.98] transition-all flex items-center justify-center uppercase tracking-widest"
+            >
+              Save & Continue
+            </button>
+          )}
+
           <button
             type="button"
             onClick={() => navigate("/driver/vehicles/business")}

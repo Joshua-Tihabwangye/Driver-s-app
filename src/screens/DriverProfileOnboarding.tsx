@@ -11,6 +11,7 @@ import {
   Plus,
   ShieldCheck,
   Trash2,
+  Upload,
   User
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -124,6 +125,7 @@ export default function DriverProfileOnboarding() {
   const documentsComplete = areAllRequiredDocumentsUploaded(documentState);
   const trainingComplete = onboardingCheckpoints.trainingCompleted;
   const [isSocialEditorOpen, setIsSocialEditorOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isInfoBreakdownsOpen, setIsInfoBreakdownsOpen] = useState(false);
   const [socialLinks, setSocialLinks] = useState<SocialLinkEntry[]>(() => readStoredSocialLinks());
   const driverDisplayName =
@@ -173,20 +175,14 @@ export default function DriverProfileOnboarding() {
     window.localStorage.setItem(SOCIAL_LINKS_STORAGE_KEY, JSON.stringify(socialLinks));
   }, [socialLinks]);
 
-  const gatewayAction = useMemo(() => {
-    if (!documentsComplete) {
-      return {
-        label: "Resolve Required Actions",
-        route: "/driver/dashboard/required-actions",
-        note: "Complete onboarding requirements before going live.",
-      };
-    }
+  const vehicleReady = onboardingCheckpoints.vehicleReady;
 
+  const gatewayAction = useMemo(() => {
     if (!trainingComplete) {
       return {
-        label: "Go to Training Sessions",
+        label: "Continue to Training Session",
         route: "/driver/training/info-session",
-        note: "Documents complete. Finish training sessions to unlock online mode.",
+        note: "Complete all verification steps before proceeding to training.",
       };
     }
 
@@ -195,7 +191,7 @@ export default function DriverProfileOnboarding() {
       route: "/driver/dashboard/online",
       note: "All requirements cleared for live tracking.",
     };
-  }, [documentsComplete, trainingComplete]);
+  }, [trainingComplete]);
 
   type BreakdownItem = {
     id: string;
@@ -328,19 +324,10 @@ export default function DriverProfileOnboarding() {
         id: "vehicle-ready",
         label: "Vehicle Setup",
         detail: onboardingCheckpoints.vehicleReady
-          ? "At least one active vehicle is available."
-          : "No active vehicle setup found.",
+          ? "At least one active vehicle is selected."
+          : "No vehicle selected. Go to Garage to add and select a vehicle.",
         present: onboardingCheckpoints.vehicleReady,
         route: "/driver/vehicles",
-      },
-      {
-        id: "training-completed",
-        label: "Training Sessions",
-        detail: onboardingCheckpoints.trainingCompleted
-          ? "Training sessions are completed."
-          : "Training sessions are not completed yet.",
-        present: onboardingCheckpoints.trainingCompleted,
-        route: "/driver/training/info-session",
       },
     ];
 
@@ -850,13 +837,28 @@ export default function DriverProfileOnboarding() {
           </section>
         )}
 
-        {/* Go Online button */}
+        {/* Main Action Button */}
         <section className="pt-4 pb-12">
           <button
             type="button"
-            onClick={() => navigate(gatewayAction.route)}
+            onClick={() => {
+              if (!documentsComplete) {
+                alert("Please upload all required documents (Driving Permit, National ID, and Conduct Cert) before proceeding.");
+                return;
+              }
+              const identityVerified = onboardingCheckpoints.identityVerified;
+              if (!identityVerified) {
+                alert("Please complete the Identity Check selfie first.");
+                return;
+              }
+              if (!vehicleReady) {
+                alert("Please go to the Garage and select your active vehicle before proceeding.");
+                return;
+              }
+              navigate(gatewayAction.route);
+            }}
             className={`w-full rounded-2xl py-4 text-sm font-black shadow-lg transition-all active:scale-[0.98] uppercase tracking-widest ${
-              gatewayAction.label === "Go Online" || gatewayAction.label === "Go to Training Sessions"
+              gatewayAction.label === "Go Online" || gatewayAction.label === "Continue to Training Session"
                 ? "bg-orange-500 text-white shadow-orange-500/20 hover:bg-orange-600"
                 : "bg-slate-900 text-white shadow-slate-900/20 hover:bg-slate-800"
             }`}

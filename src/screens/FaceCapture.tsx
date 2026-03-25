@@ -162,12 +162,7 @@ export default function FaceCapture() {
     }
 
     stopCameraStream();
-    navigate("/driver/preferences/identity/upload-image");
-  };
-
-  const handleSkip = () => {
-    stopCameraStream();
-    navigate("/driver/preferences/identity/upload-image");
+    navigate("/driver/onboarding/profile");
   };
 
   const handleBack = () => {
@@ -340,13 +335,7 @@ export default function FaceCapture() {
           >
             {ctaActionText}
           </button>
-          <button
-            type="button"
-            onClick={handleSkip}
-            className="w-full rounded-2xl border border-slate-200 bg-white py-4 text-xs font-black uppercase tracking-widest text-slate-400 shadow-sm transition-all hover:bg-slate-50 active:scale-95"
-          >
-            Skip for now
-          </button>
+
           <p className="px-6 text-center text-[10px] font-medium leading-relaxed text-slate-400">
             {completionText}
           </p>

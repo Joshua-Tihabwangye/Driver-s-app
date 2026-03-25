@@ -207,6 +207,8 @@ interface StoreContextType {
   startDeliveryRoute: () => void;
   confirmDeliveryDropoff: () => void;
   resetDeliveryWorkflow: () => void;
+  selectedVehicleIndex: number | null;
+  setSelectedVehicleIndex: (index: number | null) => void;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -222,6 +224,7 @@ const ONBOARDING_CHECKPOINT_ORDER: OnboardingCheckpointId[] = [
   "roleSelected",
   "documentsVerified",
   "identityVerified",
+  "vehicleReady",
   "trainingCompleted",
 ];
 
@@ -233,12 +236,13 @@ const ACTIVE_TRIP_STORAGE_KEY = "driver_active_trip_state";
 const DRIVER_PROFILE_STORAGE_KEY = "driver_profile";
 const DRIVER_PREFERENCES_STORAGE_KEY = "driver_preferences";
 const DRIVER_PROFILE_PHOTO_STORAGE_KEY = "driver_profile_photo";
+const SELECTED_VEHICLE_STORAGE_KEY = "driver_selected_vehicle";
 
 const DEFAULT_ONBOARDING_CHECKPOINTS: OnboardingCheckpointState = {
   roleSelected: true,
   documentsVerified: false,
   identityVerified: false,
-  vehicleReady: true,
+  vehicleReady: false,
   trainingCompleted: false,
 };
 
@@ -953,6 +957,37 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [deliveryWorkflow, setDeliveryWorkflow] = useState<DeliveryWorkflowState>(() =>
     readStoredDeliveryWorkflow()
   );
+  const [selectedVehicleIndex, setSelectedVehicleIndexState] = useState<number | null>(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const raw = window.localStorage.getItem(SELECTED_VEHICLE_STORAGE_KEY);
+      if (raw === null) return null;
+      const parsed = Number.parseInt(raw, 10);
+      return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const setSelectedVehicleIndex = useCallback((index: number | null) => {
+    setSelectedVehicleIndexState(index);
+    if (typeof window !== "undefined") {
+      if (index !== null) {
+        window.localStorage.setItem(SELECTED_VEHICLE_STORAGE_KEY, String(index));
+      } else {
+        window.localStorage.removeItem(SELECTED_VEHICLE_STORAGE_KEY);
+      }
+    }
+  }, []);
+
+  // Keep vehicleReady in sync with selectedVehicleIndex
+  useEffect(() => {
+    const hasVehicle = selectedVehicleIndex !== null;
+    setOnboardingCheckpoints((prev) => {
+      if (prev.vehicleReady === hasVehicle) return prev;
+      return { ...prev, vehicleReady: hasVehicle };
+    });
+  }, [selectedVehicleIndex]);
 
   const setOnboardingCheckpoint = useCallback(
     (checkpoint: OnboardingCheckpointId, isComplete = true) => {
@@ -1899,6 +1934,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     startDeliveryRoute,
     confirmDeliveryDropoff,
     resetDeliveryWorkflow,
+    selectedVehicleIndex,
+    setSelectedVehicleIndex,
   };
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
