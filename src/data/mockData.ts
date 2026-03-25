@@ -25,7 +25,14 @@ export const MOCK_VEHICLES: Vehicle[] = [
     type: "Sedan", 
     status: "active",
     batterySize: "65 kWh",
-    range: "350 km"
+    range: "350 km",
+    accessories: {
+      "First Aid Kit": "Available",
+      "Fire Extinguisher": "Available",
+      "Reflective Triangle": "Available",
+      "Spare Tire & Jack": "Available",
+      "Jumper Cables": "Available",
+    }
   },
   { 
     id: "v124", 
@@ -36,7 +43,14 @@ export const MOCK_VEHICLES: Vehicle[] = [
     type: "Van", 
     status: "active",
     batterySize: "40 kWh",
-    range: "200 km"
+    range: "200 km",
+    accessories: {
+      "Fire Extinguisher (HD)": "Available",
+      "First Aid Kit (Large)": "Available",
+      "Wheel Chocks": "Available",
+      "Cargo Straps/Nets": "Available",
+      "Flashlight & Batteries": "Available",
+    }
   },
   {
     id: "v125",
@@ -47,7 +61,12 @@ export const MOCK_VEHICLES: Vehicle[] = [
     type: "Motorcycle",
     status: "active",
     batterySize: "4 kWh",
-    range: "80 km"
+    range: "80 km",
+    accessories: {
+      "Helmet (Driver)": "Available",
+      "Helmet (Passenger)": "Available",
+      "Reflective Vest": "Available",
+    }
   }
 ];
 

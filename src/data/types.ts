@@ -55,6 +55,7 @@ export interface Vehicle {
   accessories?: Record<string, "Available" | "Missing" | "Required">;
   batterySize?: string;
   range?: string;
+  documentsUploaded?: boolean;
 }
 
 export interface EarningsEntry {

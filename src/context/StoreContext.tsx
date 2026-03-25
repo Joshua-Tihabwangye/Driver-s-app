@@ -211,10 +211,13 @@ interface StoreContextType {
   selectedVehicleIndex: number | null;
   setSelectedVehicleIndex: (index: number | null) => void;
   vehicles: Vehicle[];
+  draftVehicle: Vehicle | null;
+  setDraftVehicle: (vehicle: Vehicle | null) => void;
   updateVehicle: (id: string, patch: Partial<Vehicle>) => void;
   addVehicle: (vehicle: Vehicle) => void;
   deleteVehicle: (id: string) => void;
   toggleVehicleAccessory: (vehicleId: string, accessoryName: string) => void;
+  resetVehicleAccessories: (vehicleId: string) => void;
   getDefaultAccessoriesForType: (type: string) => Record<string, "Available" | "Missing" | "Required">;
 }
 
@@ -245,27 +248,27 @@ const DRIVER_PREFERENCES_STORAGE_KEY = "driver_preferences";
 const DRIVER_PROFILE_PHOTO_STORAGE_KEY = "driver_profile_photo";
 const SELECTED_VEHICLE_STORAGE_KEY = "driver_selected_vehicle";
 const VEHICLES_STORAGE_KEY = "driver_vehicles";
+const DRAFT_VEHICLE_STORAGE_KEY = "driver_draft_vehicle";
 
 const CAR_ACCESSORIES: Record<string, "Available" | "Missing" | "Required"> = {
-  "First Aid Kit": "Available",
-  "Fire Extinguisher": "Missing",
-  "Reflective Triangle": "Required",
-  "Spare Tire & Jack": "Available",
-  "Jumper Cables": "Available",
+  "Spare tyre": "Available",
+  "Jack": "Missing",
+  "Wheel spanner": "Required",
+  "First aid kit": "Available",
+  "Reflective triangle": "Required",
 };
 
 const MOTORCYCLE_ACCESSORIES: Record<string, "Available" | "Missing" | "Required"> = {
-  "Helmet (Driver)": "Available",
-  "Helmet (Passenger)": "Missing",
-  "Reflective Vest": "Required",
+  "Helmet": "Available",
+  "Reflective jacket": "Missing",
+  "Tool kit": "Required",
 };
 
 const VAN_ACCESSORIES: Record<string, "Available" | "Missing" | "Required"> = {
-  "Fire Extinguisher (HD)": "Available",
-  "First Aid Kit (Large)": "Available",
-  "Wheel Chocks": "Missing",
-  "Cargo Straps/Nets": "Required",
-  "Flashlight & Batteries": "Available",
+  "Fire extinguisher": "Available",
+  "Warning triangles": "Available",
+  "Heavy-duty jack": "Missing",
+  "Cargo straps": "Required",
 };
 
 /**
@@ -568,23 +571,47 @@ function readStoredDriverPreferences(): DriverPreferences {
 }
 
 function readStoredVehicles(): Vehicle[] {
+  const applyDefaults = (v: Vehicle): Vehicle => {
+    const defaults = getDefaultAccessoriesForType(v.type);
+    const currentAcc = v.accessories || {};
+    const currentKeys = Object.keys(currentAcc);
+    const defaultKeys = Object.keys(defaults);
+
+    // If missing, empty, or has different count (e.g. legacy 3 vs new 5), reset to defaults
+    const needsInventoryUpdate = currentKeys.length === 0 || currentKeys.length !== defaultKeys.length;
+
+    return {
+      ...v,
+      batterySize: v.batterySize || (v.type === "Van" ? "40 kWh" : v.type === "Motorcycle" ? "4 kWh" : "65 kWh"),
+      range: v.range || (v.type === "Van" ? "200 km" : v.type === "Motorcycle" ? "80 km" : "350 km"),
+      accessories: needsInventoryUpdate ? defaults : currentAcc
+    };
+  };
+
   if (typeof window === "undefined") {
-    return MOCK_VEHICLES.map(v => ({ ...v, accessories: v.accessories || getDefaultAccessoriesForType(v.type) }));
+    return MOCK_VEHICLES.map(applyDefaults);
   }
 
   try {
     const raw = window.localStorage.getItem(VEHICLES_STORAGE_KEY);
     if (!raw) {
-      return MOCK_VEHICLES.map(v => ({ ...v, accessories: v.accessories || getDefaultAccessoriesForType(v.type) }));
+      return MOCK_VEHICLES.map(applyDefaults);
     }
 
     const parsed = JSON.parse(raw) as Vehicle[];
-    return parsed.map(v => ({
-      ...v,
-      accessories: v.accessories || getDefaultAccessoriesForType(v.type)
-    }));
+    return parsed.map(applyDefaults);
   } catch {
-    return MOCK_VEHICLES.map(v => ({ ...v, accessories: v.accessories || getDefaultAccessoriesForType(v.type) }));
+    return MOCK_VEHICLES.map(applyDefaults);
+  }
+}
+
+function readStoredDraftVehicle(): Vehicle | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(DRAFT_VEHICLE_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
   }
 }
 
@@ -1019,6 +1046,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     readStoredDeliveryWorkflow()
   );
   const [vehicles, setVehicles] = useState<Vehicle[]>(() => readStoredVehicles());
+  const [draftVehicle, setDraftVehicle] = useState<Vehicle | null>(() =>
+    readStoredDraftVehicle()
+  );
   const [selectedVehicleIndex, setSelectedVehicleIndexState] = useState<number | null>(() => {
     if (typeof window === "undefined") return null;
     try {
@@ -1192,6 +1222,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [vehicles]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (draftVehicle) {
+      window.localStorage.setItem(DRAFT_VEHICLE_STORAGE_KEY, JSON.stringify(draftVehicle));
+    } else {
+      window.localStorage.removeItem(DRAFT_VEHICLE_STORAGE_KEY);
+    }
+  }, [draftVehicle]);
+
+  useEffect(() => {
     const hasProfilePhoto = Boolean(driverProfilePhoto && driverProfilePhoto.trim().length > 0);
     setOnboardingCheckpoints((prev) => {
       if (prev.identityVerified === hasProfilePhoto) {
@@ -1236,6 +1275,23 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [selectedVehicleIndex, vehicles]);
 
   const toggleVehicleAccessory = useCallback((vehicleId: string, accessoryName: string) => {
+    // Check if updating draft
+    if (draftVehicle && (vehicleId === "new" || vehicleId === draftVehicle.id)) {
+      const currentAccessories = draftVehicle.accessories || getDefaultAccessoriesForType(draftVehicle.type);
+      const currentStatus = currentAccessories[accessoryName] || "Missing";
+      const statuses: ("Available" | "Missing" | "Required")[] = ["Available", "Missing", "Required"];
+      const nextStatus = statuses[(statuses.indexOf(currentStatus) + 1) % statuses.length];
+      
+      setDraftVehicle({
+        ...draftVehicle,
+        accessories: {
+          ...currentAccessories,
+          [accessoryName]: nextStatus,
+        },
+      });
+      return;
+    }
+
     setVehicles((prev) =>
       prev.map((v) => {
         if (v.id !== vehicleId) return v;
@@ -1253,7 +1309,28 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         };
       })
     );
-  }, []);
+  }, [draftVehicle, setDraftVehicle]);
+  
+  const resetVehicleAccessories = useCallback((vehicleId: string) => {
+    // Check if updating draft
+    if (draftVehicle && (vehicleId === "new" || vehicleId === draftVehicle.id)) {
+      setDraftVehicle({
+        ...draftVehicle,
+        accessories: getDefaultAccessoriesForType(draftVehicle.type),
+      });
+      return;
+    }
+
+    setVehicles((prev) =>
+      prev.map((v) => {
+        if (v.id !== vehicleId) return v;
+        return {
+          ...v,
+          accessories: getDefaultAccessoriesForType(v.type),
+        };
+      })
+    );
+  }, [draftVehicle, setDraftVehicle]);
 
   const updateJobStatus = useCallback((id: string, status: Job["status"]) => {
     setJobs(prev => prev.map(j => j.id === id ? { ...j, status } : j));
@@ -2058,10 +2135,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       selectedVehicleIndex,
       setSelectedVehicleIndex,
       vehicles,
+      draftVehicle,
+      setDraftVehicle,
       updateVehicle,
       addVehicle,
       deleteVehicle,
       toggleVehicleAccessory,
+      resetVehicleAccessories,
       getDefaultAccessoriesForType,
     }),
     [
@@ -2107,10 +2187,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       selectedVehicleIndex,
       setSelectedVehicleIndex,
       vehicles,
+      draftVehicle,
+      setDraftVehicle,
       updateVehicle,
       addVehicle,
       deleteVehicle,
       toggleVehicleAccessory,
+      resetVehicleAccessories,
       getDefaultAccessoriesForType,
     ]
   );

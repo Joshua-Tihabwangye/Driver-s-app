@@ -70,9 +70,10 @@ function AccessoryRow({ icon: Icon, name, detail, status, onClick }: any) {
 export default function VehicleAccessories() {
   const { vehicleId } = useParams();
   const navigate = useNavigate();
-  const { vehicles, toggleVehicleAccessory, getDefaultAccessoriesForType } = useStore();
+  const { vehicles, draftVehicle, toggleVehicleAccessory, resetVehicleAccessories, getDefaultAccessoriesForType } = useStore();
   
-  const vehicle = vehicles.find(v => v.id === vehicleId);
+  const isNew = vehicleId === "new";
+  const vehicle = isNew ? draftVehicle : vehicles.find(v => v.id === vehicleId);
   const accessories = vehicle?.accessories || (vehicle ? getDefaultAccessoriesForType(vehicle.type) : {});
 
   return (
@@ -128,6 +129,15 @@ export default function VehicleAccessories() {
               <p className="font-medium">Unscheduled safety audits may occur. Ensure all items are present to avoid trip disqualification.</p>
             </div>
           </div>
+
+          <button
+            type="button"
+            onClick={() => vehicleId && resetVehicleAccessories(vehicleId)}
+            className="w-full mb-3 flex items-center justify-center space-x-2 rounded-2xl border-2 border-dashed border-slate-200 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:border-orange-500/30 hover:text-orange-500 transition-all"
+          >
+            <Package className="h-3.5 w-3.5" />
+            <span>Reset to Recommended Inventory</span>
+          </button>
 
           <button
             type="button"

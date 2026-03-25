@@ -68,7 +68,7 @@ function VehicleCard({ image, brand, model, badge, primary, selected, onSelect, 
 
 export default function MyVehicles() {
   const navigate = useNavigate();
-  const { vehicles, selectedVehicleIndex, setSelectedVehicleIndex, addVehicle } = useStore();
+  const { vehicles, selectedVehicleIndex, setSelectedVehicleIndex, addVehicle, setDraftVehicle } = useStore();
   const [localSelectedIdx, setLocalSelectedIdx] = useState<number | null>(selectedVehicleIndex);
 
   // Keep local selection in sync with global store (e.g. after deletion or external reset)
@@ -83,7 +83,7 @@ export default function MyVehicles() {
 
   const handleAddVehicle = () => {
     const newId = `v-${Date.now()}`;
-    const newVehicle: any = {
+    const newDraft: any = {
       id: newId,
       make: "",
       model: "",
@@ -93,10 +93,11 @@ export default function MyVehicles() {
       status: "inactive",
       accessories: {},
       batterySize: "",
-      range: ""
+      range: "",
+      documentsUploaded: false
     };
-    addVehicle(newVehicle);
-    navigate(`/driver/vehicles/${newId}`);
+    setDraftVehicle(newDraft);
+    navigate(`/driver/vehicles/new`);
   };
 
   return (

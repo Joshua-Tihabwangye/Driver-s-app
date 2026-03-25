@@ -50,37 +50,83 @@ function InputRow({ label, placeholder, value, onChange }: any) {
 export default function VehicleDetails() {
   const { vehicleId } = useParams();
   const navigate = useNavigate();
-  const { vehicles, updateVehicle, deleteVehicle } = useStore();
+  const { 
+    vehicles, 
+    updateVehicle, 
+    deleteVehicle, 
+    addVehicle, 
+    draftVehicle, 
+    setDraftVehicle,
+    getDefaultAccessoriesForType 
+  } = useStore();
   
-  const vehicle = vehicles.find(v => v.id === vehicleId) || vehicles[0];
+  const isNew = vehicleId === "new";
+  const vehicle = isNew 
+    ? draftVehicle 
+    : (vehicles.find(v => v.id === vehicleId) || vehicles[0]);
 
   const [form, setForm] = useState({
     make: vehicle?.make || "",
     model: vehicle?.model || "",
     year: vehicle?.year?.toString() || "",
-    color: vehicle?.imageUrl ? "Dynamic" : "", // placeholder
+    color: "", // placeholder
     plate: vehicle?.plate || "",
     batterySize: vehicle?.batterySize || "",
     range: vehicle?.range || "",
     type: (vehicle?.type?.toLowerCase() === "motorcycle" ? "motorcycle" : vehicle?.type?.toLowerCase()) || "car",
   });
 
+  const [errors, setErrors] = useState<string[]>([]);
+
+  // If new and no draft exists, go back
   useEffect(() => {
-    if (vehicle) {
+    if (isNew && !draftVehicle) {
+      navigate("/driver/vehicles");
+    }
+  }, [isNew, draftVehicle, navigate]);
+
+  // Sync form to draft if new
+  useEffect(() => {
+    if (isNew && draftVehicle) {
+      const updatedType = form.type.charAt(0).toUpperCase() + form.type.slice(1);
+      const typeChanged = draftVehicle.type !== updatedType;
+      
+      setDraftVehicle({
+        ...draftVehicle,
+        make: form.make,
+        model: form.model,
+        year: parseInt(form.year) || draftVehicle.year,
+        plate: form.plate,
+        type: updatedType,
+        batterySize: form.batterySize,
+        range: form.range,
+        // Reset accessories only if type actually changed and we are in draft mode
+        ...(typeChanged ? { accessories: getDefaultAccessoriesForType(updatedType) } : {})
+      });
+    }
+  }, [form.make, form.model, form.year, form.plate, form.type, form.batterySize, form.range]);
+
+  useEffect(() => {
+    if (!isNew && vehicle) {
       setForm({
         make: vehicle.make,
         model: vehicle.model,
         year: vehicle.year.toString(),
-        color: "", // would need field in type if real
+        color: "", 
         plate: vehicle.plate,
         batterySize: vehicle.batterySize || "",
         range: vehicle.range || "",
         type: (vehicle.type.toLowerCase() === "motorcycle" ? "motorcycle" : vehicle.type.toLowerCase()) || "car",
       });
     }
-  }, [vehicle]);
+  }, [vehicle, isNew]);
 
   const handleDelete = () => {
+    if (isNew) {
+      setDraftVehicle(null);
+      navigate("/driver/vehicles");
+      return;
+    }
     if (!vehicleId) return;
     if (window.confirm("Are you sure you want to delete this vehicle from your garage?")) {
       deleteVehicle(vehicleId);
@@ -88,37 +134,97 @@ export default function VehicleDetails() {
     }
   };
 
+  const validate = (): boolean => {
+    const newErrors: string[] = [];
+    if (!form.make.trim()) newErrors.push("Manufacturer/Make is required");
+    if (!form.model.trim()) newErrors.push("Commercial Model is required");
+    if (!form.year.trim()) newErrors.push("Production Year is required");
+    if (!form.plate.trim()) newErrors.push("License Plate is required");
+    if (!form.batterySize.trim()) newErrors.push("Battery (kWh) is required");
+    if (!form.range.trim()) newErrors.push("Est. Range (KM) is required");
+
+    // Check accessories
+    const accessories = vehicle?.accessories || {};
+    const missingAccessories = Object.values(accessories).some(v => v === "Missing");
+    if (missingAccessories) {
+      newErrors.push("All mandatory safety inventory must be marked as Available");
+    }
+    if (Object.keys(accessories).length === 0) {
+      newErrors.push("Safety inventory has not been checked");
+    }
+
+    // Check docs
+    if (!isNew && !vehicle?.documentsUploaded) {
+      newErrors.push("Ownership documents must be uploaded");
+    }
+
+    setErrors(newErrors);
+    return newErrors.length === 0;
+  };
+
   const handleSave = () => {
-    if (!vehicleId) return;
+    if (!validate()) return;
 
-    // Check if type changed to reset accessories
-    const typeChanged = vehicle?.type.toLowerCase() !== form.type.toLowerCase();
-    const updatedType = form.type.charAt(0).toUpperCase() + form.type.slice(1);
-
-    updateVehicle(vehicleId, {
-      make: form.make,
-      model: form.model,
-      year: parseInt(form.year) || 2024,
-      plate: form.plate,
-      batterySize: form.batterySize,
-      range: form.range,
-      type: updatedType,
-      // If type changed, we might want to clear or reset accessories in a real app.
-      // For this refined demo, we'll let the Store identify the new defaults if they are empty.
-      ...(typeChanged ? { accessories: undefined } : {})
-    });
+    if (isNew && draftVehicle) {
+      addVehicle({
+        ...draftVehicle,
+        status: "active"
+      });
+      setDraftVehicle(null);
+    } else if (vehicleId) {
+      updateVehicle(vehicleId, {
+        make: form.make,
+        model: form.model,
+        year: parseInt(form.year) || 2024,
+        plate: form.plate,
+        batterySize: form.batterySize,
+        range: form.range,
+        type: form.type.charAt(0).toUpperCase() + form.type.slice(1),
+      });
+    }
     navigate("/driver/vehicles");
   };
+
+  const handleGoToAccessories = () => {
+    const targetId = isNew ? "new" : vehicleId;
+    navigate(`/driver/vehicles/${targetId}/accessories`);
+  };
+
+  const handleGoToDocs = () => {
+    // For demo purposes, we'll simulate document upload by toggling the flag
+    if (isNew && draftVehicle) {
+      setDraftVehicle({ ...draftVehicle, documentsUploaded: true });
+      alert("Documents uploaded successfully!");
+    } else if (vehicleId && !isNew) {
+      updateVehicle(vehicleId, { documentsUploaded: true });
+      alert("Documents uploaded successfully!");
+    }
+  };
+
+  const accessoryCount = vehicle?.accessories ? Object.keys(vehicle.accessories).length : 0;
+  const availableCount = vehicle?.accessories ? Object.values(vehicle.accessories).filter(v => v === "Available").length : 0;
 
   return (
     <div className="flex flex-col min-h-full bg-cream/30">
       <PageHeader 
-        title="Vehicle" 
-        subtitle="Manage Asset" 
+        title={isNew ? "New Vehicle" : "Vehicle"} 
+        subtitle={isNew ? "Registration" : "Manage Asset"} 
         onBack={() => navigate(-1)} 
       />
 
       <main className="flex-1 px-6 pt-6 pb-20 space-y-8 overflow-y-auto scrollbar-hide">
+        {/* Error Messages */}
+        {errors.length > 0 && (
+          <div className="rounded-3xl border border-red-100 bg-red-50 p-5 space-y-2">
+            <div className="flex items-center space-x-2 text-red-700 font-black text-xs uppercase tracking-tight">
+              <span>Validation Required</span>
+            </div>
+            <ul className="list-disc list-inside text-[11px] text-red-600/80 font-medium space-y-1">
+              {errors.map((err, i) => <li key={i}>{err}</li>)}
+            </ul>
+          </div>
+        )}
+
         {/* Vehicle type selector */}
         <section className="space-y-4">
           <div className="px-1">
@@ -209,39 +315,49 @@ export default function VehicleDetails() {
            <div className="space-y-3">
               <button
                 type="button"
-                onClick={() => navigate(`/driver/vehicles/${vehicleId}/accessories`)}
-                className="flex items-center justify-between rounded-[2rem] border-2 border-orange-500/10 bg-cream px-5 py-5 shadow-sm active:scale-[0.98] transition-all group hover:border-orange-500/30"
+                onClick={handleGoToAccessories}
+                className={`flex items-center justify-between rounded-[2rem] border-2 px-5 py-5 shadow-sm active:scale-[0.98] transition-all group ${
+                  availableCount > 0 && availableCount === accessoryCount
+                    ? "border-brand-active/20 bg-emerald-50/30"
+                    : "border-orange-500/10 bg-cream hover:border-orange-500/30"
+                }`}
               >
                 <div className="flex items-center space-x-4">
                   <div className="flex flex-col items-start">
                     <span className="text-xs font-black uppercase tracking-tight text-slate-900">
-                      Safety Inventory
+                      Safety Inventory {availableCount === accessoryCount && availableCount > 0 && "✓"}
                     </span>
                     <span className="text-[10px] font-medium text-slate-400">
-                      Check mandated on-board equipment
+                      {availableCount}/{accessoryCount} items verified
                     </span>
                   </div>
                 </div>
-                <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-orange-500" />
+                <ChevronRight className={`h-5 w-5 ${availableCount === accessoryCount && availableCount > 0 ? "text-brand-active" : "text-slate-300"}`} />
               </button>
 
-              <button
-                type="button"
-                onClick={() => navigate("/driver/onboarding/profile/documents/upload")}
-                className="flex items-center justify-between rounded-[2rem] border-2 border-blue-500/10 bg-cream px-5 py-5 shadow-sm active:scale-[0.98] transition-all group hover:border-blue-500/30"
-              >
-                <div className="flex items-center space-x-4">
-                  <div className="flex flex-col items-start">
-                    <span className="text-xs font-black uppercase tracking-tight text-slate-900">
-                      Ownership Documents
-                    </span>
-                    <span className="text-[10px] font-medium text-slate-400">
-                      Manage insurance & registration active
-                    </span>
+              {!isNew && (
+                <button
+                  type="button"
+                  onClick={handleGoToDocs}
+                  className={`flex items-center justify-between rounded-[2rem] border-2 px-5 py-5 shadow-sm active:scale-[0.98] transition-all group ${
+                    vehicle?.documentsUploaded
+                      ? "border-blue-500/20 bg-blue-50/30"
+                      : "border-blue-500/10 bg-cream hover:border-blue-500/30"
+                  }`}
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="flex flex-col items-start">
+                      <span className="text-xs font-black uppercase tracking-tight text-slate-900">
+                        Ownership Documents {vehicle?.documentsUploaded && "✓"}
+                      </span>
+                      <span className="text-[10px] font-medium text-slate-400">
+                        {vehicle?.documentsUploaded ? "Documents Verified" : "Verification Required"}
+                      </span>
+                    </div>
                   </div>
-                </div>
-                <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-blue-500" />
-              </button>
+                  <ChevronRight className={`h-5 w-5 ${vehicle?.documentsUploaded ? "text-blue-500" : "text-slate-300"}`} />
+                </button>
+              )}
            </div>
         </section>
 
@@ -252,8 +368,8 @@ export default function VehicleDetails() {
               <Info className="h-4 w-4 text-blue-600" />
             </div>
             <div className="shrink text-[11px] text-blue-900/80 leading-relaxed">
-              <p className="font-black text-xs text-blue-900 uppercase tracking-tight mb-1">Data Accuracy</p>
-              <p className="font-medium">Accurate EV data is critical for route planning and range prediction during active jobs.</p>
+              <p className="font-black text-xs text-blue-900 uppercase tracking-tight mb-1">Onboarding Requirement</p>
+              <p className="font-medium">All fields, safety inventory, and documents are mandatory before you can put this vehicle into service.</p>
             </div>
           </div>
 
@@ -263,14 +379,14 @@ export default function VehicleDetails() {
               onClick={handleSave}
               className="w-full rounded-[1.5rem] bg-orange-500 py-4 text-sm font-black text-white shadow-xl shadow-orange-500/20 hover:bg-orange-600 active:scale-[0.98] transition-all uppercase tracking-widest"
             >
-              {!vehicle?.make && !vehicle?.model ? "Save Vehicle" : "Update Vehicle"}
+              {isNew ? "Save Vehicle" : "Update Vehicle"}
             </button>
             <button
               type="button"
               onClick={handleDelete}
               className="w-full rounded-[1.5rem] border-2 border-slate-200 py-4 text-sm font-black text-slate-400 hover:text-red-500 hover:border-red-100 transition-all uppercase tracking-widest"
             >
-              Delete Vehicle
+              {isNew ? "Cancel" : "Delete Vehicle"}
             </button>
           </div>
         </section>
