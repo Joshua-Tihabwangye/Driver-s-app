@@ -22,7 +22,6 @@ import { useStore } from "../context/StoreContext";
 //   becomes "On scene time" instead of "Waiting time".
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-const JOB_TYPES = ["ride", "delivery", "rental", "tour", "ambulance"];
 
 
 function formatTime(seconds) {
@@ -35,11 +34,12 @@ function formatTime(seconds) {
 
 export default function WaitingForPassenger() {
   const [waitingSeconds, setWaitingSeconds] = useState(0);
-  const [jobType, setJobType] = useState("ride");
   const navigate = useNavigate();
   const { tripId: routeTripId } = useParams();
-  const { activeTrip } = useStore();
+  const { activeTrip, transitionActiveTripStage } = useStore();
   const tripId = routeTripId || activeTrip.tripId;
+  // Use the REAL job type from activeTrip, not a local preview toggle
+  const jobType = activeTrip.jobType || "ride";
 
   const sanitizePhone = (phone) => (phone || "").replace(/[^\d+]/g, "");
   const handleCall = (phone) => {
@@ -78,6 +78,12 @@ export default function WaitingForPassenger() {
       navigate("/driver/jobs/list");
       return;
     }
+    // Transition the state machine — previously this call was MISSING entirely.
+    // Without it, the store never knew the driver moved past "waiting".
+    if (activeTrip.tripId === tripId) {
+      const transitionTarget = stage === "rider_verification" ? "rider_verified" : "cancel_no_show";
+      transitionActiveTripStage(transitionTarget);
+    }
     navigate(buildPrivateTripRoute(stage, tripId));
   };
 
@@ -114,36 +120,8 @@ export default function WaitingForPassenger() {
         onBack={() => navigate(-1)} 
       />
 
-      {/* Job type switcher for preview purposes */}
-      <section className="px-6 pt-4 pb-2">
-        <div className="bg-white rounded-3xl p-3 border border-slate-100 shadow-sm space-y-2">
-          <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Simulation Context</span>
-          <div className="flex flex-wrap gap-2">
-            {JOB_TYPES.map((type) => (
-              <button
-                key={type}
-                type="button"
-                onClick={() => setJobType(type)}
-                className={`rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-widest border transition-all ${
-                  jobType === type
-                    ? "bg-orange-500 text-white border-orange-500 shadow-lg shadow-orange-500/20"
-                    : "bg-slate-50 text-slate-400 border-slate-100 hover:border-slate-200"
-                }`}
-              >
-                {jobTypeLabelMap[type]}
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Content */}
       <main className="flex-1 px-6 pt-4 pb-16 space-y-6">
-        <div className="px-1">
-           <span className="text-[11px] font-black text-orange-500 uppercase tracking-widest">
-             Job type: {jobTypeLabelMap[jobType]}
-           </span>
-        </div>
 
         {/* Map container (static pickup view) */}
         <section className="relative rounded-[2.5rem] overflow-hidden border border-slate-100 bg-slate-200 h-[240px] shadow-2xl">

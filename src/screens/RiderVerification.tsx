@@ -54,7 +54,8 @@ export default function RiderVerification() {
       return;
     }
 
-    if (activeTrip.tripId === tripId && activeTrip.jobType === "ride") {
+    // Transition state machine for ALL job types, not just rides
+    if (activeTrip.tripId === tripId) {
       transitionActiveTripStage("rider_verified");
     }
 

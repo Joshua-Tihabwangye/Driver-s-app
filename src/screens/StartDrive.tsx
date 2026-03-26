@@ -22,15 +22,15 @@ import { useStore } from "../context/StoreContext";
 //   phases like "Start to hospital" when integrated with status state).
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-const JOB_TYPES = ["ride", "delivery", "rental", "tour", "ambulance"];
 
 
 export default function StartDrive() {
   const navigate = useNavigate();
-  const [jobType, setJobType] = useState("ride"); // ride | delivery | rental | tour | ambulance
   const { tripId: routeTripId } = useParams();
   const { activeTrip, transitionActiveTripStage } = useStore();
   const tripId = routeTripId || activeTrip.tripId;
+  // Use the REAL job type from activeTrip, not a local preview toggle
+  const jobType = (activeTrip.jobType || "ride") as string;
 
   const handleStart = () => {
     if (!tripId) {
@@ -38,7 +38,8 @@ export default function StartDrive() {
       return;
     }
 
-    if (activeTrip.tripId === tripId && activeTrip.jobType === "ride") {
+    // Transition state machine for ALL job types
+    if (activeTrip.tripId === tripId) {
       transitionActiveTripStage("in_progress");
     }
 
@@ -54,13 +55,15 @@ export default function StartDrive() {
     navigate(buildPrivateTripRoute("rider_verification", tripId));
   };
 
-  const jobTypeLabelMap = {
+  const jobTypeLabelMap: Record<string, string> = {
     ride: "Ride",
     delivery: "Delivery",
     rental: "Rental",
     tour: "Tour",
-    ambulance: "Ambulance"
-};
+    ambulance: "Ambulance",
+    shared: "Shared",
+    shuttle: "Shuttle",
+  };
 
   const isRental = jobType === "rental";
   const isTour = jobType === "tour";
@@ -118,36 +121,8 @@ export default function StartDrive() {
         onBack={() => navigate(-1)} 
       />
 
-      {/* Job type switcher for preview purposes */}
-      <section className="px-6 pt-4 pb-2">
-        <div className="bg-white rounded-3xl p-3 border border-slate-100 shadow-sm space-y-2">
-          <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Simulation Context</span>
-          <div className="flex flex-wrap gap-2">
-            {JOB_TYPES.map((type) => (
-              <button
-                key={type}
-                type="button"
-                onClick={() => setJobType(type)}
-                className={`rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-widest border transition-all ${
-                  jobType === type
-                    ? "bg-orange-500 text-white border-orange-500 shadow-lg shadow-orange-500/20"
-                    : "bg-slate-50 text-slate-400 border-slate-100 hover:border-slate-200"
-                }`}
-              >
-                {jobTypeLabelMap[type]}
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Content */}
       <main className="flex-1 px-6 pt-4 pb-16 overflow-y-auto scrollbar-hide space-y-6">
-        <div className="px-1">
-           <span className="text-[11px] font-black text-orange-500 uppercase tracking-widest">
-             Job type: {jobTypeLabelMap[jobType]}
-           </span>
-        </div>
 
         {/* Trip & rider summary */}
         <section className="rounded-[2.5rem] bg-cream border-2 border-orange-500/10 p-6 space-y-6 shadow-sm hover:border-orange-500/30 transition-all">

@@ -69,8 +69,10 @@ export default function DeliveryDetailsView() {
                  <Box className="h-5 w-5" />
               </div>
               <div className="flex flex-col">
-                 <span className="text-sm font-black text-slate-900">Electronics</span>
-                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Medium Box • 3.2 kg</span>
+                 <span className="text-sm font-black text-slate-900">{trip.details?.package?.name || "General Parcel"}</span>
+                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    {trip.details?.package?.type || "Box"} • {trip.details?.package?.weight || "2.5 kg"}
+                 </span>
               </div>
            </div>
         </section>
@@ -83,7 +85,7 @@ export default function DeliveryDetailsView() {
             </div>
             <div className="flex flex-col">
                <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Sender</span>
-               <span className="text-xs font-black text-slate-900 leading-tight">TechStore Hub</span>
+               <span className="text-xs font-black text-slate-900 leading-tight">{trip.details?.package?.sender || "Merchant"}</span>
             </div>
           </div>
           <div className="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 flex items-center space-x-3">
@@ -92,7 +94,7 @@ export default function DeliveryDetailsView() {
             </div>
             <div className="flex flex-col">
                <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Recipient</span>
-               <span className="text-xs font-black text-slate-900 leading-tight">Alice M.</span>
+               <span className="text-xs font-black text-slate-900 leading-tight">{trip.details?.package?.recipient || "Customer"}</span>
             </div>
           </div>
         </section>
@@ -107,7 +109,9 @@ export default function DeliveryDetailsView() {
                 <div className="absolute -left-[29px] top-1 h-3 w-3 rounded-full bg-slate-900 ring-4 ring-white" />
                 <span className="text-[10px] uppercase font-bold tracking-widest text-slate-500">Pickup</span>
                 <span className="text-sm font-black text-slate-900">{trip.from}</span>
-                <span className="text-[10px] font-bold text-slate-400">09:00 AM</span>
+                <span className="text-[10px] font-bold text-slate-400">
+                   {trip.date} · {trip.startedAt ? new Date(trip.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Morning"}
+                </span>
               </div>
 
               <div className="relative z-10 flex flex-col space-y-1">
@@ -115,7 +119,7 @@ export default function DeliveryDetailsView() {
                 <span className="text-[10px] uppercase font-bold tracking-widest text-blue-500">Drop-off</span>
                 <span className="text-sm font-black text-slate-900">{trip.to}</span>
                 <span className="text-[10px] font-bold text-slate-400 flex items-center">
-                  09:45 AM <FileText className="h-3 w-3 ml-2 mr-1"/> Signature Collected
+                   {trip.time} · <FileText className="h-3 w-3 ml-2 mr-1"/> {trip.details?.package?.proofType || "Signature"} Collected
                 </span>
               </div>
            </div>

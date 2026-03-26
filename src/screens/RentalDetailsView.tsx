@@ -69,7 +69,7 @@ export default function RentalDetailsView() {
             </div>
             <div className="flex flex-col">
                <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Customer</span>
-               <span className="text-sm font-black text-slate-900 leading-tight">David W.</span>
+               <span className="text-sm font-black text-slate-900 leading-tight">{trip.details?.rental?.customerName || "Recorded Client"}</span>
             </div>
           </div>
           <div className="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 flex items-center space-x-3">
@@ -78,7 +78,7 @@ export default function RentalDetailsView() {
             </div>
             <div className="flex flex-col">
                <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Billed For</span>
-               <span className="text-sm font-black text-slate-900 leading-tight">12 Hours</span>
+               <span className="text-sm font-black text-slate-900 leading-tight">{trip.details?.rental?.billedDuration || trip.duration || "N/A"}</span>
             </div>
           </div>
         </section>
@@ -106,22 +106,22 @@ export default function RentalDetailsView() {
               </div>
            </div>
 
-           <div className="pt-4 border-t border-slate-100 grid grid-cols-2 gap-4">
-              <div className="flex flex-col">
-                 <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Rate</span>
-                 <div className="flex items-center text-slate-900">
-                   <Key className="h-3 w-3 mr-1 text-slate-400" />
-                   <span className="text-sm font-black">$12.50 / Hr</span>
-                 </div>
-              </div>
-              <div className="flex flex-col">
-                 <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Status</span>
-                 <div className="flex items-center text-slate-900">
-                   <ShieldCheck className="h-3 w-3 mr-1 text-emerald-500" />
-                   <span className="text-sm font-black flex items-center">No Damage</span>
-                 </div>
-              </div>
-           </div>
+            <div className="pt-4 border-t border-slate-100 grid grid-cols-2 gap-4">
+               <div className="flex flex-col">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Rate</span>
+                  <div className="flex items-center text-slate-900">
+                    <Key className="h-3 w-3 mr-1 text-slate-400" />
+                    <span className="text-sm font-black">{trip.details?.rental?.rate || "$12.50 / Hr"}</span>
+                  </div>
+               </div>
+               <div className="flex flex-col">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Status</span>
+                  <div className="flex items-center text-slate-900">
+                    <ShieldCheck className="h-3 w-3 mr-1 text-emerald-500" />
+                    <span className="text-sm font-black flex items-center">{trip.details?.rental?.condition || "Verified"}</span>
+                  </div>
+               </div>
+            </div>
         </section>
 
         {/* Allowance & Usage */}

@@ -15,21 +15,27 @@ import PageHeader from "../components/PageHeader";
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
 
-function SectionCard({ icon: Icon, title, subtitle, onClick = () => {} }) {
+function SectionCard({ icon: Icon, title, subtitle, tone = "default", onClick = () => {} }) {
+  const accent = tone === "warning" ? "orange" : "emerald";
+  const bg = tone === "warning" ? "bg-orange-500/10" : "bg-emerald-500/10";
+  const border = tone === "warning" ? "border-orange-500/20" : "border-emerald-500/20";
+  const iconText = tone === "warning" ? "text-orange-500" : "text-emerald-500";
+  const iconBg = tone === "warning" ? "bg-orange-50" : "bg-emerald-50";
+
   return (
     <button
       type="button"
       onClick={onClick}
-      className="w-full rounded-2xl border-2 border-orange-500/10 bg-cream shadow-sm px-3 py-3 flex items-start space-x-2 text-[11px] text-slate-600 active:scale-[0.98] transition-all hover:border-orange-500/30"
+      className={`w-full rounded-2xl border-2 ${border} ${bg} shadow-sm px-3 py-3 flex items-start space-x-2 text-[11px] text-slate-600 active:scale-[0.98] transition-all hover:opacity-80`}
     >
-      <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-white border border-orange-50 shadow-sm text-orange-500">
+      <div className={`mt-0.5 flex h-8 w-8 items-center justify-center rounded-full ${iconBg} border border-white shadow-sm ${iconText}`}>
         <Icon className="h-4 w-4" />
       </div>
-      <div className="flex flex-col items-start">
+      <div className="flex flex-col items-start text-left">
         <span className="text-xs font-black uppercase tracking-widest text-slate-900 mb-0.5">
           {title}
         </span>
-        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">{subtitle}</span>
+        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight leading-tight">{subtitle}</span>
       </div>
     </button>
   );
@@ -120,12 +126,14 @@ export default function SafetyHubExpanded() {
               icon={AlertTriangle}
               title="Report an incident"
               subtitle="Log safety issues, dangerous driving, harassment or other concerns."
+              tone="warning"
               onClick={() => navigate("/driver/safety/toolkit")}
             />
             <SectionCard
               icon={Phone}
               title="Contact EVzone support"
               subtitle="Call or message support about urgent safety concerns."
+              tone="warning"
               onClick={() => navigate("/driver/safety/emergency/call")}
             />
           </div>

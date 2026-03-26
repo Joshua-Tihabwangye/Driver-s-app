@@ -88,8 +88,10 @@ export default function SharedRideDetails() {
         <section className="grid grid-cols-3 gap-3">
           <div className="bg-white rounded-3xl p-3 shadow-sm border border-slate-100 flex flex-col items-center text-center justify-center">
             <Users className="h-5 w-5 text-orange-500 mb-1" />
-            <span className="text-lg font-black text-slate-900">{tripRevenue.length}</span>
-            <span className="text-[9px] uppercase font-bold tracking-widest text-slate-400">Events</span>
+            <span className="text-lg font-black text-slate-900">
+               {trip.details?.passengers?.length || 0}
+            </span>
+            <span className="text-[9px] uppercase font-bold tracking-widest text-slate-400">Riders</span>
           </div>
           <div className="bg-white rounded-3xl p-3 shadow-sm border border-slate-100 flex flex-col items-center text-center justify-center">
             <Navigation className="h-5 w-5 text-emerald-500 mb-1" />
@@ -107,9 +109,41 @@ export default function SharedRideDetails() {
           <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400">
             Route Overview
           </h3>
-          <p className="text-sm font-black text-slate-900">{trip.from}</p>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">to</p>
-          <p className="text-sm font-black text-slate-900">{trip.to}</p>
+          <div className="flex flex-col space-y-3">
+             <div className="flex flex-col">
+                <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Main Pickup</span>
+                <p className="text-sm font-black text-slate-900">{trip.from}</p>
+             </div>
+             <div className="flex flex-col">
+                <span className="text-[9px] font-black text-orange-500 uppercase tracking-widest">Final Drop-off</span>
+                <p className="text-sm font-black text-slate-900">{trip.to}</p>
+             </div>
+          </div>
+        </section>
+
+        {/* Passenger List */}
+        <section className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 space-y-4">
+           <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+             Passenger Manifest
+           </h3>
+           <div className="space-y-3">
+              {trip.details?.passengers?.map((p) => (
+                 <div key={p.id} className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100 text-slate-900">
+                    <div className="flex flex-col">
+                       <span className="text-sm font-black">{p.displayName}</span>
+                       <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">{p.seatCount} Seat(s)</span>
+                    </div>
+                    <div className="flex flex-col items-end">
+                       <span className={`text-[10px] font-black uppercase tracking-widest ${p.status === 'no_show' ? 'text-red-500' : 'text-emerald-500'}`}>
+                          {p.status.replace('_', ' ')}
+                       </span>
+                       <span className="text-[9px] font-bold text-slate-400 tracking-widest">+${p.fareContribution.toFixed(2)}</span>
+                    </div>
+                 </div>
+              )) || (
+                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center py-4">No passenger records found</p>
+              )}
+           </div>
         </section>
 
         <section className="bg-slate-900 rounded-[2rem] p-6 shadow-sm border border-slate-800 space-y-4 text-white">
@@ -161,6 +195,9 @@ export default function SharedRideDetails() {
           <ShieldCheck className="h-5 w-5 text-slate-400" />
           <span className="text-xs font-black uppercase tracking-widest">View Verifications</span>
         </button>
+        <div className="text-center pt-2">
+           <span className="text-[9px] font-bold uppercase tracking-widest text-slate-300">Shared Session ID: {trip.id}</span>
+        </div>
       </main>
     </div>
   );

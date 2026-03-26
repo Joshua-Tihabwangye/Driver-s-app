@@ -32,7 +32,7 @@ export default function TripCompletion({
   const navigate = useNavigate();
   const location = useLocation();
   const { tripId: routeTripId } = useParams();
-  const { trips, revenueEvents, activeTrip, clearActiveTrip } = useStore();
+  const { trips, revenueEvents, activeTrip, clearActiveTrip, activeSharedTrip } = useStore();
   const completionState =
     (location.state as CompletionRouteState | null) || null;
 
@@ -65,6 +65,15 @@ export default function TripCompletion({
 
   const isShared = resolvedJobType === "shared";
   const isAmbulance = resolvedJobType === "ambulance";
+
+  // Shared Ride Specific Overrides
+  const displayAmount = isShared && activeSharedTrip?.id === completedTripId
+    ? activeSharedTrip.estimatedTotalEarnings
+    : tripAmount;
+
+  const validSharedRiders = isShared && activeSharedTrip?.id === completedTripId
+    ? activeSharedTrip.passengers.filter(p => p.status === "dropped_off" || p.status === "onboard")
+    : [];
 
   const handleGoOnline = () => {
     if (
@@ -120,16 +129,22 @@ export default function TripCompletion({
             <div className="text-right">
               {!isAmbulance ? (
                 <p className="text-2xl font-black text-brand-secondary">
-                  ${tripAmount.toFixed(2)}
+                  ${displayAmount.toFixed(2)}
                 </p>
               ) : (
                 <p className="text-xs font-black uppercase tracking-widest text-brand-secondary">
                   Operator billed
                 </p>
               )}
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
-                {completedTrip.distance || "Distance N/A"} · {completedTrip.duration || "Duration N/A"}
-              </p>
+              {isShared && activeSharedTrip?.id === completedTripId ? (
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+                  Sequenced Revenue · {activeSharedTrip.occupiedSeats} seats
+                </p>
+              ) : (
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+                  {completedTrip.distance || "Distance N/A"} · {completedTrip.duration || "Duration N/A"}
+                </p>
+              )}
             </div>
           </div>
 
@@ -172,14 +187,43 @@ export default function TripCompletion({
           )}
 
           {!isAmbulance && (
-            <div className="flex items-center justify-between border-t border-slate-100 pt-3">
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                Rider rating
-              </p>
-              <div className="flex items-center space-x-1 text-slate-900">
-                <Star className="h-4 w-4 text-brand-highlight fill-brand-highlight" />
-                <span className="text-sm font-black">5.0</span>
-              </div>
+            <div className="border-t border-slate-100 pt-5 mt-2">
+              <h3 className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400 mb-3">
+                {isShared ? "Passenger Ratings" : "Rider rating"}
+              </h3>
+              
+              {isShared && activeSharedTrip?.id === completedTripId ? (
+                <div className="space-y-3">
+                  {validSharedRiders.map(rider => (
+                    <div key={rider.id} className="flex items-center justify-between border-b border-slate-50 pb-2 last:border-0 last:pb-0">
+                      <p className="text-[11px] font-bold uppercase tracking-tight text-slate-700">
+                        {rider.displayName}
+                      </p>
+                      <div className="flex items-center space-x-1 text-slate-900 cursor-pointer active:scale-95 transition-transform">
+                        {[1,2,3,4,5].map(star => (
+                           <Star key={star} className="h-5 w-5 text-brand-highlight fill-brand-highlight" />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                  {validSharedRiders.length === 0 && (
+                     <p className="text-[11px] font-bold text-slate-400 uppercase tracking-tight">No completed passengers</p>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    Submit Rating
+                  </p>
+                  <div className="flex items-center space-x-1 text-slate-900 cursor-pointer active:scale-95 transition-transform">
+                    <Star className="h-5 w-5 text-brand-highlight fill-brand-highlight" />
+                    <Star className="h-5 w-5 text-brand-highlight fill-brand-highlight" />
+                    <Star className="h-5 w-5 text-brand-highlight fill-brand-highlight" />
+                    <Star className="h-5 w-5 text-brand-highlight fill-brand-highlight" />
+                    <Star className="h-5 w-5 text-brand-highlight fill-brand-highlight" />
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </section>

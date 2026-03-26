@@ -52,26 +52,27 @@ function insertAdditionalMatch(
   if (trip.passengers.length >= trip.seatCapacity) {
     return trip;
   }
-  if (trip.passengers.some((passenger) => passenger.id.includes("-p-extra-"))) {
-    return trip;
-  }
 
   const newPassengerId = `${trip.id}-p-extra-${stamp}`;
   const pickupStopId = `${trip.id}-s-extra-pickup-${stamp}`;
   const dropoffStopId = `${trip.id}-s-extra-dropoff-${stamp}`;
+  
+  const additionalCount = trip.passengers.length + 1;
+  const newName = additionalCount === 2 ? "Michael T." : additionalCount === 3 ? "Sarah L." : `Passenger ${additionalCount}`;
+  const newFirstName = additionalCount === 2 ? "Michael" : additionalCount === 3 ? "Sarah" : `Passenger`;
 
   const newPassenger = {
     id: newPassengerId,
-    firstName: "Michael",
-    lastName: "T",
-    displayName: "Michael T.",
+    firstName: newFirstName,
+    lastName: "Match",
+    displayName: newName,
     phone: "+256 700 999 888",
     rating: 4.95,
     seatCount: 1,
     pickupStopId,
     dropoffStopId,
     status: "queued" as const,
-    joinedSequence: trip.passengers.length + 1,
+    joinedSequence: additionalCount,
     fareContribution: 4.2,
   };
 
@@ -79,7 +80,7 @@ function insertAdditionalMatch(
     id: pickupStopId,
     type: "pickup" as const,
     passengerId: newPassengerId,
-    label: "Pickup Michael T.",
+    label: `Pickup ${newName}`,
     address: "Kisementi",
     eta: "14:15",
     status: "upcoming" as const,
@@ -92,7 +93,7 @@ function insertAdditionalMatch(
     id: dropoffStopId,
     type: "dropoff" as const,
     passengerId: newPassengerId,
-    label: "Drop-off Michael T.",
+    label: `Drop-off ${newName}`,
     address: "Ntinda",
     eta: "14:45",
     status: "upcoming" as const,
@@ -102,8 +103,18 @@ function insertAdditionalMatch(
   };
 
   const nextStops = trip.stops.map((stop) => ({ ...stop }));
-  nextStops.splice(trip.currentStopIndex + 1, 0, pickupStop);
+  const currentTask = nextStops[trip.currentStopIndex];
+
+  // Intercept Logic: If the driver is currently "En route" (upcoming) to a destination, 
+  // we divert them immediately by inserting the new pickup at the current index.
+  // This pushes the original destination to be the next task after the pickup.
+  const insertionIndex = currentTask?.status === "upcoming"
+    ? trip.currentStopIndex
+    : trip.currentStopIndex + 1;
+
+  nextStops.splice(insertionIndex, 0, pickupStop);
   nextStops.push(dropoffStop);
+
   const sequencedStops = nextStops.map((stop, index) => ({
     ...stop,
     sequenceOrder: index + 1,
@@ -119,13 +130,13 @@ function insertAdditionalMatch(
         id: `eb-${newPassengerId}`,
         type: "added_pickup" as const,
         passengerId: newPassengerId,
-        title: "Added Pickup (Michael T.)",
+        title: `Added Pickup (${newName})`,
         amount: 4.2,
         status: "pending" as const,
       },
     ],
     estimatedTotalEarnings: trip.estimatedTotalEarnings + 4.2,
-    allowAdditionalMatches: false,
+    // Note: allowAdditionalMatches stays true so they can pick up more!
   };
 }
 
@@ -218,12 +229,9 @@ export function SharedTripsProvider({ children }: { children: ReactNode }) {
           return advancedTrip;
         }
 
-        // Match insertion is explicitly triggered by pickup confirmation events
-        // while taking-matches mode is enabled.
-        if (!advancedTrip.allowAdditionalMatches) {
-          return advancedTrip;
-        }
-        return insertAdditionalMatch(advancedTrip);
+        // Auto-match insertion removed by user request!
+        // Driver must now explicitly accept incoming simulated matches from the UI overlay.
+        return advancedTrip;
       });
     },
     [updateActiveSharedTrip, canMutateSharedChain]

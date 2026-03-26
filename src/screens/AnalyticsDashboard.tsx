@@ -11,12 +11,17 @@ import { useNavigate } from "react-router-dom";
 import { isWithinPeriod, useStore } from "../context/StoreContext";
 import type { JobCategory, PeriodFilter, TripRecord } from "../data/types";
 
-type Period = "today" | "week" | "month";
+// Period options: today/week/month map directly to PeriodFilter values;
+// quarter and year use the same PeriodFilter but also require sub-selectors
+// for the specific quarter (Q1-Q4) and year value.
+type Period = "today" | "week" | "month" | "quarter" | "year";
 
 const PERIOD_FILTER_MAP: Record<Period, PeriodFilter> = {
   today: "day",
   week: "week",
   month: "month",
+  quarter: "quarter",
+  year: "year",
 };
 
 const CATEGORY_LABELS: Record<JobCategory, string> = {
@@ -55,21 +60,32 @@ function formatUGX(value: number): string {
   return `UGX ${Math.round(value).toLocaleString()}`;
 }
 
+// StatCard is clickable when onClick is provided, routing to the relevant
+// detail page for the metric it represents (e.g. Income → earnings page).
 function StatCard({
   icon: Icon,
   label,
   value,
   sub,
   color = "#f97316",
+  onClick,
 }: {
   icon: React.ElementType;
   label: string;
   value: string;
   sub?: string;
   color?: string;
+  onClick?: () => void;
 }) {
+  const Wrapper = onClick ? "button" : "div";
   return (
-    <div className="flex flex-col rounded-2xl border-2 border-orange-500/10 bg-cream px-4 py-4 shadow-sm group">
+    <Wrapper
+      type={onClick ? "button" : undefined}
+      onClick={onClick}
+      className={`flex flex-col rounded-2xl border-2 border-orange-500/10 bg-cream px-4 py-4 shadow-sm group text-left ${
+        onClick ? "cursor-pointer active:scale-[0.97] transition-transform" : ""
+      }`}
+    >
       <div className="mb-2 flex items-center space-x-2">
         <div
           className="flex h-8 w-8 items-center justify-center rounded-xl transition-colors group-hover:scale-110"
@@ -83,7 +99,7 @@ function StatCard({
       </div>
       <span className="text-lg font-bold tracking-tight text-slate-900">{value}</span>
       {sub && <span className="mt-1 text-[10px] font-medium text-slate-400">{sub}</span>}
-    </div>
+    </Wrapper>
   );
 }
 
@@ -214,6 +230,10 @@ export default function AnalyticsDashboard() {
   const navigate = useNavigate();
   const { filteredTrips, filteredRevenueEvents, assignableJobTypes } = useStore();
   const [period, setPeriod] = useState<Period>("week");
+  // Quarter and year sub-selectors: shown when period is "quarter" or "year"
+  const [selectedQuarter, setSelectedQuarter] = useState("Q1");
+  const [selectedYear, setSelectedYear] = useState(String(new Date().getFullYear()));
+  const yearOptions = Array.from({ length: 7 }, (_, i) => String(new Date().getFullYear() - i));
   const periodFilter = PERIOD_FILTER_MAP[period];
 
   const periodTrips = useMemo(
@@ -383,8 +403,10 @@ export default function AnalyticsDashboard() {
     today: "Day",
     week: "Week",
     month: "Month",
+    quarter: "Qtr",
+    year: "Year",
   };
-  const periods: Period[] = ["today", "week", "month"];
+  const periods: Period[] = ["today", "week", "month", "quarter", "year"];
 
   return (
     <div className="flex flex-col h-full ">
@@ -459,12 +481,49 @@ export default function AnalyticsDashboard() {
           </div>
         </section>
 
+        {/* Quarter/Year sub-selectors: shown when the driver selects Quarter or Year period */}
+        {(period === "quarter" || period === "year") && (
+          <section className="rounded-2xl border-2 border-orange-500/10 bg-cream p-4 shadow-sm">
+            <div className={`grid gap-3 ${period === "quarter" ? "grid-cols-2" : "grid-cols-1"}`}>
+              <div className="space-y-1">
+                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block">Year</label>
+                <select
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(e.target.value)}
+                  className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-2.5 text-[11px] font-black uppercase tracking-wide text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+                >
+                  {yearOptions.map((y) => (
+                    <option key={y} value={y}>{y}</option>
+                  ))}
+                </select>
+              </div>
+              {period === "quarter" && (
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block">Quarter</label>
+                  <select
+                    value={selectedQuarter}
+                    onChange={(e) => setSelectedQuarter(e.target.value)}
+                    className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-2.5 text-[11px] font-black uppercase tracking-wide text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+                  >
+                    <option value="Q1">Q1</option>
+                    <option value="Q2">Q2</option>
+                    <option value="Q3">Q3</option>
+                    <option value="Q4">Q4</option>
+                  </select>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* Analytics stat cards — each is clickable and routes to the relevant detail page */}
         <div className="grid grid-cols-2 gap-3 pb-2">
           <StatCard
             icon={DollarSign}
             label="Income"
             value={formatUGX(totalRevenue)}
             sub={`${formatUGX(tips)} tips included`}
+            onClick={() => navigate("/driver/earnings/overview")}
           />
           <StatCard
             icon={Car}
@@ -472,6 +531,7 @@ export default function AnalyticsDashboard() {
             value={String(totalTrips)}
             sub={`${hours}h operation`}
             color="#0ea5e9"
+            onClick={() => navigate("/driver/jobs/list")}
           />
           <StatCard
             icon={Star}
@@ -479,6 +539,7 @@ export default function AnalyticsDashboard() {
             value={rating.toFixed(2)}
             sub="Category-adjusted"
             color="#f59e0b"
+            onClick={() => navigate("/driver/ratings")}
           />
           <StatCard
             icon={Package}
@@ -496,6 +557,11 @@ export default function AnalyticsDashboard() {
                 : "No completed trips yet"
             }
             color="#8b5cf6"
+            onClick={() => navigate(
+              assignableJobTypes.includes("delivery")
+                ? "/driver/jobs/list?category=delivery"
+                : "/driver/history/rides"
+            )}
           />
         </div>
 

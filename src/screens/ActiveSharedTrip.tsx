@@ -27,12 +27,16 @@ export default function ActiveSharedTrip() {
     markRiderOnboard, 
     markRiderNoShow, 
     markRiderDroppedOff, 
-    toggleAllowMatches 
+    toggleAllowMatches,
+    simulateNewMatch 
   } = useSharedTrips();
   const { activeTrip, completeActiveSharedTrip } = useStore();
 
   const [waitTimer, setWaitTimer] = useState<number | null>(null);
+  const [verifyingStopId, setVerifyingStopId] = useState<string | null>(null);
+  const [showMatchPrompt, setShowMatchPrompt] = useState(false);
   const completedTripRef = useRef<string | null>(null);
+  const lastPromptTimeRef = useRef<number>(Date.now());
 
   useEffect(() => {
     if (!routeTripId) {
@@ -115,6 +119,32 @@ export default function ActiveSharedTrip() {
     });
   }, [activeSharedTrip, completeActiveSharedTrip, navigate, routeTripId]);
 
+  const currentStop = activeSharedTrip.stops[activeSharedTrip.currentStopIndex];
+  const passengerForStop = activeSharedTrip.passengers.find(p => p.id === currentStop?.passengerId);
+  const isChainCompleted = activeSharedTrip.chainStatus === "completed";
+
+  // Co-rider Match Simulation logic
+  useEffect(() => {
+    if (!activeSharedTrip || isChainCompleted || showMatchPrompt) return;
+    if (!activeSharedTrip.allowAdditionalMatches) return;
+    if (activeSharedTrip.occupiedSeats >= activeSharedTrip.seatCapacity) return;
+
+    // Check every 5 seconds if we should show a match
+    const interval = setInterval(() => {
+      const now = Date.now();
+      // Only prompt if it's been at least 15 seconds since the last prompt/action
+      if (now - lastPromptTimeRef.current > 15000) {
+        // 40% chance of a match every check
+        if (Math.random() > 0.6) {
+          setShowMatchPrompt(true);
+          lastPromptTimeRef.current = now;
+        }
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [activeSharedTrip, isChainCompleted, showMatchPrompt]);
+
   if (!activeSharedTrip || (routeTripId && activeSharedTrip.id !== routeTripId)) {
     return (
       <div className="flex flex-col h-full bg-slate-50 items-center justify-center p-6 text-center space-y-4">
@@ -129,10 +159,6 @@ export default function ActiveSharedTrip() {
       </div>
     );
   }
-
-  const currentStop = activeSharedTrip.stops[activeSharedTrip.currentStopIndex];
-  const passengerForStop = activeSharedTrip.passengers.find(p => p.id === currentStop?.passengerId);
-  const isChainCompleted = activeSharedTrip.chainStatus === "completed";
 
   if (!currentStop && !isChainCompleted) {
     return (
@@ -168,6 +194,59 @@ export default function ActiveSharedTrip() {
         subtitle="Active Chain" 
         onBack={() => navigate(-1)} 
       />
+
+      {/* New Match Modal Overlay */}
+      {showMatchPrompt && (
+        <div className="absolute inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in">
+          <div className="bg-white rounded-[2.5rem] w-full max-w-sm p-8 shadow-2xl space-y-6 border border-white/20 animate-in zoom-in-95 duration-300">
+             <div className="flex flex-col items-center text-center space-y-2">
+                <div className="h-16 w-16 bg-orange-100 rounded-full flex items-center justify-center mb-2">
+                   <Users className="h-8 w-8 text-orange-600 animate-bounce" />
+                </div>
+                <h2 className="text-xl font-black text-slate-900 tracking-tight uppercase">New Co-Rider Match!</h2>
+                <p className="text-sm font-bold text-slate-500">A new passenger is heading in your direction. Add them to your route for +$4.20 earnings.</p>
+             </div>
+
+             <div className="bg-slate-50 rounded-3xl p-4 flex items-center justify-between border border-slate-100">
+                <div className="flex items-center space-x-3">
+                   <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                      <MapPin className="h-5 w-5 text-orange-500" />
+                   </div>
+                   <div className="flex flex-col">
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Next Stop</span>
+                      <span className="text-[12px] font-bold text-slate-800">Kisementi (0.8 km)</span>
+                   </div>
+                </div>
+                <div className="text-right">
+                   <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Earnings</span>
+                   <p className="text-[14px] font-black text-slate-900">+$4.20</p>
+                </div>
+             </div>
+
+             <div className="flex flex-col space-y-3">
+                <button 
+                  onClick={() => {
+                    simulateNewMatch();
+                    setShowMatchPrompt(false);
+                    lastPromptTimeRef.current = Date.now();
+                  }}
+                  className="w-full rounded-full bg-orange-500 py-5 text-sm font-black uppercase tracking-widest text-slate-900 shadow-xl shadow-orange-500/20 active:scale-95 transition-all"
+                >
+                  Accept Match
+                </button>
+                <button 
+                  onClick={() => {
+                    setShowMatchPrompt(false);
+                    lastPromptTimeRef.current = Date.now();
+                  }}
+                  className="w-full rounded-full bg-slate-100 py-4 text-xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-200 active:scale-95 transition-all"
+                >
+                  Decline
+                </button>
+             </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-6">
@@ -275,25 +354,48 @@ export default function ActiveSharedTrip() {
                     onClick={arriveAtCurrentStop}
                     className="w-full rounded-[2rem] bg-slate-900 py-4 text-[11px] font-black uppercase tracking-widest text-white shadow-xl hover:bg-slate-800 transition-all active:scale-[0.98]"
                   >
-                    Arrive at Location
+                    Arrive at {currentStop.type === "pickup" ? "Pickup" : "Drop-off"}
                   </button>
                 )}
                 
                 {currentStop.status === "current" && currentStop.type === "pickup" && (
-                  <div className="flex space-x-3">
-                    <button 
-                      onClick={() => passengerForStop && markRiderOnboard(passengerForStop.id)}
-                      className="flex-1 rounded-[2rem] bg-orange-500 py-4 text-[11px] font-black uppercase tracking-widest text-slate-900 shadow-xl active:scale-[0.98]"
-                    >
-                      Confirm Pickup
-                    </button>
-                    {waitTimer === 0 && (
-                      <button 
-                        onClick={() => passengerForStop && markRiderNoShow(passengerForStop.id)}
-                        className="rounded-[2rem] border-2 border-red-500 text-red-500 px-6 py-4 text-[11px] font-black uppercase tracking-widest hover:bg-red-50 active:scale-[0.98]"
-                      >
-                        No Show
-                      </button>
+                  <div className="flex flex-col space-y-3">
+                    {verifyingStopId === currentStop.id ? (
+                      <div className="bg-slate-100 p-4 rounded-3xl flex flex-col space-y-3 border border-slate-200">
+                        <span className="text-xs font-bold text-center text-slate-700">Verify Passenger: {passengerForStop?.firstName}</span>
+                        <input 
+                           type="text" 
+                           placeholder="Enter 4-digit PIN" 
+                           className="rounded-2xl border-slate-300 text-center text-sm font-bold bg-white focus:ring-orange-500 focus:border-orange-500 mx-8 py-3" 
+                           maxLength={4} 
+                        />
+                        <button 
+                          onClick={() => {
+                            setVerifyingStopId(null);
+                            if (passengerForStop) markRiderOnboard(passengerForStop.id);
+                          }}
+                          className="w-full rounded-[2rem] bg-orange-500 py-4 text-[11px] font-black uppercase tracking-widest text-slate-900 shadow-md active:scale-[0.98]"
+                        >
+                          Start Trip for {passengerForStop?.firstName}
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex space-x-3">
+                        <button 
+                          onClick={() => setVerifyingStopId(currentStop.id)}
+                          className="flex-1 rounded-[2rem] bg-orange-500 py-4 text-[11px] font-black uppercase tracking-widest text-slate-900 shadow-xl active:scale-[0.98]"
+                        >
+                          Verify Rider Identity
+                        </button>
+                        {waitTimer === 0 && (
+                          <button 
+                            onClick={() => passengerForStop && markRiderNoShow(passengerForStop.id)}
+                            className="rounded-[2rem] border-2 border-red-500 text-red-500 px-6 py-4 text-[11px] font-black uppercase tracking-widest hover:bg-red-50 active:scale-[0.98]"
+                          >
+                            No Show
+                          </button>
+                        )}
+                      </div>
                     )}
                   </div>
                 )}
@@ -303,7 +405,7 @@ export default function ActiveSharedTrip() {
                     onClick={() => passengerForStop && markRiderDroppedOff(passengerForStop.id)}
                     className="w-full rounded-[2rem] bg-blue-500 py-4 text-[11px] font-black uppercase tracking-widest text-white shadow-xl active:scale-[0.98]"
                   >
-                    Confirm Drop-off
+                    End Trip for {passengerForStop?.firstName}
                   </button>
                 )}
               </div>

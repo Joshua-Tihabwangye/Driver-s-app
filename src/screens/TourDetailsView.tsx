@@ -69,7 +69,7 @@ export default function TourDetailsView() {
             </div>
             <div className="flex flex-col">
                <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Group Name</span>
-               <span className="text-sm font-black text-slate-900 leading-tight">Smith Family (4)</span>
+               <span className="text-sm font-black text-slate-900 leading-tight">{trip.details?.tour?.groupName || "Tour Group"}</span>
             </div>
           </div>
           <div className="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 flex items-center space-x-3">
@@ -78,7 +78,7 @@ export default function TourDetailsView() {
             </div>
             <div className="flex flex-col">
                <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Duration</span>
-               <span className="text-sm font-black text-slate-900 leading-tight">6 Hours</span>
+               <span className="text-sm font-black text-slate-900 leading-tight">{trip.duration || "N/A"}</span>
             </div>
           </div>
         </section>
@@ -89,39 +89,16 @@ export default function TourDetailsView() {
            <div className="relative pl-6 space-y-6">
               <div className="absolute left-[11px] top-2 bottom-4 w-0.5 bg-slate-200" />
               
-              <div className="relative z-10 flex flex-col space-y-1">
-                <div className="absolute -left-[29px] top-1 h-3 w-3 rounded-full bg-slate-900 ring-4 ring-white" />
-                <span className="text-[10px] uppercase font-bold tracking-widest text-slate-500">Pickup</span>
-                <span className="text-sm font-black text-slate-900">{trip.from}</span>
-                <span className="text-[10px] font-bold text-slate-400">09:00 AM</span>
-              </div>
-
-              <div className="relative z-10 flex flex-col space-y-1">
-                <div className="absolute -left-[29px] top-1 h-3 w-3 rounded-full bg-amber-500 ring-4 ring-white" />
-                <span className="text-[10px] uppercase font-bold tracking-widest text-amber-500">Stop 1</span>
-                <span className="text-sm font-black text-slate-900">National Museum</span>
-                <span className="text-[10px] font-bold text-slate-400 flex items-center">
-                  10:30 AM • 90 min stop
-                </span>
-              </div>
-
-              <div className="relative z-10 flex flex-col space-y-1">
-                <div className="absolute -left-[29px] top-1 h-3 w-3 rounded-full bg-amber-500 ring-4 ring-white" />
-                <span className="text-[10px] uppercase font-bold tracking-widest text-amber-500">Stop 2</span>
-                <span className="text-sm font-black text-slate-900">Craft Village (Lunch)</span>
-                <span className="text-[10px] font-bold text-slate-400 flex items-center">
-                  12:30 PM • 120 min stop
-                </span>
-              </div>
-
-              <div className="relative z-10 flex flex-col space-y-1">
-                <div className="absolute -left-[29px] top-1 h-3 w-3 rounded-full bg-emerald-500 ring-4 ring-white" />
-                <span className="text-[10px] uppercase font-bold tracking-widest text-emerald-500">Return Drop-off</span>
-                <span className="text-sm font-black text-slate-900">{trip.to}</span>
-                <span className="text-[10px] font-bold text-slate-400 flex items-center">
-                  03:00 PM • Tour concludes
-                </span>
-              </div>
+              {trip.details?.tour?.itinerary?.map((stop, idx) => (
+                <div key={idx} className="relative z-10 flex flex-col space-y-1">
+                  <div className={`absolute -left-[29px] top-1 h-3 w-3 rounded-full ring-4 ring-white ${idx === 0 ? 'bg-slate-900' : 'bg-amber-500'}`} />
+                  <span className={`text-[10px] uppercase font-bold tracking-widest ${idx === 0 ? 'text-slate-500' : 'text-amber-500'}`}>{stop.label}</span>
+                  <span className="text-sm font-black text-slate-900">{stop.note}</span>
+                  <span className="text-[10px] font-bold text-slate-400">{stop.time}</span>
+                </div>
+              )) || (
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">No itinerary recorded</p>
+              )}
            </div>
         </section>
 
@@ -129,7 +106,7 @@ export default function TourDetailsView() {
         <section className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 space-y-3">
            <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400">Guide Notes</h3>
            <p className="text-sm font-bold text-slate-600 leading-relaxed">
-             "Family needs space for 2 strollers. Requested A/C to be kept on medium. Prefers scenic route over highway on the return trip."
+             {trip.details?.tour?.notes || "No additional guide notes recorded for this tour."}
            </p>
         </section>
 

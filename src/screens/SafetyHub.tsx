@@ -5,10 +5,16 @@ LifeBuoy,
 MapPin,
 Phone,
 Share2,
-ShieldCheck
+ShieldCheck,
+UserPlus,
+Trash2,
+Plus,
+X
 } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – SafetyHub Safety Hub
 // Compact Safety Hub overview screen that links into Safety Toolkit, SOS, and Follow/Share ride flows.
@@ -57,9 +63,23 @@ export default function SafetyHub() {
   const supportNumber = "+256 700 000 999";
   const emergencyNumber = "+256 112";
   
+  const { emergencyContacts, addEmergencyContact, removeEmergencyContact } = useStore();
+  const [isAdding, setIsAdding] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newPhone, setNewPhone] = useState("");
+
   const handleCall = (phone: string) => {
     const target = (phone || "").replace(/[^\d+]/g, "");
     if (target) window.open(`tel:${target}`);
+  };
+
+  const onAddSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newName.trim() || !newPhone.trim()) return;
+    addEmergencyContact({ name: newName, phone: newPhone });
+    setNewName("");
+    setNewPhone("");
+    setIsAdding(false);
   };
 
   return (
@@ -113,6 +133,90 @@ export default function SafetyHub() {
               tone="primary"
               onClick={() => navigate("/driver/safety/hub/expanded")}
             />
+          </div>
+        </section>
+
+        {/* Emergency Contacts */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between px-2">
+            <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              Trusted Contacts
+            </h2>
+            <button
+              onClick={() => setIsAdding(!isAdding)}
+              className="flex items-center space-x-1 text-[10px] font-black uppercase tracking-widest text-brand-active"
+            >
+              {isAdding ? <X className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
+              <span>{isAdding ? "Cancel" : "Add New"}</span>
+            </button>
+          </div>
+
+          {isAdding && (
+            <form
+              onSubmit={onAddSubmit}
+              className="rounded-[1.5rem] border border-brand-active/20 bg-white p-5 space-y-4 shadow-sm animate-in fade-in slide-in-from-top-2"
+            >
+              <div className="space-y-3">
+                <input
+                  type="text"
+                  placeholder="Contact Name"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  className="w-full rounded-xl bg-slate-50 border-slate-100 px-4 py-3 text-xs font-medium focus:ring-1 focus:ring-brand-active outline-none"
+                  autoFocus
+                />
+                <input
+                  type="tel"
+                  placeholder="Phone Number"
+                  value={newPhone}
+                  onChange={(e) => setNewPhone(e.target.value)}
+                  className="w-full rounded-xl bg-slate-50 border-slate-100 px-4 py-3 text-xs font-medium focus:ring-1 focus:ring-brand-active outline-none"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full rounded-xl bg-brand-active py-3 text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-brand-active/20 active:scale-95 transition-all"
+              >
+                Save Contact
+              </button>
+            </form>
+          )}
+
+          <div className="space-y-3">
+            {emergencyContacts.length === 0 ? (
+              <div className="rounded-[1.5rem] border border-dashed border-slate-200 p-6 text-center">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+                  No emergency contacts saved yet.
+                </p>
+              </div>
+            ) : (
+              emergencyContacts.map((contact) => (
+                <div
+                  key={contact.id}
+                  className="flex items-center justify-between rounded-[1.5rem] border border-slate-100 bg-white px-5 py-4 shadow-sm"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-50 text-slate-400">
+                      <UserPlus className="h-5 w-5" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-xs font-black text-slate-900 uppercase tracking-tight leading-tight">
+                        {contact.name}
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">
+                        {contact.phone}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => removeEmergencyContact(contact.id)}
+                    className="h-8 w-8 flex items-center justify-center text-slate-300 hover:text-red-500 transition-colors"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              ))
+            )}
           </div>
         </section>
 
