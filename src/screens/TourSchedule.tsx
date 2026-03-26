@@ -1,328 +1,220 @@
 import {
-CalendarDays,
-CheckCircle2,
-ChevronLeft,
-ChevronRight,
-Clock,
-Map
+  CalendarDays,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Map,
+  Phone
 } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
-import { buildPrivateTripRoute } from "../data/constants";
 import { useStore } from "../context/StoreContext";
-import type { TourSegment } from "../data/types";
+import { TourSegmentStatus } from "../data/types";
 
-// EVzone Driver App – TourSchedule Tour – Today’s Schedule Screen (v2)
-// Daily schedule for a multi-day tour.
-// Refactored to pull dynamic segments from the Job object in Store.
+// EVzone Driver App – TourSchedule
+// Multi-stop tour schedule with granular segment lifecycle (Preparing -> Navigating -> Arrived -> Activity -> Completed)
 
-function SegmentRow({
-  segment,
-  onClick,
-}: {
-  segment: TourSegment;
-  onClick: (segment: TourSegment) => void;
-}) {
-  const { time, title, description, status } = segment;
-
-  const statusLabel =
-    status === "completed"
-      ? "Completed"
-      : status === "in-progress"
-      ? "In progress"
-      : "Upcoming";
-
-  const statusClasses =
-    status === "completed"
-      ? "bg-orange-50 border-orange-100 text-orange-700"
-      : status === "in-progress"
-      ? "bg-blue-50 border-blue-100 text-blue-700"
-      : "bg-slate-50 border-slate-100 text-slate-500";
-
-  return (
-    <button
-      onClick={() => onClick(segment)}
-      className="w-full rounded-2xl border border-slate-100 bg-white shadow-sm px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform flex flex-col space-y-2 text-[11px] text-slate-600 text-left"
-    >
-      <div className="flex items-center justify-between">
-        <span className="inline-flex items-center text-[10px] text-slate-500">
-          <Clock className="h-3 w-3 mr-1" />
-          {time}
-        </span>
-        <span
-          className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium border ${statusClasses}`}
+function SegmentAction({ status, onAction }: { status: TourSegmentStatus; onAction: (newStatus: TourSegmentStatus) => void }) {
+  switch (status) {
+    case "upcoming":
+      return (
+        <button
+          onClick={() => onAction("preparing")}
+          className="w-full rounded-xl bg-slate-900 py-3 text-[10px] font-black uppercase tracking-widest text-white shadow-lg active:scale-95 transition-all"
         >
-          {status === "completed" && (
-            <CheckCircle2 className="h-3 w-3 mr-1" />
-          )}
-          {statusLabel}
-        </span>
-      </div>
-      <div className="flex items-start justify-between">
-        <div className="flex flex-col items-start max-w-[220px]">
-          <span className="text-xs font-semibold text-slate-900">
-            {title}
-          </span>
-          <span className="text-[11px] text-slate-600">{description}</span>
+          Prepare Segment
+        </button>
+      );
+    case "preparing":
+      return (
+        <button
+          onClick={() => onAction("navigating")}
+          className="w-full rounded-xl bg-brand-active py-3 text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-brand-active/20 active:scale-95 transition-all flex items-center justify-center space-x-2"
+        >
+          <Map className="h-4 w-4" />
+          <span>Start Navigation</span>
+        </button>
+      );
+    case "navigating":
+      return (
+        <button
+          onClick={() => onAction("arrived")}
+          className="w-full rounded-xl bg-orange-500 py-3 text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-orange-500/20 active:scale-95 transition-all"
+        >
+          Confirm Arrival
+        </button>
+      );
+    case "arrived":
+      return (
+        <button
+          onClick={() => onAction("in-progress")}
+          className="w-full rounded-xl bg-brand-active py-3 text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-brand-active/20 active:scale-95 transition-all"
+        >
+          Start Activity
+        </button>
+      );
+    case "in-progress":
+      return (
+        <button
+          onClick={() => onAction("completed")}
+          className="w-full rounded-xl bg-slate-100 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 border border-slate-200 active:scale-95 transition-all flex items-center justify-center space-x-2"
+        >
+          <CheckCircle2 className="h-4 w-4" />
+          <span>Complete Stop</span>
+        </button>
+      );
+    case "completed":
+      return (
+        <div className="w-full py-3 text-[10px] font-black uppercase tracking-widest text-emerald-500 flex items-center justify-center space-x-2 bg-emerald-50 rounded-xl border border-emerald-100 italic">
+          <CheckCircle2 className="h-4 w-4" />
+          <span>Segment Completed</span>
         </div>
-        <ChevronRight className="h-4 w-4 text-slate-400 mt-1" />
-      </div>
-    </button>
-  );
+      );
+    default:
+      return null;
+  }
 }
 
 export default function TourSchedule() {
   const navigate = useNavigate();
-  const { tourId } = useParams<{ tourId: string }>();
-  const {
-    jobs,
-    trips,
-    activeTrip,
-    acceptSpecializedJob,
-    completeActiveTrip,
-    completeTrip,
-    updateJobStatus,
-    updateTourSegmentStatus,
-  } = useStore();
+  const { tourId } = useParams();
+  const { jobs, updateTourSegmentStatus } = useStore();
 
-  const tourJob = useMemo(
-    () =>
-      tourId
-        ? jobs.find((job) => job.id === tourId && job.jobType === "tour") || null
-        : null,
-    [jobs, tourId]
-  );
+  const tour = useMemo(() => {
+    return jobs.find((j) => j.id === tourId && j.jobType === "tour");
+  }, [jobs, tourId]);
 
-  const segments = tourJob?.segments || [];
+  const segments = tour?.segments || [];
+  const completedCount = segments.filter((s) => s.status === "completed").length;
+  const progress = segments.length > 0 ? (completedCount / segments.length) * 100 : 0;
 
-  const isThisTourActive = Boolean(
-    tourId &&
-      activeTrip.tripId === tourId &&
-      activeTrip.jobType === "tour" &&
-      activeTrip.status !== "completed" &&
-      activeTrip.status !== "cancelled"
-  );
-
-  useEffect(() => {
-    if (!tourId || !tourJob || isThisTourActive) {
-      return;
+  const handleStatusChange = (segmentId: string | number, newStatus: TourSegmentStatus) => {
+    if (tourId) {
+      updateTourSegmentStatus(tourId, String(segmentId), newStatus);
     }
-    if (tourJob.status === "pending" || tourJob.status === "attended") {
-      acceptSpecializedJob(tourId, "tour");
-    }
-  }, [tourId, tourJob, isThisTourActive, acceptSpecializedJob]);
-
-  const ensureTourFlowTripId = () => {
-    if (!tourId) {
-      return null;
-    }
-    if (isThisTourActive) {
-      return tourId;
-    }
-    if (acceptSpecializedJob(tourId, "tour")) {
-      return tourId;
-    }
-    // Keep CTA progression alive even when role or active-session guards reject activation.
-    return tourId;
   };
 
-  if (!tourId || !tourJob) {
+  if (!tour) {
     return (
-      <div className="flex flex-col min-h-full ">
-        <PageHeader
-          title="Today's Schedule"
-          subtitle="Driver · Tour"
-          onBack={() => navigate(-1)}
-        />
-        <main className="flex-1 px-6 pt-8 pb-16 flex items-center justify-center">
-          <div className="rounded-[2rem] border border-slate-100 bg-white p-6 text-center space-y-4 shadow-sm">
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-              Tour job not found
-            </p>
-            <button
-              type="button"
-              onClick={() => navigate("/driver/jobs/list")}
-              className="rounded-full bg-slate-900 px-5 py-3 text-[10px] font-black uppercase tracking-widest text-white"
-            >
-              Open Requests
-            </button>
-          </div>
-        </main>
+      <div className="flex flex-col h-full bg-cream items-center justify-center p-6 text-center">
+        <p className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4">
+          Tour job not found or not assigned.
+        </p>
+        <button 
+          onClick={() => navigate('/driver/jobs/list')}
+          className="px-8 py-4 rounded-full bg-slate-900 text-[10px] font-black text-white uppercase tracking-widest shadow-xl active:scale-95 transition-all"
+        >
+          Browse Jobs
+        </button>
       </div>
     );
   }
 
-  const completedCount = segments.filter((s) => s.status === "completed").length;
-  const totalCount = segments.length;
-  const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
-
-  const handleSegmentClick = (segment: TourSegment) => {
-    const activeTourTripId = ensureTourFlowTripId();
-    if (!activeTourTripId) {
-      return;
-    }
-
-    // When starting a segment, mark it as in-progress if it was upcoming
-    if (segment.status === "upcoming") {
-      updateTourSegmentStatus(activeTourTripId, segment.id, "in-progress");
-    }
-
-    navigate(buildPrivateTripRoute("navigation", activeTourTripId), {
-      state: {
-        jobType: "tour",
-        tripId: activeTourTripId,
-        segment,
-      },
-    });
-  };
-
-  const handleCompleteTour = () => {
-    const activeTourTripId = ensureTourFlowTripId();
-    if (!activeTourTripId) {
-      return;
-    }
-
-    let completedTripId: string | null = null;
-    if (
-      activeTrip.tripId === activeTourTripId &&
-      activeTrip.jobType === "tour" &&
-      activeTrip.status !== "completed" &&
-      activeTrip.status !== "cancelled"
-    ) {
-      completedTripId = completeActiveTrip();
-    }
-
-    if (!completedTripId) {
-      completedTripId = activeTourTripId;
-      updateJobStatus(completedTripId, "completed");
-
-      const alreadyRecorded = trips.some((trip) => trip.id === completedTripId);
-      if (!alreadyRecorded && tourJob) {
-        const completedAt = Date.now();
-        const parsedFare = Number.parseFloat(tourJob.fare.replace(/[^\d.]/g, ""));
-        const amount = Number.isFinite(parsedFare) ? Number(parsedFare.toFixed(2)) : 72.5;
-
-        completeTrip(
-          {
-            id: completedTripId,
-            from: tourJob.from,
-            to: tourJob.to,
-            date: new Date(completedAt).toISOString().slice(0, 10),
-            time: new Date(completedAt).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-            amount,
-            jobType: "tour",
-            status: "completed",
-            distance: tourJob.distance,
-            duration: tourJob.duration,
-          },
-          [
-            {
-              id: `rev-${completedTripId}-tour-fallback`,
-              tripId: completedTripId,
-              timestamp: completedAt,
-              type: "base",
-              amount,
-              label: "Tour",
-              category: "tour",
-            },
-          ]
-        );
-      }
-    }
-
-    navigate(buildPrivateTripRoute("completed", completedTripId), {
-      state: { jobType: "tour", tripId: completedTripId },
-    });
-  };
-
   return (
-    <div className="flex flex-col min-h-full ">
-      <PageHeader 
-        title="Today's Schedule" 
-        subtitle="Driver · Tour" 
-        onBack={() => navigate(-1)} 
-        rightAction={
-          <div className="flex items-center rounded-2xl bg-orange-500/10 px-4 py-1.5 backdrop-blur-md border border-orange-500/20">
-             <span className="text-[10px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-widest">
-               {tourJob.duration}
-             </span>
-          </div>
-        }
+    <div className="flex flex-col h-full ">
+      <PageHeader
+        title="Today's Tour"
+        subtitle={tour.from + " · Day 2"}
+        onBack={() => navigate(-1)}
       />
 
-      <main className="flex-1 px-6 pt-6 pb-16 space-y-6">
-        {/* Summary card */}
-        <section className="relative rounded-[2.5rem] bg-slate-900 overflow-hidden p-8 shadow-2xl space-y-6">
-          <div className="flex items-center space-x-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500 text-white">
-              <CalendarDays className="h-6 w-6" />
+      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-8">
+        {/* Progress Card */}
+        <section className="rounded-[2.5rem] bg-slate-900 p-6 text-white space-y-6 shadow-2xl relative overflow-hidden group border border-slate-800">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-brand-active/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110" />
+          <div className="flex items-center justify-between relative">
+            <div className="flex items-center space-x-3">
+              <div className="h-11 w-11 flex items-center justify-center rounded-2xl bg-brand-active/20 backdrop-blur-md border border-brand-active/20">
+                <CalendarDays className="h-6 w-6 text-brand-active" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] font-black text-brand-active uppercase tracking-[0.2em] mb-0.5">
+                  Live Progress
+                </span>
+                <span className="text-sm font-black uppercase tracking-tight">
+                   {completedCount} / {segments.length} Checkpoints
+                </span>
+              </div>
             </div>
-            <div className="flex-1">
-               <span className="text-[10px] font-black text-orange-500 uppercase tracking-[0.2em]">
-                 Tour Highlights
-               </span>
-               <p className="text-lg font-black text-white">
-                 {tourJob.from} to {tourJob.to}
-               </p>
+            <div className="text-right">
+              <span className="text-2xl font-black text-white leading-none tracking-tighter">
+                {Math.round(progress)}%
+              </span>
             </div>
           </div>
 
-          <div className="space-y-2">
-             <div className="flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                <span>Progress Overview</span>
-                <span>{progressPercent}% Complete</span>
-             </div>
-             <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+          <div className="space-y-4 relative">
+            <div className="h-3 w-full rounded-full bg-white/5 overflow-hidden border border-white/5 shadow-inner">
+              <div
+                className="h-full bg-brand-active transition-all duration-1000 ease-out shadow-[0_0_20px_rgba(16,185,129,0.6)]"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">
+               <span>Start Mission</span>
+               <span className="text-brand-active bg-brand-active/10 px-2 py-0.5 rounded-full">On Schedule</span>
+               <span>End Location</span>
+            </div>
+          </div>
+        </section>
+
+        {/* Timeline */}
+        <section className="space-y-6">
+          <div className="flex items-center justify-between px-2">
+             <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Mission Timeline</h2>
+             <span className="text-[10px] font-black text-slate-900 bg-slate-200 px-3 py-1 rounded-full uppercase">Today</span>
+          </div>
+
+          <div className="space-y-12 pl-4 border-l-2 border-slate-100 ml-3">
+            {segments.map((segment) => (
+              <div key={segment.id} className="relative group animate-in fade-in slide-in-from-left-2">
+                {/* Dot */}
                 <div 
-                  className="h-full bg-emerald-500 transition-all duration-500"
-                  style={{ width: `${progressPercent}%` }}
+                  className={`absolute -left-[27px] top-0 h-4 w-4 rounded-full border-4 bg-white transition-all duration-500 z-10 ${
+                    segment.status === "completed" 
+                      ? "border-emerald-500 scale-110 shadow-[0_0_12px_rgba(16,185,129,0.4)]" 
+                      : segment.status !== "upcoming"
+                      ? "border-brand-active animate-pulse" 
+                      : "border-slate-200"
+                  }`} 
                 />
-             </div>
+
+                <div className="space-y-5">
+                  <div className="flex flex-col">
+                    <div className="flex items-center space-x-2 mb-1.5">
+                      <Clock className={`h-3 w-3 ${segment.status === 'completed' ? 'text-emerald-500' : 'text-slate-400'}`} />
+                      <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${segment.status === 'completed' ? 'text-emerald-500' : 'text-slate-500'}`}>
+                        {segment.time}
+                      </span>
+                    </div>
+                    <h3 className={`text-base font-black uppercase tracking-tight leading-tight mb-1 ${segment.status === 'completed' ? 'text-slate-300' : 'text-slate-900'}`}>
+                      {segment.title}
+                    </h3>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight leading-relaxed">
+                      {segment.description}
+                    </p>
+                  </div>
+
+                  <div className="pt-1">
+                    <SegmentAction 
+                      status={segment.status} 
+                      onAction={(newStatus) => handleStatusChange(segment.id, newStatus)} 
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 
-        {/* Segments list */}
-        <section className="space-y-4">
-           <h2 className="text-xs font-black text-slate-900 uppercase tracking-widest px-2">
-             Today's Segments
-           </h2>
-           <div className="space-y-3">
-              {segments.length > 0 ? (
-                segments.map((segment) => (
-                  <SegmentRow
-                    key={segment.id}
-                    segment={segment}
-                    onClick={handleSegmentClick}
-                  />
-                ))
-              ) : (
-                <div className="p-8 text-center bg-white rounded-2xl border border-dashed border-slate-200">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No segments scheduled.</p>
-                </div>
-              )}
-           </div>
-        </section>
-
-        {/* Info box */}
-        <section className="rounded-[2rem] border border-brand-active/20 bg-emerald-50/50 p-6">
-           <p className="text-[11px] font-medium text-slate-700 leading-relaxed text-center italic">
-             Follow today's segments in order to keep guests on time. Tapping a 
-             segment will open specific navigation.
-           </p>
-        </section>
-
-        <section className="pb-8">
-          <button
-            type="button"
-            onClick={handleCompleteTour}
-            className="w-full rounded-[2rem] bg-orange-500 px-6 py-5 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-orange-500/20 active:scale-[0.98] transition-all"
-          >
-            Complete Tour
-          </button>
+        {/* Support Footer */}
+        <section className="pt-6 pb-12">
+           <button className="w-full flex items-center justify-center space-x-3 p-6 rounded-[2.5rem] bg-slate-50 border-2 border-slate-100 text-slate-400 active:scale-95 transition-all group hover:border-brand-active/30">
+              <Phone className="h-4.5 w-4.5 group-hover:text-brand-active transition-colors" />
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] group-hover:text-slate-900 transition-colors">Contact Tour Operations</span>
+           </button>
         </section>
       </main>
     </div>

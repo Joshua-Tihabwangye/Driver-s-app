@@ -106,8 +106,8 @@ export default function RideHistory() {
                 onClick={() => setFilter(f.key)}
                 className={`rounded-full px-5 py-2 border-2 text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all active:scale-95 shadow-sm ${
                   filter === f.key
-                    ? "bg-emerald-500 border-emerald-500 text-white"
-                    : "bg-white dark:bg-slate-900 border-slate-100 text-slate-400 hover:border-emerald-500/30"
+                    ? "bg-orange-500 border-orange-500 text-white shadow-orange-500/20"
+                    : "bg-white dark:bg-slate-900 border-slate-100 text-slate-400 hover:border-orange-500/30"
                 }`}
               >
                 {f.label}

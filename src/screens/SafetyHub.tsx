@@ -1,23 +1,117 @@
 import {
-AlertTriangle,
-ChevronLeft,
-LifeBuoy,
-MapPin,
-Phone,
-Share2,
-ShieldCheck,
-UserPlus,
-Trash2,
-Plus,
-X
+  AlertTriangle,
+  ChevronRight,
+  LifeBuoy,
+  Phone,
+  Plus,
+  ShieldCheck,
+  Trash2,
+  X
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
+import { SharedContact } from "../data/types";
 
-// EVzone Driver App – SafetyHub Safety Hub
-// Compact Safety Hub overview screen that links into Safety Toolkit, SOS, and Follow/Share ride flows.
+// EVzone Driver App – SafetyHub
+// Redesigned with persistent emergency contact management, edit support, and relationship fields.
+
+function ContactForm({
+  contact,
+  onSave,
+  onCancel,
+}: {
+  contact?: SharedContact;
+  onSave: (contact: Omit<SharedContact, "id"> | SharedContact) => void;
+  onCancel: () => void;
+}) {
+  const [name, setName] = useState(contact?.name || "");
+  const [phone, setPhone] = useState(contact?.phone || "");
+  const [relationship, setRelationship] = useState(contact?.relationship || "");
+  const [error, setError] = useState("");
+
+  const handleSave = () => {
+    if (!name.trim() || !phone.trim() || !relationship.trim()) {
+      setError("Please fill in all fields.");
+      return;
+    }
+    // Simple phone validation
+    if (!/^\+?[\d\s-]{7,15}$/.test(phone)) {
+      setError("Please enter a valid phone number.");
+      return;
+    }
+
+    if (contact) {
+      onSave({ ...contact, name, phone, relationship });
+    } else {
+      // @ts-ignore - StoreContext takes Omit<SharedContact, 'id'>
+      onSave({ name, phone, relationship });
+    }
+  };
+
+  return (
+    <div className="space-y-4 p-5 rounded-[2rem] bg-slate-50 border border-slate-100 shadow-inner">
+      <div className="space-y-2">
+        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+          Full Name
+        </label>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="e.g. John Doe"
+          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-xs font-bold text-slate-900 focus:outline-none focus:border-brand-active transition-all"
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-2">
+          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+            Phone
+          </label>
+          <input
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="+256..."
+            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-xs font-bold text-slate-900 focus:outline-none focus:border-brand-active transition-all"
+          />
+        </div>
+        <div className="space-y-2">
+          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+            Relationship
+          </label>
+          <select
+            value={relationship}
+            onChange={(e) => setRelationship(e.target.value)}
+            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-xs font-bold text-slate-900 focus:outline-none focus:border-brand-active transition-all appearance-none"
+          >
+            <option value="">Select</option>
+            <option value="Family">Family</option>
+            <option value="Friend">Friend</option>
+            <option value="Partner">Partner</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+      {error && <p className="text-[10px] font-bold text-red-500 ml-1 italic">{error}</p>}
+      <div className="flex space-x-3 pt-2">
+        <button
+          onClick={onCancel}
+          className="flex-1 rounded-full py-3.5 text-[10px] font-black uppercase tracking-widest text-slate-500 bg-white border border-slate-200 active:scale-95 transition-all"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleSave}
+          className="flex-1 rounded-full py-3.5 text-[10px] font-black uppercase tracking-widest text-white bg-brand-active shadow-lg shadow-brand-active/20 active:scale-95 transition-all"
+        >
+          {contact ? "Update" : "Save"}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function HubTile({
   icon: Icon,
@@ -26,33 +120,21 @@ function HubTile({
   tone = "default",
   onClick = () => {}
 }) {
-  const bg =
-    tone === "primary"
-      ? "bg-white"
-      : tone === "warning"
-      ? "bg-amber-50"
-      : "bg-slate-50";
-  const border =
-    tone === "primary"
-      ? "border-brand-active/10"
-      : tone === "warning"
-      ? "border-red-100"
-      : "border-brand-secondary/10";
+  const bg = tone === "danger" ? "bg-red-50" : "bg-white";
+  const border = tone === "danger" ? "border-red-100" : "border-slate-100";
+  const iconColor = tone === "danger" ? "text-red-500" : "text-brand-active";
 
   return (
     <button
-      type="button"
       onClick={onClick}
-      className={`flex items-start space-x-3 rounded-2xl border ${border} ${bg} px-4 py-4 shadow-sm active:scale-[0.98] transition-all w-full text-left group hover:border-orange-500/30`}
+      className={`w-full flex items-start space-x-4 p-5 rounded-[2rem] border ${border} ${bg} shadow-sm active:scale-[0.98] transition-all group overflow-hidden relative`}
     >
-      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${tone === "warning" ? "bg-red-500 shadow-lg shadow-red-500/20" : tone === "primary" ? "bg-white dark:bg-slate-800 border border-brand-active/20 shadow-sm" : "bg-white dark:bg-slate-800 border border-brand-secondary/20 shadow-sm"} group-hover:bg-brand-active transition-colors`}>
-        <Icon className={`h-5 w-5 ${tone === "warning" ? "text-white" : tone === "primary" ? "text-brand-active group-hover:text-white" : "text-brand-secondary group-hover:text-white"}`} />
+      <div className={`h-12 w-12 flex items-center justify-center rounded-2xl ${tone === "danger" ? "bg-red-500 text-white shadow-lg shadow-red-500/20" : "bg-brand-active/10 text-brand-active"} group-hover:scale-110 transition-transform shrink-0`}>
+        <Icon className="h-6 w-6" />
       </div>
-      <div className="flex flex-col">
-        <span className="text-xs font-medium uppercase tracking-widest text-slate-900 dark:text-white mb-1">
-          {title}
-        </span>
-        <span className="text-[10px] font-normal text-slate-500 leading-relaxed uppercase tracking-tight">{subtitle}</span>
+      <div className="flex flex-col text-left">
+        <span className="text-[11px] font-black text-slate-900 uppercase tracking-widest mb-1">{title}</span>
+        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight leading-relaxed">{subtitle}</span>
       </div>
     </button>
   );
@@ -60,196 +142,151 @@ function HubTile({
 
 export default function SafetyHub() {
   const navigate = useNavigate();
-  const supportNumber = "+256 700 000 999";
-  const emergencyNumber = "+256 112";
+  const {
+    emergencyContacts,
+    addEmergencyContact,
+    removeEmergencyContact,
+    updateEmergencyContact,
+  } = useStore();
   
-  const { emergencyContacts, addEmergencyContact, removeEmergencyContact } = useStore();
   const [isAdding, setIsAdding] = useState(false);
-  const [newName, setNewName] = useState("");
-  const [newPhone, setNewPhone] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
 
-  const handleCall = (phone: string) => {
-    const target = (phone || "").replace(/[^\d+]/g, "");
-    if (target) window.open(`tel:${target}`);
+  const handleAddSave = (contact: Omit<SharedContact, "id">) => {
+    addEmergencyContact(contact);
+    setIsAdding(false);
   };
 
-  const onAddSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newName.trim() || !newPhone.trim()) return;
-    addEmergencyContact({ name: newName, phone: newPhone });
-    setNewName("");
-    setNewPhone("");
-    setIsAdding(false);
+  const handleEditSave = (contact: SharedContact) => {
+    updateEmergencyContact(contact);
+    setEditingId(null);
   };
 
   return (
     <div className="flex flex-col h-full ">
       <PageHeader 
         title="Safety Hub" 
-        subtitle="Safety" 
+        subtitle="Driver Protection" 
         onBack={() => navigate(-1)} 
       />
 
-      <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-6">
-        {/* Intro card */}
-        <section className="rounded-[2.5rem] bg-slate-900 text-white p-6 space-y-6 shadow-2xl relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-brand-active/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110" />
-          <div className="flex items-center space-x-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-active/20 backdrop-blur-md">
-              <ShieldCheck className="h-6 w-6 text-brand-active" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] uppercase font-black text-brand-active">
-                 Help & Safety
-              </span>
-              <p className="text-sm font-bold text-white">
-                Quick access to security tools.
-              </p>
-            </div>
-          </div>
-          <p className="text-[11px] text-slate-400 font-medium leading-relaxed">
-            Open the Safety hub any time you feel unsafe, notice something
-            unusual, or need emergency assistance.
-          </p>
-        </section>
-
-        {/* Core tools */}
+      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-8">
+        {/* Rapid Actions */}
         <section className="space-y-4">
-          <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-2">
-            Core Safety Tools
-          </h2>
+          <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-2">Rapid Response</h2>
           <div className="space-y-3">
             <HubTile
               icon={AlertTriangle}
-              title="SOS / emergency assistance"
-              subtitle="Trigger SOS, share your location and get help from emergency services."
-              tone="warning"
-              onClick={() => navigate("/driver/safety/sos/sending")}
+              title="SOS / Emergency Alert"
+              subtitle="Instantly notify your trusted contacts and local authorities of your location."
+              tone="danger"
+              onClick={() => navigate("/driver/safety/emergency/map")}
             />
             <HubTile
               icon={LifeBuoy}
-              title="Safety toolkit"
-              subtitle="Access SOS, and support options in one place."
-              tone="primary"
-              onClick={() => navigate("/driver/safety/hub/expanded")}
+              title="Safety Toolkit"
+              subtitle="Access live tracking, trip sharing, and real-time support channels."
+              onClick={() => navigate("/driver/safety/toolkit")}
             />
           </div>
         </section>
 
-        {/* Emergency Contacts */}
+        {/* Emergency Contacts Management */}
         <section className="space-y-4">
           <div className="flex items-center justify-between px-2">
-            <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-              Trusted Contacts
-            </h2>
-            <button
-              onClick={() => setIsAdding(!isAdding)}
-              className="flex items-center space-x-1 text-[10px] font-black uppercase tracking-widest text-brand-active"
-            >
-              {isAdding ? <X className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
-              <span>{isAdding ? "Cancel" : "Add New"}</span>
-            </button>
+            <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Trusted Contacts</h2>
+            {!isAdding && emergencyContacts.length < 5 && (
+              <button
+                onClick={() => setIsAdding(true)}
+                className="flex items-center space-x-1.5 text-[10px] font-black uppercase tracking-widest text-brand-active"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>Add New</span>
+              </button>
+            )}
           </div>
 
-          {isAdding && (
-            <form
-              onSubmit={onAddSubmit}
-              className="rounded-[1.5rem] border border-brand-active/20 bg-white p-5 space-y-4 shadow-sm animate-in fade-in slide-in-from-top-2"
-            >
-              <div className="space-y-3">
-                <input
-                  type="text"
-                  placeholder="Contact Name"
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  className="w-full rounded-xl bg-slate-50 border-slate-100 px-4 py-3 text-xs font-medium focus:ring-1 focus:ring-brand-active outline-none"
-                  autoFocus
-                />
-                <input
-                  type="tel"
-                  placeholder="Phone Number"
-                  value={newPhone}
-                  onChange={(e) => setNewPhone(e.target.value)}
-                  className="w-full rounded-xl bg-slate-50 border-slate-100 px-4 py-3 text-xs font-medium focus:ring-1 focus:ring-brand-active outline-none"
-                />
-              </div>
-              <button
-                type="submit"
-                className="w-full rounded-xl bg-brand-active py-3 text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-brand-active/20 active:scale-95 transition-all"
-              >
-                Save Contact
-              </button>
-            </form>
-          )}
-
           <div className="space-y-3">
-            {emergencyContacts.length === 0 ? (
-              <div className="rounded-[1.5rem] border border-dashed border-slate-200 p-6 text-center">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
-                  No emergency contacts saved yet.
-                </p>
-              </div>
-            ) : (
-              emergencyContacts.map((contact) => (
-                <div
-                  key={contact.id}
-                  className="flex items-center justify-between rounded-[1.5rem] border border-slate-100 bg-white px-5 py-4 shadow-sm"
-                >
-                  <div className="flex items-center space-x-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-50 text-slate-400">
-                      <UserPlus className="h-5 w-5" />
+            {isAdding && (
+              // @ts-ignore - Form handles Add
+              <ContactForm
+                onSave={handleAddSave}
+                onCancel={() => setIsAdding(false)}
+              />
+            )}
+
+            {emergencyContacts.map((contact) => (
+              <div key={contact.id} className="animate-in fade-in slide-in-from-top-2">
+                {editingId === contact.id ? (
+                  <ContactForm
+                    contact={contact}
+                    onSave={handleEditSave}
+                    onCancel={() => setEditingId(null)}
+                  />
+                ) : (
+                  <div className="flex items-center justify-between p-4.5 rounded-[1.8rem] bg-white border border-slate-100 shadow-sm">
+                    <div className="flex items-center space-x-4">
+                      <div className="h-11 w-11 flex items-center justify-center rounded-2xl bg-slate-50 text-brand-active border border-slate-100 uppercase font-black text-sm">
+                        {contact.name.charAt(0)}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-xs font-black text-slate-900 uppercase tracking-tight">
+                          {contact.name}
+                        </span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+                          {contact.relationship} · {contact.phone}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex flex-col">
-                      <span className="text-xs font-black text-slate-900 uppercase tracking-tight leading-tight">
-                        {contact.name}
-                      </span>
-                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">
-                        {contact.phone}
-                      </span>
+                    <div className="flex items-center space-x-1">
+                      <button
+                        onClick={() => setEditingId(contact.id)}
+                        className="p-2.5 text-slate-300 hover:text-brand-active transition-colors active:scale-90"
+                      >
+                        <Plus className="h-4 w-4 rotate-45" /> {/* Use Plus rotated as a generic Edit hint or replace with Edit icon */}
+                      </button>
+                      <button
+                        onClick={() => removeEmergencyContact(contact.id)}
+                        className="p-2.5 text-slate-300 hover:text-red-500 transition-colors active:scale-90"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     </div>
                   </div>
-                  <button
-                    onClick={() => removeEmergencyContact(contact.id)}
-                    className="h-8 w-8 flex items-center justify-center text-slate-300 hover:text-red-500 transition-colors"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              ))
+                )}
+              </div>
+            ))}
+
+            {emergencyContacts.length === 0 && !isAdding && (
+              <div className="p-10 text-center bg-slate-50 rounded-[2.5rem] border-2 border-dashed border-slate-200">
+                <ShieldCheck className="h-8 w-8 text-slate-200 mx-auto mb-3" />
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-relaxed">
+                  Protect your journey.<br/>Add up to 5 trusted contacts.
+                </p>
+              </div>
             )}
           </div>
         </section>
 
-        {/* Support */}
-        <section className="space-y-4 pb-4">
-          <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-2">
-            Support & Help
-          </h2>
-          <div className="space-y-3">
-            <HubTile
-              icon={Phone}
-              title="Call EVzone support"
-              subtitle="Talk to an agent about safety or account issues."
-              onClick={() => handleCall(supportNumber)}
-            />
-            <HubTile
-              icon={AlertTriangle}
-              title="Call local emergency"
-              subtitle="Dial your local emergency number."
-              tone="warning"
-              onClick={() => handleCall(emergencyNumber)}
-            />
-          </div>
-
-          <div className="pt-2">
-             <button
-              type="button"
-              onClick={() => navigate("/driver/safety/driving-hours")}
-              className="w-full rounded-[2rem] border-2 border-brand-secondary/10 bg-cream dark:bg-slate-900 p-5 text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-white active:scale-[0.98] transition-all shadow-sm flex items-center justify-center space-x-2 hover:border-brand-secondary/30"
-            >
-              <span>Review Driving Guidelines</span>
-            </button>
-          </div>
+        {/* Policy & Training Links */}
+        <section className="space-y-4 pb-6">
+           <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-2">Knowledge Base</h2>
+           <button
+             onClick={() => navigate("/driver/safety/hub/expanded")}
+             className="w-full flex items-center justify-between p-5 rounded-[2rem] bg-slate-900 text-white active:scale-[0.98] transition-all group overflow-hidden relative shadow-2xl"
+           >
+              <div className="absolute top-0 right-0 w-24 h-24 bg-brand-active/10 rounded-full -mr-12 -mt-12" />
+              <div className="flex items-center space-x-4 relative">
+                 <div className="h-11 w-11 flex items-center justify-center rounded-2xl bg-white/10 border border-white/10 group-hover:bg-brand-active transition-colors">
+                    <ShieldCheck className="h-5.5 w-5.5 text-brand-active group-hover:text-white transition-colors" />
+                 </div>
+                 <div className="flex flex-col items-start translate-y-0.5">
+                    <span className="text-xs font-black uppercase tracking-widest">Safety Guidelines</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Policy, Training & Ethics</span>
+                 </div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-slate-600 relative" />
+           </button>
         </section>
       </main>
     </div>
