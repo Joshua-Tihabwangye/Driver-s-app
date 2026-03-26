@@ -12,6 +12,8 @@ export type DriverCoreRole =
   | "tour-only"
   | "ambulance-only";
 
+export type TourSegmentStatus = "upcoming" | "preparing" | "navigating" | "arrived" | "in-progress" | "completed";
+
 export interface DriverProgramFlags {
   rental: boolean;
   tour: boolean;
@@ -231,7 +233,7 @@ export interface TourSegment {
   time: string;
   title: string;
   description: string;
-  status: "completed" | "in-progress" | "upcoming";
+  status: TourSegmentStatus;
   location?: {
     lat: number;
     lng: number;

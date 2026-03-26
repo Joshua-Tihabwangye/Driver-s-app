@@ -11,6 +11,7 @@ import type {
   DriverProgramFlags,
   Vehicle,
   TourSegment,
+  TourSegmentStatus,
 } from "../data/types";
 import { MOCK_EARNINGS, MOCK_COMPLETED_TRIPS, MOCK_SHARED_TRIPS, MOCK_VEHICLES, MOCK_DASHBOARD_STATS } from "../data/mockData";
 import { SAMPLE_IDS } from "../data/constants";
@@ -222,9 +223,9 @@ interface StoreContextType {
   resetVehicleAccessories: (vehicleId: string) => void;
   getDefaultAccessoriesForType: (type: string) => Record<string, "Available" | "Missing" | "Required">;
   emergencyContacts: SharedContact[];
-  addEmergencyContact: (contact: Omit<SharedContact, "id" | "createdAt">) => void;
-  removeEmergencyContact: (id: string) => void;
-  updateEmergencyContact: (id: string, contact: Partial<SharedContact>) => void;
+  addEmergencyContact: (contact: Omit<SharedContact, "id">) => void;
+  removeEmergencyContact: (contactId: string) => void;
+  updateEmergencyContact: (contact: SharedContact) => void;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -1031,11 +1032,37 @@ const initialJobs: Job[] = [
   { id: "3244", from: "Kampala Serena", to: "Entebbe Airport", distance: "38 km", duration: "45 min", fare: "85.00", jobType: "ride", status: "pending", requestedAt: Date.now() - 0.02 * 3600000 },
   { id: "3245", from: "Village Mall", to: "Kyambogo", distance: "5.2 km", duration: "16 min", fare: "12.50", jobType: "ride", status: "pending", requestedAt: Date.now() - 0.05 * 3600000 },
   { id: "3250", from: "Sheraton Hotel", to: "Speke Resort", distance: "26 km", duration: "4h booking", fare: "Rental", jobType: "rental", status: "pending", requestedAt: Date.now() - 0.06 * 3600000 },
-  { id: "3246", from: "Airport", to: "Safari Lodge", distance: "42 km", duration: "Day 2 of 5", fare: "Tour", jobType: "tour", status: "pending", requestedAt: Date.now() - 3 * 3600000, segments: [
-    { id: "s1", time: "09:00–10:00", title: "Airport pickup → Hotel", description: "Meet guests at arrivals and transfer to City Hotel.", status: "completed" },
-    { id: "s2", time: "11:00–15:00", title: "City tour", description: "Guided tour of key landmarks and lunch stop.", status: "in-progress" },
-    { id: "s3", time: "16:00–18:00", title: "Hotel → Safari lodge", description: "Drive guests to the lodge, check-in and handover.", status: "upcoming" }
-  ]},
+  { id: "3246", from: "Airport", to: "Safari Lodge", distance: "42 km", duration: "Day 2 of 5", fare: "Tour", jobType: "tour", status: "pending", requestedAt: Date.now() - 3 * 3600000,    segments: [
+      {
+        id: "s1",
+        time: "08:00 AM",
+        title: "Pickup at Airport",
+        description: "Meet the Smith family at Terminal 1 arrivals.",
+        status: "completed",
+      },
+      {
+        id: "s2",
+        time: "10:30 AM",
+        title: "City Museum Tour",
+        description: "Guided tour through the historic district.",
+        status: "in-progress",
+      },
+      {
+        id: "s3",
+        time: "01:30 PM",
+        title: "Lunch at The Peak",
+        description: "Scenic lunch stop for the group.",
+        status: "upcoming",
+      },
+      {
+        id: "s4",
+        time: "04:00 PM",
+        title: "Hotel Drop-off",
+        description: "Return to Grand Plaza Hotel.",
+        status: "upcoming",
+      },
+    ],
+  },
   { id: "3247", from: "Near Acacia Road", to: "City Hospital", distance: "3.1 km", duration: "8 min", fare: "—", jobType: "ambulance", status: "pending", requestedAt: Date.now() - 0.1 * 3600000 },
   { id: "3249", from: "FreshMart", to: "Naguru", distance: "2.7 km", duration: "10 min", fare: "3.40", jobType: "delivery", itemType: "Grocery", status: "pending", requestedAt: Date.now() - 0.8 * 3600000 },
   { id: "shared-100", from: "Acacia Mall", to: "Bugolobi (+1 stop)", distance: "7.7 km", duration: "24 min", fare: "15.40", jobType: "shared", status: "pending", requestedAt: Date.now() - 0.15 * 3600000 },
@@ -1157,9 +1184,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setEmergencyContacts((prev) => prev.filter((c) => c.id !== id));
   }, []);
 
-  const updateEmergencyContact = useCallback((id: string, contact: Partial<SharedContact>) => {
+  const updateEmergencyContact = useCallback((updated: SharedContact) => {
     setEmergencyContacts((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, ...contact } : c))
+      prev.map((c) => (c.id === updated.id ? updated : c))
     );
   }, []);
 
@@ -1393,7 +1420,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setJobs(prev => prev.map(j => j.id === id ? { ...j, status } : j));
   }, []);
 
-  const updateTourSegmentStatus = useCallback((jobId: string, segmentId: string, status: TourSegment["status"]) => {
+  const updateTourSegmentStatus = useCallback((jobId: string, segmentId: string, status: TourSegmentStatus) => {
     setJobs((prev) =>
       prev.map((j) => {
         if (j.id !== jobId || !j.segments) return j;
