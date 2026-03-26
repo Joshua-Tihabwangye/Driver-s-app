@@ -15,9 +15,8 @@ import VehicleDocumentCard from "../components/VehicleDocumentCard";
 import VehicleImageUpload from "../components/VehicleImageUpload";
 import { useStore } from "../context/StoreContext";
 
-// EVzone Driver App – VehicleDetails Vehicles (v1)
-// Redesigned with Green curved header and bottom nav.
-// Dynamic routing enabled with StoreContext persistence.
+// Post-onboarding Vehicle Details - Form View
+// Fully decoupled from onboarding dependencies like the old warning cards.
 
 function VehicleTypeChip({ icon: Icon, label, active, onClick }: any) {
   return (
@@ -52,7 +51,7 @@ function InputRow({ label, placeholder, value, onChange }: any) {
   );
 }
 
-export default function VehicleDetails() {
+export default function ManageVehicleDetails() {
   const { vehicleId } = useParams();
   const navigate = useNavigate();
   const { 
@@ -68,13 +67,13 @@ export default function VehicleDetails() {
   const isNew = vehicleId === "new";
   const vehicle = isNew 
     ? draftVehicle 
-    : (vehicles.find(v => v.id === vehicleId) || vehicles[0]);
+    : vehicles.find(v => v.id === vehicleId);
 
   const [form, setForm] = useState({
     make: vehicle?.make || "",
     model: vehicle?.model || "",
     year: vehicle?.year?.toString() || "",
-    color: "", // placeholder
+    color: "", 
     plate: vehicle?.plate || "",
     batterySize: vehicle?.batterySize || "",
     range: vehicle?.range || "",
@@ -89,7 +88,7 @@ export default function VehicleDetails() {
   // If new and no draft exists, go back
   useEffect(() => {
     if (isNew && !draftVehicle) {
-      navigate("/driver/vehicles");
+      navigate("/driver/manage/vehicles");
     }
   }, [isNew, draftVehicle, navigate]);
 
@@ -110,12 +109,12 @@ export default function VehicleDetails() {
         range: form.range,
         imageUrl: form.imageUrl,
         vehicleDocs: form.vehicleDocs,
-        // Reset accessories only if type actually changed and we are in draft mode
         ...(typeChanged ? { accessories: getDefaultAccessoriesForType(updatedType) } : {})
       });
     }
   }, [form.make, form.model, form.year, form.plate, form.type, form.batterySize, form.range, form.imageUrl, form.vehicleDocs]);
 
+  // Load data for existing vehicle exactly once to avoid loop
   useEffect(() => {
     if (!isNew && vehicle) {
       setForm({
@@ -131,18 +130,18 @@ export default function VehicleDetails() {
         vehicleDocs: vehicle.vehicleDocs || {},
       });
     }
-  }, [vehicle, isNew]);
+  }, [isNew, vehicle?.id]); // depend only on ID so it runs once when vehicle loaded
 
   const handleDelete = () => {
     if (isNew) {
       setDraftVehicle(null);
-      navigate("/driver/vehicles");
+      navigate("/driver/manage/vehicles");
       return;
     }
     if (!vehicleId) return;
     if (window.confirm("Are you sure you want to delete this vehicle from your garage?")) {
       deleteVehicle(vehicleId);
-      navigate("/driver/vehicles");
+      navigate("/driver/manage/vehicles");
     }
   };
 
@@ -155,17 +154,6 @@ export default function VehicleDetails() {
     if (!form.batterySize.trim()) newErrors.push("Battery (kWh) is required");
     if (!form.range.trim()) newErrors.push("Est. Range (KM) is required");
 
-    // Check accessories
-    const accessories = vehicle?.accessories || {};
-    const missingAccessories = Object.values(accessories).some(v => v === "Missing");
-    if (missingAccessories) {
-      newErrors.push("All mandatory safety inventory must be marked as Available");
-    }
-    if (Object.keys(accessories).length === 0) {
-      newErrors.push("Safety inventory has not been checked");
-    }
-
-    // Check docs
     const logbookComplete = Boolean(form.vehicleDocs?.logbook?.front && form.vehicleDocs?.logbook?.back);
     const insuranceComplete = Boolean(form.vehicleDocs?.insurance?.front && form.vehicleDocs?.insurance?.back);
     const inspectionComplete = Boolean(form.vehicleDocs?.inspection?.front && form.vehicleDocs?.inspection?.back);
@@ -187,7 +175,7 @@ export default function VehicleDetails() {
         status: "active"
       });
       setDraftVehicle(null);
-    } else if (vehicleId) {
+    } else if (vehicleId && !isNew) {
       updateVehicle(vehicleId, {
         make: form.make,
         model: form.model,
@@ -200,12 +188,12 @@ export default function VehicleDetails() {
         vehicleDocs: form.vehicleDocs,
       });
     }
-    navigate("/driver/vehicles");
+    navigate("/driver/manage/vehicles");
   };
 
   const handleGoToAccessories = () => {
     const targetId = isNew ? "new" : vehicleId;
-    navigate(`/driver/vehicles/${targetId}/accessories`);
+    navigate(`/driver/manage/vehicles/${targetId}/accessories`);
   };
 
   const handleGoToDocs = () => {
@@ -224,16 +212,24 @@ export default function VehicleDetails() {
     form.vehicleDocs?.inspection?.back
   );
 
+  if (!isNew && !vehicle) {
+    return (
+      <div className="flex flex-col min-h-full bg-cream/30">
+        <PageHeader title="Vehicle" subtitle="Not Found" onBack={() => navigate("/driver/manage/vehicles")} />
+        <main className="flex-1 p-6">Vehicle not found.</main>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-full bg-cream/30">
       <PageHeader 
         title={isNew ? "New Vehicle" : "Vehicle"} 
-        subtitle={isNew ? "Registration" : "Manage Asset"} 
-        onBack={() => navigate(-1)} 
+        subtitle={isNew ? "Add to Fleet" : "Manage Asset"} 
+        onBack={() => navigate("/driver/manage/vehicles")} 
       />
 
       <main className="flex-1 px-6 pt-6 pb-20 space-y-8 overflow-y-auto scrollbar-hide">
-        {/* Error Messages */}
         {errors.length > 0 && (
           <div className="rounded-3xl border border-red-100 bg-red-50 p-5 space-y-2">
             <div className="flex items-center space-x-2 text-red-700 font-black text-xs uppercase tracking-tight">
@@ -245,7 +241,6 @@ export default function VehicleDetails() {
           </div>
         )}
 
-        {/* Vehicle type selector */}
         <section className="space-y-4">
           <div className="px-1">
              <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
@@ -253,28 +248,12 @@ export default function VehicleDetails() {
              </h2>
           </div>
           <div className="flex items-stretch space-x-3">
-            <VehicleTypeChip
-              icon={Car}
-              label="Standard Car"
-              active={form.type === "car"}
-              onClick={() => setForm(f => ({ ...f, type: "car" }))}
-            />
-            <VehicleTypeChip
-              icon={Bike}
-              label="E-Motorcycle"
-              active={form.type === "motorcycle"}
-              onClick={() => setForm(f => ({ ...f, type: "motorcycle" }))}
-            />
-            <VehicleTypeChip
-              icon={Truck}
-              label="Heavy Van"
-              active={form.type === "van"}
-              onClick={() => setForm(f => ({ ...f, type: "van" }))}
-            />
+            <VehicleTypeChip icon={Car} label="Standard Car" active={form.type === "car"} onClick={() => setForm(f => ({ ...f, type: "car" }))} />
+            <VehicleTypeChip icon={Bike} label="E-Motorcycle" active={form.type === "motorcycle"} onClick={() => setForm(f => ({ ...f, type: "motorcycle" }))} />
+            <VehicleTypeChip icon={Truck} label="Heavy Van" active={form.type === "van"} onClick={() => setForm(f => ({ ...f, type: "van" }))} />
           </div>
         </section>
 
-        {/* Key fields */}
         <section className="space-y-4">
            <div className="px-1">
               <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
@@ -286,50 +265,19 @@ export default function VehicleDetails() {
                imageUrl={form.imageUrl} 
                onChange={(val: string) => setForm(f => ({ ...f, imageUrl: val }))} 
              />
-             <InputRow 
-               label="Manufacturer / Make" 
-               placeholder="e.g. BYD, Tesla, Rivian" 
-               value={form.make}
-               onChange={(val: string) => setForm(f => ({ ...f, make: val }))}
-             />
-             <InputRow 
-               label="Commercial Model" 
-               placeholder="e.g. Dolphin, Model 3, R1T" 
-               value={form.model}
-               onChange={(val: string) => setForm(f => ({ ...f, model: val }))}
-             />
+             <InputRow label="Manufacturer / Make" placeholder="e.g. BYD, Tesla, Rivian" value={form.make} onChange={(val: string) => setForm(f => ({ ...f, make: val }))} />
+             <InputRow label="Commercial Model" placeholder="e.g. Dolphin, Model 3, R1T" value={form.model} onChange={(val: string) => setForm(f => ({ ...f, model: val }))} />
              <div className="grid grid-cols-2 gap-4">
-               <InputRow 
-                 label="Production Year" 
-                 placeholder="YYYY" 
-                 value={form.year}
-                 onChange={(val: string) => setForm(f => ({ ...f, year: val }))}
-               />
-               <InputRow 
-                 label="License Plate" 
-                 placeholder="UAX 123Z" 
-                 value={form.plate}
-                 onChange={(val: string) => setForm(f => ({ ...f, plate: val }))}
-               />
+               <InputRow label="Production Year" placeholder="YYYY" value={form.year} onChange={(val: string) => setForm(f => ({ ...f, year: val }))} />
+               <InputRow label="License Plate" placeholder="UAX 123Z" value={form.plate} onChange={(val: string) => setForm(f => ({ ...f, plate: val }))} />
              </div>
              <div className="grid grid-cols-2 gap-4">
-               <InputRow 
-                 label="Battery (kWh)" 
-                 placeholder="e.g. 60" 
-                 value={form.batterySize}
-                 onChange={(val: string) => setForm(f => ({ ...f, batterySize: val }))}
-               />
-               <InputRow 
-                 label="Est. Range (KM)" 
-                 placeholder="e.g. 380" 
-                 value={form.range}
-                 onChange={(val: string) => setForm(f => ({ ...f, range: val }))}
-               />
+               <InputRow label="Battery (kWh)" placeholder="e.g. 60" value={form.batterySize} onChange={(val: string) => setForm(f => ({ ...f, batterySize: val }))} />
+               <InputRow label="Est. Range (KM)" placeholder="e.g. 380" value={form.range} onChange={(val: string) => setForm(f => ({ ...f, range: val }))} />
              </div>
            </div>
         </section>
 
-        {/* EV connector + docs links */}
         <section className="space-y-4">
            <div className="px-1">
               <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
@@ -414,23 +362,12 @@ export default function VehicleDetails() {
            </div>
         </section>
 
-        {/* Info card */}
         <section className="space-y-6 pt-2 pb-10">
-          <div className="rounded-3xl border border-blue-100 bg-blue-50/50 p-5 flex items-start space-x-3">
-            <div className="mt-0.5 bg-blue-100 p-1.5 rounded-xl">
-              <Info className="h-4 w-4 text-blue-600" />
-            </div>
-            <div className="shrink text-[11px] text-blue-900/80 leading-relaxed">
-              <p className="font-black text-xs text-blue-900 uppercase tracking-tight mb-1">Onboarding Requirement</p>
-              <p className="font-medium">All fields, safety inventory, and documents are mandatory before you can put this vehicle into service.</p>
-            </div>
-          </div>
-
           <div className="space-y-3">
             <button
               type="button"
               onClick={handleSave}
-              className="w-full rounded-[1.5rem] bg-orange-500 py-4 text-sm font-black text-white shadow-xl shadow-orange-500/20 hover:bg-orange-600 active:scale-[0.98] transition-all uppercase tracking-widest"
+              className="w-full rounded-[1.5rem] bg-brand-active py-4 text-sm font-black text-white shadow-xl shadow-brand-active/20 hover:bg-emerald-600 active:scale-[0.98] transition-all uppercase tracking-widest"
             >
               {isNew ? "Save Vehicle" : "Update Vehicle"}
             </button>

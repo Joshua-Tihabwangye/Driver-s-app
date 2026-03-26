@@ -43,6 +43,22 @@ export interface Job {
   sharedContacts?: SharedContact[];
 }
 
+export interface VehicleDocumentFile {
+  url: string;
+  fileName: string;
+}
+
+export interface VehicleDocumentGroup {
+  front?: VehicleDocumentFile;
+  back?: VehicleDocumentFile;
+}
+
+export interface VehicleDocuments {
+  logbook?: VehicleDocumentGroup;
+  insurance?: VehicleDocumentGroup;
+  inspection?: VehicleDocumentGroup;
+}
+
 export interface Vehicle {
   id: string;
   make: string;
@@ -56,6 +72,7 @@ export interface Vehicle {
   batterySize?: string;
   range?: string;
   documentsUploaded?: boolean;
+  vehicleDocs?: VehicleDocuments;
 }
 
 export interface EarningsEntry {

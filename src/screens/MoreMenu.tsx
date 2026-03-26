@@ -138,9 +138,9 @@ export default function MoreMenu() {
         <MenuSection title="Fleet & Tools">
           <MenuItem
             icon={Car}
-            label="My Fleet"
+            label="Manage Fleet"
             description="Vehicle docs and accessories"
-            onClick={() => navigate("/driver/vehicles")}
+            onClick={() => navigate("/driver/manage/vehicles")}
           />
           <MenuItem
             icon={History}
