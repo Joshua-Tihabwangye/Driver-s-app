@@ -3,11 +3,15 @@ import {
   Car,
   ChevronRight,
   Info,
-  Truck
+  Truck,
+  FileText,
+  ShieldCheck,
+  FileBadge2
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import VehicleDocumentCard from "../components/VehicleDocumentCard";
 import VehicleImageUpload from "../components/VehicleImageUpload";
 import { useStore } from "../context/StoreContext";
 
@@ -162,10 +166,13 @@ export default function VehicleDetails() {
     }
 
     // Check docs
-    if (!form.vehicleDocs?.frontImage) newErrors.push("Vehicle front image is required");
-    if (!form.vehicleDocs?.backImage) newErrors.push("Vehicle back image is required");
-    if (!form.vehicleDocs?.logbook) newErrors.push("Logbook document is required");
-    if (!form.vehicleDocs?.insurance) newErrors.push("Insurance document is required");
+    const logbookComplete = Boolean(form.vehicleDocs?.logbook?.front && form.vehicleDocs?.logbook?.back);
+    const insuranceComplete = Boolean(form.vehicleDocs?.insurance?.front && form.vehicleDocs?.insurance?.back);
+    const inspectionComplete = Boolean(form.vehicleDocs?.inspection?.front && form.vehicleDocs?.inspection?.back);
+
+    if (!logbookComplete) newErrors.push("Vehicle Logbook (Front & Back) is required");
+    if (!insuranceComplete) newErrors.push("Proof of Insurance (Front & Back) is required");
+    if (!inspectionComplete) newErrors.push("Vehicle Inspection Report (Front & Back) is required");
 
     setErrors(newErrors);
     return newErrors.length === 0;
@@ -209,10 +216,12 @@ export default function VehicleDetails() {
   const availableCount = vehicle?.accessories ? Object.values(vehicle.accessories).filter(v => v === "Available").length : 0;
 
   const allDocsUploaded = Boolean(
-    form.vehicleDocs?.frontImage &&
-    form.vehicleDocs?.backImage &&
-    form.vehicleDocs?.logbook &&
-    form.vehicleDocs?.insurance
+    form.vehicleDocs?.logbook?.front &&
+    form.vehicleDocs?.logbook?.back &&
+    form.vehicleDocs?.insurance?.front &&
+    form.vehicleDocs?.insurance?.back &&
+    form.vehicleDocs?.inspection?.front &&
+    form.vehicleDocs?.inspection?.back
   );
 
   return (
@@ -378,25 +387,26 @@ export default function VehicleDetails() {
                     <div className="text-[11px] font-medium text-slate-500 mb-2 text-left">
                       Please upload all required vehicle documents. These must be clear and legible.
                     </div>
-                    <VehicleImageUpload 
-                      label="Vehicle Front Image"
-                      imageUrl={form.vehicleDocs?.frontImage || ""} 
-                      onChange={(val: string) => setForm(f => ({ ...f, vehicleDocs: { ...form.vehicleDocs, frontImage: val } }))} 
+                    <VehicleDocumentCard
+                      icon={FileText}
+                      title="Vehicle Logbook"
+                      subtitle="Upload both front and back pages"
+                      documentGroup={form.vehicleDocs?.logbook}
+                      onChange={(group) => setForm(f => ({ ...f, vehicleDocs: { ...f.vehicleDocs, logbook: group } }))}
                     />
-                    <VehicleImageUpload 
-                      label="Vehicle Back Image"
-                      imageUrl={form.vehicleDocs?.backImage || ""} 
-                      onChange={(val: string) => setForm(f => ({ ...f, vehicleDocs: { ...form.vehicleDocs, backImage: val } }))} 
+                    <VehicleDocumentCard
+                      icon={ShieldCheck}
+                      title="Proof of Insurance"
+                      subtitle="Upload both front and back copies"
+                      documentGroup={form.vehicleDocs?.insurance}
+                      onChange={(group) => setForm(f => ({ ...f, vehicleDocs: { ...f.vehicleDocs, insurance: group } }))}
                     />
-                    <VehicleImageUpload 
-                      label="Logbook"
-                      imageUrl={form.vehicleDocs?.logbook || ""} 
-                      onChange={(val: string) => setForm(f => ({ ...f, vehicleDocs: { ...form.vehicleDocs, logbook: val } }))} 
-                    />
-                    <VehicleImageUpload 
-                      label="Insurance"
-                      imageUrl={form.vehicleDocs?.insurance || ""} 
-                      onChange={(val: string) => setForm(f => ({ ...f, vehicleDocs: { ...form.vehicleDocs, insurance: val } }))} 
+                    <VehicleDocumentCard
+                      icon={FileBadge2}
+                      title="Vehicle Inspection Report"
+                      subtitle="Upload both front and back copies"
+                      documentGroup={form.vehicleDocs?.inspection}
+                      onChange={(group) => setForm(f => ({ ...f, vehicleDocs: { ...f.vehicleDocs, inspection: group } }))}
                     />
                   </div>
                 )}
