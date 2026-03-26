@@ -25,6 +25,9 @@ import MyVehicles from "../screens/MyVehicles";
 import VehicleDetails from "../screens/VehicleDetails";
 import BusinessVehicles from "../screens/BusinessVehicles";
 import VehicleAccessories from "../screens/VehicleAccessories";
+import ManageVehicles from "../screens/ManageVehicles";
+import ManageVehicleDetails from "../screens/ManageVehicleDetails";
+import ManageVehicleAccessories from "../screens/ManageVehicleAccessories";
 import TrainingIntro from "../screens/TrainingIntro";
 import TrainingInfoSession from "../screens/TrainingInfoSession";
 import EarningsTutorial from "../screens/EarningsTutorial";
@@ -159,6 +162,9 @@ export const SCREENS: ScreenConfig[] = [
   { id: "VehicleDetails", label: "Vehicles", path: "/driver/vehicles/:vehicleId", previewPath: `/driver/vehicles/${SAMPLE_IDS.vehicle}`, Component: VehicleDetails },
   { id: "BusinessVehicles", label: "Business Vehicles", path: "/driver/vehicles/business", Component: BusinessVehicles },
   { id: "VehicleAccessories", label: "Vehicle Accessories", path: "/driver/vehicles/:vehicleId/accessories", previewPath: `/driver/vehicles/${SAMPLE_IDS.vehicle}/accessories`, Component: VehicleAccessories },
+  { id: "ManageVehicles", label: "Manage Fleet", path: "/driver/manage/vehicles", Component: ManageVehicles },
+  { id: "ManageVehicleDetails", label: "Manage Vehicle", path: "/driver/manage/vehicles/:vehicleId", previewPath: `/driver/manage/vehicles/${SAMPLE_IDS.vehicle}`, Component: ManageVehicleDetails },
+  { id: "ManageVehicleAccessories", label: "Manage Vehicle Accessories", path: "/driver/manage/vehicles/:vehicleId/accessories", previewPath: `/driver/manage/vehicles/${SAMPLE_IDS.vehicle}/accessories`, Component: ManageVehicleAccessories },
   // Training & quiz
   { id: "TrainingIntro", label: "Intro to Driving with EVzone Ride", path: "/driver/training/intro", Component: TrainingIntro },
   { id: "TrainingInfoSession", label: "Info Session for Driver-Partners", path: "/driver/training/info-session", Component: TrainingInfoSession },

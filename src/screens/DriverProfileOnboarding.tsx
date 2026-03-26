@@ -119,6 +119,8 @@ export default function DriverProfileOnboarding() {
     onboardingBlockers,
     onboardingCheckpoints,
     setOnboardingCheckpoint,
+    vehicles,
+    selectedVehicleIndex,
   } = useStore();
   const documentState = useMemo(() => readStoredDocumentState(), []);
   const blockerCount = onboardingBlockers.length;
@@ -324,8 +326,10 @@ export default function DriverProfileOnboarding() {
         id: "vehicle-ready",
         label: "Vehicle Setup",
         detail: onboardingCheckpoints.vehicleReady
-          ? "At least one active vehicle is selected."
-          : "No vehicle selected. Go to Garage to add and select a vehicle.",
+          ? "Active vehicle selected and ready."
+          : vehicles.length > 0 && selectedVehicleIndex === null
+          ? "Missing vehicle selection. Choose a vehicle to use."
+          : "No vehicles added. Go to Garage to add a vehicle.",
         present: onboardingCheckpoints.vehicleReady,
         route: "/driver/vehicles",
       },
