@@ -11,46 +11,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { buildPrivateTripRoute } from "../data/constants";
 import { useStore } from "../context/StoreContext";
+import type { TourSegment } from "../data/types";
 
-// EVzone Driver App – TourSchedule Tour – Today’s Schedule Screen (v1)
+// EVzone Driver App – TourSchedule Tour – Today’s Schedule Screen (v2)
 // Daily schedule for a multi-day tour.
-// - Header: Tour · Day X of Y + Tour job type pill
-// - Summary: tour name, date, total segments today, progress indicator
-// - Segments list: time window + title + brief description
-// - CTA: tap a segment -> open navigation flow (NavigateToPickup / RideInProgress) in the real app
-// 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
-
-type TourSegment = {
-  id: number;
-  time: string;
-  title: string;
-  description: string;
-  status: "completed" | "in-progress" | "upcoming";
-};
-
-const SEGMENTS: TourSegment[] = [
-  {
-    id: 1,
-    time: "09:00–10:00",
-    title: "Airport pickup → Hotel",
-    description: "Meet guests at arrivals and transfer to City Hotel.",
-    status: "completed"
-},
-  {
-    id: 2,
-    time: "11:00–15:00",
-    title: "City tour",
-    description: "Guided tour of key landmarks and lunch stop.",
-    status: "in-progress"
-},
-  {
-    id: 3,
-    time: "16:00–18:00",
-    title: "Hotel → Safari lodge",
-    description: "Drive guests to the lodge, check-in and handover.",
-    status: "upcoming"
-  },
-];
+// Refactored to pull dynamic segments from the Job object in Store.
 
 function SegmentRow({
   segment,
@@ -118,7 +83,9 @@ export default function TourSchedule() {
     completeActiveTrip,
     completeTrip,
     updateJobStatus,
+    updateTourSegmentStatus,
   } = useStore();
+
   const tourJob = useMemo(
     () =>
       tourId
@@ -126,6 +93,9 @@ export default function TourSchedule() {
         : null,
     [jobs, tourId]
   );
+
+  const segments = tourJob?.segments || [];
+
   const isThisTourActive = Boolean(
     tourId &&
       activeTrip.tripId === tourId &&
@@ -183,15 +153,21 @@ export default function TourSchedule() {
     );
   }
 
-  const completedCount = SEGMENTS.filter((s) => s.status === "completed").length;
-  const totalCount = SEGMENTS.length;
-  const progressPercent = Math.round((completedCount / totalCount) * 100);
+  const completedCount = segments.filter((s) => s.status === "completed").length;
+  const totalCount = segments.length;
+  const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   const handleSegmentClick = (segment: TourSegment) => {
     const activeTourTripId = ensureTourFlowTripId();
     if (!activeTourTripId) {
       return;
     }
+
+    // When starting a segment, mark it as in-progress if it was upcoming
+    if (segment.status === "upcoming") {
+      updateTourSegmentStatus(activeTourTripId, segment.id, "in-progress");
+    }
+
     navigate(buildPrivateTripRoute("navigation", activeTourTripId), {
       state: {
         jobType: "tour",
@@ -272,7 +248,7 @@ export default function TourSchedule() {
         rightAction={
           <div className="flex items-center rounded-2xl bg-orange-500/10 px-4 py-1.5 backdrop-blur-md border border-orange-500/20">
              <span className="text-[10px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-widest">
-               Day 2 of 5
+               {tourJob.duration}
              </span>
           </div>
         }
@@ -290,7 +266,7 @@ export default function TourSchedule() {
                  Tour Highlights
                </span>
                <p className="text-lg font-black text-white">
-                 City Highlights Day
+                 {tourJob.from} to {tourJob.to}
                </p>
             </div>
           </div>
@@ -302,7 +278,7 @@ export default function TourSchedule() {
              </div>
              <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-orange-500 transition-all duration-500"
+                  className="h-full bg-emerald-500 transition-all duration-500"
                   style={{ width: `${progressPercent}%` }}
                 />
              </div>
@@ -315,19 +291,25 @@ export default function TourSchedule() {
              Today's Segments
            </h2>
            <div className="space-y-3">
-              {SEGMENTS.map((segment) => (
-                <SegmentRow
-                  key={segment.id}
-                  segment={segment}
-                  onClick={handleSegmentClick}
-                />
-              ))}
+              {segments.length > 0 ? (
+                segments.map((segment) => (
+                  <SegmentRow
+                    key={segment.id}
+                    segment={segment}
+                    onClick={handleSegmentClick}
+                  />
+                ))
+              ) : (
+                <div className="p-8 text-center bg-white rounded-2xl border border-dashed border-slate-200">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No segments scheduled.</p>
+                </div>
+              )}
            </div>
         </section>
 
         {/* Info box */}
-        <section className="rounded-[2rem] bg-orange-50/50 border border-orange-100/50 p-6">
-           <p className="text-[11px] font-medium text-orange-800 leading-relaxed text-center">
+        <section className="rounded-[2rem] border border-brand-active/20 bg-emerald-50/50 p-6">
+           <p className="text-[11px] font-medium text-slate-700 leading-relaxed text-center italic">
              Follow today's segments in order to keep guests on time. Tapping a 
              segment will open specific navigation.
            </p>

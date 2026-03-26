@@ -81,11 +81,11 @@ export default function OnlineDashboard() {
         rightAction={
           <button
             onClick={() => setShowOfflineModal(true)}
-            className="flex items-center gap-2 rounded-lg bg-brand-active/15 px-3 py-2 active:scale-95 transition-all"
+            className="flex items-center gap-2 rounded-lg bg-emerald-500/10 px-3 py-2 active:scale-95 transition-all border border-emerald-500/20"
             title="Go Offline"
           >
-            <Wifi className="h-4 w-4 text-brand-active" />
-            <span className="text-[10px] font-bold text-brand-active uppercase tracking-wide">Online</span>
+            <Wifi className="h-4 w-4 text-emerald-600" />
+            <span className="text-[10px] font-black text-emerald-600 uppercase tracking-wide">Online</span>
           </button>
         }
       />
@@ -102,14 +102,14 @@ export default function OnlineDashboard() {
           <div className="relative z-10 space-y-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <div className="h-12 w-12 flex items-center justify-center rounded-2xl bg-brand-active text-white shadow-xl shadow-brand-active/30">
+                <div className="h-12 w-12 flex items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-xl shadow-emerald-500/20">
                   <Activity className="h-6 w-6 animate-pulse" />
                 </div>
                 <div className="flex flex-col">
                   <span className="text-[10px] tracking-[0.3em] font-black uppercase text-slate-500">
                     STATUS
                   </span>
-                  <p className="text-base font-black text-slate-900 uppercase tracking-tight">You're Online</p>
+                  <p className="text-base font-black text-emerald-600 uppercase tracking-tight">You're Online</p>
                 </div>
               </div>
               <div className="text-right">
@@ -206,19 +206,12 @@ export default function OnlineDashboard() {
                 }}
               />
             )}
-            <button
-              type="button"
+            <QuickAction
+              icon={ShieldCheck}
+              label="SAFETY"
+              sub="Hub"
               onClick={() => navigate("/driver/safety/hub")}
-              className="flex flex-col items-start rounded-2xl border-2 border-emerald-500/10 bg-emerald-50/30 shadow-sm px-3 py-3 flex-1 min-w-[0] active:scale-[0.97] hover:scale-[1.02] hover:shadow-md hover:border-emerald-500/30 transition-all duration-300 group"
-            >
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 mb-1 group-hover:bg-emerald-500 transition-colors">
-                <ShieldCheck className="h-4 w-4 text-emerald-500 group-hover:text-white" />
-              </div>
-              <span className="text-xs font-black text-slate-900 mb-0.5 truncate w-full text-left uppercase tracking-tight">
-                Safety
-              </span>
-              <span className="text-[11px] text-slate-500 truncate w-full text-left font-medium">Hub</span>
-            </button>
+            />
           </div>
         </section>
 

@@ -121,13 +121,35 @@ export default function RideDetails() {
             </div>
             <div className="flex flex-col">
               <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">
-                Duration
+                Time Taken
               </span>
               <div className="flex items-center text-slate-900">
                 <Clock className="h-3 w-3 mr-1 text-orange-500" />
-                <span className="text-sm font-black">{trip.duration || "N/A"}</span>
+                <span className="text-sm font-black">
+                  {trip.duration || (trip.startedAt && trip.completedAt 
+                    ? `${Math.round((trip.completedAt - trip.startedAt) / 60000)} min` 
+                    : "N/A")}
+                </span>
               </div>
             </div>
+          </div>
+
+          <div className="pt-4 border-t border-slate-50 grid grid-cols-2 gap-4">
+             <div className="flex flex-col">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Start Time</span>
+                <span className="text-xs font-black text-slate-900">
+                   {trip.startedAt ? new Date(trip.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : trip.time}
+                </span>
+             </div>
+             <div className="flex flex-col">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">End Time</span>
+                <span className="text-xs font-black text-slate-900">
+                   {trip.completedAt ? new Date(trip.completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Recently"}
+                </span>
+             </div>
+          </div>
+          <div className="pt-2">
+             <span className="text-[9px] font-bold uppercase tracking-widest text-slate-300">Record ID: {trip.id}</span>
           </div>
         </section>
 

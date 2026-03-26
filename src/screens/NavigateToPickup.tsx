@@ -22,16 +22,17 @@ import { useStore } from "../context/StoreContext";
 //   and adjusts pickup wording to focus on patient location.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-const JOB_TYPES = ["ride", "delivery", "rental", "tour", "ambulance"];
 
 
 export default function NavigateToPickup() {
-  const [jobType, setJobType] = useState("ride"); // "ride" | "delivery" | "rental" | "tour" | "ambulance"
   const [hasArrived, setHasArrived] = useState(false);
   const navigate = useNavigate();
   const { tripId: routeTripId } = useParams();
   const { activeTrip, transitionActiveTripStage } = useStore();
   const tripId = routeTripId || activeTrip.tripId;
+  // Use the REAL job type from activeTrip state, not a local preview toggle.
+  // This ensures state transitions work for all job types (ride, delivery, rental, etc.)
+  const jobType = activeTrip.jobType || "ride";
 
   const navigateToTripStage = (stage: "arrived_pickup" | "cancel_reason") => {
     if (!tripId) {
@@ -39,11 +40,10 @@ export default function NavigateToPickup() {
       return;
     }
 
-    if (
-      stage === "arrived_pickup" &&
-      activeTrip.tripId === tripId &&
-      activeTrip.jobType === "ride"
-    ) {
+    // Transition the state machine for ALL job types, not just rides.
+    // Previously this was gated behind `activeTrip.jobType === "ride"`,
+    // which silently skipped transitions for delivery/rental/tour/ambulance.
+    if (stage === "arrived_pickup" && activeTrip.tripId === tripId) {
       transitionActiveTripStage(stage);
     }
 
@@ -60,13 +60,15 @@ export default function NavigateToPickup() {
     navigate(buildPrivateTripRoute("navigation", tripId));
   };
 
-  const jobTypeLabelMap = {
+  const jobTypeLabelMap: Record<string, string> = {
     ride: "Ride",
     delivery: "Delivery",
     rental: "Rental",
     tour: "Tour",
-    ambulance: "Ambulance"
-};
+    ambulance: "Ambulance",
+    shared: "Shared",
+    shuttle: "Shuttle",
+  };
 
   const isRental = jobType === "rental";
   const isTour = jobType === "tour";
@@ -101,30 +103,7 @@ export default function NavigateToPickup() {
         onBack={() => navigate(-1)} 
       />
 
-      {/* Job type switcher for preview purposes */}
-      <section className="px-6 pt-4 pb-2">
-        <div className="bg-cream rounded-3xl p-3 border-2 border-orange-500/10 shadow-sm space-y-2">
-          <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
-            Simulation View
-          </span>
-          <div className="flex flex-wrap gap-2">
-            {JOB_TYPES.map((type) => (
-              <button
-                key={type}
-                type="button"
-                onClick={() => setJobType(type)}
-                className={`rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-widest border-2 transition-all ${
-                  jobType === type
-                    ? "bg-orange-500 text-white border-orange-500 shadow-md"
-                    : "bg-white text-slate-400 border-orange-500/5 hover:border-orange-500/20"
-                }`}
-              >
-                {jobTypeLabelMap[type]}
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
+
 
       {/* Content */}
       <main className="flex-1 px-6 pt-4 pb-16 overflow-y-auto scrollbar-hide space-y-6">

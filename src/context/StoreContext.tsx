@@ -10,6 +10,7 @@ import type {
   DriverCoreRole,
   DriverProgramFlags,
   Vehicle,
+  TourSegment,
 } from "../data/types";
 import { MOCK_EARNINGS, MOCK_COMPLETED_TRIPS, MOCK_SHARED_TRIPS, MOCK_VEHICLES, MOCK_DASHBOARD_STATS } from "../data/mockData";
 import { SAMPLE_IDS } from "../data/constants";
@@ -173,6 +174,7 @@ interface StoreContextType {
   // Actions
   addJob: (job: Job) => void;
   updateJobStatus: (id: string, status: Job["status"]) => void;
+  updateTourSegmentStatus: (jobId: string, segmentId: string, status: TourSegment["status"]) => void;
   addSharedContactToJob: (jobId: string, contact: SharedContact) => boolean;
   setActiveSharedTrip: (trip: SharedTrip | null) => void;
   updateActiveSharedTrip: (updater: (prev: SharedTrip) => SharedTrip) => void;
@@ -219,6 +221,10 @@ interface StoreContextType {
   toggleVehicleAccessory: (vehicleId: string, accessoryName: string) => void;
   resetVehicleAccessories: (vehicleId: string) => void;
   getDefaultAccessoriesForType: (type: string) => Record<string, "Available" | "Missing" | "Required">;
+  emergencyContacts: SharedContact[];
+  addEmergencyContact: (contact: Omit<SharedContact, "id" | "createdAt">) => void;
+  removeEmergencyContact: (id: string) => void;
+  updateEmergencyContact: (id: string, contact: Partial<SharedContact>) => void;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -248,6 +254,7 @@ const DRIVER_PREFERENCES_STORAGE_KEY = "driver_preferences";
 const DRIVER_PROFILE_PHOTO_STORAGE_KEY = "driver_profile_photo";
 const SELECTED_VEHICLE_STORAGE_KEY = "driver_selected_vehicle";
 const VEHICLES_STORAGE_KEY = "driver_vehicles";
+const EMERGENCY_CONTACTS_STORAGE_KEY = "driver_emergency_contacts";
 const DRAFT_VEHICLE_STORAGE_KEY = "driver_draft_vehicle";
 
 const CAR_ACCESSORIES: Record<string, "Available" | "Missing" | "Required"> = {
@@ -602,6 +609,23 @@ function readStoredVehicles(): Vehicle[] {
     return parsed.map(applyDefaults);
   } catch {
     return MOCK_VEHICLES.map(applyDefaults);
+  }
+}
+
+function readStoredEmergencyContacts(): SharedContact[] {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  try {
+    const raw = window.localStorage.getItem(EMERGENCY_CONTACTS_STORAGE_KEY);
+    if (!raw) {
+      return [];
+    }
+
+    return JSON.parse(raw) as SharedContact[];
+  } catch {
+    return [];
   }
 }
 
@@ -1007,7 +1031,11 @@ const initialJobs: Job[] = [
   { id: "3244", from: "Kampala Serena", to: "Entebbe Airport", distance: "38 km", duration: "45 min", fare: "85.00", jobType: "ride", status: "pending", requestedAt: Date.now() - 0.02 * 3600000 },
   { id: "3245", from: "Village Mall", to: "Kyambogo", distance: "5.2 km", duration: "16 min", fare: "12.50", jobType: "ride", status: "pending", requestedAt: Date.now() - 0.05 * 3600000 },
   { id: "3250", from: "Sheraton Hotel", to: "Speke Resort", distance: "26 km", duration: "4h booking", fare: "Rental", jobType: "rental", status: "pending", requestedAt: Date.now() - 0.06 * 3600000 },
-  { id: "3246", from: "Airport", to: "Safari Lodge", distance: "42 km", duration: "Day 2 of 5", fare: "Tour", jobType: "tour", status: "pending", requestedAt: Date.now() - 3 * 3600000 },
+  { id: "3246", from: "Airport", to: "Safari Lodge", distance: "42 km", duration: "Day 2 of 5", fare: "Tour", jobType: "tour", status: "pending", requestedAt: Date.now() - 3 * 3600000, segments: [
+    { id: "s1", time: "09:00–10:00", title: "Airport pickup → Hotel", description: "Meet guests at arrivals and transfer to City Hotel.", status: "completed" },
+    { id: "s2", time: "11:00–15:00", title: "City tour", description: "Guided tour of key landmarks and lunch stop.", status: "in-progress" },
+    { id: "s3", time: "16:00–18:00", title: "Hotel → Safari lodge", description: "Drive guests to the lodge, check-in and handover.", status: "upcoming" }
+  ]},
   { id: "3247", from: "Near Acacia Road", to: "City Hospital", distance: "3.1 km", duration: "8 min", fare: "—", jobType: "ambulance", status: "pending", requestedAt: Date.now() - 0.1 * 3600000 },
   { id: "3249", from: "FreshMart", to: "Naguru", distance: "2.7 km", duration: "10 min", fare: "3.40", jobType: "delivery", itemType: "Grocery", status: "pending", requestedAt: Date.now() - 0.8 * 3600000 },
   { id: "shared-100", from: "Acacia Mall", to: "Bugolobi (+1 stop)", distance: "7.7 km", duration: "24 min", fare: "15.40", jobType: "shared", status: "pending", requestedAt: Date.now() - 0.15 * 3600000 },
@@ -1048,6 +1076,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [vehicles, setVehicles] = useState<Vehicle[]>(() => readStoredVehicles());
   const [draftVehicle, setDraftVehicle] = useState<Vehicle | null>(() =>
     readStoredDraftVehicle()
+  );
+  const [emergencyContacts, setEmergencyContacts] = useState<SharedContact[]>(() =>
+    readStoredEmergencyContacts()
   );
   const [selectedVehicleIndex, setSelectedVehicleIndexState] = useState<number | null>(() => {
     if (typeof window === "undefined") return null;
@@ -1109,6 +1140,27 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       ...prev,
       ...patch,
     }));
+  }, []);
+
+  const addEmergencyContact = useCallback((contact: Omit<SharedContact, "id" | "createdAt">) => {
+    setEmergencyContacts((prev) => [
+      ...prev,
+      {
+        ...contact,
+        id: `ec-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        createdAt: Date.now(),
+      },
+    ]);
+  }, []);
+
+  const removeEmergencyContact = useCallback((id: string) => {
+    setEmergencyContacts((prev) => prev.filter((c) => c.id !== id));
+  }, []);
+
+  const updateEmergencyContact = useCallback((id: string, contact: Partial<SharedContact>) => {
+    setEmergencyContacts((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, ...contact } : c))
+    );
   }, []);
 
   const onboardingBlockers = useMemo<OnboardingBlocker[]>(
@@ -1220,6 +1272,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     if (typeof window === "undefined") return;
     window.localStorage.setItem(VEHICLES_STORAGE_KEY, JSON.stringify(vehicles));
   }, [vehicles]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(EMERGENCY_CONTACTS_STORAGE_KEY, JSON.stringify(emergencyContacts));
+  }, [emergencyContacts]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -1335,6 +1392,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const updateJobStatus = useCallback((id: string, status: Job["status"]) => {
     setJobs(prev => prev.map(j => j.id === id ? { ...j, status } : j));
   }, []);
+
+  const updateTourSegmentStatus = useCallback((jobId: string, segmentId: string, status: TourSegment["status"]) => {
+    setJobs((prev) =>
+      prev.map((j) => {
+        if (j.id !== jobId || !j.segments) return j;
+        return {
+          ...j,
+          segments: j.segments.map((s) =>
+            s.id === segmentId ? { ...s, status } : s
+          ),
+        };
+      })
+    );
+  }, []);
   const addSharedContactToJob = useCallback((jobId: string, contact: SharedContact) => {
     const hasJob = jobs.some((job) => job.id === jobId);
     if (!hasJob) {
@@ -1390,6 +1461,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  // acceptRideJob: Accepts a pending/attended ride job and sets it as the active trip.
+  // FIX: Previously, a stale activeTrip persisted in localStorage (e.g. from a prior
+  // session where a trip was accepted but the page was reloaded before completion)
+  // would block new acceptance because the guard only checked status !== "completed"
+  // but not whether the trip was actually in-progress. Now we also allow acceptance
+  // when the stale trip is in "idle" stage (meaning it was never truly started).
   const acceptRideJob = useCallback(
     (jobId: string) => {
       const targetJob = jobs.find(
@@ -1403,21 +1480,32 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         return false;
       }
 
-      if (
+      // Strict Ride-Hailing Rule: Prevent overriding a truly active trip.
+      // Ghost trip detection: IF we have an active trip ID, but it doesn't exist in the current jobs array,
+      // it's a "ghost" from a previous testing session and can be safely overwritten.
+      const isGhostTrip = activeTrip.tripId && !jobs.some(j => j.id === activeTrip.tripId);
+      
+      const hasBlockingTrip =
         activeTrip.tripId &&
         activeTrip.tripId !== jobId &&
         activeTrip.status !== "completed" &&
-        activeTrip.status !== "cancelled"
-      ) {
+        activeTrip.status !== "cancelled" &&
+        activeTrip.stage !== "idle" &&
+        !isGhostTrip;
+
+      if (hasBlockingTrip) {
         return false;
       }
 
       const now = Date.now();
+      // Mark the job as "attended" (accepted) in the jobs list
       setJobs((prev) =>
         prev.map((job) =>
           job.id === jobId ? { ...job, status: "attended" } : job
         )
       );
+      // Set the active trip state — this is what the trip screens read
+      // to know which trip is currently in progress
       setActiveTrip({
         tripId: jobId,
         jobType: "ride",
@@ -1535,6 +1623,38 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         status: "completed",
         distance: relatedJob.distance,
         duration: relatedJob.duration,
+        startedAt: activeTrip.timestamps.startedAt,
+        completedAt,
+        details: {
+          package: relatedJob.jobType === "delivery" ? {
+            name: relatedJob.itemType || "General Parcel",
+            type: relatedJob.itemType || "Box",
+            weight: "2.5 kg", // Placeholder for now
+            recipient: "Customer",
+            sender: "Merchant",
+            proofType: "signature"
+          } : undefined,
+          rental: relatedJob.jobType === "rental" ? {
+            customerName: "David W.",
+            billedDuration: relatedJob.duration || "4 Hours",
+            usageKm: relatedJob.distance || "0 km",
+            condition: "Verified Clean",
+            rate: "$12.50 / Hr"
+          } : undefined,
+          tour: relatedJob.jobType === "tour" ? {
+            groupName: "Smith Family",
+            itinerary: [
+              { label: "Pickup", time: "09:00 AM", note: relatedJob.from },
+              { label: "Final Drop-off", time: "03:00 PM", note: relatedJob.to }
+            ],
+            notes: "Scenic route requested."
+          } : undefined,
+          ambulance: relatedJob.jobType === "ambulance" ? {
+            missionType: "Emergency Dispatch",
+            responseTime: "2 min dash",
+            careNotes: "Patient stabilized during transit."
+          } : undefined,
+        }
       };
 
       setTrips((prev) => {
@@ -1824,12 +1944,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         return false;
       }
 
-      if (
+      const isGhostTrip = activeTrip.tripId && !jobs.some(j => j.id === activeTrip.tripId);
+      
+      const hasBlockingTrip =
         activeTrip.tripId &&
         activeTrip.tripId !== jobId &&
         activeTrip.status !== "completed" &&
-        activeTrip.status !== "cancelled"
-      ) {
+        activeTrip.status !== "cancelled" &&
+        activeTrip.stage !== "idle" &&
+        !isGhostTrip;
+
+      if (hasBlockingTrip) {
         return false;
       }
 
@@ -1856,10 +1981,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     },
     [jobs, canAcceptJobType, activeTrip]
   );
+  // acceptSharedJob: Accepts a pending shared ride job.
+  // FIX: Previously this required canAcceptJobType("shared") which in turn
+  // required sharedRidesEnabled === true. But sharedRidesEnabled defaults to
+  // false, so shared jobs visible in the incoming request screen could never
+  // be accepted — the handler returned false and redirected to /driver/jobs/list.
+  // Now we auto-enable shared rides when the driver explicitly accepts a shared job,
+  // since reaching the accept handler means the job was already presented to them.
+  // Also applies the same stale-trip guard fix as acceptRideJob.
   const acceptSharedJob = useCallback(
     (jobId: string) => {
-      if (!canAcceptJobType("shared")) {
-        return false;
+      // If the driver is accepting a shared job, they clearly want shared rides.
+      // Auto-enable if not already enabled, so canAcceptJobType("shared") passes.
+      if (!sharedRidesEnabled) {
+        setSharedRidesEnabled(true);
       }
 
       const targetJob = jobs.find(
@@ -1873,23 +2008,31 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         return false;
       }
 
-      if (
+      const isGhostTrip = activeTrip.tripId && !jobs.some(j => j.id === activeTrip.tripId);
+      
+      const hasBlockingTrip =
         activeTrip.tripId &&
         activeTrip.tripId !== jobId &&
         activeTrip.status !== "completed" &&
-        activeTrip.status !== "cancelled"
-      ) {
+        activeTrip.status !== "cancelled" &&
+        activeTrip.stage !== "idle" &&
+        !isGhostTrip;
+
+      if (hasBlockingTrip) {
         return false;
       }
 
       const now = Date.now();
 
+      // Mark the shared job as "attended" in the jobs list
       setJobs((prev) =>
         prev.map((job) =>
           job.id === jobId ? { ...job, status: "attended" } : job
         )
       );
+      // Create the shared trip chain and set it as the active shared trip
       setActiveSharedTrip(createSharedTripFromJob(targetJob));
+      // Set the active trip state for routing — shared trips use "shared_active" stage
       setActiveTrip({
         tripId: jobId,
         jobType: "shared",
@@ -1903,7 +2046,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       });
       return true;
     },
-    [jobs, canAcceptJobType, activeTrip]
+    [jobs, activeTrip, sharedRidesEnabled]
   );
   const completeActiveSharedTrip = useCallback(() => {
     if (!activeSharedTrip || activeSharedTrip.chainStatus !== "completed") {
@@ -1942,6 +2085,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       status: "completed",
       distance: relatedJob?.distance,
       duration: relatedJob?.duration,
+      startedAt: activeSharedTrip.startedAt,
+      completedAt: completedAt,
+      details: {
+        passengers: [...activeSharedTrip.passengers],
+      },
     };
 
     const completionRevenueEvents: RevenueEvent[] = activeSharedTrip.earningsBreakdown.map(
@@ -2061,6 +2209,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [deliveryWorkflow.activeJobId, jobs]
   );
 
+  // ── Context value ───────────────────────────────────────────
+  // IMPORTANT: Every value here must reference the REAL implementation
+  // defined above. Previously, several values were overridden with stubs
+  // (e.g. `acceptSharedJob: () => true`) which returned success without
+  // actually mutating state. This caused:
+  //   - Trip acceptance returning true but never setting activeTrip/activeSharedTrip
+  //   - Job filtering allowing all categories regardless of driver preferences
+  //   - Analytics displaying static MOCK data instead of computed values
+  //   - Shared ride "Unavailable" because no shared trip state was created
   const value = useMemo<StoreContextType>(
     () => ({
       periodFilter,
@@ -2068,23 +2225,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       jobs,
       trips,
       revenueEvents,
-      filteredTrips: trips.filter((t) => isWithinPeriod(toMiddayTimestamp(t.date), periodFilter)),
-      filteredRevenueEvents: revenueEvents.filter((e) => isWithinPeriod(e.timestamp, periodFilter)),
+      // Use the real computed filtered arrays (filtered by assignableJobTypes)
+      filteredTrips,
+      filteredRevenueEvents,
       sharedRidesEnabled,
       setSharedRidesEnabled,
       activeSharedTrip,
-      dashboardMetrics: {
-        onlineTime: MOCK_DASHBOARD_STATS.onlineTime,
-        jobsCount: MOCK_DASHBOARD_STATS.jobsToday,
-        earningsAmount: MOCK_DASHBOARD_STATS.earningsToday,
-        jobMix: {
-          ...MOCK_DASHBOARD_STATS.jobMix,
-          shuttle: 0,
-          shared: 0,
-        },
-        totalTrips: 482, // mapped from profile or mock
-      },
-      recentEarnings: MOCK_EARNINGS,
+      // Use the real computed dashboard metrics (derived from actual trip/revenue data)
+      dashboardMetrics,
+      // Use the real period-adjusted earnings (not static MOCK_EARNINGS)
+      recentEarnings,
       driverRoleConfig,
       driverProfile,
       driverPreferences,
@@ -2093,13 +2243,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       onboardingBlockers,
       canGoOnline,
       primaryOnboardingRoute,
-      assignableJobTypes: getAssignableJobTypesFromRoleConfig({
-        ...driverRoleConfig,
-        sharedRidesEnabled,
-      }),
-      canAcceptJobType: (jobType) => true,
+      // Use the pre-computed memo (already respects role config + sharedRidesEnabled)
+      assignableJobTypes,
+      // Use the real canAcceptJobType callback that checks assignableJobTypes
+      canAcceptJobType,
       deliveryWorkflow,
-      activeDeliveryJob: jobs.find((j) => j.id === deliveryWorkflow.activeJobId) || null,
+      // Use the pre-computed memo for the active delivery job
+      activeDeliveryJob,
       deliveryStageAtLeast,
       activeTrip,
       canTransitionActiveTripStage,
@@ -2108,8 +2258,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       addSharedContactToJob,
       setActiveSharedTrip,
       updateActiveSharedTrip,
-      acceptSharedJob: (jobId) => true,
-      completeActiveSharedTrip: () => null,
+      // Use the real acceptSharedJob that sets activeSharedTrip + activeTrip state
+      acceptSharedJob,
+      // Use the real completeActiveSharedTrip that finalizes trip records
+      completeActiveSharedTrip,
       completeTrip,
       addRevenueEvent,
       updateDriverRoleConfig,
@@ -2121,7 +2273,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       enableDualMode,
       setOnboardingCheckpoint,
       acceptRideJob,
-      acceptSpecializedJob: (id, type) => true,
+      // Use the real acceptSpecializedJob that sets activeTrip state
+      acceptSpecializedJob,
       transitionActiveTripStage,
       completeActiveTrip,
       cancelActiveTrip,
@@ -2131,7 +2284,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       verifyDeliveryQr,
       startDeliveryRoute,
       confirmDeliveryDropoff,
-      resetDeliveryWorkflow: () => {},
+      // Use the real resetDeliveryWorkflow that clears delivery state
+      resetDeliveryWorkflow,
       selectedVehicleIndex,
       setSelectedVehicleIndex,
       vehicles,
@@ -2143,14 +2297,23 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       toggleVehicleAccessory,
       resetVehicleAccessories,
       getDefaultAccessoriesForType,
+      emergencyContacts,
+      addEmergencyContact,
+      removeEmergencyContact,
+      updateEmergencyContact,
+      updateTourSegmentStatus,
     }),
     [
       periodFilter,
       jobs,
       trips,
       revenueEvents,
+      filteredTrips,
+      filteredRevenueEvents,
       sharedRidesEnabled,
       activeSharedTrip,
+      dashboardMetrics,
+      recentEarnings,
       driverRoleConfig,
       driverProfile,
       driverPreferences,
@@ -2159,7 +2322,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       onboardingBlockers,
       canGoOnline,
       primaryOnboardingRoute,
+      assignableJobTypes,
+      canAcceptJobType,
       deliveryWorkflow,
+      activeDeliveryJob,
       deliveryStageAtLeast,
       activeTrip,
       canTransitionActiveTripStage,
@@ -2167,6 +2333,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       updateJobStatus,
       addSharedContactToJob,
       updateActiveSharedTrip,
+      acceptSharedJob,
+      completeActiveSharedTrip,
       completeTrip,
       addRevenueEvent,
       updateDriverRoleConfig,
@@ -2175,6 +2343,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       enableDualMode,
       setOnboardingCheckpoint,
       acceptRideJob,
+      acceptSpecializedJob,
       transitionActiveTripStage,
       completeActiveTrip,
       cancelActiveTrip,
@@ -2184,6 +2353,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       verifyDeliveryQr,
       startDeliveryRoute,
       confirmDeliveryDropoff,
+      resetDeliveryWorkflow,
       selectedVehicleIndex,
       setSelectedVehicleIndex,
       vehicles,

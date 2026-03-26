@@ -41,6 +41,7 @@ export interface Job {
   status: JobStatus;
   requestedAt: number;
   sharedContacts?: SharedContact[];
+  segments?: TourSegment[];
 }
 
 export interface VehicleDocumentFile {
@@ -95,6 +96,7 @@ export interface UserProfile {
   rating: number;
   totalTrips: number;
   memberSince: string;
+  emergencyContacts?: SharedContact[];
 }
 
 export interface AppNotification {
@@ -118,6 +120,35 @@ export interface RevenueEvent {
   category: JobCategory;
 }
 
+export interface TripRecordDetails {
+  passengers?: SharedRider[];
+  package?: {
+    name: string;
+    type: string;
+    weight: string;
+    recipient: string;
+    sender: string;
+    proofType?: "signature" | "photo" | "otp";
+  };
+  rental?: {
+    customerName: string;
+    billedDuration: string;
+    usageKm: string;
+    condition: string;
+    rate: string;
+  };
+  tour?: {
+    groupName: string;
+    itinerary: { label: string; time: string; note: string }[];
+    notes: string;
+  };
+  ambulance?: {
+    missionType: string;
+    responseTime: string;
+    careNotes?: string;
+  };
+}
+
 export interface TripRecord {
   id: string;
   from: string;
@@ -131,6 +162,9 @@ export interface TripRecord {
   dropoff?: string;
   distance?: string;
   duration?: string;
+  startedAt?: number;
+  completedAt?: number;
+  details?: TripRecordDetails;
 }
 
 // ── Shared Trips Types ───────────────────────────────────
@@ -188,4 +222,19 @@ export interface SharedTrip {
   currentStopIndex: number;
   startedAt?: number;
   completedAt?: number;
+}
+
+// ── Tour Types ───────────────────────────────────────────
+
+export interface TourSegment {
+  id: string;
+  time: string;
+  title: string;
+  description: string;
+  status: "completed" | "in-progress" | "upcoming";
+  location?: {
+    lat: number;
+    lng: number;
+    address: string;
+  };
 }

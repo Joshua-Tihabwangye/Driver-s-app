@@ -7,12 +7,14 @@ X
 import { useEffect,useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – SOSSending Driver – SOS / Emergency Alert Sending Screen (v3)
 // Redesigned to match the high-fidelity SOS countdown layout with pulsing circle and 112 link.
 
 export default function SOSSending() {
   const navigate = useNavigate();
+  const { emergencyContacts } = useStore();
   const [sosTimer, setSosTimer] = useState(10);
 
   // SOS Countdown Timer
@@ -54,7 +56,7 @@ export default function SOSSending() {
         <div className="space-y-3 mb-12">
           <h3 className="text-[24px] font-black text-slate-900 leading-tight uppercase tracking-tight">Sending<br />Emergency Alert</h3>
           <p className="text-[11px] text-slate-400 font-bold px-4 leading-relaxed tracking-tight uppercase">
-            Sharing your trip details and live location with emergency contacts and help centers.
+            Sharing your trip details and live location with {emergencyContacts.length > 0 ? emergencyContacts.map(c => c.name).join(', ') : 'emergency contacts'} and help centers.
           </p>
         </div>
 

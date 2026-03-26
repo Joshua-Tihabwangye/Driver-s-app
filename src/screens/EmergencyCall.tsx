@@ -5,9 +5,11 @@ MicOff,
 PhoneOff,
 Volume2
 } from "lucide-react";
-import { useEffect,useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
+import { User } from "lucide-react";
 
 // EVzone Driver App – EmergencyCall Driver – Emergency Calling Screen (v4)
 // Redesigned to match the high-fidelity orbit animation with avatars and swipe-to-cancel slider.
@@ -21,6 +23,7 @@ function formatCallTime(seconds) {
 
 export default function EmergencyCall() {
   const navigate = useNavigate();
+  const { emergencyContacts } = useStore();
   const [isSwiped, setIsSwiped] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [muted, setMuted] = useState(false);
@@ -34,15 +37,32 @@ export default function EmergencyCall() {
 
   const callTime = formatCallTime(seconds);
 
-  // Orbiting Avatars Data
-  const avatars = [
-    { img: 'https://i.pravatar.cc/150?u=12', pos: 'top-0 left-1/2 -translate-x-1/2' },
-    { img: 'https://i.pravatar.cc/150?u=22', pos: 'top-1/4 right-0' },
-    { img: 'https://i.pravatar.cc/150?u=32', pos: 'bottom-1/4 right-0' },
-    { img: 'https://i.pravatar.cc/150?u=42', pos: 'bottom-0 left-1/2 -translate-x-1/2' },
-    { img: 'https://i.pravatar.cc/150?u=52', pos: 'bottom-1/4 left-0' },
-    { img: 'https://i.pravatar.cc/150?u=62', pos: 'top-1/4 left-0' }
-  ];
+  // Orbiting Avatars Data - Use real contacts if available
+  const avatars = useMemo(() => {
+    const basePositions = [
+      'top-0 left-1/2 -translate-x-1/2',
+      'top-1/4 right-0',
+      'bottom-1/4 right-0',
+      'bottom-0 left-1/2 -translate-x-1/2',
+      'bottom-1/4 left-0',
+      'top-1/4 left-0'
+    ];
+
+    const realAvatars = emergencyContacts.slice(0, 6).map((contact, i) => ({
+      name: contact.name,
+      pos: basePositions[i],
+      initial: contact.name.charAt(0)
+    }));
+
+    // Fallback if no contacts
+    if (realAvatars.length === 0) {
+      return [
+        { name: '112', pos: basePositions[0], initial: '1' },
+        { name: 'Support', pos: basePositions[1], initial: 'S' }
+      ];
+    }
+    return realAvatars;
+  }, [emergencyContacts]);
 
   return (
     <div className="flex flex-col h-full ">
@@ -79,12 +99,12 @@ export default function EmergencyCall() {
             {avatars.map((avatar, i) => (
               <div
                 key={i}
-                className={`absolute h-14 w-14 rounded-full border-4 border-white shadow-2xl overflow-hidden ${avatar.pos} z-20`}
+                className={`absolute h-14 w-14 rounded-full border-4 border-white shadow-2xl overflow-hidden ${avatar.pos} z-20 flex items-center justify-center bg-slate-100`}
                 style={{
                   animation: `bounce ${2 + i * 0.5}s ease-in-out infinite alternate`
                 }}
               >
-                <img src={avatar.img} alt="Contact" className="h-full w-full object-cover" />
+                <span className="text-lg font-black text-slate-400">{avatar.initial}</span>
               </div>
             ))}
 

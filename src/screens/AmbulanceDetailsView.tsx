@@ -59,7 +59,7 @@ export default function AmbulanceDetailsView() {
       <main className="flex-1 overflow-y-auto px-4 py-6 space-y-6 scrollbar-hide">
         <section className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 flex flex-col items-center justify-center space-y-2">
           <span className="text-[10px] uppercase font-black tracking-widest text-red-500 bg-red-50 px-3 py-1 rounded-full">
-            Emergency Dispatch
+            {trip.details?.ambulance?.missionType || "Ambulance Mission"}
           </span>
           {amount > 0 ? (
             <span className="text-4xl font-black text-slate-900 tracking-tighter">
@@ -71,8 +71,9 @@ export default function AmbulanceDetailsView() {
             </span>
           )}
           <span className="text-[10px] uppercase font-black tracking-widest text-emerald-500">
-            Completed
+            {trip.status === 'completed' ? 'Mission Success' : trip.status}
           </span>
+          <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">ID: {trip.id}</span>
         </section>
 
         <section className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 space-y-5">
@@ -106,14 +107,20 @@ export default function AmbulanceDetailsView() {
             </div>
             <div className="flex flex-col">
               <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">
-                Duration
+                Response
               </span>
               <div className="flex items-center text-slate-900">
                 <Clock className="h-3 w-3 mr-1 text-orange-500" />
-                <span className="text-sm font-black">{trip.duration || "N/A"}</span>
+                <span className="text-sm font-black">{trip.details?.ambulance?.responseTime || "N/A"}</span>
               </div>
             </div>
           </div>
+          {trip.details?.ambulance?.careNotes && (
+             <div className="pt-4 border-t border-slate-50">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-1">Care Notes</span>
+                <p className="text-[11px] font-bold text-slate-600 leading-relaxed">{trip.details.ambulance.careNotes}</p>
+             </div>
+          )}
         </section>
 
         <button

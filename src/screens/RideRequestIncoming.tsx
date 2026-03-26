@@ -6,7 +6,8 @@ Clock,
 Map,
 MapPin,
 Phone,
-User
+User,
+Users
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -110,6 +111,7 @@ export default function RideRequestIncoming() {
   const location = useLocation();
   const routeState = (location.state as RequestRouteState | null) || null;
   const [timeLeft, setTimeLeft] = useState(15);
+  const [acceptError, setAcceptError] = useState(false);
   // Demo state so you can preview all variants inside the canvas
   const [jobType, setJobType] = useState<JobCategory>(routeState?.jobType || "ride");
   const navigate = useNavigate();
@@ -184,8 +186,8 @@ export default function RideRequestIncoming() {
     rightLine1 = "Shuttle run · Green Valley School";
     rightLine2 = "Morning route";
   } else if (isShared) {
-    rightLine1 = "$15.40 (est.)";
-    rightLine2 = "7.7 km · 24 min";
+    rightLine1 = "Base Leg: $15.40 (est.)";
+    rightLine2 = "Dynamic match · 7.7 km";
   }
 
   // Pickup / drop-off or patient text per jobType
@@ -243,7 +245,8 @@ export default function RideRequestIncoming() {
 
     const selectedJob = resolveRequestedJob(jobType);
     if (!selectedJob) {
-      navigate("/driver/jobs/list");
+      setAcceptError(true);
+      setTimeout(() => setAcceptError(false), 3000);
       return;
     }
 
@@ -252,7 +255,8 @@ export default function RideRequestIncoming() {
       const accepted = acceptSharedJob(nextSharedJobId);
       // Shared route canonical target: /driver/trip/${nextSharedJobId}/active
       if (!accepted) {
-        navigate("/driver/jobs/list");
+        setAcceptError(true);
+        setTimeout(() => setAcceptError(false), 3000);
         return;
       }
       navigate(buildAcceptedJobRoute("shared", nextSharedJobId), {
@@ -280,7 +284,8 @@ export default function RideRequestIncoming() {
     }
 
     if (!accepted) {
-      navigate("/driver/jobs/list");
+      setAcceptError(true);
+      setTimeout(() => setAcceptError(false), 3000);
       return;
     }
 
@@ -312,6 +317,15 @@ export default function RideRequestIncoming() {
         onBack={() => navigate(-1)} 
       />
 
+      {/* Error Toast */}
+      {acceptError && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 w-11/12 max-w-sm pointer-events-none">
+          <div className="bg-red-500 text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-xl shadow-red-500/20 text-center animate-in slide-in-from-top-4 fade-in">
+            Cannot accept new trip while another is active. Please complete or cancel your current trip first.
+          </div>
+        </div>
+      )}
+
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
         {/* Job type selector (for preview only) */}
@@ -338,6 +352,16 @@ export default function RideRequestIncoming() {
         <section className="rounded-[2.5rem] bg-[#f0fff4] border-2 border-brand-active/20 text-slate-900 p-6 space-y-6 shadow-2xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 bg-brand-active/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110" />
           
+          {isShared && (
+            <div className="bg-orange-100/80 backdrop-blur-sm border border-orange-200 rounded-2xl p-3 mb-4 relative z-10 flex items-start space-x-3 shadow-inner">
+              <div className="mt-0.5"><Users className="h-5 w-5 text-orange-600" /></div>
+              <div className="flex flex-col">
+                <span className="text-[10px] font-black uppercase tracking-[0.15em] text-orange-700">Shared Ride Offer</span>
+                <span className="text-[11px] font-bold text-orange-900 leading-tight mt-0.5">Co-riders may be dynamically matched during this trip to maximize your earnings.</span>
+              </div>
+            </div>
+          )}
+
           <div className="flex items-start justify-between relative z-10">
             <div className="flex items-center space-x-4">
             <button

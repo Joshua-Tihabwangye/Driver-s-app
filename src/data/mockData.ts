@@ -112,14 +112,125 @@ export const MOCK_DASHBOARD_STATS = {
 
 // ── Completed Trips History ────────────────────────────────
 export const MOCK_COMPLETED_TRIPS: import('./types').TripRecord[] = [
-  { id: "tr-101", from: "Acacia Mall", to: "Ntinda", date: "2026-03-20", time: "10:15 AM", amount: "12500", jobType: "ride", status: "completed" },
-  { id: "tr-102", from: "Arena Mall", to: "Kibuli", date: "2026-03-20", time: "09:30 AM", amount: "8000", jobType: "shared", status: "completed" },
-  { id: "tr-103", from: "Bugolobi", to: "Luzira", date: "2026-03-19", time: "04:45 PM", amount: "15000", jobType: "ride", status: "completed" },
-  { id: "tr-104", from: "Makerere", to: "Wandegeya", date: "2026-03-19", time: "02:10 PM", amount: "5500", jobType: "delivery", status: "completed" },
-  { id: "tr-105", from: "City Square", to: "Kololo", date: "2026-03-18", time: "11:20 AM", amount: "9000", jobType: "shared", status: "completed" },
-  { id: "tr-106", from: "Sheraton Hotel", to: "Speke Resort", date: "2026-03-18", time: "06:40 PM", amount: "64800", jobType: "rental", status: "completed", distance: "31 km", duration: "4h booking" },
-  { id: "tr-107", from: "Airport", to: "Safari Lodge", date: "2026-03-17", time: "05:25 PM", amount: "72500", jobType: "tour", status: "completed", distance: "42 km", duration: "Day 2 of 5" },
-  { id: "tr-108", from: "Near Acacia Road", to: "City Hospital", date: "2026-03-17", time: "08:14 AM", amount: "0", jobType: "ambulance", status: "completed", distance: "3.1 km", duration: "8 min" },
+  { 
+    id: "tr-101", 
+    from: "Acacia Mall", 
+    to: "Ntinda", 
+    date: "2026-03-20", 
+    time: "10:15 AM", 
+    amount: "12500", 
+    jobType: "ride", 
+    status: "completed",
+    distance: "5.2 km",
+    duration: "18 min",
+    startedAt: Date.now() - 7 * 3600_000,
+    completedAt: Date.now() - 6.7 * 3600_000
+  },
+  { 
+    id: "tr-102", 
+    from: "Arena Mall", 
+    to: "Kibuli", 
+    date: "2026-03-20", 
+    time: "09:30 AM", 
+    amount: "8000", 
+    jobType: "shared", 
+    status: "completed",
+    distance: "3.4 km",
+    duration: "12 min",
+    details: {
+      passengers: [
+        { id: "p-101", firstName: "Sarah", lastName: "L", displayName: "Sarah L.", phone: "+256 700 111 222", rating: 4.88, seatCount: 1, pickupStopId: "s1", dropoffStopId: "s2", status: "dropped_off", joinedSequence: 1, fareContribution: 6.50 },
+        { id: "p-102", firstName: "Michael", lastName: "T", displayName: "Michael T.", phone: "+256 700 333 444", rating: 4.75, seatCount: 1, pickupStopId: "s3", dropoffStopId: "s4", status: "dropped_off", joinedSequence: 2, fareContribution: 4.20 }
+      ]
+    }
+  },
+  { id: "tr-103", from: "Bugolobi", to: "Luzira", date: "2026-03-19", time: "04:45 PM", amount: "15000", jobType: "ride", status: "completed", distance: "4.8 km", duration: "15 min" },
+  { 
+    id: "tr-104", 
+    from: "Makerere", 
+    to: "Wandegeya", 
+    date: "2026-03-19", 
+    time: "02:10 PM", 
+    amount: "5500", 
+    jobType: "delivery", 
+    status: "completed",
+    distance: "2.1 km",
+    duration: "10 min",
+    details: {
+      package: {
+        name: "Electronics (Order #4112)",
+        type: "Electronics",
+        weight: "3.2 kg",
+        recipient: "Alice M.",
+        sender: "TechStore Hub",
+        proofType: "signature"
+      }
+    }
+  },
+  { id: "tr-105", from: "City Square", to: "Kololo", date: "2026-03-18", time: "11:20 AM", amount: "9000", jobType: "shared", status: "completed", distance: "2.8 km", duration: "14 min" },
+  { 
+    id: "tr-106", 
+    from: "Sheraton Hotel", 
+    to: "Speke Resort", 
+    date: "2026-03-18", 
+    time: "06:40 PM", 
+    amount: "64800", 
+    jobType: "rental", 
+    status: "completed", 
+    distance: "31 km", 
+    duration: "4h booking",
+    details: {
+      rental: {
+        customerName: "David W.",
+        billedDuration: "4 Hours",
+        usageKm: "92 km",
+        condition: "No Damage",
+        rate: "$12.50 / Hr"
+      }
+    }
+  },
+  { 
+    id: "tr-107", 
+    from: "Airport", 
+    to: "Safari Lodge", 
+    date: "2026-03-17", 
+    time: "05:25 PM", 
+    amount: "72500", 
+    jobType: "tour", 
+    status: "completed", 
+    distance: "42 km", 
+    duration: "Day 2 of 5",
+    details: {
+      tour: {
+        groupName: "Smith Family (4)",
+        itinerary: [
+          { label: "Pickup", time: "09:00 AM", note: "Airport Terminal 1" },
+          { label: "Museum Stop", time: "10:30 AM", note: "90 min stop" },
+          { label: "Lunch Stop", time: "12:30 PM", note: "Craft Village" }
+        ],
+        notes: "Family needs space for 2 strollers. A/C on medium."
+      }
+    }
+  },
+  { 
+    id: "tr-108", 
+    from: "Near Acacia Road", 
+    to: "City Hospital", 
+    date: "2026-03-17", 
+    time: "08:14 AM", 
+    amount: "0", 
+    jobType: "ambulance", 
+    status: "completed", 
+    distance: "3.1 km", 
+    duration: "8 min",
+    details: {
+      ambulance: {
+        missionType: "Emergency Dispatch",
+        responseTime: "2 min dispatch",
+        careNotes: "Patient stabilized, transferred to ER Unit 4."
+      }
+    }
+  },
 ];
 
 // ── Delivery Routes ──────────────────────────────────────

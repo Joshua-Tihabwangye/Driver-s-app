@@ -288,7 +288,7 @@ export default function ManageVehicleDetails() {
               <button
                 type="button"
                 onClick={handleGoToAccessories}
-                className={`flex items-center justify-between rounded-[2rem] border-2 px-5 py-5 shadow-sm active:scale-[0.98] transition-all group ${
+                className={`w-full flex items-center justify-between rounded-[2rem] border-2 px-4 py-4 shadow-sm active:scale-[0.98] transition-all group ${
                   availableCount > 0 && availableCount === accessoryCount
                     ? "border-brand-active/20 bg-emerald-50/30"
                     : "border-orange-500/10 bg-cream hover:border-orange-500/30"
@@ -307,7 +307,7 @@ export default function ManageVehicleDetails() {
                 <ChevronRight className={`h-5 w-5 ${availableCount === accessoryCount && availableCount > 0 ? "text-brand-active" : "text-slate-300"}`} />
               </button>
 
-              <div className={`flex flex-col rounded-[2rem] border-2 shadow-sm transition-all overflow-hidden ${
+              <div className={`w-full flex flex-col rounded-[2rem] border-2 shadow-sm transition-all overflow-hidden ${
                 allDocsUploaded
                   ? "border-blue-500/20 bg-blue-50/30"
                   : "border-blue-500/10 bg-cream"
@@ -315,7 +315,7 @@ export default function ManageVehicleDetails() {
                 <button
                   type="button"
                   onClick={handleGoToDocs}
-                  className="flex items-center justify-between px-5 py-5 w-full active:scale-[0.98] hover:bg-blue-500/5 transition-all"
+                  className="w-full flex items-center justify-between px-4 py-4 active:scale-[0.98] hover:bg-blue-500/5 transition-all"
                 >
                   <div className="flex items-center space-x-4">
                     <div className="flex flex-col items-start text-left">

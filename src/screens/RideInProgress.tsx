@@ -23,16 +23,15 @@ import { useStore } from "../context/StoreContext";
 //   Current status: En route to hospital + Time since pickup + Distance to hospital.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-const JOB_TYPES = ["ride", "delivery", "rental", "tour", "ambulance"];
-
-
 export default function RideInProgress() {
   const navigate = useNavigate();
-  const [jobType, setJobType] = useState("ride");
   const [tripState, setTripState] = useState<"active" | "reached">("active");
   const { tripId: routeTripId } = useParams();
   const { activeTrip, completeActiveTrip } = useStore();
   const tripId = routeTripId || activeTrip.tripId;
+
+  // Use the REAL job type from activeTrip, not a local preview toggle
+  const jobType = activeTrip.jobType || "ride";
 
   useEffect(() => {
     if (tripState === "active") {
@@ -96,7 +95,7 @@ export default function RideInProgress() {
       return;
     }
 
-    if (activeTrip.tripId === tripId && activeTrip.jobType === "ride") {
+    if (activeTrip.tripId === tripId) {
       completeActiveTrip();
     }
 
@@ -121,36 +120,8 @@ export default function RideInProgress() {
         onBack={() => navigate(-1)} 
       />
 
-      {/* Job type selector for preview */}
-      <section className="px-6 pt-4 pb-2">
-        <div className="bg-white rounded-3xl p-3 border border-slate-100 shadow-sm space-y-2">
-          <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Simulation Context</span>
-          <div className="flex flex-wrap gap-2">
-            {JOB_TYPES.map((type) => (
-              <button
-                key={type}
-                type="button"
-                onClick={() => setJobType(type)}
-                className={`rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-widest border-2 transition-all ${
-                  jobType === type
-                    ? "bg-orange-500 text-white border-orange-500 shadow-md"
-                    : "bg-white text-slate-400 border-orange-500/5 hover:border-orange-500/20"
-                }`}
-              >
-                {jobTypeLabelMap[type]}
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Content */}
       <main className="flex-1 px-6 pt-4 pb-16 overflow-y-auto scrollbar-hide space-y-6">
-        <div className="px-1">
-           <span className="text-[11px] font-black text-orange-500 uppercase tracking-widest">
-             Job type: {jobTypeLabelMap[jobType]}
-           </span>
-        </div>
 
         {/* Map container */}
         <section className="relative rounded-[2.5rem] overflow-hidden border border-slate-100 bg-slate-200 h-[320px] shadow-2xl">
