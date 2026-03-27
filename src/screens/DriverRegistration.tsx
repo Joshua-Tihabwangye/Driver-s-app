@@ -124,13 +124,8 @@ export default function DriverRegistration() {
   }, [driverRoleConfig.coreRole]);
 
   const handleServiceToggle = (optionKey: ServiceOptionKey) => {
-    if (selectedServiceKey && selectedServiceKey !== optionKey) {
-      setErrorMessage(
-        "Uncheck the current category first before selecting a different one."
-      );
-      return;
-    }
-
+    // EVzone Driver – Part 1: Service category selection now allows auto-replacement.
+    // Selecting a different category automatically unchecks the previous one.
     setSelectedServiceKey((prev) => (prev === optionKey ? null : optionKey));
     setErrorMessage("");
   };
@@ -216,13 +211,8 @@ export default function DriverRegistration() {
             {SERVICE_OPTIONS.map((option) => (
               <label
                 key={option.key}
-                onClick={() => {
-                  if (selectedServiceKey && selectedServiceKey !== option.key) {
-                    setErrorMessage(
-                      "Uncheck the current category first before selecting a different one."
-                    );
-                  }
-                }}
+                  // EVzone Driver – Part 1: Service category selection now allows auto-replacement.
+                  // Selecting a different category automatically unchecks the previous one.
                 className={`w-full rounded-2xl border-2 px-4 py-4 text-left flex items-start space-x-3 transition-all active:scale-[0.98] ${
                   selectedServiceKey === option.key
                     ? "border-orange-500 bg-[#fffdf5] shadow-lg shadow-orange-500/5"
@@ -234,7 +224,7 @@ export default function DriverRegistration() {
                     type="checkbox"
                     checked={selectedServiceKey === option.key}
                     onChange={() => handleServiceToggle(option.key)}
-                    disabled={Boolean(selectedServiceKey && selectedServiceKey !== option.key)}
+                    disabled={false}
                     className="h-5 w-5 rounded-lg border-orange-200 text-orange-500 focus:ring-orange-500 bg-white"
                   />
                 </div>
@@ -265,7 +255,7 @@ export default function DriverRegistration() {
           </div>
           <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
              <p className="text-[10px] text-slate-400 leading-relaxed font-bold uppercase tracking-tight">
-                Only one service category can stay active at a time. Uncheck the current category before choosing another one.
+                Only one service category can stay active at a time. Selecting a different category automatically unchecks the previous one.
              </p>
           </div>
         </section>

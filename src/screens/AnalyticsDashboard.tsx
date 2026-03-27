@@ -410,60 +410,76 @@ export default function AnalyticsDashboard() {
 
   return (
     <div className="flex flex-col h-full ">
-      <div className="relative shrink-0" style={{ minHeight: 90 }}>
-        <header className="relative z-10 flex items-center justify-between px-6 pt-8 pb-6">
-          <div className="flex items-center space-x-3">
+      {/* Mobile-Friendly Responsive Header */}
+      <div className="relative shrink-0 bg-white border-b border-slate-100 shadow-sm" style={{ minHeight: 120 }}>
+        <header className="relative z-10 px-6 pt-8 pb-4 space-y-4">
+          <div className="flex items-center justify-between">
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white border border-slate-200 shadow-lg transition-transform active:scale-95"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-50 border border-slate-200 shadow-sm transition-transform active:scale-95"
             >
               <ChevronLeft className="h-5 w-5 text-slate-900" />
             </button>
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 flex -translate-y-1/2 items-center justify-center">
-            <div className="flex items-center space-x-3">
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 text-center">
-                  Analysis
-                </span>
-                <h1 className="text-base font-black tracking-tight leading-tight text-slate-900 text-center">
-                  Analytics
-                </h1>
-              </div>
+            <div className="flex flex-col items-center">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                Analysis
+              </span>
+              <h1 className="text-base font-black tracking-tight leading-tight text-slate-900">
+                Analytics
+              </h1>
+            </div>
+            <div className="h-10 w-10 flex items-center justify-center rounded-full bg-slate-900 text-white text-[10px] font-black uppercase shadow-lg">
+              QA
             </div>
           </div>
-          <div className="z-20 flex rounded-xl border border-slate-200 bg-white/20 p-1 backdrop-blur-sm">
-            {periods.map((entry) => (
-              <button
-                key={entry}
-                type="button"
-                onClick={() => setPeriod(entry)}
-                className={`rounded-lg px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all ${
-                  period === entry
-                    ? "bg-white text-[#03cd8c] shadow-lg"
-                    : "text-slate-900"
-                }`}
-              >
-                {periodLabels[entry]}
-              </button>
-            ))}
+          
+          {/* Scrollable Period Tabs for Mobile */}
+          <div className="flex overflow-x-auto no-scrollbar -mx-2 px-2 py-1">
+            <div className="flex rounded-xl border border-slate-200 bg-slate-50 p-1 backdrop-blur-sm shadow-inner w-full sm:w-auto">
+              {periods.map((entry) => (
+                <button
+                  key={entry}
+                  type="button"
+                  onClick={() => setPeriod(entry)}
+                  className={`flex-1 sm:flex-none rounded-lg px-4 py-2 text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap ${
+                    period === entry
+                      ? "bg-white text-brand-active shadow-md border border-slate-100"
+                      : "text-slate-500 hover:text-slate-900"
+                  }`}
+                >
+                  {periodLabels[entry]}
+                </button>
+              ))}
+            </div>
           </div>
         </header>
       </div>
 
       <main className="flex-1 space-y-6 overflow-y-auto px-4 pb-16 pt-6 scrollbar-hide">
-        <section className="relative overflow-hidden rounded-3xl bg-slate-900 p-6 text-white shadow-xl">
-          <div className="absolute top-0 right-0 -mr-16 -mt-16 h-32 w-32 rounded-full bg-[#03cd8c]/20 blur-2xl" />
-          <div className="relative flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="flex flex-col">
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-500">
+        {/* Main Revenue Card */}
+        <section 
+          onClick={() => navigate("/driver/earnings/overview")}
+          className="relative overflow-hidden rounded-[2.5rem] bg-slate-900 p-7 text-white shadow-2xl group cursor-pointer active:scale-[0.98] transition-all"
+        >
+          <div className="absolute top-0 right-0 -mr-16 -mt-16 h-48 w-48 rounded-full bg-brand-active/20 blur-3xl transition-transform group-hover:scale-110" />
+          <div className="relative flex items-center justify-between mb-4">
+             <div className="flex flex-col">
+                <div className="flex items-center space-x-2 mb-1">
+                   <div className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse" />
+                   {/* Added Revenue Overview label and linked to earnings overview per requirement */}
+                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-500">
+                      Revenue Overview
+                   </span>
+                </div>
+                <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
                   Total Income
                 </p>
-                <p className="text-2xl font-black tracking-tight">{formatUGX(totalRevenue)}</p>
-              </div>
-            </div>
+             </div>
+             <TrendingUp className="h-5 w-5 text-brand-active" />
+          </div>
+          <div className="relative">
+            <p className="text-3xl font-black tracking-tighter">{formatUGX(totalRevenue)}</p>
           </div>
           <div className="relative grid grid-cols-2 gap-y-3 pt-2">
             <div className="flex flex-col">
