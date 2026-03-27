@@ -81,6 +81,8 @@ function RequireAuth({ children }: { children: ReactNode }) {
 
 export default function App() {
   const { isDark } = useTheme();
+  const { onboardingCheckpoints } = useStore();
+  const registrationStarted = onboardingCheckpoints.roleSelected;
   const showSupervisorQaMode = !import.meta.env.PROD;
   const appShellScreens = SCREENS.filter(
     (screen) => !AUTH_ROUTES_WITHOUT_SHELL.has(screen.path)
@@ -123,9 +125,6 @@ export default function App() {
 
         {/* App Flow - Mobile Phone View */}
         {appShellScreens.map((screen) => {
-          const { onboardingCheckpoints } = useStore();
-          const registrationStarted = onboardingCheckpoints.roleSelected;
-
           const shellElement = (
             <AppPhoneShell>
               <screen.Component />

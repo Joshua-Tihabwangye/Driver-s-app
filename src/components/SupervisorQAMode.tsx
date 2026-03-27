@@ -2,6 +2,8 @@ import { MapPin } from "lucide-react";
 import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { matchPath, useLocation, useNavigate } from "react-router-dom";
 import { SCREENS, getPreviewPath } from "../config/routes";
+import { useStore } from "../context/StoreContext";
+import { Activity, RotateCcw } from "lucide-react";
 
 const QA_MODE_STORAGE_KEY = "evz_supervisor_qa_mode";
 const DEFAULT_SCREEN = SCREENS.find((screen) => screen.id === "OnlineDashboard") || SCREENS[0];
@@ -9,6 +11,7 @@ const DEFAULT_SCREEN = SCREENS.find((screen) => screen.id === "OnlineDashboard")
 export default function SupervisorQAMode() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { resetActiveTrip } = useStore();
 
   const [isOpen, setIsOpen] = useState(() => {
     if (typeof window === "undefined") {
@@ -105,6 +108,26 @@ export default function SupervisorQAMode() {
               </option>
             ))}
           </select>
+
+          <div className="mt-4 pt-4 border-t border-emerald-100 flex flex-col gap-3">
+             <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                   <Activity className="h-3.5 w-3.5 text-emerald-600" />
+                   <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Trip State Management</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => resetActiveTrip()}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-orange-50 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-orange-600 hover:bg-orange-100 transition-colors"
+                >
+                  <RotateCcw className="h-3 w-3" />
+                  Force Clear Active Trip
+                </button>
+             </div>
+             <p className="text-[10px] font-medium text-slate-400">
+                Clears the `activeTrip` state in the store. Use this to bypass "Cannot accept new trip while another is active" errors during testing.
+             </p>
+          </div>
         </section>
       )}
     </>

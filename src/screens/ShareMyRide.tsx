@@ -151,12 +151,20 @@ export default function ShareMyRide() {
             </p>
           </div>
 
-          <button
-            onClick={() => navigate(`/driver/safety/follow-my-ride/${rideId}`)}
-            className="w-full py-5 rounded-full border-2 border-slate-900 text-[12px] font-black uppercase tracking-[0.2em] text-slate-900 hover:bg-slate-900 hover:text-white transition-all active:scale-95"
-          >
-            Manage Trusted Contacts
-          </button>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => navigate(`/driver/safety/share-my-ride/${rideId}/add-contact`)}
+              className="w-full py-5 rounded-[2rem] bg-orange-500 text-[11px] font-black uppercase tracking-[0.2em] text-white shadow-xl shadow-orange-500/20 active:scale-95 transition-all"
+            >
+              Add Secure Contact
+            </button>
+            <button
+              onClick={() => navigate(`/driver/safety/follow-my-ride/${rideId}`)}
+              className="w-full py-5 rounded-[2rem] border-2 border-slate-900 text-[11px] font-black uppercase tracking-[0.1em] text-slate-900 hover:bg-slate-900 hover:text-white transition-all active:scale-95"
+            >
+              Manage Trusted
+            </button>
+          </div>
         </section>
       </main>
     </div>

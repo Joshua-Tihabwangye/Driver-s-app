@@ -6,7 +6,8 @@ DollarSign,
 Map,
 MapPin,
 Navigation,
-ShieldCheck
+ShieldCheck,
+Share2
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -227,6 +228,13 @@ export default function RideInProgress() {
               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed">
                 SOS, position tracking, and incident reporting are available in the options menu.
               </p>
+              <button
+                onClick={() => navigate(`/driver/safety/share-my-ride/${tripId}`)}
+                className="w-full py-3.5 rounded-2xl bg-white border border-orange-500/30 text-[10px] font-black uppercase tracking-[0.15em] text-orange-600 shadow-sm active:scale-95 transition-all flex items-center justify-center space-x-2"
+              >
+                <Share2 className="h-3.5 w-3.5" />
+                <span>Share Trip Status</span>
+              </button>
             </div>
           )}
         </section>

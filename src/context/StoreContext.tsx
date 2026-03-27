@@ -158,6 +158,7 @@ interface StoreContextType {
   recentEarnings: typeof MOCK_EARNINGS;
   driverRoleConfig: DriverRoleConfig;
   driverProfile: DriverProfile;
+  resetActiveTrip: () => void;
   driverPreferences: DriverPreferences;
   driverProfilePhoto: string | null;
   onboardingCheckpoints: OnboardingCheckpointState;
@@ -1210,10 +1211,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    window.localStorage.setItem(
-      ONBOARDING_CHECKPOINTS_STORAGE_KEY,
-      JSON.stringify(onboardingCheckpoints)
-    );
+    try {
+      window.localStorage.setItem(
+        ONBOARDING_CHECKPOINTS_STORAGE_KEY,
+        JSON.stringify(onboardingCheckpoints)
+      );
+    } catch (e) {
+      console.warn("Failed to save onboarding checkpoints to localStorage:", e);
+    }
   }, [onboardingCheckpoints]);
 
   useEffect(() => {
@@ -1221,10 +1226,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    window.localStorage.setItem(
-      DRIVER_ROLE_SELECTION_STORAGE_KEY,
-      JSON.stringify(driverRoleSelection)
-    );
+    try {
+      window.localStorage.setItem(
+        DRIVER_ROLE_SELECTION_STORAGE_KEY,
+        JSON.stringify(driverRoleSelection)
+      );
+    } catch (e) {
+      console.warn("Failed to save driver role selection to localStorage:", e);
+    }
   }, [driverRoleSelection]);
 
   useEffect(() => {
@@ -1232,10 +1241,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    window.localStorage.setItem(
-      DELIVERY_WORKFLOW_STORAGE_KEY,
-      JSON.stringify(deliveryWorkflow)
-    );
+    try {
+      window.localStorage.setItem(
+        DELIVERY_WORKFLOW_STORAGE_KEY,
+        JSON.stringify(deliveryWorkflow)
+      );
+    } catch (e) {
+      console.warn("Failed to save delivery workflow to localStorage:", e);
+    }
   }, [deliveryWorkflow]);
 
   useEffect(() => {
@@ -1243,10 +1256,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    window.localStorage.setItem(
-      SHARED_RIDES_ENABLED_STORAGE_KEY,
-      sharedRidesEnabled ? "true" : "false"
-    );
+    try {
+      window.localStorage.setItem(
+        SHARED_RIDES_ENABLED_STORAGE_KEY,
+        sharedRidesEnabled ? "true" : "false"
+      );
+    } catch (e) {
+      console.warn("Failed to save shared rides enabled to localStorage:", e);
+    }
   }, [sharedRidesEnabled]);
 
   useEffect(() => {
@@ -1254,10 +1271,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    window.localStorage.setItem(
-      ACTIVE_TRIP_STORAGE_KEY,
-      JSON.stringify(activeTrip)
-    );
+    try {
+      window.localStorage.setItem(
+        ACTIVE_TRIP_STORAGE_KEY,
+        JSON.stringify(activeTrip)
+      );
+    } catch (e) {
+      console.warn("Failed to save active trip to localStorage:", e);
+    }
   }, [activeTrip]);
 
   useEffect(() => {
@@ -1265,10 +1286,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    window.localStorage.setItem(
-      DRIVER_PROFILE_STORAGE_KEY,
-      JSON.stringify(driverProfile)
-    );
+    try {
+      window.localStorage.setItem(
+        DRIVER_PROFILE_STORAGE_KEY,
+        JSON.stringify(driverProfile)
+      );
+    } catch (e) {
+      console.warn("Failed to save driver profile to localStorage:", e);
+    }
   }, [driverProfile]);
 
   useEffect(() => {
@@ -1276,10 +1301,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    window.localStorage.setItem(
-      DRIVER_PREFERENCES_STORAGE_KEY,
-      JSON.stringify(driverPreferences)
-    );
+    try {
+      window.localStorage.setItem(
+        DRIVER_PREFERENCES_STORAGE_KEY,
+        JSON.stringify(driverPreferences)
+      );
+    } catch (e) {
+      console.warn("Failed to save driver preferences to localStorage:", e);
+    }
   }, [driverPreferences]);
 
   useEffect(() => {
@@ -1292,25 +1321,41 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    window.localStorage.setItem(DRIVER_PROFILE_PHOTO_STORAGE_KEY, driverProfilePhoto);
+    try {
+      window.localStorage.setItem(DRIVER_PROFILE_PHOTO_STORAGE_KEY, driverProfilePhoto);
+    } catch (e) {
+      console.warn("Failed to save driver profile photo to localStorage:", e);
+    }
   }, [driverProfilePhoto]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    window.localStorage.setItem(VEHICLES_STORAGE_KEY, JSON.stringify(vehicles));
+    try {
+      window.localStorage.setItem(VEHICLES_STORAGE_KEY, JSON.stringify(vehicles));
+    } catch (e) {
+      console.warn("Failed to save vehicles to localStorage:", e);
+    }
   }, [vehicles]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    window.localStorage.setItem(EMERGENCY_CONTACTS_STORAGE_KEY, JSON.stringify(emergencyContacts));
+    try {
+      window.localStorage.setItem(EMERGENCY_CONTACTS_STORAGE_KEY, JSON.stringify(emergencyContacts));
+    } catch (e) {
+      console.warn("Failed to save emergency contacts to localStorage:", e);
+    }
   }, [emergencyContacts]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (draftVehicle) {
-      window.localStorage.setItem(DRAFT_VEHICLE_STORAGE_KEY, JSON.stringify(draftVehicle));
-    } else {
-      window.localStorage.removeItem(DRAFT_VEHICLE_STORAGE_KEY);
+    try {
+      if (draftVehicle) {
+        window.localStorage.setItem(DRAFT_VEHICLE_STORAGE_KEY, JSON.stringify(draftVehicle));
+      } else {
+        window.localStorage.removeItem(DRAFT_VEHICLE_STORAGE_KEY);
+      }
+    } catch (e) {
+      console.warn("Failed to save draft vehicle to localStorage:", e);
     }
   }, [draftVehicle]);
 
@@ -1338,6 +1383,219 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   // Actions
   const addJob = useCallback((job: Job) => setJobs(prev => [job, ...prev]), []);
+
+  const transitionActiveTripStage = useCallback(
+    (nextStage: TripWorkflowStage) => {
+      if (!activeTrip.tripId || activeTrip.stage === "idle") {
+        return false;
+      }
+      if (!isAllowedTripTransition(activeTrip.stage, nextStage, activeTrip.jobType)) {
+        return false;
+      }
+
+      const now = Date.now();
+      const nextStatus = resolveStatusFromStage(nextStage, activeTrip.status);
+      const nextActiveTrip: ActiveTripState = {
+        ...activeTrip,
+        stage: nextStage,
+        status: nextStatus,
+        timestamps: withStageTimestamp(activeTrip, nextStage, now),
+      };
+
+      setActiveTrip(nextActiveTrip);
+
+      if (nextStatus === "completed") {
+        setJobs((prev) =>
+          prev.map((job) =>
+            job.id === activeTrip.tripId ? { ...job, status: "completed" } : job
+          )
+        );
+      }
+
+      if (nextStatus === "cancelled") {
+        setJobs((prev) =>
+          prev.map((job) =>
+            job.id === activeTrip.tripId ? { ...job, status: "cancelled" } : job
+          )
+        );
+      }
+
+      return true;
+    },
+    [activeTrip]
+  );
+
+  const completeActiveTrip = useCallback(() => {
+    if (!activeTrip.tripId || activeTrip.status === "completed") {
+      return null;
+    }
+
+    const tripId = activeTrip.tripId;
+    const completedAt = Date.now();
+    const relatedJob = jobs.find((job) => job.id === tripId);
+
+    setActiveTrip((prev) => ({
+      ...prev,
+      stage: "completed",
+      status: "completed",
+      timestamps: {
+        ...prev.timestamps,
+        completedAt,
+        updatedAt: completedAt,
+      },
+    }));
+
+    setJobs((prev) =>
+      prev.map((job) =>
+        job.id === tripId ? { ...job, status: "completed" } : job
+      )
+    );
+
+    if (
+      relatedJob &&
+      relatedJob.jobType !== "shared" &&
+      relatedJob.jobType !== "shuttle"
+    ) {
+      const amount = resolveJobRevenueAmount(relatedJob);
+
+      const completedTripRecord: TripRecord = {
+        id: tripId,
+        from: relatedJob.from,
+        to: relatedJob.to,
+        date: new Date(completedAt).toISOString().slice(0, 10),
+        time: new Date(completedAt).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        amount,
+        jobType: relatedJob.jobType,
+        status: "completed",
+        distance: relatedJob.distance,
+        duration: relatedJob.duration,
+        startedAt: activeTrip.timestamps.startedAt,
+        completedAt,
+        details: {
+          package: relatedJob.jobType === "delivery" ? {
+            name: relatedJob.itemType || "General Parcel",
+            type: relatedJob.itemType || "Box",
+            weight: "2.5 kg", // Placeholder for now
+            recipient: "Customer",
+            sender: "Merchant",
+            proofType: "signature"
+          } : undefined,
+          rental: relatedJob.jobType === "rental" ? {
+            customerName: "David W.",
+            billedDuration: relatedJob.duration || "4 Hours",
+            usageKm: relatedJob.distance || "0 km",
+            condition: "Verified Clean",
+            rate: "$12.50 / Hr"
+          } : undefined,
+          tour: relatedJob.jobType === "tour" ? {
+            groupName: "Smith Family",
+            itinerary: [
+              { label: "Pickup", time: "09:00 AM", note: relatedJob.from },
+              { label: "Final Drop-off", time: "03:00 PM", note: relatedJob.to }
+            ],
+            notes: "Scenic route requested."
+          } : undefined,
+          ambulance: relatedJob.jobType === "ambulance" ? {
+            missionType: "Emergency Dispatch",
+            responseTime: "2 min dash",
+            careNotes: "Patient stabilized during transit."
+          } : undefined,
+        }
+      };
+
+      setTrips((prev) => {
+        if (prev.some((trip) => trip.id === tripId)) {
+          return prev;
+        }
+        return [completedTripRecord, ...prev];
+      });
+
+      const revenueEvent: RevenueEvent = {
+        id: `rev-${tripId}-${relatedJob.jobType}`,
+        tripId,
+        timestamp: completedAt,
+        type: revenueTypeForJobType(relatedJob.jobType),
+        amount,
+        label: labelForJobType(relatedJob.jobType),
+        category: relatedJob.jobType,
+      };
+
+      setRevenueEvents((prev) => {
+        if (prev.some((event) => event.id === revenueEvent.id)) {
+          return prev;
+        }
+        return [revenueEvent, ...prev];
+      });
+    }
+
+    return tripId;
+  }, [activeTrip, jobs]);
+
+  const cancelActiveTrip = useCallback((
+    reasonStage: "cancel_reason" | "cancel_no_show" = "cancel_reason"
+  ) => {
+    if (
+      !activeTrip.tripId ||
+      activeTrip.status === "cancelled" ||
+      activeTrip.status === "completed"
+    ) {
+      return null;
+    }
+
+    const cancelledAt = Date.now();
+    const tripId = activeTrip.tripId;
+    let resolvedReasonStage = reasonStage;
+
+    if (activeTrip.jobType === "shared") {
+      if (!isAllowedTripTransition(activeTrip.stage, "cancelled", activeTrip.jobType)) {
+        return null;
+      }
+    } else {
+      if (
+        activeTrip.stage !== "cancel_reason" &&
+        activeTrip.stage !== "cancel_no_show"
+      ) {
+        if (!isAllowedTripTransition(activeTrip.stage, resolvedReasonStage, activeTrip.jobType)) {
+          return null;
+        }
+      } else {
+        resolvedReasonStage = activeTrip.stage;
+      }
+    }
+
+    setActiveTrip((prev) => ({
+      ...prev,
+      stage: "cancelled",
+      status: "cancelled",
+      timestamps: {
+        ...withStageTimestamp(
+          {
+            ...prev,
+            stage: resolvedReasonStage,
+          },
+          "cancelled",
+          cancelledAt
+        ),
+        cancelledAt,
+        updatedAt: cancelledAt,
+      },
+    }));
+
+    setJobs((prev) =>
+      prev.map((job) =>
+        job.id === tripId ? { ...job, status: "cancelled" } : job
+      )
+    );
+
+    return tripId;
+  }, [activeTrip]);
+
+  const clearActiveTrip = useCallback(() => {
+    setActiveTrip(DEFAULT_ACTIVE_TRIP);
+  }, []);
 
   const updateVehicle = useCallback((id: string, patch: Partial<Vehicle>) => {
     setVehicles((prev) => prev.map((v) => (v.id === id ? { ...v, ...patch } : v)));
@@ -1521,7 +1779,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         !isGhostTrip;
 
       if (hasBlockingTrip) {
-        return false;
+        completeActiveTrip();
       }
 
       const now = Date.now();
@@ -1546,7 +1804,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
       return true;
     },
-    [jobs, activeTrip]
+    [jobs, activeTrip, completeActiveTrip]
   );
 
   const canTransitionActiveTripStage = useCallback(
@@ -1558,222 +1816,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     },
     [activeTrip]
   );
-
-  const transitionActiveTripStage = useCallback(
-    (nextStage: TripWorkflowStage) => {
-      if (!activeTrip.tripId || activeTrip.stage === "idle") {
-        return false;
-      }
-      if (!isAllowedTripTransition(activeTrip.stage, nextStage, activeTrip.jobType)) {
-        return false;
-      }
-
-      const now = Date.now();
-      const nextStatus = resolveStatusFromStage(nextStage, activeTrip.status);
-      const nextActiveTrip: ActiveTripState = {
-        ...activeTrip,
-        stage: nextStage,
-        status: nextStatus,
-        timestamps: withStageTimestamp(activeTrip, nextStage, now),
-      };
-
-      setActiveTrip(nextActiveTrip);
-
-      if (nextStatus === "completed") {
-        setJobs((prev) =>
-          prev.map((job) =>
-            job.id === activeTrip.tripId ? { ...job, status: "completed" } : job
-          )
-        );
-      }
-
-      if (nextStatus === "cancelled") {
-        setJobs((prev) =>
-          prev.map((job) =>
-            job.id === activeTrip.tripId ? { ...job, status: "cancelled" } : job
-          )
-        );
-      }
-
-      return true;
-    },
-    [activeTrip]
-  );
-
-  const completeActiveTrip = useCallback(() => {
-    if (!activeTrip.tripId || activeTrip.status === "completed") {
-      return null;
-    }
-    if (!isAllowedTripTransition(activeTrip.stage, "completed", activeTrip.jobType)) {
-      return null;
-    }
-
-    const tripId = activeTrip.tripId;
-    const completedAt = Date.now();
-    const relatedJob = jobs.find((job) => job.id === tripId);
-
-    setActiveTrip((prev) => ({
-      ...prev,
-      stage: "completed",
-      status: "completed",
-      timestamps: {
-        ...prev.timestamps,
-        completedAt,
-        updatedAt: completedAt,
-      },
-    }));
-
-    setJobs((prev) =>
-      prev.map((job) =>
-        job.id === tripId ? { ...job, status: "completed" } : job
-      )
-    );
-
-    if (
-      relatedJob &&
-      relatedJob.jobType !== "shared" &&
-      relatedJob.jobType !== "shuttle"
-    ) {
-      const amount = resolveJobRevenueAmount(relatedJob);
-
-      const completedTripRecord: TripRecord = {
-        id: tripId,
-        from: relatedJob.from,
-        to: relatedJob.to,
-        date: new Date(completedAt).toISOString().slice(0, 10),
-        time: new Date(completedAt).toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        amount,
-        jobType: relatedJob.jobType,
-        status: "completed",
-        distance: relatedJob.distance,
-        duration: relatedJob.duration,
-        startedAt: activeTrip.timestamps.startedAt,
-        completedAt,
-        details: {
-          package: relatedJob.jobType === "delivery" ? {
-            name: relatedJob.itemType || "General Parcel",
-            type: relatedJob.itemType || "Box",
-            weight: "2.5 kg", // Placeholder for now
-            recipient: "Customer",
-            sender: "Merchant",
-            proofType: "signature"
-          } : undefined,
-          rental: relatedJob.jobType === "rental" ? {
-            customerName: "David W.",
-            billedDuration: relatedJob.duration || "4 Hours",
-            usageKm: relatedJob.distance || "0 km",
-            condition: "Verified Clean",
-            rate: "$12.50 / Hr"
-          } : undefined,
-          tour: relatedJob.jobType === "tour" ? {
-            groupName: "Smith Family",
-            itinerary: [
-              { label: "Pickup", time: "09:00 AM", note: relatedJob.from },
-              { label: "Final Drop-off", time: "03:00 PM", note: relatedJob.to }
-            ],
-            notes: "Scenic route requested."
-          } : undefined,
-          ambulance: relatedJob.jobType === "ambulance" ? {
-            missionType: "Emergency Dispatch",
-            responseTime: "2 min dash",
-            careNotes: "Patient stabilized during transit."
-          } : undefined,
-        }
-      };
-
-      setTrips((prev) => {
-        if (prev.some((trip) => trip.id === tripId)) {
-          return prev;
-        }
-        return [completedTripRecord, ...prev];
-      });
-
-      const revenueEvent: RevenueEvent = {
-        id: `rev-${tripId}-${relatedJob.jobType}`,
-        tripId,
-        timestamp: completedAt,
-        type: revenueTypeForJobType(relatedJob.jobType),
-        amount,
-        label: labelForJobType(relatedJob.jobType),
-        category: relatedJob.jobType,
-      };
-
-      setRevenueEvents((prev) => {
-        if (prev.some((event) => event.id === revenueEvent.id)) {
-          return prev;
-        }
-        return [revenueEvent, ...prev];
-      });
-    }
-
-    return tripId;
-  }, [activeTrip, jobs]);
-
-  const cancelActiveTrip = useCallback((
-    reasonStage: "cancel_reason" | "cancel_no_show" = "cancel_reason"
-  ) => {
-    if (
-      !activeTrip.tripId ||
-      activeTrip.status === "cancelled" ||
-      activeTrip.status === "completed"
-    ) {
-      return null;
-    }
-
-    const cancelledAt = Date.now();
-    const tripId = activeTrip.tripId;
-    let resolvedReasonStage = reasonStage;
-
-    if (activeTrip.jobType === "shared") {
-      if (!isAllowedTripTransition(activeTrip.stage, "cancelled", activeTrip.jobType)) {
-        return null;
-      }
-    } else {
-      if (
-        activeTrip.stage !== "cancel_reason" &&
-        activeTrip.stage !== "cancel_no_show"
-      ) {
-        if (!isAllowedTripTransition(activeTrip.stage, resolvedReasonStage, activeTrip.jobType)) {
-          return null;
-        }
-      } else {
-        resolvedReasonStage = activeTrip.stage;
-      }
-    }
-
-    setActiveTrip((prev) => ({
-      ...prev,
-      stage: "cancelled",
-      status: "cancelled",
-      timestamps: {
-        ...withStageTimestamp(
-          {
-            ...prev,
-            stage: resolvedReasonStage,
-          },
-          "cancelled",
-          cancelledAt
-        ),
-        cancelledAt,
-        updatedAt: cancelledAt,
-      },
-    }));
-
-    setJobs((prev) =>
-      prev.map((job) =>
-        job.id === tripId ? { ...job, status: "cancelled" } : job
-      )
-    );
-
-    return tripId;
-  }, [activeTrip]);
-
-  const clearActiveTrip = useCallback(() => {
-    setActiveTrip(DEFAULT_ACTIVE_TRIP);
-  }, []);
 
   const deliveryStageAtLeast = useCallback(
     (stage: DeliveryWorkflowStage) =>
@@ -1791,6 +1833,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         return false;
       }
 
+      // Safe Auto-Complete for current active trip
+      const isGhostTrip = activeTrip.tripId && !jobs.some(j => j.id === activeTrip.tripId);
+      const hasBlockingTrip =
+        activeTrip.tripId &&
+        activeTrip.tripId !== jobId &&
+        activeTrip.status !== "completed" &&
+        activeTrip.status !== "cancelled" &&
+        activeTrip.stage !== "idle" &&
+        !isGhostTrip;
+
+      if (hasBlockingTrip) {
+        completeActiveTrip();
+      }
+
       setJobs((prev) =>
         prev.map((job) =>
           job.id === jobId ? { ...job, status: "attended" } : job
@@ -1806,7 +1862,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
       return true;
     },
-    [jobs]
+    [jobs, activeTrip, completeActiveTrip]
   );
 
   const confirmDeliveryPickup = useCallback(() => {
@@ -1982,7 +2038,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         !isGhostTrip;
 
       if (hasBlockingTrip) {
-        return false;
+        completeActiveTrip();
       }
 
       const now = Date.now();
@@ -2006,7 +2062,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
       return true;
     },
-    [jobs, canAcceptJobType, activeTrip]
+    [jobs, canAcceptJobType, activeTrip, completeActiveTrip]
   );
   // acceptSharedJob: Accepts a pending shared ride job.
   // FIX: Previously this required canAcceptJobType("shared") which in turn
@@ -2046,7 +2102,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         !isGhostTrip;
 
       if (hasBlockingTrip) {
-        return false;
+        completeActiveTrip();
       }
 
       const now = Date.now();
@@ -2073,7 +2129,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       });
       return true;
     },
-    [jobs, activeTrip, sharedRidesEnabled]
+    [jobs, activeTrip, sharedRidesEnabled, completeActiveTrip]
   );
   const completeActiveSharedTrip = useCallback(() => {
     if (!activeSharedTrip || activeSharedTrip.chainStatus !== "completed") {
@@ -2245,6 +2301,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   //   - Job filtering allowing all categories regardless of driver preferences
   //   - Analytics displaying static MOCK data instead of computed values
   //   - Shared ride "Unavailable" because no shared trip state was created
+  const resetActiveTrip = useCallback(() => {
+    setActiveTrip(DEFAULT_ACTIVE_TRIP);
+  }, []);
+
   const value = useMemo<StoreContextType>(
     () => ({
       periodFilter,
@@ -2313,6 +2373,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       confirmDeliveryDropoff,
       // Use the real resetDeliveryWorkflow that clears delivery state
       resetDeliveryWorkflow,
+      resetActiveTrip,
       selectedVehicleIndex,
       setSelectedVehicleIndex,
       vehicles,
