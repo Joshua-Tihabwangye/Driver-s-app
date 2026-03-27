@@ -41,7 +41,8 @@ export default function EarningsOverview() {
   const navigate = useNavigate();
   const {
     recentEarnings,
-    filteredRevenueEvents,
+    revenueEvents,
+    trips,
     periodFilter,
     setPeriodFilter,
     dashboardMetrics,
@@ -49,7 +50,7 @@ export default function EarningsOverview() {
   } = useStore();
   const latestEarning = recentEarnings[0] || { amount: 0 };
 
-  const filteredRevenue = filteredRevenueEvents.filter((event) =>
+  const filteredRevenue = revenueEvents.filter((event) =>
     isWithinPeriod(event.timestamp, periodFilter)
   );
 

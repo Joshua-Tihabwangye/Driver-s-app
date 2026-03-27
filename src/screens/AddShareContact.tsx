@@ -106,7 +106,29 @@ export default function AddShareContact() {
             {/* Form Fields */}
             <div className="space-y-4">
               <label className="block space-y-2">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-500 ml-1">Full Name</span>
+                <div className="flex items-center justify-between ml-1">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-500">Full Name</span>
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      const mockContacts = [
+                        { name: "Sarah Johnson", phone: "+256 700 123 456", email: "sarah.j@example.com" },
+                        { name: "David Wilson", phone: "+256 755 987 654", email: "david.w@example.com" },
+                        { name: "Michael Okello", phone: "+256 772 111 222", email: "m.okello@example.com" }
+                      ];
+                      const contact = mockContacts[Math.floor(Math.random() * mockContacts.length)];
+                      setFormData({
+                        ...formData,
+                        name: contact.name,
+                        phone: contact.phone,
+                        email: contact.email
+                      });
+                    }}
+                    className="text-[9px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 hover:bg-emerald-100 transition-colors"
+                  >
+                    Select from Contacts
+                  </button>
+                </div>
                 <div className="relative">
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <input

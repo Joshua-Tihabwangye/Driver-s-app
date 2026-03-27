@@ -5,7 +5,8 @@ import {
   ChevronRight,
   Clock,
   Map,
-  Phone
+  Phone,
+  Share2
 } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -159,6 +160,28 @@ export default function TourSchedule() {
             </div>
           </div>
         </section>
+
+        {/* Safety Share Integration */}
+        <button
+          type="button"
+          onClick={() => navigate(`/driver/safety/share-my-ride/${tourId}`)}
+          className="w-full flex items-center justify-between p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-100/50 shadow-sm active:scale-95 transition-all text-left"
+        >
+          <div className="flex items-center space-x-3">
+            <div className="h-8 w-8 rounded-xl bg-emerald-500 flex items-center justify-center shadow-md shadow-emerald-500/20">
+              <Share2 className="h-4 w-4 text-white" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[9px] font-black uppercase tracking-[0.15em] text-emerald-600">
+                Safety Protocol
+              </span>
+              <span className="text-[11px] font-black text-slate-900 uppercase">
+                Share Trip Status
+              </span>
+            </div>
+          </div>
+          <ChevronLeft className="h-4 w-4 text-slate-400 rotate-180" />
+        </button>
 
         {/* Timeline */}
         <section className="space-y-6">

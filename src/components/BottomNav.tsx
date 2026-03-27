@@ -1,9 +1,4 @@
-import {
-  Briefcase,
-  DollarSign,
-  Home,
-  MoreHorizontal,
-} from "lucide-react";
+import { Briefcase, Home, MoreHorizontal, Wallet as WalletIcon } from "lucide-react";
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
@@ -59,7 +54,7 @@ function BottomNavItem({ icon: Icon, label, active, onClick, isDark, badge }: Bo
 const TABS = [
   { id: "home", label: "Home", icon: Home, route: "/driver/dashboard/online" },
   { id: "jobs", label: "Jobs", icon: Briefcase, route: "/driver/jobs/list" },
-  { id: "earnings", label: "Earnings", icon: DollarSign, route: "/driver/analytics" },
+  { id: "earnings", label: "Wallet", icon: WalletIcon, route: "/driver/analytics" },
   { id: "more", label: "More", icon: MoreHorizontal, route: "/driver/more" },
 ];
 

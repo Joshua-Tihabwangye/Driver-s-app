@@ -110,6 +110,10 @@ export default function ShareMyRide() {
           <div className="grid grid-cols-3 gap-4">
             <button
               type="button"
+              onClick={() => {
+                const text = `Follow my ride: ${shareUrl}`;
+                window.open(`sms:?body=${encodeURIComponent(text)}`, '_blank');
+              }}
               className="group flex flex-col items-center justify-center rounded-[2rem] border-2 border-orange-500/10 bg-white p-5 active:scale-95 transition-all shadow-sm hover:border-emerald-500/30 hover:bg-emerald-50/10"
             >
               <div className="h-10 w-10 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center mb-3 group-hover:bg-emerald-500 group-hover:border-emerald-500 transition-all">
@@ -120,6 +124,11 @@ export default function ShareMyRide() {
 
             <button
               type="button"
+              onClick={() => {
+                const subject = "Follow my ride status";
+                const body = `Hi, you can follow my real-time ride status here: ${shareUrl}`;
+                window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
+              }}
               className="group flex flex-col items-center justify-center rounded-[2rem] border-2 border-orange-500/10 bg-white p-5 active:scale-95 transition-all shadow-sm hover:border-emerald-500/30 hover:bg-emerald-50/10"
             >
               <div className="h-10 w-10 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center mb-3 group-hover:bg-emerald-500 group-hover:border-emerald-500 transition-all">
@@ -128,15 +137,16 @@ export default function ShareMyRide() {
               <span className="text-[10px] font-black uppercase tracking-wider text-slate-900">Email</span>
             </button>
 
-            <button
-              type="button"
-              className="group flex flex-col items-center justify-center rounded-[2rem] border-2 border-orange-500/10 bg-white p-5 active:scale-95 transition-all shadow-sm hover:border-emerald-500/30 hover:bg-emerald-50/10"
-            >
-              <div className="h-10 w-10 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center mb-3 group-hover:bg-emerald-500 group-hover:border-emerald-500 transition-all">
-                <QrCode className="h-5 w-5 text-orange-500 group-hover:text-white" />
+            <div className="group flex flex-col items-center justify-center rounded-[2rem] border-2 border-orange-500/10 bg-white p-2 transition-all shadow-sm">
+              <div className="h-20 w-20 rounded-xl bg-white border border-slate-100 flex items-center justify-center mb-2 overflow-hidden">
+                <img 
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(shareUrl)}`}
+                  alt="QR Code"
+                  className="h-full w-full object-contain"
+                />
               </div>
               <span className="text-[10px] font-black uppercase tracking-wider text-slate-900">QR Code</span>
-            </button>
+            </div>
           </div>
 
           <div className="rounded-[2.5rem] border-2 border-emerald-500/10 bg-emerald-50/30 p-6 shadow-sm">
