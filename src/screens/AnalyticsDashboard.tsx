@@ -45,7 +45,9 @@ const CATEGORY_COLORS: Record<JobCategory, string> = {
 };
 
 function toTripTimestamp(trip: TripRecord): number {
-  const direct = Date.parse(trip.date);
+  // Parsing YYYY-MM-DD as local time by adding T00:00:00
+  const localDate = `${trip.date}T00:00:00`;
+  const direct = Date.parse(localDate);
   if (Number.isFinite(direct)) {
     return direct;
   }
@@ -228,7 +230,7 @@ function ServiceBreakdown({
 
 export default function AnalyticsDashboard() {
   const navigate = useNavigate();
-  const { filteredTrips, filteredRevenueEvents, assignableJobTypes } = useStore();
+  const { trips, revenueEvents, assignableJobTypes } = useStore();
   const [period, setPeriod] = useState<Period>("week");
   // Quarter and year sub-selectors: shown when period is "quarter" or "year"
   const [selectedQuarter, setSelectedQuarter] = useState("Q1");
@@ -238,17 +240,17 @@ export default function AnalyticsDashboard() {
 
   const periodTrips = useMemo(
     () =>
-      filteredTrips.filter((trip) =>
+      trips.filter((trip) =>
         isWithinPeriod(toTripTimestamp(trip), periodFilter)
       ),
-    [filteredTrips, periodFilter]
+    [trips, periodFilter]
   );
   const periodRevenue = useMemo(
     () =>
-      filteredRevenueEvents.filter((event) =>
+      revenueEvents.filter((event) =>
         isWithinPeriod(event.timestamp, periodFilter)
       ),
-    [filteredRevenueEvents, periodFilter]
+    [revenueEvents, periodFilter]
   );
 
   const totalsByCategory = useMemo(() => {
@@ -333,11 +335,11 @@ export default function AnalyticsDashboard() {
       const end = start + 24 * 60 * 60 * 1000;
       const rides = periodTrips.filter((trip) => {
         const timestamp = toTripTimestamp(trip);
-        return timestamp >= start && timestamp < end && trip.jobType === "ride";
+        return timestamp >= start && timestamp < end && (trip.jobType === "ride" || trip.jobType === "shared");
       }).length;
       const deliveries = periodTrips.filter((trip) => {
         const timestamp = toTripTimestamp(trip);
-        return timestamp >= start && timestamp < end && trip.jobType === "delivery";
+        return timestamp >= start && timestamp < end && (trip.jobType === "delivery" || trip.jobType === "ambulance" || trip.jobType === "tour" || trip.jobType === "rental");
       }).length;
       const total = periodRevenue
         .filter((event) => event.timestamp >= start && event.timestamp < end)

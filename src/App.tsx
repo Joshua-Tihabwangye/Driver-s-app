@@ -131,13 +131,12 @@ export default function App() {
             </AppPhoneShell>
           );
 
-          // EVzone Audit Fix: Tighten auth for onboarding.
-          // If registration has started (roleSelected is true), then sensitive onboarding pages 
-          // are no longer public and require RequireAuth. 
-          // Initial entry (RegisterServices, Registration, DriverRegistration) remains public.
+          // Allow all onboarding steps to be accessed easily without strict session blocking.
+          // Since the user is not officially logged in until the very end, placing these behind
+          // RequireAuth immediately leads to infinite redirect loops back to login.
           const isCurrentlyPublic = 
             PUBLIC_SCREEN_IDS.has(screen.id) || 
-            (SENSITIVE_ONBOARDING_IDS.has(screen.id) && !registrationStarted);
+            SENSITIVE_ONBOARDING_IDS.has(screen.id);
 
           return (
             <Route

@@ -274,7 +274,7 @@ export default function ImageUpload() {
           <div className="mt-4 pt-4 border-t border-slate-100">
             <button
               type="button"
-              onClick={() => navigate("/driver/register")}
+              onClick={() => navigate("/driver/preferences/identity/face-capture")}
               className="w-full rounded-2xl bg-[#1c2b4d] py-4 text-sm font-black text-white shadow-xl shadow-slate-900/20 active:scale-[0.98] transition-all uppercase tracking-widest"
             >
               Confirm & Continue
