@@ -91,8 +91,13 @@ export default function OnlineMapView() {
               <Target className="h-6 w-6" />
             </div>
             <div className="flex flex-col">
-              <p className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-tight">Active Online</p>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Scanning for requests...</p>
+            <p className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-tight">Active Online</p>
+            <button 
+              onClick={() => navigate("/driver/map/searching")}
+              className="text-[11px] text-orange-600 dark:text-orange-400 font-black uppercase tracking-widest hover:underline"
+            >
+              Find Riders →
+            </button>
             </div>
           </div>
           <button

@@ -213,6 +213,12 @@ export default function OnlineDashboard() {
               onClick={() => navigate("/driver/dashboard/active")}
             />
             <QuickAction
+              icon={Map}
+              label="Scan for Riders"
+              sub="Find Jobs"
+              onClick={() => navigate("/driver/map/searching")}
+            />
+            <QuickAction
               icon={ShieldCheck}
               label="SAFETY"
               sub="Hub"
