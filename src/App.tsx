@@ -13,6 +13,7 @@ import {
   AUTH_LOGIN_ROUTE,
   useAuth,
 } from "./context/AuthContext";
+import { useStore } from "./context/StoreContext";
 import { useTheme } from "./context/ThemeContext";
 import ForgotPassword from "./screens/ForgotPassword";
 import OTPVerification from "./screens/OTPVerification";
@@ -26,6 +27,9 @@ const PUBLIC_SCREEN_IDS = new Set([
   "RegisterServices",
   "Registration",
   "DriverRegistration",
+]);
+
+const SENSITIVE_ONBOARDING_IDS = new Set([
   "DriverProfileOnboarding",
   "DriverPreferences",
   "DocumentUpload",
@@ -119,18 +123,29 @@ export default function App() {
 
         {/* App Flow - Mobile Phone View */}
         {appShellScreens.map((screen) => {
+          const { onboardingCheckpoints } = useStore();
+          const registrationStarted = onboardingCheckpoints.roleSelected;
+
           const shellElement = (
             <AppPhoneShell>
               <screen.Component />
             </AppPhoneShell>
           );
 
+          // EVzone Audit Fix: Tighten auth for onboarding.
+          // If registration has started (roleSelected is true), then sensitive onboarding pages 
+          // are no longer public and require RequireAuth. 
+          // Initial entry (RegisterServices, Registration, DriverRegistration) remains public.
+          const isCurrentlyPublic = 
+            PUBLIC_SCREEN_IDS.has(screen.id) || 
+            (SENSITIVE_ONBOARDING_IDS.has(screen.id) && !registrationStarted);
+
           return (
             <Route
               key={screen.id}
               path={screen.path}
               element={
-                PUBLIC_SCREEN_IDS.has(screen.id)
+                isCurrentlyPublic
                   ? shellElement
                   : <RequireAuth>{shellElement}</RequireAuth>
               }

@@ -207,6 +207,12 @@ export default function OnlineDashboard() {
               />
             )}
             <QuickAction
+              icon={Activity}
+              label="Performance"
+              sub="Insights"
+              onClick={() => navigate("/driver/dashboard/active")}
+            />
+            <QuickAction
               icon={ShieldCheck}
               label="SAFETY"
               sub="Hub"

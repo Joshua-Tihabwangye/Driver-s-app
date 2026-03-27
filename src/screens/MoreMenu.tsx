@@ -200,6 +200,13 @@ export default function MoreMenu() {
             themeColor="green"
           />
           <MenuItem
+            icon={ListChecks}
+            label="Documents & Compliance"
+            description="Track your account status"
+            onClick={() => navigate("/driver/dashboard/required-actions")}
+            themeColor="green"
+          />
+          <MenuItem
             icon={HelpCircle}
             label="Help & Support"
             description="Contact us and read FAQs"
