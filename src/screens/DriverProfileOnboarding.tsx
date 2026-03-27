@@ -10,9 +10,11 @@ import {
   Link2,
   Plus,
   ShieldCheck,
+  Smartphone,
   Trash2,
   Upload,
-  User
+  User,
+  Users
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -121,6 +123,8 @@ export default function DriverProfileOnboarding() {
     setOnboardingCheckpoint,
     vehicles,
     selectedVehicleIndex,
+    emergencyContacts,
+    removeEmergencyContact,
   } = useStore();
   const documentState = useMemo(() => readStoredDocumentState(), []);
   const blockerCount = onboardingBlockers.length;
@@ -309,7 +313,15 @@ export default function DriverProfileOnboarding() {
         label: "Documents Verification",
         detail: onboardingCheckpoints.documentsVerified
           ? "All required documents are uploaded."
-          : `${uploadedDocumentSideCount}/6 required document sides uploaded.`,
+          : (() => {
+              // EVzone Driver – Part 2: Explicit missing-credential messages.
+              const missingNames = documentSides
+                .filter((item) => item.copy.status !== "Uploaded")
+                .map((item) => item.label);
+              if (missingNames.length === 0) return "All required documents are uploaded.";
+              if (missingNames.length <= 2) return `${missingNames.join(" and ")} is missing.`;
+              return `${missingNames.length} document sides are still missing. Check list below.`;
+            })(),
         present: onboardingCheckpoints.documentsVerified,
         route: "/driver/onboarding/profile/documents/upload",
       },
@@ -318,7 +330,7 @@ export default function DriverProfileOnboarding() {
         label: "Identity Verification",
         detail: onboardingCheckpoints.identityVerified
           ? "Identity checks are completed."
-          : "Profile photo is still missing.",
+          : "Profile picture is missing.",
         present: onboardingCheckpoints.identityVerified,
         route: "/driver/preferences/identity/upload-image",
       },
@@ -327,9 +339,11 @@ export default function DriverProfileOnboarding() {
         label: "Vehicle Setup",
         detail: onboardingCheckpoints.vehicleReady
           ? "Active vehicle selected and ready."
-          : vehicles.length > 0 && selectedVehicleIndex === null
-          ? "Missing vehicle selection. Choose a vehicle to use."
-          : "No vehicles added. Go to Garage to add a vehicle.",
+          : (() => {
+              if (vehicles.length === 0) return "No vehicles added. Logbook and insurance missing.";
+              if (selectedVehicleIndex === null) return "Vehicle selected but not set as active.";
+              return "Vehicle setup incomplete.";
+            })(),
         present: onboardingCheckpoints.vehicleReady,
         route: "/driver/vehicles",
       },
@@ -345,8 +359,8 @@ export default function DriverProfileOnboarding() {
           : item.copy.status === "Rejected"
           ? item.copy.error
             ? `Rejected: ${item.copy.error}`
-            : "Rejected. Re-upload required."
-          : "Missing upload.";
+            : `${item.label} rejected. Re-upload required.`
+          : `${item.label} is missing.`; // EVzone Driver – Part 2: Explicit per-item message.
 
       return {
         id: item.id,
@@ -488,6 +502,51 @@ export default function DriverProfileOnboarding() {
           <div className="flex flex-col items-center gap-2">
              <span className="text-xs font-black text-slate-800 uppercase tracking-widest">Take Selfie</span>
              <StatusChip status="online" />
+          </div>
+        </section>
+
+        {/* Emergency Contacts section */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Emergency Contacts</h2>
+            <button
+              onClick={() => navigate("/driver/safety/hub")}
+              className="flex items-center space-x-1 text-[11px] font-black text-orange-500 uppercase tracking-tight"
+            >
+              <Plus className="h-3 w-3" />
+              <span>Add / Manage</span>
+            </button>
+          </div>
+          
+          <div className="space-y-3">
+            {emergencyContacts.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {emergencyContacts.map((contact) => (
+                  <button
+                    key={contact.id}
+                    onClick={() => navigate("/driver/safety/hub")}
+                    className="flex items-center space-x-2 rounded-xl border border-orange-200 bg-orange-50/50 px-3 py-2 transition-all active:scale-95 hover:border-orange-300"
+                  >
+                    <div className="h-6 w-6 rounded-lg bg-white flex items-center justify-center border border-orange-100 shadow-sm">
+                      <User className="h-3 w-3 text-orange-500" />
+                    </div>
+                    <div className="flex flex-col items-start">
+                      <span className="text-[10px] font-black text-slate-900 tracking-tight">{contact.name}</span>
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">{contact.relationship}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => navigate("/driver/safety/hub")}
+                className="w-full rounded-[2rem] border-2 border-dashed border-slate-200 bg-slate-50/50 p-6 flex flex-col items-center justify-center space-y-2 hover:border-orange-300 hover:bg-orange-50/30 transition-all"
+              >
+                <Users className="h-8 w-8 text-slate-300" />
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No trusted contacts added</span>
+              </button>
+            )}
           </div>
         </section>
 

@@ -78,208 +78,222 @@ export default function EarningsOverview() {
       <PageHeader title="Earnings" subtitle="Overview" hideBack={true} />
 
       {/* Content */}
-      <main className="flex-1 px-6 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
-        <section className="grid grid-cols-3 gap-2">
-          <button
-            type="button"
-            onClick={() => navigate("/driver/earnings/overview")}
-            className="rounded-xl bg-slate-900 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-white"
-          >
-            Overview
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate("/driver/earnings/weekly")}
-            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-[10px] font-black uppercase tracking-widest text-slate-600"
-          >
-            Weekly
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate("/driver/earnings/monthly")}
-            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-[10px] font-black uppercase tracking-widest text-slate-600"
-          >
-            Monthly
-          </button>
-        </section>
+      <main className="flex-1 px-6 pt-6 pb-24 space-y-8 overflow-y-auto scrollbar-hide">
+        
+        {/* Top Navigation / Filters */}
+        <div className="space-y-4">
+          <section className="grid grid-cols-3 gap-2">
+            <button
+              type="button"
+              onClick={() => navigate("/driver/earnings/overview")}
+              className="rounded-2xl bg-slate-900 px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-white shadow-lg"
+            >
+              Overview
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/driver/earnings/weekly")}
+              className="rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-colors"
+            >
+              Weekly
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/driver/earnings/monthly")}
+              className="rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-colors"
+            >
+              Monthly
+            </button>
+          </section>
 
-        {/* Period Selector */}
-        <div className="flex justify-between items-center bg-white dark:bg-slate-900 px-4 py-3 rounded-2xl shadow-sm border border-slate-100">
-           <span className="text-[11px] font-black uppercase tracking-widest text-slate-500">Analysis Period</span>
-           <select 
-             value={periodFilter} 
-             onChange={(e) => setPeriodFilter(e.target.value as any)}
-             className="bg-slate-100 text-slate-900 text-xs font-bold px-3 py-1.5 rounded-lg border-none focus:ring-0 cursor-pointer uppercase tracking-wider"
-           >
-             <option value="day">Today</option>
-             <option value="week">This Week</option>
-             <option value="month">This Month</option>
-             <option value="quarter">Last 90 Days</option>
-             <option value="year">This Year</option>
-           </select>
+          <div className="flex justify-between items-center bg-white px-5 py-4 rounded-[2rem] shadow-sm border border-slate-100">
+             <div className="flex flex-col">
+                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Viewing Stats</span>
+                <span className="text-[11px] font-black uppercase tracking-widest text-slate-900">Analysis Period</span>
+             </div>
+             <select 
+               value={periodFilter} 
+               onChange={(e) => setPeriodFilter(e.target.value as any)}
+               className="bg-slate-100 text-slate-900 text-[10px] font-black px-4 py-2 rounded-xl border-none focus:ring-2 focus:ring-brand-active/20 cursor-pointer uppercase tracking-wider"
+             >
+               <option value="day">Today</option>
+               <option value="week">This Week</option>
+               <option value="month">This Month</option>
+               <option value="quarter">Last 90 Days</option>
+               <option value="year">This Year</option>
+             </select>
+          </div>
         </div>
 
-        {/* Global Analytics Overview Grid */}
-        <section className="grid grid-cols-2 gap-3">
-           <div className="bg-slate-900 text-white p-4 rounded-3xl shadow-lg border border-slate-800 flex flex-col justify-between">
-              <span className="text-[10px] uppercase font-black tracking-widest text-emerald-400">Total Revenue</span>
-              <span className="text-xl font-black mt-2">UGX {totalRevenue.toLocaleString()}</span>
-           </div>
-           <div className="bg-orange-500 text-white p-4 rounded-3xl shadow-lg border border-orange-400 flex flex-col justify-between">
-              <span className="text-[10px] uppercase font-black tracking-widest text-orange-200">Avg / Job</span>
-              <span className="text-xl font-black mt-2">UGX {avgPerJob.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-           </div>
-           <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 col-span-2">
-              <span className="text-[10px] uppercase font-black tracking-widest text-slate-400 block mb-3">Revenue by Service</span>
-              <div className="flex flex-col space-y-3">
-                 <div className="flex items-center justify-between text-xs font-bold">
-                    <span className="text-slate-600">Private Rides</span>
-                    <span className="text-slate-900">UGX {rideRev.toLocaleString()}</span>
-                 </div>
-                 <div className="flex items-center justify-between text-xs font-bold">
-                    <span className="text-slate-600">Shared Rides</span>
-                    <span className="text-orange-500">UGX {sharedRev.toLocaleString()}</span>
-                 </div>
-                 <div className="flex items-center justify-between text-xs font-bold">
-                    <span className="text-slate-600">Deliveries</span>
-                    <span className="text-blue-500">UGX {deliveryRev.toLocaleString()}</span>
-                 </div>
-                 <div className="flex items-center justify-between text-xs font-bold">
-                    <span className="text-slate-600">Rentals & Tours</span>
-                    <span className="text-purple-500">UGX {(rentalRev + tourRev).toLocaleString()}</span>
-                 </div>
-                 <div className="mt-3 pt-3 border-t border-slate-100 flex justify-between items-center">
-                   <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Top Category</span>
-                    <span className="text-[10px] uppercase font-black bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md">{topCategory}</span>
-                 </div>
+        {/* Financial Heart: Wallet & Revenue */}
+        <section className="space-y-4">
+          <div className="rounded-[2.5rem] bg-slate-900 p-7 flex items-center space-x-5 shadow-2xl border border-white/5 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/10 rounded-full -mr-24 -mt-24 animate-pulse" />
+            <div className="h-16 w-16 flex items-center justify-center rounded-[1.5rem] bg-emerald-500/10 backdrop-blur-md border border-emerald-500/20 z-10 shrink-0">
+               <WalletIcon className="h-8 w-8 text-emerald-500" />
+            </div>
+            <div className="flex-1 z-10">
+              <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">AVAILABLE BALANCE</span>
+              <div className="text-2xl font-black text-white tracking-tighter leading-none mt-1.5 flex items-baseline">
+                <span className="text-xs mr-1 opacity-50">UGX</span>
+                {MOCK_WALLET_BALANCE.toLocaleString()}
               </div>
-           </div>
-        </section>
-        <section className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3">
-          <p className="text-[10px] font-black uppercase tracking-widest text-emerald-700">
-            Active categories: {assignableJobTypes.join(", ")}
-          </p>
-        </section>
+            </div>
+             <button 
+              type="button" 
+              onClick={() => navigate("/driver/earnings/cashout")} 
+              className="rounded-2xl bg-orange-500 px-6 py-4 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-orange-500/30 active:scale-95 transition-all z-10 hover:bg-orange-600"
+            >
+              CASH OUT
+            </button>
+          </div>
 
-        {/* Welcome Banner */}
-        <section className="rounded-[2.5rem] bg-slate-900 border border-slate-800 p-6 flex items-center justify-between text-white relative h-28 overflow-hidden shadow-2xl group hover:scale-[1.01] transition-transform duration-500">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-125 duration-700" />
-          <div className="z-10 space-y-1">
-            <h2 className="text-lg font-black tracking-tight uppercase">Performance</h2>
-            <p className="text-[10px] text-white/80 max-w-[180px] leading-tight font-bold uppercase tracking-wide">
-              Weekly earnings overview and performance summary.
-            </p>
-          </div>
-          <div className="relative h-20 w-20 flex-shrink-0 z-10 opacity-20 group-hover:opacity-40 transition-opacity">
-             <WalletIcon className="h-full w-full text-orange-500" />
+          <div className="grid grid-cols-2 gap-3">
+             <div className="bg-slate-900 text-white p-6 rounded-[2.5rem] shadow-xl border border-slate-800 flex flex-col justify-between relative overflow-hidden group">
+                <div className="absolute bottom-0 right-0 w-20 h-20 bg-brand-active/5 rounded-full -mb-10 -mr-10 transition-transform group-hover:scale-150" />
+                <span className="text-[9px] uppercase font-black tracking-[0.2em] text-brand-active">Total Revenue</span>
+                <span className="text-2xl font-black mt-4 tracking-tighter leading-none flex items-baseline">
+                   <span className="text-[10px] mr-1 opacity-40">UGX</span>
+                   {totalRevenue.toLocaleString()}
+                </span>
+             </div>
+             <div className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col justify-between">
+                <span className="text-[9px] uppercase font-black tracking-[0.2em] text-slate-400">Average / Job</span>
+                <span className="text-2xl font-black mt-4 text-slate-900 tracking-tighter leading-none flex items-baseline">
+                   <span className="text-[10px] mr-1 opacity-40">UGX</span>
+                   {avgPerJob.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                </span>
+             </div>
           </div>
         </section>
+ 
+        {/* Performance Visualization */}
+        <section className="rounded-[2.5rem] border-2 border-emerald-500/10 bg-white p-7 space-y-8 shadow-sm hover:border-emerald-500/30 transition-all">
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col">
+               <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Weekly Pulse</span>
+               <span className="text-[11px] font-black uppercase tracking-widest text-slate-900">11-17 MARCH</span>
+            </div>
+            <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-[10px] font-black text-emerald-600 uppercase tracking-widest border border-emerald-100">
+               <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+               <span>Growth: +12%</span>
+            </div>
+          </div>
+          
+          <div className="flex flex-col items-center space-y-2">
+            <div className="text-3xl font-black text-emerald-500 tracking-tighter uppercase leading-none">{formatUGX(latestEarning.amount)}</div>
+            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest opacity-60">Session Total: {formatUGX(MOCK_WEEKLY_TOTAL)}</div>
+          </div>
 
-        {/* Wallet Card */}
-        <section className="rounded-[2.5rem] bg-slate-900 p-6 flex items-center space-x-4 shadow-2xl border border-white/5">
-          <div className="h-14 w-14 flex items-center justify-center rounded-2xl bg-emerald-500/10 backdrop-blur-md border border-emerald-500/20">
-             <WalletIcon className="h-7 w-7 text-emerald-500" />
-          </div>
-          <div className="flex-1">
-            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">WALLET BALANCE</span>
-            <div className="text-xl font-black text-white tracking-tight">UGX {MOCK_WALLET_BALANCE.toLocaleString()}</div>
-          </div>
-           <button 
-            type="button" 
-            onClick={() => navigate("/driver/earnings/cashout")} 
-            className="rounded-2xl bg-orange-500 px-5 py-3 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-orange-500/20 active:scale-95 transition-all"
-          >
-            CASH OUT
-          </button>
-        </section>
-
-        {/* Earnings Chart */}
-        <section className="rounded-[2.5rem] border-2 border-emerald-500/10 bg-white dark:bg-slate-900 p-6 space-y-6 shadow-sm hover:border-emerald-500/30 transition-all">
-          <div className="flex items-center justify-between text-slate-400">
-            <span className="text-[11px] font-black uppercase tracking-widest">Weekly: 11-17 MAR</span>
-          </div>
-          <div className="text-center space-y-1">
-            <div className="text-2xl font-black text-emerald-500 tracking-tighter uppercase">UGX {latestEarning.amount.toLocaleString()}</div>
-            <div className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-tight">Weekly Total: UGX {MOCK_WEEKLY_TOTAL.toLocaleString()}</div>
-          </div>
-          <div className="flex items-end justify-between h-32 px-2 pt-4">
+          <div className="flex items-end justify-between h-40 px-1 pt-6 border-b border-slate-50 pb-2">
             {recentEarnings.slice().reverse().map((e, i) => (
-              <div key={e.id} className="flex flex-col items-center space-y-3">
+              <div key={e.id} className="flex flex-col items-center space-y-4">
                 <div
-                   className={`w-4 rounded-full ${i === 6 ? 'bg-orange-500 shadow-lg shadow-orange-500/30' : 'bg-slate-100 dark:bg-slate-700'} relative transition-all`}
-                  style={{ height: `${(e.amount / 20000) * 120}px` }}
+                   className={`w-4 rounded-full ${i === 6 ? 'bg-orange-500 shadow-xl shadow-orange-500/30 scale-x-110' : 'bg-slate-100'} relative transition-all duration-700 hover:bg-slate-200 cursor-pointer group`}
+                  style={{ height: `${(e.amount / 20000) * 140}px` }}
                 >
                   {i === 6 && (
-                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[8px] px-2 py-1 rounded-lg font-black shadow-xl whitespace-nowrap">
-                      UGX {e.amount}
+                    <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[9px] px-3 py-1.5 rounded-xl font-black shadow-2xl whitespace-nowrap z-20 animate-in zoom-in-50 duration-300">
+                      {formatUGX(e.amount)}
                     </div>
                   )}
+                  <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-full" />
                 </div>
-                <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-tighter">{new Date(e.date).toLocaleDateString('en-US', { weekday: 'short' })}</span>
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">{new Date(e.date).toLocaleDateString('en-US', { weekday: 'short' })}</span>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Revenue Breakdown */}
-        <section className="rounded-[2.5rem] border-2 border-orange-500/10 bg-cream p-6 space-y-4 shadow-sm">
-          <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Shared vs Private Ratio</h3>
-          <div className="flex justify-between items-end">
-            <div className="flex flex-col">
-              <span className="text-xl font-black text-slate-900">UGX {rideRev.toLocaleString()}</span>
-              <span className="text-[10px] uppercase font-bold text-slate-500">Private Revenue</span>
-            </div>
-            <div className="flex flex-col text-right">
-              <span className="text-xl font-black text-orange-600">UGX {sharedRev.toLocaleString()}</span>
-              <span className="text-[10px] uppercase font-bold text-slate-500">Shared Revenue</span>
-            </div>
-          </div>
-          <div className="h-4 w-full bg-slate-200 rounded-full flex overflow-hidden">
-             <div className="h-full bg-slate-900" style={{ width: `${100 - sharedPercentage}%` }} />
-             <div className="h-full bg-orange-500" style={{ width: `${sharedPercentage}%` }} />
-          </div>
-          <div className="text-[10px] text-slate-500 font-bold uppercase tracking-tight text-center">
-             Shared rides added <span className="text-orange-600">+{sharedPercentage}%</span> margin efficiency
-          </div>
-        </section>
+        {/* 
+           LEARNING: REORGANIZATION HIERARCHY
+           - Summary (Wallet/Balance) -> Key Metrics (Total/Avg) -> Trend/Chart (Weekly Pulse) -> Supporting Details.
+           - The "Start Earning" card was removed here to maintain a clean, professional focus on financial data.
+           - Components are grouped logically to improve scannability for the driver.
+        */}
 
-        {/* Ride Banner */}
-        <section className="rounded-[2.5rem] bg-orange-500 p-6 flex items-center justify-between text-white overflow-hidden shadow-2xl shadow-orange-500/20 relative group hover:scale-[1.01] transition-transform">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
-          <div className="z-10 space-y-4">
-            <div className="space-y-1">
-              <h2 className="text-base font-black uppercase tracking-tight">Start Earning</h2>
-              <p className="text-[10px] text-white/80 max-w-[150px] leading-tight font-bold uppercase tracking-wide">
-                Go online and start accepting rides to boost your income today.
-              </p>
-            </div>
-            <button 
-              type="button" 
-              onClick={() => navigate("/driver/jobs/list")}               className="rounded-full bg-slate-900 text-white px-6 py-2.5 text-[10px] font-black uppercase tracking-widest shadow-xl active:scale-95 transition-all hover:bg-emerald-500"
-            >
-              VIEW RIDES
-            </button>
-          </div>
-          <div className="h-16 w-24 relative opacity-40 group-hover:scale-110 transition-transform">
-            <Car className="h-full w-full" />
-          </div>
-        </section>
+        {/* Composition & Efficiency: Supporting Financial Details */}
+        <div className="grid grid-cols-1 gap-6">
+           {/* Service Mix */}
+           <section className="bg-white p-7 rounded-[2.5rem] shadow-sm border border-slate-100 space-y-6">
+             <div className="flex flex-col px-1">
+                <span className="text-[9px] uppercase font-black tracking-[0.2em] text-slate-400">Composition</span>
+                <h3 className="text-[11px] uppercase font-black tracking-widest text-slate-900">Revenue by Service</h3>
+             </div>
+             <div className="space-y-3.5">
+                {[
+                  { label: "Private Rides", val: rideRev, color: "bg-slate-900", text: "text-slate-600", bg: "bg-slate-50", border: "border-slate-100" },
+                  { label: "Shared Rides", val: sharedRev, color: "bg-orange-500", text: "text-orange-600", bg: "bg-orange-50", border: "border-orange-100" },
+                  { label: "Deliveries", val: deliveryRev, color: "bg-blue-500", text: "text-blue-600", bg: "bg-blue-50", border: "border-blue-100" },
+                  { label: "Rentals & Tours", val: rentalRev + tourRev, color: "bg-purple-500", text: "text-purple-600", bg: "bg-purple-50", border: "border-purple-100" }
+                ].map((item) => (
+                  <div key={item.label} className={`flex items-center justify-between p-4 rounded-[1.8rem] ${item.bg} border ${item.border} transition-transform hover:scale-[1.02]`}>
+                    <div className="flex items-center space-x-4">
+                       <div className={`h-2.5 w-2.5 rounded-full ${item.color} shadow-sm`} />
+                       <span className={`text-[11px] font-black ${item.text} uppercase tracking-tight`}>{item.label}</span>
+                    </div>
+                    <span className="text-sm font-black text-slate-900">{formatUGX(item.val)}</span>
+                  </div>
+                ))}
+                
+                <div className="mt-6 pt-6 border-t border-slate-100 flex justify-between items-center px-2">
+                  <div className="flex flex-col">
+                     <span className="text-[9px] uppercase font-bold text-slate-400 tracking-[0.2em]">Primary Engine</span>
+                     <span className="text-[10px] uppercase font-black text-slate-900">{topCategory}</span>
+                  </div>
+                  <span className="text-[10px] uppercase font-black bg-emerald-100 text-emerald-700 px-4 py-2 rounded-full tracking-widest shadow-sm">Revenue Leader</span>
+                </div>
+             </div>
+           </section>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-3">
-          <MetricCard label="Total Trips" value="482" icon={History} onClick={() => navigate("/driver/history/rides")} />
-          <MetricCard label="Dist. Covered" value="1,248 km" icon={History} />
-          <MetricCard label="Hours Online" value="156H" />
-          <MetricCard label="Completed" value="482" />
+           {/* Efficiency */}
+           <section className="rounded-[2.5rem] border-2 border-orange-500/10 bg-cream p-8 space-y-6 shadow-sm relative overflow-hidden">
+             <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/5 rounded-full -mr-12 -mt-12" />
+             <div className="flex flex-col items-center text-center space-y-2 relative z-10">
+                <span className="text-[9px] font-black text-orange-500 uppercase tracking-[0.3em] bg-orange-100 px-3 py-1 rounded-full">Yield Efficiency</span>
+                <p className="text-[11px] font-bold text-slate-600 uppercase tracking-tight leading-relaxed max-w-[220px]">
+                  Shared rides added <span className="text-orange-600">+{sharedPercentage}%</span> margin efficiency to your total revenue portfolio.
+                </p>
+             </div>
+             <div className="h-6 w-full bg-slate-200 rounded-full flex overflow-hidden border border-slate-300/20 shadow-inner">
+                <div className="h-full bg-slate-900 transition-all duration-1000" style={{ width: `${100 - sharedPercentage}%` }} />
+                <div className="h-full bg-orange-500 transition-all duration-1000" style={{ width: `${sharedPercentage}%` }} />
+             </div>
+             <div className="flex justify-between items-center px-2 relative z-10">
+               <div className="flex items-center space-x-2.5">
+                  <div className="h-2.5 w-2.5 rounded-full bg-slate-900" />
+                  <span className="text-[10px] uppercase font-black text-slate-500 tracking-widest">Private {100 - sharedPercentage}%</span>
+               </div>
+               <div className="flex items-center space-x-2.5">
+                  <div className="h-2.5 w-2.5 rounded-full bg-orange-500" />
+                  <span className="text-[10px] uppercase font-black text-slate-500 tracking-widest">Shared {sharedPercentage}%</span>
+               </div>
+             </div>
+           </section>
         </div>
 
-        {/* Stations List */}
+        {/* Global Statistics */}
+        <section className="space-y-4">
+           <div className="px-2 flex flex-col">
+              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Activity Hub</span>
+              <h2 className="text-[11px] font-black text-slate-900 uppercase tracking-widest">Lifetime Engagement</h2>
+           </div>
+           <div className="grid grid-cols-2 gap-3">
+             <MetricCard label="Total Trips" value="482" icon={History} onClick={() => navigate("/driver/history/rides")} />
+             <MetricCard label="Dist. Covered" value="1,248 km" icon={History} />
+             <MetricCard label="Hours Online" value="156H" />
+             <MetricCard label="Completed" value="482" />
+           </div>
+        </section>
+
+        {/* Demand Intelligence (Hot Locations) */}
         <section className="space-y-6 pt-4 pb-12">
-          <div className="px-1">
-            <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Hot Locations</h2>
+          <div className="px-2 flex flex-col">
+             <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Intelligence</span>
+             <h2 className="text-[11px] font-black text-slate-900 uppercase tracking-widest">High-Demand Stations</h2>
           </div>
           <div className="space-y-4">
-            <StationRow name="Main Hub: Kampala" value="20" total="28" />
+            <StationRow name="Main Hub: Kampala Central" value="20" total="28" />
             <StationRow name="East Side Hub: Nakasero" value="14" total="22" />
           </div>
         </section>
@@ -287,4 +301,8 @@ export default function EarningsOverview() {
       </main>
     </div>
   );
+}
+
+function formatUGX(value: number): string {
+  return `UGX ${Math.round(value).toLocaleString()}`;
 }

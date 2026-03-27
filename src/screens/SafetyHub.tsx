@@ -5,6 +5,7 @@ import {
   Phone,
   Plus,
   ShieldCheck,
+  Smartphone,
   Trash2,
   X
 } from "lucide-react";
@@ -30,15 +31,47 @@ function ContactForm({
   const [phone, setPhone] = useState(contact?.phone || "");
   const [relationship, setRelationship] = useState(contact?.relationship || "");
   const [error, setError] = useState("");
+  const [isPicking, setIsPicking] = useState(false);
+
+  // EVzone Driver – Part 3: Device contact picker integration.
+  // This function attempts to use the native browser Contact Picker API.
+  const handlePickContact = async () => {
+    if (!("contacts" in navigator && "select" in (navigator as any).contacts)) {
+      setError("Contact picker is not supported on this browser/device.");
+      return;
+    }
+
+    try {
+      setIsPicking(true);
+      setError("");
+      // @ts-ignore - Contact Picker API is relatively new and might not be in standard types yet
+      const contacts = await navigator.contacts.select(["name", "tel"], { multiple: false });
+      
+      if (contacts && contacts.length > 0) {
+        const picked = contacts[0];
+        if (picked.name && picked.name.length > 0) setName(picked.name[0]);
+        if (picked.tel && picked.tel.length > 0) setPhone(picked.tel[0]);
+      }
+    } catch (err: any) {
+      if (err.name === "SecurityError") {
+        setError("Permission to access contacts was denied.");
+      } else {
+        setError("Could not open contact picker. Please enter details manually.");
+      }
+      console.error("Contact picker error:", err);
+    } finally {
+      setIsPicking(false);
+    }
+  };
 
   const handleSave = () => {
     if (!name.trim() || !phone.trim() || !relationship.trim()) {
       setError("Please fill in all fields.");
       return;
     }
-    // Simple phone validation
-    if (!/^\+?[\d\s-]{7,15}$/.test(phone)) {
-      setError("Please enter a valid phone number.");
+    const digits = phone.replace(/[^\d]/g, "");
+    if (digits.length < 10) {
+      setError("Please enter a valid phone number (min 10 digits).");
       return;
     }
 
@@ -52,6 +85,20 @@ function ContactForm({
 
   return (
     <div className="space-y-4 p-5 rounded-[2rem] bg-slate-50 border border-slate-100 shadow-inner">
+      <div className="flex justify-between items-center mb-2 px-1">
+        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+          {contact ? "Edit Contact" : "Add Contact"}
+        </span>
+        <button
+          onClick={handlePickContact}
+          disabled={isPicking}
+          className="flex items-center space-x-1.5 text-[10px] font-black uppercase tracking-widest text-brand-active bg-white px-3 py-1.5 rounded-full border border-brand-active/20 shadow-sm active:scale-95 transition-all disabled:opacity-50"
+        >
+          <Smartphone className="h-3 w-3" />
+          <span>{isPicking ? "Opening..." : "Pick from Phonebook"}</span>
+        </button>
+      </div>
+
       <div className="space-y-2">
         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
           Full Name
@@ -224,7 +271,11 @@ export default function SafetyHub() {
                     onCancel={() => setEditingId(null)}
                   />
                 ) : (
-                  <div className="flex items-center justify-between p-4.5 rounded-[1.8rem] bg-white border border-slate-100 shadow-sm">
+                  <div 
+                    onClick={() => setEditingId(contact.id)}
+                    className="flex w-full items-center justify-between p-4.5 rounded-[1.8rem] bg-white border border-slate-100 shadow-sm cursor-pointer hover:border-brand-active/30 active:scale-[0.99] transition-all"
+                  >
+                    {/* EVzone Driver – Part 4: Clicking the contact card now opens it for update. */}
                     <div className="flex items-center space-x-4">
                       <div className="h-11 w-11 flex items-center justify-center rounded-2xl bg-slate-50 text-brand-active border border-slate-100 uppercase font-black text-sm">
                         {contact.name.charAt(0)}
@@ -239,14 +290,15 @@ export default function SafetyHub() {
                       </div>
                     </div>
                     <div className="flex items-center space-x-1">
+                      <div className="p-2.5 text-slate-300 group-hover:text-brand-active transition-colors">
+                        <Plus className="h-4 w-4 rotate-45" /> 
+                      </div>
                       <button
-                        onClick={() => setEditingId(contact.id)}
-                        className="p-2.5 text-slate-300 hover:text-brand-active transition-colors active:scale-90"
-                      >
-                        <Plus className="h-4 w-4 rotate-45" /> {/* Use Plus rotated as a generic Edit hint or replace with Edit icon */}
-                      </button>
-                      <button
-                        onClick={() => removeEmergencyContact(contact.id)}
+                        onClick={(e) => {
+                          // EVzone Driver – Part 5: Delete contact logic.
+                          e.stopPropagation(); // Prevent opening edit mode
+                          removeEmergencyContact(contact.id);
+                        }}
                         className="p-2.5 text-slate-300 hover:text-red-500 transition-colors active:scale-90"
                       >
                         <Trash2 className="h-4 w-4" />
