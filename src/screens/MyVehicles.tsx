@@ -1,4 +1,5 @@
 import {
+  Car,
   CheckCircle2,
   Circle,
   Info,
@@ -68,7 +69,7 @@ function VehicleCard({ image, brand, model, badge, primary, selected, onSelect, 
 
 export default function MyVehicles() {
   const navigate = useNavigate();
-  const { vehicles, selectedVehicleIndex, setSelectedVehicleIndex, addVehicle, setDraftVehicle } = useStore();
+  const { vehicles, selectedVehicleIndex, setSelectedVehicleIndex, setDraftVehicle } = useStore();
   const [localSelectedIdx, setLocalSelectedIdx] = useState<number | null>(selectedVehicleIndex);
 
   // Keep local selection in sync with global store (e.g. after deletion or external reset)
@@ -131,25 +132,37 @@ export default function MyVehicles() {
               </h2>
            </div>
            <div className="space-y-3">
-             {vehicles.map((v, idx) => (
-               <button
-                 key={v.id}
-                 type="button"
-                 onClick={() => navigate(`/driver/vehicles/${v.id}`)}
-                 className="w-full text-left"
-               >
-                 <VehicleCard
-                   brand={v.make}
-                   model={v.model}
-                   image={v.imageUrl}
-                   badge={v.type === "Motorcycle" ? "Bike" : idx === 0 ? "Main EV" : null}
-                   primary={idx === 0}
-                   selected={localSelectedIdx === idx}
-                   onSelect={() => setLocalSelectedIdx(idx)}
+             {vehicles.length === 0 ? (
+               <div className="rounded-3xl border-2 border-dashed border-slate-200 bg-white p-8 flex flex-col items-center justify-center text-center">
+                  <div className="h-16 w-16 bg-slate-50 flex items-center justify-center rounded-full mb-4">
+                    <Car className="h-8 w-8 text-slate-300" />
+                  </div>
+                  <h3 className="text-sm font-bold text-slate-900 mb-1">No vehicles added yet</h3>
+                  <p className="text-xs text-slate-500">
+                    Add your own vehicle to continue onboarding.
+                  </p>
+               </div>
+             ) : (
+               vehicles.map((v, idx) => (
+                 <button
+                   key={v.id}
+                   type="button"
                    onClick={() => navigate(`/driver/vehicles/${v.id}`)}
-                 />
-               </button>
-             ))}
+                   className="w-full text-left"
+                 >
+                   <VehicleCard
+                     brand={v.make}
+                     model={v.model}
+                     image={v.imageUrl}
+                     badge={v.type === "Motorcycle" ? "Bike" : idx === 0 ? "Main EV" : null}
+                     primary={idx === 0}
+                     selected={localSelectedIdx === idx}
+                     onSelect={() => setLocalSelectedIdx(idx)}
+                     onClick={() => navigate(`/driver/vehicles/${v.id}`)}
+                   />
+                 </button>
+               ))
+             )}
            </div>
         </section>
 

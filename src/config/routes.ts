@@ -75,6 +75,7 @@ import SOSSending from "../screens/SOSSending";
 import EmergencyAssistanceDetails from "../screens/EmergencyAssistanceDetails";
 import EmergencyCall from "../screens/EmergencyCall";
 import EmergencyConfirmation from "../screens/EmergencyConfirmation";
+import EmergencyContactsManager from "../screens/EmergencyContactsManager";
 import FollowMyRide from "../screens/FollowMyRide";
 import FollowMyRideEntry from "../screens/FollowMyRideEntry";
 import ShareMyRide from "../screens/ShareMyRide";
@@ -215,6 +216,7 @@ export const SCREENS: ScreenConfig[] = [
   { id: "EmergencyAssistanceMap", label: "Emergency Assistance (Map Variant)", path: "/driver/safety/emergency/map", Component: EmergencyAssistanceMap },
   { id: "SOSSending", label: "SOS / Emergency Alert Sending", path: "/driver/safety/sos/sending", Component: SOSSending },
   { id: "EmergencyAssistanceDetails", label: "Emergency Assistance (Details Variant)", path: "/driver/safety/emergency/details", Component: EmergencyAssistanceDetails },
+  { id: "EmergencyContactsManager", label: "Emergency Contacts", path: "/driver/safety/emergency/contacts", Component: EmergencyContactsManager },
   { id: "EmergencyCall", label: "Emergency Calling Screen", path: "/driver/safety/emergency/call", Component: EmergencyCall },
   { id: "EmergencyConfirmation", label: "Emergency Assistance Confirmation", path: "/driver/safety/emergency/confirmation", Component: EmergencyConfirmation },
   { id: "FollowMyRideEntry", label: "Follow My Ride (Entry)", path: "/driver/safety/follow-my-ride", Component: FollowMyRideEntry },

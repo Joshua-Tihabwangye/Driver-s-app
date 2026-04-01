@@ -13,7 +13,7 @@ import type {
   TourSegment,
   TourSegmentStatus,
 } from "../data/types";
-import { MOCK_EARNINGS, MOCK_COMPLETED_TRIPS, MOCK_SHARED_TRIPS, MOCK_VEHICLES, MOCK_DASHBOARD_STATS } from "../data/mockData";
+import { MOCK_EARNINGS, MOCK_COMPLETED_TRIPS, MOCK_SHARED_TRIPS, MOCK_DASHBOARD_STATS } from "../data/mockData";
 import { SAMPLE_IDS } from "../data/constants";
 import { getAssignableJobTypesFromRoleConfig } from "../utils/taskCategories";
 
@@ -56,6 +56,7 @@ export type OnboardingCheckpointId =
   | "documentsVerified"
   | "identityVerified"
   | "vehicleReady"
+  | "emergencyContactReady"
   | "trainingCompleted";
 
 export interface OnboardingCheckpointState {
@@ -63,8 +64,11 @@ export interface OnboardingCheckpointState {
   documentsVerified: boolean;
   identityVerified: boolean;
   vehicleReady: boolean;
+  emergencyContactReady: boolean;
   trainingCompleted: boolean;
 }
+
+export type DriverPresenceStatus = "offline" | "online";
 
 export interface OnboardingBlocker {
   id: OnboardingCheckpointId;
@@ -164,6 +168,7 @@ interface StoreContextType {
   onboardingCheckpoints: OnboardingCheckpointState;
   onboardingBlockers: OnboardingBlocker[];
   canGoOnline: boolean;
+  driverPresenceStatus: DriverPresenceStatus;
   primaryOnboardingRoute: string;
   assignableJobTypes: JobCategory[];
   canAcceptJobType: (jobType: JobCategory) => boolean;
@@ -195,6 +200,9 @@ interface StoreContextType {
     checkpoint: OnboardingCheckpointId,
     isComplete?: boolean
   ) => void;
+  setDriverOnline: () => void;
+  setDriverOffline: () => void;
+  resetOnboardingVehicleSetup: () => void;
   acceptRideJob: (jobId: string) => boolean;
   acceptSpecializedJob: (
     jobId: string,
@@ -224,7 +232,7 @@ interface StoreContextType {
   resetVehicleAccessories: (vehicleId: string) => void;
   getDefaultAccessoriesForType: (type: string) => Record<string, "Available" | "Missing" | "Required">;
   emergencyContacts: SharedContact[];
-  addEmergencyContact: (contact: Omit<SharedContact, "id">) => void;
+  addEmergencyContact: (contact: Omit<SharedContact, "id" | "createdAt">) => void;
   removeEmergencyContact: (contactId: string) => void;
   updateEmergencyContact: (contact: SharedContact) => void;
 }
@@ -243,6 +251,7 @@ const ONBOARDING_CHECKPOINT_ORDER: OnboardingCheckpointId[] = [
   "documentsVerified",
   "identityVerified",
   "vehicleReady",
+  "emergencyContactReady",
   "trainingCompleted",
 ];
 
@@ -258,6 +267,7 @@ const SELECTED_VEHICLE_STORAGE_KEY = "driver_selected_vehicle";
 const VEHICLES_STORAGE_KEY = "driver_vehicles";
 const EMERGENCY_CONTACTS_STORAGE_KEY = "driver_emergency_contacts";
 const DRAFT_VEHICLE_STORAGE_KEY = "driver_draft_vehicle";
+const DRIVER_PRESENCE_STORAGE_KEY = "driver_presence_status";
 
 const CAR_ACCESSORIES: Record<string, "Available" | "Missing" | "Required"> = {
   "Spare tyre": "Available",
@@ -295,6 +305,7 @@ const DEFAULT_ONBOARDING_CHECKPOINTS: OnboardingCheckpointState = {
   documentsVerified: false,
   identityVerified: false,
   vehicleReady: false,
+  emergencyContactReady: false,
   trainingCompleted: false,
 };
 
@@ -397,6 +408,11 @@ const ONBOARDING_CHECKPOINT_META: Record<
     title: "Vehicle Setup",
     description: "Add and verify at least one active vehicle.",
     route: "/driver/vehicles",
+  },
+  emergencyContactReady: {
+    title: "Emergency Contacts",
+    description: "Add at least one trusted emergency contact.",
+    route: "/driver/safety/emergency/contacts",
   },
   trainingCompleted: {
     title: "Safety Training",
@@ -580,6 +596,26 @@ function readStoredDriverPreferences(): DriverPreferences {
 }
 
 function readStoredVehicles(): Vehicle[] {
+  const resolveSingleVehicleDocument = (group: unknown) => {
+    if (!group || typeof group !== "object") {
+      return undefined;
+    }
+    const candidate = group as {
+      file?: { url?: string; fileName?: string };
+      front?: { url?: string; fileName?: string };
+      back?: { url?: string; fileName?: string };
+    };
+    const direct = candidate.file;
+    if (direct?.url && direct?.fileName) {
+      return { file: { url: direct.url, fileName: direct.fileName } };
+    }
+    const legacy = candidate.front || candidate.back;
+    if (legacy?.url && legacy?.fileName) {
+      return { file: { url: legacy.url, fileName: legacy.fileName } };
+    }
+    return undefined;
+  };
+
   const applyDefaults = (v: Vehicle): Vehicle => {
     const defaults = getDefaultAccessoriesForType(v.type);
     const currentAcc = v.accessories || {};
@@ -593,24 +629,29 @@ function readStoredVehicles(): Vehicle[] {
       ...v,
       batterySize: v.batterySize || (v.type === "Van" ? "40 kWh" : v.type === "Motorcycle" ? "4 kWh" : "65 kWh"),
       range: v.range || (v.type === "Van" ? "200 km" : v.type === "Motorcycle" ? "80 km" : "350 km"),
-      accessories: needsInventoryUpdate ? defaults : currentAcc
+      accessories: needsInventoryUpdate ? defaults : currentAcc,
+      vehicleDocs: {
+        logbook: resolveSingleVehicleDocument(v.vehicleDocs?.logbook),
+        insurance: resolveSingleVehicleDocument(v.vehicleDocs?.insurance),
+        inspection: resolveSingleVehicleDocument(v.vehicleDocs?.inspection),
+      },
     };
   };
 
   if (typeof window === "undefined") {
-    return MOCK_VEHICLES.map(applyDefaults);
+    return [];
   }
 
   try {
     const raw = window.localStorage.getItem(VEHICLES_STORAGE_KEY);
     if (!raw) {
-      return MOCK_VEHICLES.map(applyDefaults);
+      return [];
     }
 
     const parsed = JSON.parse(raw) as Vehicle[];
     return parsed.map(applyDefaults);
   } catch {
-    return MOCK_VEHICLES.map(applyDefaults);
+    return [];
   }
 }
 
@@ -685,6 +726,19 @@ function readStoredSharedRidesEnabled(): boolean {
     return raw === "true";
   } catch {
     return false;
+  }
+}
+
+function readStoredDriverPresenceStatus(): DriverPresenceStatus {
+  if (typeof window === "undefined") {
+    return "offline";
+  }
+
+  try {
+    const raw = window.localStorage.getItem(DRIVER_PRESENCE_STORAGE_KEY);
+    return raw === "online" ? "online" : "offline";
+  } catch {
+    return "offline";
   }
 }
 
@@ -1108,6 +1162,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [emergencyContacts, setEmergencyContacts] = useState<SharedContact[]>(() =>
     readStoredEmergencyContacts()
   );
+  const [driverPresenceStatus, setDriverPresenceStatus] = useState<DriverPresenceStatus>(() =>
+    readStoredDriverPresenceStatus()
+  );
   const [selectedVehicleIndex, setSelectedVehicleIndexState] = useState<number | null>(() => {
     if (typeof window === "undefined") return null;
     try {
@@ -1131,14 +1188,36 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Keep vehicleReady in sync with selectedVehicleIndex
+  // Keep selection valid when vehicles change.
   useEffect(() => {
-    const hasVehicle = selectedVehicleIndex !== null;
+    const isSelectionInvalid =
+      selectedVehicleIndex !== null &&
+      (selectedVehicleIndex < 0 || selectedVehicleIndex >= vehicles.length);
+    if (isSelectionInvalid) {
+      setSelectedVehicleIndex(null);
+    }
+  }, [selectedVehicleIndex, vehicles.length, setSelectedVehicleIndex]);
+
+  // Keep vehicleReady in sync with selectedVehicleIndex and actual vehicle list.
+  useEffect(() => {
+    const hasVehicle =
+      selectedVehicleIndex !== null &&
+      selectedVehicleIndex >= 0 &&
+      selectedVehicleIndex < vehicles.length;
     setOnboardingCheckpoints((prev) => {
       if (prev.vehicleReady === hasVehicle) return prev;
       return { ...prev, vehicleReady: hasVehicle };
     });
-  }, [selectedVehicleIndex]);
+  }, [selectedVehicleIndex, vehicles.length]);
+
+  // Emergency contact readiness requires at least one contact.
+  useEffect(() => {
+    const hasEmergencyContact = emergencyContacts.length > 0;
+    setOnboardingCheckpoints((prev) => {
+      if (prev.emergencyContactReady === hasEmergencyContact) return prev;
+      return { ...prev, emergencyContactReady: hasEmergencyContact };
+    });
+  }, [emergencyContacts.length]);
 
   const setOnboardingCheckpoint = useCallback(
     (checkpoint: OnboardingCheckpointId, isComplete = true) => {
@@ -1155,6 +1234,32 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     },
     []
   );
+
+  const setDriverOnline = useCallback(() => {
+    setDriverPresenceStatus("online");
+  }, []);
+
+  const setDriverOffline = useCallback(() => {
+    setDriverPresenceStatus("offline");
+  }, []);
+
+  const resetOnboardingVehicleSetup = useCallback(() => {
+    setVehicles([]);
+    setDraftVehicle(null);
+    setSelectedVehicleIndex(null);
+    setEmergencyContacts([]);
+    setDriverPresenceStatus("offline");
+    setOnboardingCheckpoints((prev) => {
+      if (!prev.vehicleReady && !prev.emergencyContactReady) {
+        return prev;
+      }
+      return {
+        ...prev,
+        vehicleReady: false,
+        emergencyContactReady: false,
+      };
+    });
+  }, [setSelectedVehicleIndex]);
 
   const updateDriverProfile = useCallback((patch: Partial<DriverProfile>) => {
     setDriverProfile((prev) => ({
@@ -1204,7 +1309,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const canGoOnline = onboardingBlockers.length === 0;
   const primaryOnboardingRoute =
-    onboardingBlockers[0]?.route || "/driver/dashboard/online";
+    onboardingBlockers[0]?.route || "/driver/dashboard/offline";
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -1345,6 +1450,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       console.warn("Failed to save emergency contacts to localStorage:", e);
     }
   }, [emergencyContacts]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(DRIVER_PRESENCE_STORAGE_KEY, driverPresenceStatus);
+    } catch (e) {
+      console.warn("Failed to save driver presence status to localStorage:", e);
+    }
+  }, [driverPresenceStatus]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -1610,11 +1724,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const deleteVehicle = useCallback((id: string) => {
     setVehicles((prev) => prev.filter((v) => v.id !== id));
-    // If the active vehicle was deleted, reset selection
-    if (selectedVehicleIndex !== null && vehicles[selectedVehicleIndex]?.id === id) {
-      setSelectedVehicleIndex(null);
-    }
-  }, [selectedVehicleIndex, vehicles]);
+  }, []);
 
   const toggleVehicleAccessory = useCallback((vehicleId: string, accessoryName: string) => {
     // Check if updating draft
@@ -2329,6 +2439,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       onboardingCheckpoints,
       onboardingBlockers,
       canGoOnline,
+      driverPresenceStatus,
       primaryOnboardingRoute,
       // Use the pre-computed memo (already respects role config + sharedRidesEnabled)
       assignableJobTypes,
@@ -2359,6 +2470,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setDriverProfilePhoto,
       enableDualMode,
       setOnboardingCheckpoint,
+      setDriverOnline,
+      setDriverOffline,
+      resetOnboardingVehicleSetup,
       acceptRideJob,
       // Use the real acceptSpecializedJob that sets activeTrip state
       acceptSpecializedJob,
@@ -2409,6 +2523,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       onboardingCheckpoints,
       onboardingBlockers,
       canGoOnline,
+      driverPresenceStatus,
       primaryOnboardingRoute,
       assignableJobTypes,
       canAcceptJobType,
@@ -2430,6 +2545,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       updateDriverPreferences,
       enableDualMode,
       setOnboardingCheckpoint,
+      setDriverOnline,
+      setDriverOffline,
+      resetOnboardingVehicleSetup,
       acceptRideJob,
       acceptSpecializedJob,
       transitionActiveTripStage,
@@ -2453,6 +2571,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       toggleVehicleAccessory,
       resetVehicleAccessories,
       getDefaultAccessoriesForType,
+      emergencyContacts,
     ]
   );
 

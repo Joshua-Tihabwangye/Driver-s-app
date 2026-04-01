@@ -13,28 +13,28 @@ export default function TrainingCompletion() {
   const navigate = useNavigate();
   const { isLoggedIn, login } = useAuth();
   const { setOnboardingCheckpoint } = useStore();
-  const [goOnlineRequested, setGoOnlineRequested] = useState(false);
+  const [continueRequested, setContinueRequested] = useState(false);
 
   useEffect(() => {
     setOnboardingCheckpoint("trainingCompleted", true);
   }, [setOnboardingCheckpoint]);
 
   useEffect(() => {
-    if (!goOnlineRequested || !isLoggedIn) {
+    if (!continueRequested || !isLoggedIn) {
       return;
     }
 
-    navigate("/driver/dashboard/online", { replace: true });
-  }, [goOnlineRequested, isLoggedIn, navigate]);
+    navigate("/driver/dashboard/offline", { replace: true });
+  }, [continueRequested, isLoggedIn, navigate]);
 
-  const handleGoOnline = () => {
-    setGoOnlineRequested(true);
+  const handleContinue = () => {
+    setContinueRequested(true);
     if (!isLoggedIn) {
       login();
       return;
     }
 
-    navigate("/driver/dashboard/online", { replace: true });
+    navigate("/driver/dashboard/offline", { replace: true });
   };
 
   return (
@@ -96,10 +96,10 @@ export default function TrainingCompletion() {
         <div className="w-full space-y-4 flex flex-col items-center">
           <button
             type="button"
-            onClick={handleGoOnline}
+            onClick={handleContinue}
             className="w-full rounded-2xl bg-orange-500 py-5 text-sm font-black text-white shadow-2xl shadow-orange-500/20 hover:bg-orange-600 active:scale-[0.98] transition-all uppercase tracking-widest"
           >
-            Go Online
+            Continue to Dashboard
           </button>
 
           <button

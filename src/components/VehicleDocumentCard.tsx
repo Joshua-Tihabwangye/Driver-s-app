@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { Upload } from "lucide-react";
-import type { VehicleDocumentFile, VehicleDocumentGroup } from "../data/types";
+import type { VehicleDocumentGroup } from "../data/types";
 
 interface CopyRowProps {
   label: string;
@@ -30,7 +30,7 @@ function CopyRow({ label, status, fileName, error, onClick }: CopyRowProps) {
             {label}
           </span>
           {fileName ? (
-            <span className="text-[10px] text-slate-500 truncate max-w-[120px]">Selected: {fileName}</span>
+            <span className="text-[10px] text-slate-500 truncate max-w-[150px]">Selected: {fileName}</span>
           ) : (
             <span className="text-[10px] text-slate-400">No file selected</span>
           )}
@@ -63,35 +63,31 @@ export default function VehicleDocumentCard({
   title,
   subtitle,
   documentGroup = {},
-  onChange
+  onChange,
 }: VehicleDocumentCardProps) {
-  const frontInputRef = useRef<HTMLInputElement>(null);
-  const backInputRef = useRef<HTMLInputElement>(null);
-  
-  const [frontError, setFrontError] = useState("");
-  const [backError, setBackError] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [fileError, setFileError] = useState("");
 
-  const handleFile = (
-    e: React.ChangeEvent<HTMLInputElement>, 
-    side: "front" | "back",
-    setError: (err: string) => void
-  ) => {
-    setError("");
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFileError("");
     const file = e.target.files?.[0];
-    if (file) {
-      if (!file.type.startsWith("image/") && file.type !== "application/pdf") {
-        setError("Only PDF and image files allowed. Re-upload this copy.");
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        onChange({
-          ...documentGroup,
-          [side]: { url: reader.result as string, fileName: file.name }
-        });
-      };
-      reader.readAsDataURL(file);
+    if (!file) {
+      return;
     }
+
+    if (!file.type.startsWith("image/") && file.type !== "application/pdf") {
+      setFileError("Only PDF and image files are allowed.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      onChange({
+        ...documentGroup,
+        file: { url: reader.result as string, fileName: file.name },
+      });
+    };
+    reader.readAsDataURL(file);
   };
 
   return (
@@ -106,25 +102,21 @@ export default function VehicleDocumentCard({
         </div>
       </div>
 
-      <div className="space-y-2">
-        <CopyRow
-          label="Front Copy"
-          status={documentGroup.front ? "Uploaded" : "Missing"}
-          fileName={documentGroup.front?.fileName || ""}
-          error={frontError}
-          onClick={() => frontInputRef.current?.click()}
-        />
-        <CopyRow
-          label="Back Copy"
-          status={documentGroup.back ? "Uploaded" : "Missing"}
-          fileName={documentGroup.back?.fileName || ""}
-          error={backError}
-          onClick={() => backInputRef.current?.click()}
-        />
-      </div>
+      <CopyRow
+        label="Document Copy"
+        status={documentGroup.file ? "Uploaded" : "Missing"}
+        fileName={documentGroup.file?.fileName || ""}
+        error={fileError}
+        onClick={() => inputRef.current?.click()}
+      />
 
-      <input type="file" ref={frontInputRef} accept="image/*,.pdf" onChange={(e) => handleFile(e, 'front', setFrontError)} className="hidden" />
-      <input type="file" ref={backInputRef} accept="image/*,.pdf" onChange={(e) => handleFile(e, 'back', setBackError)} className="hidden" />
+      <input
+        type="file"
+        ref={inputRef}
+        accept="image/*,.pdf"
+        onChange={handleFile}
+        className="hidden"
+      />
     </div>
   );
 }

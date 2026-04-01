@@ -4,10 +4,11 @@ import {
   Target,
   Wifi
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import OfflineConfirmModal from "../components/OfflineConfirmModal";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – OnlineMapView Driver App – Online Map View
 // Map-centric view for active drivers scanning for requests.
@@ -16,6 +17,13 @@ export default function OnlineMapView() {
   const [zoom, setZoom] = useState(12);
   const [showOfflineModal, setShowOfflineModal] = useState(false);
   const navigate = useNavigate();
+  const { driverPresenceStatus, setDriverOffline } = useStore();
+
+  useEffect(() => {
+    if (driverPresenceStatus !== "online") {
+      navigate("/driver/dashboard/offline", { replace: true });
+    }
+  }, [driverPresenceStatus, navigate]);
 
   return (
     <div className="flex flex-col h-full bg-transparent">
@@ -112,7 +120,11 @@ export default function OnlineMapView() {
 
         <OfflineConfirmModal
           isOpen={showOfflineModal}
-          onConfirm={() => { setShowOfflineModal(false); navigate("/driver/dashboard/offline"); }}
+          onConfirm={() => {
+            setShowOfflineModal(false);
+            setDriverOffline();
+            navigate("/driver/dashboard/offline");
+          }}
           onCancel={() => setShowOfflineModal(false)}
         />
       </main>

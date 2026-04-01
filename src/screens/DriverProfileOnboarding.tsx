@@ -124,12 +124,17 @@ export default function DriverProfileOnboarding() {
     vehicles,
     selectedVehicleIndex,
     emergencyContacts,
-    removeEmergencyContact,
   } = useStore();
   const documentState = useMemo(() => readStoredDocumentState(), []);
   const blockerCount = onboardingBlockers.length;
   const documentsComplete = areAllRequiredDocumentsUploaded(documentState);
   const trainingComplete = onboardingCheckpoints.trainingCompleted;
+  const onboardingPrerequisitesComplete =
+    onboardingCheckpoints.roleSelected &&
+    onboardingCheckpoints.documentsVerified &&
+    onboardingCheckpoints.identityVerified &&
+    onboardingCheckpoints.vehicleReady &&
+    onboardingCheckpoints.emergencyContactReady;
   const [isSocialEditorOpen, setIsSocialEditorOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isInfoBreakdownsOpen, setIsInfoBreakdownsOpen] = useState(false);
@@ -184,20 +189,28 @@ export default function DriverProfileOnboarding() {
   const vehicleReady = onboardingCheckpoints.vehicleReady;
 
   const gatewayAction = useMemo(() => {
+    if (!onboardingPrerequisitesComplete) {
+      return {
+        label: "Complete Required Steps",
+        route: onboardingBlockers[0]?.route || "/driver/onboarding/profile",
+        note: "Finish all onboarding requirements to unlock training.",
+      };
+    }
+
     if (!trainingComplete) {
       return {
-        label: "Continue to Training Session",
+        label: "Continue to Training",
         route: "/driver/training/info-session",
-        note: "Complete all verification steps before proceeding to training.",
+        note: "Finish training before going online.",
       };
     }
 
     return {
       label: "Go Online",
-      route: "/driver/dashboard/online",
-      note: "All requirements cleared for live tracking.",
+      route: "/driver/preferences/identity/face-capture?mode=go-online&next=/driver/dashboard/online",
+      note: "Identity check is required every time you go online.",
     };
-  }, [trainingComplete]);
+  }, [onboardingBlockers, onboardingPrerequisitesComplete, trainingComplete]);
 
   type BreakdownItem = {
     id: string;
@@ -347,6 +360,15 @@ export default function DriverProfileOnboarding() {
         present: onboardingCheckpoints.vehicleReady,
         route: "/driver/vehicles",
       },
+      {
+        id: "emergency-contact-ready",
+        label: "Emergency Contacts",
+        detail: onboardingCheckpoints.emergencyContactReady
+          ? "Trusted emergency contact is saved."
+          : "Add at least one trusted emergency contact.",
+        present: onboardingCheckpoints.emergencyContactReady,
+        route: "/driver/safety/emergency/contacts",
+      },
     ];
 
     const docItems: BreakdownItem[] = documentSides.map((item) => {
@@ -380,6 +402,7 @@ export default function DriverProfileOnboarding() {
     driverProfile.phone,
     onboardingRoleLabel,
     onboardingCheckpoints.documentsVerified,
+    onboardingCheckpoints.emergencyContactReady,
     onboardingCheckpoints.identityVerified,
     onboardingCheckpoints.roleSelected,
     onboardingCheckpoints.trainingCompleted,
@@ -510,7 +533,7 @@ export default function DriverProfileOnboarding() {
           <div className="flex items-center justify-between px-1">
             <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Emergency Contacts</h2>
             <button
-              onClick={() => navigate("/driver/safety/hub")}
+              onClick={() => navigate("/driver/safety/emergency/contacts")}
               className="flex items-center space-x-1 text-[11px] font-black text-orange-500 uppercase tracking-tight"
             >
               <Plus className="h-3 w-3" />
@@ -524,7 +547,7 @@ export default function DriverProfileOnboarding() {
                 {emergencyContacts.map((contact) => (
                   <button
                     key={contact.id}
-                    onClick={() => navigate("/driver/safety/hub")}
+                    onClick={() => navigate("/driver/safety/emergency/contacts")}
                     className="flex items-center space-x-2 rounded-xl border border-orange-200 bg-orange-50/50 px-3 py-2 transition-all active:scale-95 hover:border-orange-300"
                   >
                     <div className="h-6 w-6 rounded-lg bg-white flex items-center justify-center border border-orange-100 shadow-sm">
@@ -540,7 +563,7 @@ export default function DriverProfileOnboarding() {
             ) : (
               <button
                 type="button"
-                onClick={() => navigate("/driver/safety/hub")}
+                onClick={() => navigate("/driver/safety/emergency/contacts")}
                 className="w-full rounded-[2rem] border-2 border-dashed border-slate-200 bg-slate-50/50 p-6 flex flex-col items-center justify-center space-y-2 hover:border-orange-300 hover:bg-orange-50/30 transition-all"
               >
                 <Users className="h-8 w-8 text-slate-300" />
@@ -589,11 +612,17 @@ export default function DriverProfileOnboarding() {
             canGoOnline ? "text-emerald-900" : "text-amber-900"
           }`}>
             <p className="font-black text-xs mb-1 uppercase tracking-tight">
-              {canGoOnline ? "Setup Complete" : "Setup Incomplete"}
+              {canGoOnline
+                ? "Setup Complete"
+                : onboardingPrerequisitesComplete && !trainingComplete
+                ? "Training Pending"
+                : "Setup Incomplete"}
             </p>
             <p className="font-medium opacity-70">
               {canGoOnline
-                ? "All onboarding requirements are complete. You can now go online."
+                ? "All onboarding requirements are complete. Use Go Online when ready."
+                : onboardingPrerequisitesComplete && !trainingComplete
+                ? "All prerequisites are complete. Continue to training to unlock Go Online."
                 : `Complete ${blockerCount} required step${blockerCount === 1 ? "" : "s"} to unlock shifts.`}
             </p>
           </div>
@@ -905,6 +934,10 @@ export default function DriverProfileOnboarding() {
           <button
             type="button"
             onClick={() => {
+              if (gatewayAction.label === "Complete Required Steps") {
+                navigate(gatewayAction.route);
+                return;
+              }
               if (!documentsComplete) {
                 alert("Please upload all required documents (Driving Permit, National ID, and Conduct Cert) before proceeding.");
                 return;
@@ -921,7 +954,7 @@ export default function DriverProfileOnboarding() {
               navigate(gatewayAction.route);
             }}
             className={`w-full rounded-2xl py-4 text-sm font-black shadow-lg transition-all active:scale-[0.98] uppercase tracking-widest ${
-              gatewayAction.label === "Go Online" || gatewayAction.label === "Continue to Training Session"
+              gatewayAction.label === "Go Online" || gatewayAction.label === "Continue to Training"
                 ? "bg-orange-500 text-white shadow-orange-500/20 hover:bg-orange-600"
                 : "bg-slate-900 text-white shadow-slate-900/20 hover:bg-slate-800"
             }`}

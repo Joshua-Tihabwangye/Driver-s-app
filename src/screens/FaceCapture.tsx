@@ -6,13 +6,13 @@ import {
   SunMedium,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – FaceCapture Face Capture
 // Real camera-driven multi-step liveness flow:
-// 1) front capture, 2) left capture, 3) right capture.
+// 1) front capture, 2) right capture, 3) left capture.
 
 
 function Tip({ icon: Icon, title, text }) {
@@ -46,12 +46,12 @@ function StepPill({ index, label, active }) {
 
 function DirectionIcon({ step }) {
   if (step === 1) return <Circle className="h-4 w-4 text-orange-500" />;
-  if (step === 2) return <ArrowLeft className="h-4 w-4 text-orange-500" />;
-  return <ArrowRight className="h-4 w-4 text-orange-500" />;
+  if (step === 2) return <ArrowRight className="h-4 w-4 text-orange-500" />;
+  return <ArrowLeft className="h-4 w-4 text-orange-500" />;
 }
 
 export default function FaceCapture() {
-  const [step, setStep] = useState<1 | 2 | 3>(1); // 1: front, 2: left, 3: right
+  const [step, setStep] = useState<1 | 2 | 3>(1); // 1: front, 2: right, 3: left
   const [cameraError, setCameraError] = useState("");
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [isTipsOpen, setIsTipsOpen] = useState(false);
@@ -61,25 +61,29 @@ export default function FaceCapture() {
     3: false,
   });
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { canGoOnline, setDriverOnline } = useStore();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const isGoOnlineMode = searchParams.get("mode") === "go-online";
+  const nextRoute = searchParams.get("next") || "/driver/dashboard/online";
 
   const stepTitle =
-    step === 1 ? "Look straight" : step === 2 ? "Turn your head left" : "Turn your head right";
+    step === 1 ? "Look straight" : step === 2 ? "Turn your head right" : "Turn your head left";
 
   const overlayText =
     step === 1
       ? "Look straight into the camera"
       : step === 2
-        ? "Slowly turn your head to the left"
-        : "Now slowly turn your head to the right";
+        ? "Slowly turn your head to the right"
+        : "Now slowly turn your head to the left";
 
   const subtitleText =
     step === 1
       ? "We'll first capture a clear front-facing selfie."
       : step === 2
-        ? "Next, we'll capture you turning your head to the left."
-        : "Finally, we'll capture you turning your head to the right.";
+        ? "Next, we'll capture you turning your head to the right."
+        : "Finally, we'll capture you turning your head to the left.";
 
   const stopCameraStream = () => {
     setIsCameraReady(false);
@@ -162,29 +166,44 @@ export default function FaceCapture() {
     }
 
     stopCameraStream();
+    if (isGoOnlineMode) {
+      if (!canGoOnline) {
+        navigate("/driver/dashboard/required-actions", { replace: true });
+        return;
+      }
+      setDriverOnline();
+      navigate(nextRoute, { replace: true });
+      return;
+    }
     navigate("/driver/onboarding/profile");
   };
 
   const handleBack = () => {
     stopCameraStream();
+    if (isGoOnlineMode) {
+      navigate("/driver/dashboard/offline", { replace: true });
+      return;
+    }
     navigate(-1);
   };
 
   const progressHint =
     step === 1
-      ? "Front captured first, then left and right."
+      ? "Front captured first, then right and left."
       : step === 2
-        ? "Front captured. Next is left side, then right side."
-        : "Front and left captured. Final capture is right side.";
+        ? "Front captured. Next is right side, then left side."
+        : "Front and right captured. Final capture is left side.";
 
   const ctaDisabled = !isCameraReady || cameraError.length > 0;
 
   const ctaActionText =
-    step === 1 ? "Capture front" : step === 2 ? "Capture left side" : "Capture right side";
+    step === 1 ? "Capture front" : step === 2 ? "Capture right side" : "Capture left side";
 
   const completionText =
     step === 3
-      ? "After this capture, you'll continue to the upload page."
+      ? isGoOnlineMode
+        ? "After this capture, your status will switch to online."
+        : "After this capture, you'll continue to the upload page."
       : "We will automatically move to the next side after each capture.";
 
   const stepProgressLabel =
@@ -194,8 +213,8 @@ export default function FaceCapture() {
     step === 1
       ? "Front view required"
       : step === 2
-        ? "Turn left and keep your face visible"
-        : "Turn right and keep your face visible";
+        ? "Turn right and keep your face visible"
+        : "Turn left and keep your face visible";
 
   const cameraStatusText = cameraError
     ? "Camera unavailable"
@@ -219,8 +238,8 @@ export default function FaceCapture() {
           </div>
           <div className="flex items-center space-x-2">
             <StepPill index={1} label="Front" active={step === 1} />
-            <StepPill index={2} label="Left" active={step === 2} />
-            <StepPill index={3} label="Right" active={step === 3} />
+            <StepPill index={2} label="Right" active={step === 2} />
+            <StepPill index={3} label="Left" active={step === 3} />
           </div>
           <p className="px-1 text-[11px] font-medium text-slate-500">{progressHint}</p>
         </section>
@@ -266,14 +285,14 @@ export default function FaceCapture() {
                 capturedSteps[2] ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-slate-50 text-slate-500"
               }`}
             >
-              Left
+              Right
             </div>
             <div
               className={`rounded-xl border px-2 py-1 text-center text-[10px] font-black uppercase tracking-tight ${
                 capturedSteps[3] ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-slate-50 text-slate-500"
               }`}
             >
-              Right
+              Left
             </div>
           </div>
 

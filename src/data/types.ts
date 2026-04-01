@@ -52,8 +52,7 @@ export interface VehicleDocumentFile {
 }
 
 export interface VehicleDocumentGroup {
-  front?: VehicleDocumentFile;
-  back?: VehicleDocumentFile;
+  file?: VehicleDocumentFile;
 }
 
 export interface VehicleDocuments {

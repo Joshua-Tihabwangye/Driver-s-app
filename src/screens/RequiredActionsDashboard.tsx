@@ -4,7 +4,8 @@ BookOpenCheck,
 ChevronLeft,
 FileText,
 Info,
-ShieldCheck
+ShieldCheck,
+Users
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
@@ -42,6 +43,7 @@ const BLOCKER_ICON_MAP: Record<OnboardingCheckpointId, any> = {
   documentsVerified: FileText,
   identityVerified: ShieldCheck,
   vehicleReady: ShieldCheck,
+  emergencyContactReady: Users,
   trainingCompleted: BookOpenCheck,
 };
 
@@ -109,10 +111,12 @@ export default function RequiredActionsDashboard() {
               </p>
               <button
                 type="button"
-                onClick={() => navigate("/driver/dashboard/online")}
+                onClick={() =>
+                  navigate("/driver/preferences/identity/face-capture?mode=go-online&next=/driver/dashboard/online")
+                }
                 className="mt-3 w-full rounded-xl bg-emerald-600 py-3 text-[10px] font-black uppercase tracking-widest text-white"
               >
-                Continue to Online Dashboard
+                Start Identity Check
               </button>
             </div>
           ) : (
