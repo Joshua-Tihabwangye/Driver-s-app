@@ -7,23 +7,14 @@ import OnlineMapView from "./OnlineMapView";
 // Keeps the original onboarding/identity gate logic before entering online mode.
 export default function OnlineDashboard() {
   const navigate = useNavigate();
-  const { canGoOnline, driverPresenceStatus } = useStore();
+  const { driverPresenceStatus } = useStore();
 
   useEffect(() => {
     if (driverPresenceStatus === "online") {
       return;
     }
-
-    if (!canGoOnline) {
-      navigate("/driver/dashboard/required-actions", { replace: true });
-      return;
-    }
-
-    navigate(
-      "/driver/preferences/identity/face-capture?mode=go-online&next=/driver/dashboard/online",
-      { replace: true }
-    );
-  }, [canGoOnline, driverPresenceStatus, navigate]);
+    navigate("/driver/dashboard/offline", { replace: true });
+  }, [driverPresenceStatus, navigate]);
 
   return <OnlineMapView homeMode showQuickActions />;
 }

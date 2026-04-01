@@ -1,8 +1,6 @@
 import {
-ChevronLeft,
 Clock,
 Loader2,
-Map,
 XCircle
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -71,6 +69,7 @@ export default function SearchingForRide() {
 
           <button 
             type="button"
+            onClick={() => navigate("/driver/dashboard/online")}
             className="w-full rounded-2xl py-5 text-xs font-black uppercase tracking-[0.2em] shadow-xl bg-white text-red-500 border border-red-50 active:scale-95 transition-all flex items-center justify-center"
           >
             <XCircle className="h-5 w-5 mr-3" />
