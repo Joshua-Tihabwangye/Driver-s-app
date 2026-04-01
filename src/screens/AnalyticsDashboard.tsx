@@ -230,7 +230,7 @@ function ServiceBreakdown({
 
 export default function AnalyticsDashboard() {
   const navigate = useNavigate();
-  const { trips, revenueEvents, assignableJobTypes } = useStore();
+  const { trips, revenueEvents, tripFeedbacks, assignableJobTypes } = useStore();
   const [period, setPeriod] = useState<Period>("week");
   // Quarter and year sub-selectors: shown when period is "quarter" or "year"
   const [selectedQuarter, setSelectedQuarter] = useState("Q1");
@@ -251,6 +251,15 @@ export default function AnalyticsDashboard() {
         isWithinPeriod(event.timestamp, periodFilter)
       ),
     [revenueEvents, periodFilter]
+  );
+  const periodFeedback = useMemo(
+    () =>
+      tripFeedbacks.filter(
+        (entry) =>
+          assignableJobTypes.includes(entry.jobType) &&
+          isWithinPeriod(entry.submittedAt, periodFilter)
+      ),
+    [tripFeedbacks, assignableJobTypes, periodFilter]
   );
 
   const totalsByCategory = useMemo(() => {
@@ -290,37 +299,31 @@ export default function AnalyticsDashboard() {
     .reduce((sum, event) => sum + event.amount, 0);
 
   const ratingDistribution = useMemo(() => {
-    const sample = Math.max(totalTrips, 1);
-    const buckets = [
-      { stars: 5, pctBase: 0.65 },
-      { stars: 4, pctBase: 0.24 },
-      { stars: 3, pctBase: 0.08 },
-      { stars: 2, pctBase: 0.02 },
-      { stars: 1, pctBase: 0.01 },
-    ];
-    const counts = buckets.map((bucket) => ({
-      stars: bucket.stars,
-      count: Math.max(0, Math.round(sample * bucket.pctBase)),
+    const sample = periodFeedback.length;
+    const bucketCounts = [5, 4, 3, 2, 1].map((stars) => ({
+      stars,
+      count: periodFeedback.filter(
+        (entry) => Math.round(entry.rating) === stars
+      ).length,
     }));
-    const countSum = counts.reduce((sum, row) => sum + row.count, 0);
-    if (countSum !== sample) {
-      counts[0].count += sample - countSum;
-    }
-    return counts.map((row) => ({
+
+    return bucketCounts.map((row) => ({
       stars: row.stars,
       count: row.count,
-      pct: Math.round((row.count / sample) * 100),
+      pct: sample > 0 ? Math.round((row.count / sample) * 100) : 0,
     }));
-  }, [totalTrips]);
+  }, [periodFeedback]);
 
   const rating = useMemo(() => {
-    const weighted = ratingDistribution.reduce(
-      (sum, row) => sum + row.stars * row.count,
-      0
-    );
-    const sample = ratingDistribution.reduce((sum, row) => sum + row.count, 0);
-    return sample > 0 ? weighted / sample : 0;
-  }, [ratingDistribution]);
+    if (periodFeedback.length === 0) {
+      return 0;
+    }
+    const sum = periodFeedback.reduce((acc, entry) => acc + entry.rating, 0);
+    return sum / periodFeedback.length;
+  }, [periodFeedback]);
+  const reviewsCount = periodFeedback.filter(
+    (entry) => entry.review.trim().length > 0
+  ).length;
 
   const dailyRows = useMemo(() => {
     const now = new Date();
@@ -538,7 +541,7 @@ export default function AnalyticsDashboard() {
         <div className="grid grid-cols-2 gap-3 pb-2">
           <StatCard
             icon={DollarSign}
-            label="Income"
+            label="Income Overview"
             value={formatUGX(totalRevenue)}
             sub={`${formatUGX(tips)} tips included`}
             onClick={() => navigate("/driver/earnings/overview")}
@@ -555,7 +558,11 @@ export default function AnalyticsDashboard() {
             icon={Star}
             label="Rating"
             value={rating.toFixed(2)}
-            sub="Category-adjusted"
+            sub={
+              reviewsCount > 0
+                ? `${reviewsCount} review${reviewsCount === 1 ? "" : "s"} recorded`
+                : "No reviews yet"
+            }
             color="#f59e0b"
             onClick={() => navigate("/driver/ratings")}
           />

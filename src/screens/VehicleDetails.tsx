@@ -156,7 +156,12 @@ export default function VehicleDetails() {
     if (!form.range.trim()) newErrors.push("Est. Range (KM) is required");
 
     // Check accessories
-    const accessories = vehicle?.accessories || {};
+    const accessories =
+      vehicle?.accessories && Object.keys(vehicle.accessories).length > 0
+        ? vehicle.accessories
+        : vehicle
+        ? getDefaultAccessoriesForType(vehicle.type)
+        : {};
     const missingAccessories = Object.values(accessories).some(v => v === "Missing");
     if (missingAccessories) {
       newErrors.push("All mandatory safety inventory must be marked as Available");
@@ -212,8 +217,14 @@ export default function VehicleDetails() {
     setShowDocs(prev => !prev);
   };
 
-  const accessoryCount = vehicle?.accessories ? Object.keys(vehicle.accessories).length : 0;
-  const availableCount = vehicle?.accessories ? Object.values(vehicle.accessories).filter(v => v === "Available").length : 0;
+  const resolvedAccessories =
+    vehicle?.accessories && Object.keys(vehicle.accessories).length > 0
+      ? vehicle.accessories
+      : vehicle
+      ? getDefaultAccessoriesForType(vehicle.type)
+      : {};
+  const accessoryCount = Object.keys(resolvedAccessories).length;
+  const availableCount = Object.values(resolvedAccessories).filter(v => v === "Available").length;
 
   const allDocsUploaded = Boolean(
     form.vehicleDocs?.logbook?.file &&

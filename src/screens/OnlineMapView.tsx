@@ -1,6 +1,7 @@
 import {
   MapPin,
   Navigation,
+  Settings2,
   Target,
   Wifi
 } from "lucide-react";
@@ -16,6 +17,9 @@ import { useStore } from "../context/StoreContext";
 export default function OnlineMapView() {
   const [zoom, setZoom] = useState(12);
   const [showOfflineModal, setShowOfflineModal] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
+  const [followMode, setFollowMode] = useState(true);
+  const [locationHint, setLocationHint] = useState<string | null>(null);
   const navigate = useNavigate();
   const { driverPresenceStatus, setDriverOffline } = useStore();
 
@@ -24,6 +28,41 @@ export default function OnlineMapView() {
       navigate("/driver/dashboard/offline", { replace: true });
     }
   }, [driverPresenceStatus, navigate]);
+
+  useEffect(() => {
+    if (!locationHint) {
+      return;
+    }
+    const timer = window.setTimeout(() => setLocationHint(null), 3200);
+    return () => window.clearTimeout(timer);
+  }, [locationHint]);
+
+  const handleRecenterMap = () => {
+    setFollowMode(true);
+    setZoom((current) => Math.max(current, 14));
+
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      setLocationHint("Location services unavailable. Map centered to default view.");
+      return;
+    }
+
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      () => {
+        setIsLocating(false);
+        setLocationHint("Centered on your current location.");
+      },
+      () => {
+        setIsLocating(false);
+        setLocationHint("Unable to fetch location. Check GPS permission.");
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 30000,
+      }
+    );
+  };
 
   return (
     <div className="flex flex-col h-full bg-transparent">
@@ -47,7 +86,7 @@ export default function OnlineMapView() {
           <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200 dark:from-slate-800 dark:via-slate-900 dark:to-slate-800 opacity-50" />
 
           <div className="absolute top-4 right-4 rounded-xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-md px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-brand-active border border-white dark:border-slate-700 shadow-lg">
-            {zoom}x Zoom
+            {isLocating ? "Locating..." : `${zoom}x Zoom`}
           </div>
 
           {/* Current location marker */}
@@ -70,26 +109,47 @@ export default function OnlineMapView() {
           <div className="absolute bottom-4 right-4 flex flex-col space-y-2">
             <button
               type="button"
-              onClick={() => setZoom((z) => Math.min(z + 1, 18))}
+              onClick={() => {
+                setFollowMode(false);
+                setZoom((z) => Math.min(z + 1, 18));
+              }}
               className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 shadow-2xl border border-slate-100 dark:border-slate-700 active:scale-90 transition-all text-slate-900 dark:text-white font-black text-lg"
             >
               +
             </button>
             <button
               type="button"
-              onClick={() => setZoom((z) => Math.max(z - 1, 8))}
+              onClick={() => {
+                setFollowMode(false);
+                setZoom((z) => Math.max(z - 1, 8));
+              }}
               className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 shadow-2xl border border-slate-100 dark:border-slate-700 active:scale-90 transition-all text-slate-900 dark:text-white font-black text-lg"
             >
               -
             </button>
             <button
               type="button"
-              onClick={() => navigate("/driver/map/settings")}
+              onClick={handleRecenterMap}
               className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900 text-orange-500 shadow-2xl border border-orange-500/20 active:scale-90 transition-all"
+              aria-label="Center map on my location"
             >
               <Navigation className="h-5 w-5" />
             </button>
+            <button
+              type="button"
+              onClick={() => navigate("/driver/map/settings")}
+              className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 shadow-2xl border border-slate-100 dark:border-slate-700 active:scale-90 transition-all"
+              aria-label="Open map settings"
+            >
+              <Settings2 className="h-5 w-5" />
+            </button>
           </div>
+
+          {locationHint && (
+            <div className="absolute bottom-4 left-4 max-w-[70%] rounded-xl border border-white/30 bg-slate-900/85 px-3 py-2 text-[10px] font-black uppercase tracking-tight text-white shadow-lg backdrop-blur">
+              {locationHint}
+            </div>
+          )}
         </section>
 
         {/* Status strip */}
@@ -100,6 +160,9 @@ export default function OnlineMapView() {
             </div>
             <div className="flex flex-col">
             <p className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-tight">Active Online</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              {followMode ? "Follow mode: On" : "Follow mode: Off"}
+            </p>
             <button 
               onClick={() => navigate("/driver/map/searching")}
               className="text-[11px] text-orange-600 dark:text-orange-400 font-black uppercase tracking-widest hover:underline"

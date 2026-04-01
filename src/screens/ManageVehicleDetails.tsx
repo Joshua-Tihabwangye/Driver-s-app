@@ -200,8 +200,14 @@ export default function ManageVehicleDetails() {
     setShowDocs(prev => !prev);
   };
 
-  const accessoryCount = vehicle?.accessories ? Object.keys(vehicle.accessories).length : 0;
-  const availableCount = vehicle?.accessories ? Object.values(vehicle.accessories).filter(v => v === "Available").length : 0;
+  const resolvedAccessories =
+    vehicle?.accessories && Object.keys(vehicle.accessories).length > 0
+      ? vehicle.accessories
+      : vehicle
+      ? getDefaultAccessoriesForType(vehicle.type)
+      : {};
+  const accessoryCount = Object.keys(resolvedAccessories).length;
+  const availableCount = Object.values(resolvedAccessories).filter(v => v === "Available").length;
 
   const allDocsUploaded = Boolean(
     form.vehicleDocs?.logbook?.file &&

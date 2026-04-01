@@ -66,7 +66,13 @@ function VehicleCard({ image, brand, model, badge, primary, selected, onSelect, 
 
 export default function ManageVehicles() {
   const navigate = useNavigate();
-  const { vehicles, selectedVehicleIndex, setSelectedVehicleIndex, setDraftVehicle } = useStore();
+  const {
+    vehicles,
+    selectedVehicleIndex,
+    setSelectedVehicleIndex,
+    setDraftVehicle,
+    getDefaultAccessoriesForType,
+  } = useStore();
   const [localSelectedIdx, setLocalSelectedIdx] = useState<number | null>(selectedVehicleIndex);
 
   useEffect(() => {
@@ -90,7 +96,7 @@ export default function ManageVehicles() {
       plate: "",
       type: "Car",
       status: "inactive",
-      accessories: {},
+      accessories: getDefaultAccessoriesForType("Car"),
       batterySize: "",
       range: "",
       documentsUploaded: false

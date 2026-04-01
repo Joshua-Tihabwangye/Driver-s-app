@@ -128,8 +128,8 @@ export default function DocumentVerified() {
               icon={ClipboardCheck}
               title="Conduct Clearance"
               subtitle={
-                documentState.police.front.fileName && documentState.police.back.fileName
-                  ? `Front: ${documentState.police.front.fileName} | Back: ${documentState.police.back.fileName}`
+                documentState.police.front.fileName
+                  ? `Copy: ${documentState.police.front.fileName}`
                   : "Background check passed"
               }
             />

@@ -142,6 +142,14 @@ export interface ActiveTripState {
   timestamps: ActiveTripTimestamps;
 }
 
+export interface TripFeedback {
+  tripId: string;
+  rating: number;
+  review: string;
+  submittedAt: number;
+  jobType: JobCategory;
+}
+
 interface StoreContextType {
   // Config
   periodFilter: PeriodFilter;
@@ -151,6 +159,7 @@ interface StoreContextType {
   jobs: Job[];
   trips: TripRecord[];
   revenueEvents: RevenueEvent[];
+  tripFeedbacks: TripFeedback[];
   filteredTrips: TripRecord[];
   filteredRevenueEvents: RevenueEvent[];
   sharedRidesEnabled: boolean;
@@ -268,6 +277,10 @@ const VEHICLES_STORAGE_KEY = "driver_vehicles";
 const EMERGENCY_CONTACTS_STORAGE_KEY = "driver_emergency_contacts";
 const DRAFT_VEHICLE_STORAGE_KEY = "driver_draft_vehicle";
 const DRIVER_PRESENCE_STORAGE_KEY = "driver_presence_status";
+const JOBS_STORAGE_KEY = "driver_jobs";
+const TRIPS_STORAGE_KEY = "driver_trips";
+const REVENUE_EVENTS_STORAGE_KEY = "driver_revenue_events";
+const TRIP_FEEDBACKS_STORAGE_KEY = "driver_trip_feedbacks";
 
 const CAR_ACCESSORIES: Record<string, "Available" | "Missing" | "Required"> = {
   "Spare tyre": "Available",
@@ -298,6 +311,22 @@ export function getDefaultAccessoriesForType(type: string): Record<string, "Avai
   if (t === "motorcycle" || t === "bike") return { ...MOTORCYCLE_ACCESSORIES };
   if (t === "van" || t === "truck") return { ...VAN_ACCESSORIES };
   return { ...CAR_ACCESSORIES };
+}
+
+function hasConfiguredAccessories(
+  accessories: Vehicle["accessories"] | undefined
+): accessories is Record<string, "Available" | "Missing" | "Required"> {
+  return Boolean(accessories && Object.keys(accessories).length > 0);
+}
+
+function resolveAccessoriesForVehicle(
+  type: string,
+  accessories: Vehicle["accessories"] | undefined
+): Record<string, "Available" | "Missing" | "Required"> {
+  if (hasConfiguredAccessories(accessories)) {
+    return accessories;
+  }
+  return getDefaultAccessoriesForType(type);
 }
 
 const DEFAULT_ONBOARDING_CHECKPOINTS: OnboardingCheckpointState = {
@@ -655,6 +684,155 @@ function readStoredVehicles(): Vehicle[] {
   }
 }
 
+function readStoredJobs(): Job[] {
+  if (typeof window === "undefined") {
+    return [...initialJobs];
+  }
+
+  try {
+    const raw = window.localStorage.getItem(JOBS_STORAGE_KEY);
+    if (!raw) {
+      return [...initialJobs];
+    }
+
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) {
+      return [...initialJobs];
+    }
+
+    return parsed as Job[];
+  } catch {
+    return [...initialJobs];
+  }
+}
+
+function readStoredTrips(): TripRecord[] {
+  if (typeof window === "undefined") {
+    return [...MOCK_COMPLETED_TRIPS];
+  }
+
+  try {
+    const raw = window.localStorage.getItem(TRIPS_STORAGE_KEY);
+    if (!raw) {
+      return [...MOCK_COMPLETED_TRIPS];
+    }
+
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) {
+      return [...MOCK_COMPLETED_TRIPS];
+    }
+
+    return parsed as TripRecord[];
+  } catch {
+    return [...MOCK_COMPLETED_TRIPS];
+  }
+}
+
+function readStoredRevenueEvents(sourceTrips: TripRecord[]): RevenueEvent[] {
+  const fallback = buildSeedRevenueEventsFromTrips(sourceTrips);
+
+  if (typeof window === "undefined") {
+    return fallback;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(REVENUE_EVENTS_STORAGE_KEY);
+    if (!raw) {
+      return fallback;
+    }
+
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) {
+      return fallback;
+    }
+
+    return parsed as RevenueEvent[];
+  } catch {
+    return fallback;
+  }
+}
+
+function buildFallbackFeedbackReview(jobType: JobCategory): string {
+  if (jobType === "delivery") return "Package delivered safely and on time.";
+  if (jobType === "rental") return "Vehicle service was smooth for the full rental window.";
+  if (jobType === "tour") return "Tour checkpoints were completed professionally.";
+  if (jobType === "ambulance") return "Response and handling were professional.";
+  if (jobType === "shared") return "Shared trip coordination was excellent.";
+  return "Service was smooth and professional.";
+}
+
+function buildFallbackTripFeedback(trip: TripRecord): TripFeedback {
+  const submittedAt =
+    (typeof trip.completedAt === "number" && Number.isFinite(trip.completedAt)
+      ? trip.completedAt
+      : undefined) || toMiddayTimestamp(trip.date);
+
+  return {
+    tripId: trip.id,
+    rating: 5,
+    review: buildFallbackFeedbackReview(trip.jobType),
+    submittedAt,
+    jobType: trip.jobType,
+  };
+}
+
+function readStoredTripFeedbacks(sourceTrips: TripRecord[]): TripFeedback[] {
+  const fallback = sourceTrips.map((trip) => buildFallbackTripFeedback(trip));
+
+  if (typeof window === "undefined") {
+    return fallback;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(TRIP_FEEDBACKS_STORAGE_KEY);
+    if (!raw) {
+      return fallback;
+    }
+
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) {
+      return fallback;
+    }
+
+    const existing = new Map<string, TripFeedback>();
+    parsed.forEach((entry) => {
+      if (!entry || typeof entry !== "object") return;
+      const candidate = entry as Partial<TripFeedback>;
+      if (typeof candidate.tripId !== "string" || !candidate.tripId.trim()) return;
+      const rating = Number(candidate.rating);
+      const normalizedRating = Number.isFinite(rating)
+        ? Math.max(1, Math.min(5, Number(rating.toFixed(2))))
+        : 5;
+      existing.set(candidate.tripId, {
+        tripId: candidate.tripId,
+        rating: normalizedRating,
+        review:
+          typeof candidate.review === "string" && candidate.review.trim().length > 0
+            ? candidate.review
+            : "Service completed successfully.",
+        submittedAt:
+          typeof candidate.submittedAt === "number" &&
+          Number.isFinite(candidate.submittedAt)
+            ? candidate.submittedAt
+            : Date.now(),
+        jobType: isJobCategory(candidate.jobType) ? candidate.jobType : "ride",
+      });
+    });
+
+    sourceTrips.forEach((trip) => {
+      if (!existing.has(trip.id)) {
+        existing.set(trip.id, buildFallbackTripFeedback(trip));
+      }
+    });
+
+    return Array.from(existing.values()).sort(
+      (a, b) => b.submittedAt - a.submittedAt
+    );
+  } catch {
+    return fallback;
+  }
+}
+
 function readStoredEmergencyContacts(): SharedContact[] {
   if (typeof window === "undefined") {
     return [];
@@ -676,7 +854,14 @@ function readStoredDraftVehicle(): Vehicle | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = window.localStorage.getItem(DRAFT_VEHICLE_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
+    if (!raw) {
+      return null;
+    }
+    const parsed = JSON.parse(raw) as Vehicle;
+    return {
+      ...parsed,
+      accessories: resolveAccessoriesForVehicle(parsed.type, parsed.accessories),
+    };
   } catch {
     return null;
   }
@@ -1126,11 +1311,16 @@ const initialJobs: Job[] = [
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [periodFilter, setPeriodFilter] = useState<PeriodFilter>("day");
-  const [jobs, setJobs] = useState<Job[]>(initialJobs);
-  const [trips, setTrips] = useState<TripRecord[]>(MOCK_COMPLETED_TRIPS);
-  const [revenueEvents, setRevenueEvents] = useState<RevenueEvent[]>(
-    () => buildSeedRevenueEventsFromTrips(MOCK_COMPLETED_TRIPS)
-  );
+  const [jobs, setJobs] = useState<Job[]>(() => readStoredJobs());
+  const [trips, setTrips] = useState<TripRecord[]>(() => readStoredTrips());
+  const [revenueEvents, setRevenueEvents] = useState<RevenueEvent[]>(() => {
+    const storedTrips = readStoredTrips();
+    return readStoredRevenueEvents(storedTrips);
+  });
+  const [tripFeedbacks, setTripFeedbacks] = useState<TripFeedback[]>(() => {
+    const storedTrips = readStoredTrips();
+    return readStoredTripFeedbacks(storedTrips);
+  });
   const [sharedRidesEnabled, setSharedRidesEnabled] = useState<boolean>(() =>
     readStoredSharedRidesEnabled()
   );
@@ -1474,6 +1664,60 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [draftVehicle]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(JOBS_STORAGE_KEY, JSON.stringify(jobs));
+    } catch (e) {
+      console.warn("Failed to save jobs to localStorage:", e);
+    }
+  }, [jobs]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(TRIPS_STORAGE_KEY, JSON.stringify(trips));
+    } catch (e) {
+      console.warn("Failed to save trips to localStorage:", e);
+    }
+  }, [trips]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(
+        REVENUE_EVENTS_STORAGE_KEY,
+        JSON.stringify(revenueEvents)
+      );
+    } catch (e) {
+      console.warn("Failed to save revenue events to localStorage:", e);
+    }
+  }, [revenueEvents]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(
+        TRIP_FEEDBACKS_STORAGE_KEY,
+        JSON.stringify(tripFeedbacks)
+      );
+    } catch (e) {
+      console.warn("Failed to save trip feedback to localStorage:", e);
+    }
+  }, [tripFeedbacks]);
+
+  useEffect(() => {
+    setTripFeedbacks((prev) => {
+      const existingIds = new Set(prev.map((entry) => entry.tripId));
+      const missing = trips.filter((trip) => !existingIds.has(trip.id));
+      if (missing.length === 0) {
+        return prev;
+      }
+      const additions = missing.map((trip) => buildFallbackTripFeedback(trip));
+      return [...additions, ...prev];
+    });
+  }, [trips]);
+
+  useEffect(() => {
     const hasProfilePhoto = Boolean(driverProfilePhoto && driverProfilePhoto.trim().length > 0);
     setOnboardingCheckpoints((prev) => {
       if (prev.identityVerified === hasProfilePhoto) {
@@ -1643,6 +1887,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         }
         return [revenueEvent, ...prev];
       });
+
+      setTripFeedbacks((prev) => {
+        if (prev.some((entry) => entry.tripId === tripId)) {
+          return prev;
+        }
+        return [buildFallbackTripFeedback(completedTripRecord), ...prev];
+      });
     }
 
     return tripId;
@@ -1718,7 +1969,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const addVehicle = useCallback((vehicle: Vehicle) => {
     setVehicles((prev) => [...prev, {
       ...vehicle,
-      accessories: vehicle.accessories || getDefaultAccessoriesForType(vehicle.type)
+      accessories: resolveAccessoriesForVehicle(vehicle.type, vehicle.accessories),
     }]);
   }, []);
 
@@ -1729,7 +1980,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const toggleVehicleAccessory = useCallback((vehicleId: string, accessoryName: string) => {
     // Check if updating draft
     if (draftVehicle && (vehicleId === "new" || vehicleId === draftVehicle.id)) {
-      const currentAccessories = draftVehicle.accessories || getDefaultAccessoriesForType(draftVehicle.type);
+      const currentAccessories = resolveAccessoriesForVehicle(
+        draftVehicle.type,
+        draftVehicle.accessories
+      );
       const currentStatus = currentAccessories[accessoryName] || "Missing";
       const statuses: ("Available" | "Missing" | "Required")[] = ["Available", "Missing", "Required"];
       const nextStatus = statuses[(statuses.indexOf(currentStatus) + 1) % statuses.length];
@@ -1747,7 +2001,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setVehicles((prev) =>
       prev.map((v) => {
         if (v.id !== vehicleId) return v;
-        const currentAccessories = v.accessories || getDefaultAccessoriesForType(v.type);
+        const currentAccessories = resolveAccessoriesForVehicle(v.type, v.accessories);
         const currentStatus = currentAccessories[accessoryName] || "Missing";
         const statuses: ("Available" | "Missing" | "Required")[] = ["Available", "Missing", "Required"];
         const nextStatus = statuses[(statuses.indexOf(currentStatus) + 1) % statuses.length];
@@ -1789,17 +2043,134 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const updateTourSegmentStatus = useCallback((jobId: string, segmentId: string, status: TourSegmentStatus) => {
+    let completion: {
+      trip: TripRecord;
+      revenue: RevenueEvent;
+      feedback: TripFeedback;
+    } | null = null;
+
     setJobs((prev) =>
-      prev.map((j) => {
-        if (j.id !== jobId || !j.segments) return j;
+      prev.map((job) => {
+        if (job.id !== jobId || !job.segments) {
+          return job;
+        }
+
+        const nextSegments = job.segments.map((segment) =>
+          segment.id === segmentId ? { ...segment, status } : segment
+        );
+        const completedCount = nextSegments.filter(
+          (segment) => segment.status === "completed"
+        ).length;
+        const allCompleted = nextSegments.length > 0 && completedCount === nextSegments.length;
+        const hasStarted = nextSegments.some(
+          (segment) => segment.status !== "upcoming"
+        );
+        const nextStatus: Job["status"] = allCompleted
+          ? "completed"
+          : hasStarted
+          ? "in-progress"
+          : "pending";
+
+        if (allCompleted && job.status !== "completed") {
+          const completedAt = Date.now();
+          const amount = resolveJobRevenueAmount(job);
+          completion = {
+            trip: {
+              id: job.id,
+              from: job.from,
+              to: job.to,
+              date: new Date(completedAt).toISOString().slice(0, 10),
+              time: new Date(completedAt).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+              amount,
+              jobType: "tour",
+              status: "completed",
+              distance: job.distance,
+              duration: job.duration,
+              completedAt,
+              details: {
+                tour: {
+                  groupName: "Tour Group",
+                  itinerary: nextSegments.map((segment) => ({
+                    label: segment.title,
+                    time: segment.time,
+                    note: segment.description,
+                  })),
+                  notes: "All scheduled checkpoints completed.",
+                },
+              },
+            },
+            revenue: {
+              id: `rev-${job.id}-tour-segments`,
+              tripId: job.id,
+              timestamp: completedAt,
+              type: "base",
+              amount,
+              label: "Tour",
+              category: "tour",
+            },
+            feedback: {
+              tripId: job.id,
+              rating: 5,
+              review: "Tour checkpoints completed successfully.",
+              submittedAt: completedAt,
+              jobType: "tour",
+            },
+          };
+        }
+
         return {
-          ...j,
-          segments: j.segments.map((s) =>
-            s.id === segmentId ? { ...s, status } : s
-          ),
+          ...job,
+          status: nextStatus,
+          segments: nextSegments,
         };
       })
     );
+
+    if (!completion) {
+      return;
+    }
+    const resolvedCompletion = completion;
+
+    setTrips((prev) => {
+      if (prev.some((trip) => trip.id === resolvedCompletion.trip.id)) {
+        return prev;
+      }
+      return [resolvedCompletion.trip, ...prev];
+    });
+
+    setRevenueEvents((prev) => {
+      if (prev.some((event) => event.id === resolvedCompletion.revenue.id)) {
+        return prev;
+      }
+      return [resolvedCompletion.revenue, ...prev];
+    });
+
+    setTripFeedbacks((prev) => {
+      if (prev.some((entry) => entry.tripId === resolvedCompletion.feedback.tripId)) {
+        return prev;
+      }
+      return [resolvedCompletion.feedback, ...prev];
+    });
+
+    setActiveTrip((prev) => {
+      if (prev.tripId !== jobId || prev.jobType !== "tour") {
+        return prev;
+      }
+      const completedAt = resolvedCompletion.feedback.submittedAt;
+      return {
+        ...prev,
+        stage: "completed",
+        status: "completed",
+        timestamps: {
+          ...prev.timestamps,
+          completedAt,
+          updatedAt: completedAt,
+        },
+      };
+    });
   }, []);
   const addSharedContactToJob = useCallback((jobId: string, contact: SharedContact) => {
     const hasJob = jobs.some((job) => job.id === jobId);
@@ -1820,10 +2191,35 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const updateActiveSharedTrip = useCallback((updater: (prev: SharedTrip) => SharedTrip) => {
     setActiveSharedTrip(prev => prev ? updater(prev) : null);
   }, []);
-  const addRevenueEvent = useCallback((event: RevenueEvent) => setRevenueEvents(prev => [...prev, event]), []);
+  const addRevenueEvent = useCallback((event: RevenueEvent) => {
+    setRevenueEvents((prev) => {
+      if (prev.some((entry) => entry.id === event.id)) {
+        return prev;
+      }
+      return [event, ...prev];
+    });
+  }, []);
   const completeTrip = useCallback((trip: TripRecord, revEvents: RevenueEvent[]) => {
-    setTrips(prev => [trip, ...prev]);
-    setRevenueEvents(prev => [...prev, ...revEvents]);
+    setTrips((prev) => {
+      if (prev.some((entry) => entry.id === trip.id)) {
+        return prev;
+      }
+      return [trip, ...prev];
+    });
+    setRevenueEvents((prev) => {
+      const existing = new Set(prev.map((entry) => entry.id));
+      const uniqueIncoming = revEvents.filter((entry) => !existing.has(entry.id));
+      if (uniqueIncoming.length === 0) {
+        return prev;
+      }
+      return [...uniqueIncoming, ...prev];
+    });
+    setTripFeedbacks((prev) => {
+      if (prev.some((entry) => entry.tripId === trip.id)) {
+        return prev;
+      }
+      return [buildFallbackTripFeedback(trip), ...prev];
+    });
   }, []);
   const updateDriverRoleConfig = useCallback(
     (input: DriverRoleUpdateInput): DriverRoleUpdateResult => {
@@ -2093,6 +2489,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           }
           return [revenueEvent, ...prev];
         });
+        setTripFeedbacks((prev) => {
+          if (prev.some((entry) => entry.tripId === tripId)) {
+            return prev;
+          }
+          return [buildFallbackTripFeedback(completedTripRecord), ...prev];
+        });
       }
     }
   }, [deliveryWorkflow.activeJobId, deliveryWorkflow.stage, jobs]);
@@ -2318,6 +2720,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }
       return [...nextEvents, ...prev];
     });
+    setTripFeedbacks((prev) => {
+      if (prev.some((entry) => entry.tripId === completedTripRecord.id)) {
+        return prev;
+      }
+      return [buildFallbackTripFeedback(completedTripRecord), ...prev];
+    });
     setActiveTrip((prev) => {
       if (prev.tripId !== activeSharedTrip.id) {
         return prev;
@@ -2422,6 +2830,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       jobs,
       trips,
       revenueEvents,
+      tripFeedbacks,
       // Use the real computed filtered arrays (filtered by assignableJobTypes)
       filteredTrips,
       filteredRevenueEvents,
@@ -2510,6 +2919,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       jobs,
       trips,
       revenueEvents,
+      tripFeedbacks,
       filteredTrips,
       filteredRevenueEvents,
       sharedRidesEnabled,

@@ -5,7 +5,9 @@ import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
 import {
   areAllRequiredDocumentsUploaded,
+  getRequiredDocumentSides,
   isAcceptedDocumentFile,
+  isDocumentSideRequired,
   persistDocumentState,
   readStoredDocumentState,
   type DocumentUploadKey,
@@ -80,7 +82,8 @@ export default function DocumentRejected() {
     const side = query.get("side");
     if (
       (focus === "id" || focus === "license" || focus === "police") &&
-      (side === "front" || side === "back")
+      (side === "front" || side === "back") &&
+      isDocumentSideRequired(focus, side)
     ) {
       return `${focus}-${side}`;
     }
@@ -97,7 +100,7 @@ export default function DocumentRejected() {
     }> = [];
 
     (["id", "license", "police"] as const).forEach((key) => {
-      (["front", "back"] as const).forEach((side) => {
+      getRequiredDocumentSides(key).forEach((side) => {
         const copy = docs[key][side];
         if (copy.status === "Rejected") {
           items.push({
@@ -259,12 +262,6 @@ export default function DocumentRejected() {
             type="file"
             accept="image/*,.pdf"
             onChange={(e) => handleFileSelected("police", "front", e)}
-          />
-          <input
-            id="reupload-police-back"
-            type="file"
-            accept="image/*,.pdf"
-            onChange={(e) => handleFileSelected("police", "back", e)}
           />
         </div>
 
