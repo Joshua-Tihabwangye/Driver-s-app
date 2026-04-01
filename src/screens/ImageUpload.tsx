@@ -4,7 +4,8 @@ CheckCircle2,
 Eye,
 Info,
 SunMedium,
-UploadCloud
+UploadCloud,
+X,
 } from "lucide-react";
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
@@ -294,7 +295,7 @@ export default function ImageUpload() {
                   Capture Profile Photo
                 </h3>
                 <p className="mt-1 text-[11px] font-medium text-slate-500">
-                  Center your face and capture a clear image.
+                  Center your face, then tap the white ring inside the camera.
                 </p>
               </div>
 
@@ -312,23 +313,35 @@ export default function ImageUpload() {
                     muted
                   />
                 )}
-              </div>
 
-              <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={closeCameraModal}
-                  className="rounded-xl border border-slate-200 py-3 text-xs font-black uppercase tracking-widest text-slate-600"
+                  className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full border border-white/40 bg-slate-900/70 text-white backdrop-blur-sm active:scale-95"
+                  aria-label="Close camera"
                 >
-                  Close
+                  <X className="h-4 w-4" />
                 </button>
-                <button
-                  type="button"
-                  onClick={handleCaptureFromCamera}
-                  className="rounded-xl bg-orange-500 py-3 text-xs font-black uppercase tracking-widest text-white"
-                >
-                  Capture
-                </button>
+
+                <div className="absolute inset-x-0 bottom-5 flex items-center justify-center">
+                  <button
+                    type="button"
+                    onClick={handleCaptureFromCamera}
+                    disabled={cameraError.length > 0}
+                    aria-label="Capture photo"
+                    className={`relative flex h-16 w-16 items-center justify-center rounded-full border-4 transition-all ${
+                      cameraError
+                        ? "cursor-not-allowed border-white/25 bg-white/10"
+                        : "border-white/95 bg-white/20 shadow-[0_0_30px_rgba(255,255,255,0.45)] active:scale-95"
+                    }`}
+                  >
+                    <span
+                      className={`h-9 w-9 rounded-full transition-all ${
+                        cameraError ? "bg-white/30" : "bg-white animate-pulse"
+                      }`}
+                    />
+                  </button>
+                </div>
               </div>
             </div>
           </section>

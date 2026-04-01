@@ -264,11 +264,31 @@ export default function FaceCapture() {
               <DirectionIcon step={step} />
             </div>
 
-            <div className="absolute inset-x-4 bottom-4 space-y-1 rounded-2xl border border-white/10 bg-slate-900/90 px-3 py-2 text-center backdrop-blur-md">
+            <div className="absolute inset-x-4 bottom-24 space-y-1 rounded-2xl border border-white/10 bg-slate-900/90 px-3 py-2 text-center backdrop-blur-md">
               <p className="text-[10px] font-black uppercase tracking-tight text-white">
                 {overlayText}
               </p>
               <p className="text-[10px] font-semibold text-orange-300">{captureGuideText}</p>
+            </div>
+
+            <div className="absolute inset-x-0 bottom-6 flex items-center justify-center">
+              <button
+                type="button"
+                onClick={handleCapture}
+                disabled={ctaDisabled}
+                aria-label={ctaActionText}
+                className={`relative flex h-16 w-16 items-center justify-center rounded-full border-4 transition-all ${
+                  ctaDisabled
+                    ? "cursor-not-allowed border-white/25 bg-white/10"
+                    : "border-white/95 bg-white/20 shadow-[0_0_30px_rgba(255,255,255,0.45)] active:scale-95"
+                }`}
+              >
+                <span
+                  className={`h-9 w-9 rounded-full transition-all ${
+                    ctaDisabled ? "bg-white/30" : "bg-white animate-pulse"
+                  }`}
+                />
+              </button>
             </div>
           </div>
 
@@ -342,19 +362,6 @@ export default function FaceCapture() {
         </section>
 
         <section className="flex flex-col gap-3 pb-12 pt-4">
-          <button
-            type="button"
-            onClick={handleCapture}
-            disabled={ctaDisabled}
-            className={`w-full rounded-2xl py-4 text-sm font-black uppercase tracking-widest transition-all ${
-              ctaDisabled
-                ? "cursor-not-allowed bg-slate-200 text-slate-500"
-                : "bg-[#1c2b4d] text-white shadow-xl shadow-slate-900/20 active:scale-[0.98]"
-            }`}
-          >
-            {ctaActionText}
-          </button>
-
           <p className="px-6 text-center text-[10px] font-medium leading-relaxed text-slate-400">
             {completionText}
           </p>

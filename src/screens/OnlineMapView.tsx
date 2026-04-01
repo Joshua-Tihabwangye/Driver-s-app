@@ -1,40 +1,59 @@
 import {
   Activity,
-  Car,
+  AlertTriangle,
   Compass,
   Layers,
   MapPin,
   Navigation,
-  Package,
   Settings2,
   ShieldCheck,
   Wifi,
   X,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import OfflineConfirmModal from "../components/OfflineConfirmModal";
-import { useJobs } from "../context/JobsContext";
 import { useStore } from "../context/StoreContext";
-import { buildJobDetailRoute } from "../data/constants";
 
 type MapLayerMode = "standard" | "traffic";
 
-function QuickAction({ icon: Icon, label, sub, onClick }: any) {
+function QuickAction({
+  icon: Icon,
+  label,
+  sub,
+  onClick,
+  tone = "default",
+}: any) {
+  const isDanger = tone === "danger";
+
   return (
     <button
       type="button"
       onClick={onClick}
-      className="flex flex-col items-start rounded-2xl border-2 border-orange-500/10 bg-cream shadow-sm px-3 py-3 active:scale-[0.97] hover:scale-[1.02] hover:shadow-md hover:border-orange-500/30 transition-all duration-300"
+      className={`flex flex-col items-start rounded-2xl border-2 bg-cream shadow-sm px-3 py-3 active:scale-[0.97] hover:scale-[1.02] hover:shadow-md transition-all duration-300 ${
+        isDanger
+          ? "border-red-500/20 hover:border-red-500/40"
+          : "border-orange-500/10 hover:border-orange-500/30"
+      }`}
     >
-      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-orange-50 mb-1">
-        <Icon className="h-4 w-4 text-orange-500" />
+      <div
+        className={`flex h-7 w-7 items-center justify-center rounded-full mb-1 ${
+          isDanger ? "bg-red-50" : "bg-orange-50"
+        }`}
+      >
+        <Icon className={`h-4 w-4 ${isDanger ? "text-red-600" : "text-orange-500"}`} />
       </div>
-      <span className="text-xs font-semibold text-slate-900 mb-0.5 truncate w-full text-left">
+      <span
+        className={`text-xs font-semibold mb-0.5 truncate w-full text-left ${
+          isDanger ? "text-red-700" : "text-slate-900"
+        }`}
+      >
         {label}
       </span>
-      <span className="text-[11px] text-slate-500 truncate w-full text-left">{sub}</span>
+      <span className={`text-[11px] truncate w-full text-left ${isDanger ? "text-red-500" : "text-slate-500"}`}>
+        {sub}
+      </span>
     </button>
   );
 }
@@ -57,26 +76,9 @@ export default function OnlineMapView({
     return window.sessionStorage.getItem("driver_online_map_tip_hidden") !== "1";
   });
   const [isLocating, setIsLocating] = useState(false);
-  const [followMode, setFollowMode] = useState(true);
   const [locationHint, setLocationHint] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { pendingJobs } = useJobs();
-  const { driverPresenceStatus, setDriverOffline, assignableJobTypes } = useStore();
-  const hasDelivery = assignableJobTypes.includes("delivery");
-  const latestDeliveryJobId = useMemo(() => {
-    const latestDeliveryJob = pendingJobs.reduce((latest, job) => {
-      if (job.jobType !== "delivery") {
-        return latest;
-      }
-      if (!latest) {
-        return job;
-      }
-      const latestRequestedAt = Number(latest.requestedAt || 0);
-      const currentRequestedAt = Number(job.requestedAt || 0);
-      return currentRequestedAt > latestRequestedAt ? job : latest;
-    }, null as (typeof pendingJobs)[number] | null);
-    return latestDeliveryJob?.id || null;
-  }, [pendingJobs]);
+  const { driverPresenceStatus, setDriverOffline } = useStore();
 
   useEffect(() => {
     if (driverPresenceStatus !== "online") {
@@ -100,7 +102,6 @@ export default function OnlineMapView({
   };
 
   const handleRecenterMap = () => {
-    setFollowMode(true);
     setBearing(0);
     setZoom((current) => Math.max(current, 14));
 
@@ -128,17 +129,14 @@ export default function OnlineMapView({
   };
 
   const handleZoomIn = () => {
-    setFollowMode(false);
     setZoom((value) => Math.min(value + 1, 18));
   };
 
   const handleZoomOut = () => {
-    setFollowMode(false);
     setZoom((value) => Math.max(value - 1, 8));
   };
 
   const handleToggleLayer = () => {
-    setFollowMode(false);
     setMapLayer((prev) => (prev === "standard" ? "traffic" : "standard"));
   };
 
@@ -155,10 +153,14 @@ export default function OnlineMapView({
         hideBack={homeMode}
         onBack={!homeMode ? () => navigate(-1) : undefined}
         rightAction={
-          <div className="inline-flex items-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1 text-[10px] font-black text-slate-900 dark:text-slate-200 uppercase tracking-widest shrink-0 shadow-sm">
+          <button
+            type="button"
+            onClick={() => setShowOfflineModal(true)}
+            className="inline-flex items-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1 text-[10px] font-black text-slate-900 dark:text-slate-200 uppercase tracking-widest shrink-0 shadow-sm active:scale-95 transition-transform"
+          >
             <Wifi className="h-3 w-3 mr-1.5 animate-pulse text-brand-active" />
-            LIVE
-          </div>
+            Online
+          </button>
         }
       />
 
@@ -205,12 +207,6 @@ export default function OnlineMapView({
           <div className="absolute left-12 top-20 flex flex-col items-center">
             <div className="rounded-full border border-white/20 bg-slate-900/90 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-white backdrop-blur-sm">
               High Demand
-            </div>
-          </div>
-
-          <div className="absolute right-12 bottom-28 flex flex-col items-center">
-            <div className="rounded-full border border-white/20 bg-slate-900/90 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-white backdrop-blur-sm">
-              Rider Cluster
             </div>
           </div>
 
@@ -302,24 +298,12 @@ export default function OnlineMapView({
           <div className="absolute left-4 bottom-4 flex flex-col gap-2">
             <button
               type="button"
-              onClick={() => setShowOfflineModal(true)}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white/95 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-slate-700 shadow-lg active:scale-95"
-            >
-              <Wifi className="h-3.5 w-3.5 text-slate-500" />
-              Go Offline
-            </button>
-            <button
-              type="button"
               onClick={() => navigate("/driver/map/searching")}
               className="inline-flex items-center gap-2 rounded-xl border border-orange-200 bg-orange-50/95 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-orange-700 shadow-lg active:scale-95"
             >
               <MapPin className="h-3.5 w-3.5" />
               Find Riders
             </button>
-          </div>
-
-          <div className="absolute left-1/2 bottom-4 -translate-x-1/2 rounded-full border border-white/20 bg-slate-900/85 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-white backdrop-blur-sm">
-            {followMode ? "Follow Mode On" : "Manual Explore Mode"}
           </div>
 
           {locationHint && (
@@ -344,28 +328,6 @@ export default function OnlineMapView({
                 onClick={() => navigate("/driver/map/settings")}
               />
               <QuickAction
-                icon={Car}
-                label="Requests"
-                sub="Manage Jobs"
-                onClick={() => navigate("/driver/jobs/list")}
-              />
-              {hasDelivery && (
-                <QuickAction
-                  icon={Package}
-                  label="Deliveries"
-                  sub="Package Orders"
-                  onClick={() => {
-                    if (!latestDeliveryJobId) {
-                      navigate("/driver/jobs/list?category=delivery");
-                      return;
-                    }
-                    navigate(buildJobDetailRoute("delivery", latestDeliveryJobId), {
-                      state: { jobType: "delivery", jobId: latestDeliveryJobId },
-                    });
-                  }}
-                />
-              )}
-              <QuickAction
                 icon={Activity}
                 label="Performance"
                 sub="Insights"
@@ -376,6 +338,13 @@ export default function OnlineMapView({
                 label="Scan Riders"
                 sub="Find Jobs"
                 onClick={() => navigate("/driver/map/searching")}
+              />
+              <QuickAction
+                icon={AlertTriangle}
+                label="SOS"
+                sub="Emergency"
+                tone="danger"
+                onClick={() => navigate("/driver/safety/sos/sending")}
               />
               <QuickAction
                 icon={ShieldCheck}
