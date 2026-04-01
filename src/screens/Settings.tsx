@@ -165,20 +165,6 @@ export default function Settings() {
           <div className="bg-cream dark:bg-slate-800 rounded-[2.5rem] shadow-sm divide-y divide-slate-100 dark:divide-slate-700 overflow-hidden">
             <button
               type="button"
-              onClick={() => navigate("/driver/settings/password")}
-              className="flex w-full items-center justify-between p-6 text-left"
-            >
-              <div className="flex items-center space-x-4">
-<div>
-                  <h3 className="text-xs font-black text-slate-900 uppercase">Change Password</h3>
-                  <p className="text-[10px] text-slate-400 font-bold">Secure your account</p>
-                </div>
-              </div>
-              <ChevronRight className="h-5 w-5 text-slate-300" />
-            </button>
-
-            <button
-              type="button"
               onClick={() => navigate("/driver/settings/privacy")}
               className="flex w-full items-center justify-between p-6 text-left"
             >

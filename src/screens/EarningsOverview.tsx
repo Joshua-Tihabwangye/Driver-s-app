@@ -76,7 +76,11 @@ export default function EarningsOverview() {
 
   return (
     <div className="flex flex-col h-full bg-transparent">
-      <PageHeader title="Earnings" subtitle="Overview" hideBack={true} />
+      <PageHeader
+        title="Earnings"
+        subtitle="Overview"
+        onBack={() => navigate("/driver/analytics")}
+      />
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-24 space-y-8 overflow-y-auto scrollbar-hide">

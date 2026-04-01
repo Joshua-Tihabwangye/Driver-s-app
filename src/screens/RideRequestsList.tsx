@@ -171,6 +171,49 @@ export default function RideRequestsList() {
   const filteredJobs = filter === "all" ? visiblePendingJobs : visiblePendingJobs.filter((job) => job.jobType === filter);
   const hasShuttleJob = filteredJobs.some((j) => j.jobType === "shuttle");
   const periodLabel = PERIOD_OPTIONS.find(p => p.key === period)?.label || "Today";
+  const emptyStateByFilter: Record<string, { title: string; description: string }> = {
+    all: {
+      title: "No Requests Found",
+      description:
+        "We couldn't find any requests matching your current filters. Please try a different category or wait for new requests.",
+    },
+    ride: {
+      title: "No Ride Requests Found",
+      description:
+        "We couldn't find any ride requests matching your current filters. Please try a different category or wait for new requests.",
+    },
+    delivery: {
+      title: "No Delivery Requests Found",
+      description:
+        "We couldn't find any delivery requests matching your current filters. Please try a different category or wait for new requests.",
+    },
+    rental: {
+      title: "No Rental Requests Found",
+      description:
+        "We couldn't find any rental requests matching your current filters. Please try a different category or wait for new requests.",
+    },
+    tour: {
+      title: "No Tour Requests Found",
+      description:
+        "We couldn't find any tour requests matching your current filters. Please try a different category or wait for new requests.",
+    },
+    ambulance: {
+      title: "No Ambulance Requests Found",
+      description:
+        "We couldn't find any ambulance requests matching your current filters. Please try a different category or wait for new requests.",
+    },
+    shared: {
+      title: "No Shared Ride Requests Found",
+      description:
+        "We couldn't find any shared ride requests matching your current filters. Please try a different category or wait for new requests.",
+    },
+    shuttle: {
+      title: "No Shuttle Requests Found",
+      description:
+        "We couldn't find any shuttle requests matching your current filters. Please try a different category or wait for new requests.",
+    },
+  };
+  const emptyStateCopy = emptyStateByFilter[filter] || emptyStateByFilter.all;
   
   const displayPeriodLabel = period === "quarter" ? `${selectedQuarter} ${selectedYear}` : period === "year" ? selectedYear : periodLabel;
 
@@ -292,8 +335,8 @@ export default function RideRequestsList() {
 
           {filteredJobs.length === 0 && (
             <EmptyState 
-              title="No Requests Found" 
-              description="We couldn't find any ride requests matching your current filters. Please try a different category or wait for new requests." 
+              title={emptyStateCopy.title}
+              description={emptyStateCopy.description}
             />
           )}
         </section>
