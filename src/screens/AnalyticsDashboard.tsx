@@ -15,6 +15,7 @@ import type { JobCategory, PeriodFilter, TripRecord } from "../data/types";
 // quarter and year use the same PeriodFilter but also require sub-selectors
 // for the specific quarter (Q1-Q4) and year value.
 type Period = "today" | "week" | "month" | "quarter" | "year";
+type AnalyticsViewTab = "overview" | "trends" | "breakdown";
 
 const PERIOD_FILTER_MAP: Record<Period, PeriodFilter> = {
   today: "day",
@@ -84,7 +85,7 @@ function StatCard({
     <Wrapper
       type={onClick ? "button" : undefined}
       onClick={onClick}
-      className={`flex flex-col rounded-2xl border-2 border-orange-500/10 bg-cream px-4 py-4 shadow-sm group text-left ${
+      className={`flex flex-col rounded-2xl border-2 border-orange-500/10 bg-cream dark:bg-slate-900/80 dark:border-slate-700 px-4 py-4 shadow-sm group text-left ${
         onClick ? "cursor-pointer active:scale-[0.97] transition-transform" : ""
       }`}
     >
@@ -95,12 +96,12 @@ function StatCard({
         >
           <Icon className="h-4 w-4" style={{ color }} />
         </div>
-        <span className="text-[9px] font-bold uppercase tracking-[0.1em] text-slate-400">
+        <span className="text-[9px] font-bold uppercase tracking-[0.1em] text-slate-400 dark:text-slate-500">
           {label}
         </span>
       </div>
-      <span className="text-lg font-bold tracking-tight text-slate-900">{value}</span>
-      {sub && <span className="mt-1 text-[10px] font-medium text-slate-400">{sub}</span>}
+      <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">{value}</span>
+      {sub && <span className="mt-1 text-[10px] font-medium text-slate-400 dark:text-slate-500">{sub}</span>}
     </Wrapper>
   );
 }
@@ -188,10 +189,10 @@ function RatingsChart({
         <div key={row.stars} className="group flex items-center space-x-3">
           <span className="w-3 text-right text-[10px] font-bold text-slate-400">{row.stars}</span>
           <Star className="h-3 w-3 fill-amber-500 text-amber-500 transition-transform group-hover:scale-125" />
-          <div className="h-2 flex-1 overflow-hidden rounded-full border border-slate-100 bg-slate-50">
+          <div className="h-2 flex-1 overflow-hidden rounded-full border border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
             <div className="h-full rounded-full bg-amber-500 transition-all duration-700" style={{ width: `${row.pct}%` }} />
           </div>
-          <span className="w-8 text-[10px] font-bold text-slate-400">{row.count}</span>
+          <span className="w-8 text-[10px] font-bold text-slate-400 dark:text-slate-500">{row.count}</span>
         </div>
       ))}
     </div>
@@ -205,7 +206,7 @@ function ServiceBreakdown({
 }) {
   return (
     <div className="mt-4 space-y-4">
-      <div className="flex h-4 overflow-hidden rounded-full border border-slate-100 shadow-inner">
+      <div className="flex h-4 overflow-hidden rounded-full border border-slate-100 dark:border-slate-700 shadow-inner">
         {services.map((service) => (
           <div
             key={service.label}
@@ -218,8 +219,8 @@ function ServiceBreakdown({
         {services.map((service) => (
           <div key={service.label} className="flex items-center space-x-2">
             <div className="h-2.5 w-2.5 rounded-full shadow-sm" style={{ backgroundColor: service.color }} />
-            <span className="text-[10px] font-bold uppercase tracking-tight text-slate-500">
-              {service.label} <span className="text-slate-900">{service.pct}%</span>
+            <span className="text-[10px] font-bold uppercase tracking-tight text-slate-500 dark:text-slate-400">
+              {service.label} <span className="text-slate-900 dark:text-slate-100">{service.pct}%</span>
             </span>
           </div>
         ))}
@@ -231,6 +232,7 @@ function ServiceBreakdown({
 export default function AnalyticsDashboard() {
   const navigate = useNavigate();
   const { trips, revenueEvents, tripFeedbacks, assignableJobTypes } = useStore();
+  const [viewTab, setViewTab] = useState<AnalyticsViewTab>("overview");
   const [period, setPeriod] = useState<Period>("week");
   // Quarter and year sub-selectors: shown when period is "quarter" or "year"
   const [selectedQuarter, setSelectedQuarter] = useState("Q1");
@@ -412,45 +414,72 @@ export default function AnalyticsDashboard() {
     year: "Year",
   };
   const periods: Period[] = ["today", "week", "month", "quarter", "year"];
+  const viewTabs: Array<{ key: AnalyticsViewTab; label: string }> = [
+    { key: "overview", label: "Overview" },
+    { key: "trends", label: "Trends" },
+    { key: "breakdown", label: "Breakdown" },
+  ];
+  const serviceRows = assignableJobTypes
+    .filter((type) => type !== "shared")
+    .map((type) => ({
+      type,
+      label: CATEGORY_LABELS[type],
+      revenue: totalsByCategory.revenue[type],
+      jobs: totalsByCategory.trips[type],
+      color: CATEGORY_COLORS[type],
+    }));
 
   return (
-    <div className="flex flex-col h-full ">
-      {/* Mobile-Friendly Responsive Header */}
-      <div className="relative shrink-0 bg-white border-b border-slate-100 shadow-sm" style={{ minHeight: 120 }}>
-        <header className="relative z-10 px-6 pt-8 pb-4 space-y-4">
+    <div className="min-h-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+      <div className="mx-auto w-full max-w-5xl px-4 pb-24 pt-6 sm:px-6 space-y-5">
+        <header className="rounded-[2rem] border border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/85 p-4 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-50 border border-slate-200 shadow-sm transition-transform active:scale-95"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm active:scale-95 transition-transform"
             >
-              <ChevronLeft className="h-5 w-5 text-slate-900" />
+              <ChevronLeft className="h-5 w-5 text-slate-900 dark:text-slate-100" />
             </button>
-            <div className="flex flex-col items-center">
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+            <div className="flex flex-col text-center">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
                 Analysis
               </span>
-              <h1 className="text-base font-black tracking-tight leading-tight text-slate-900">
+              <h1 className="text-xl font-black tracking-tight text-slate-900 dark:text-slate-100">
                 Analytics
               </h1>
             </div>
-            <div className="h-10 w-10 flex items-center justify-center rounded-full bg-slate-900 text-white text-[10px] font-black uppercase shadow-lg">
-              QA
-            </div>
+            <div className="h-10 w-10" />
           </div>
-          
-          {/* Scrollable Period Tabs for Mobile */}
-          <div className="flex overflow-x-auto no-scrollbar -mx-2 px-2 py-1">
-            <div className="flex rounded-xl border border-slate-200 bg-slate-50 p-1 backdrop-blur-sm shadow-inner w-full sm:w-auto">
+
+          <div className="grid grid-cols-3 gap-2">
+            {viewTabs.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setViewTab(tab.key)}
+                className={`rounded-xl px-3 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${
+                  viewTab === tab.key
+                    ? "bg-slate-900 text-white dark:bg-slate-700"
+                    : "border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-300"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex overflow-x-auto no-scrollbar">
+            <div className="flex w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-1 shadow-inner">
               {periods.map((entry) => (
                 <button
                   key={entry}
                   type="button"
                   onClick={() => setPeriod(entry)}
-                  className={`flex-1 sm:flex-none rounded-lg px-4 py-2 text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap ${
+                  className={`flex-1 rounded-lg px-3 py-2 text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap ${
                     period === entry
-                      ? "bg-white text-brand-active shadow-md border border-slate-100"
-                      : "text-slate-500 hover:text-slate-900"
+                      ? "bg-white dark:bg-slate-900 text-brand-active shadow-sm border border-slate-100 dark:border-slate-700"
+                      : "text-slate-500 dark:text-slate-400"
                   }`}
                 >
                   {periodLabels[entry]}
@@ -459,86 +488,62 @@ export default function AnalyticsDashboard() {
             </div>
           </div>
         </header>
-      </div>
 
-      <main className="flex-1 space-y-6 overflow-y-auto px-4 pb-16 pt-6 scrollbar-hide">
-        {/* Main Revenue Card */}
-        <section 
-          onClick={() => navigate("/driver/earnings/overview")}
-          className="relative overflow-hidden rounded-[2.5rem] bg-slate-900 p-7 text-white shadow-2xl group cursor-pointer active:scale-[0.98] transition-all"
-        >
-          <div className="absolute top-0 right-0 -mr-16 -mt-16 h-48 w-48 rounded-full bg-brand-active/20 blur-3xl transition-transform group-hover:scale-110" />
-          <div className="relative flex items-center justify-between mb-4">
-             <div className="flex flex-col">
-                <div className="flex items-center space-x-2 mb-1">
-                   <div className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse" />
-                   {/* Added Revenue Overview label and linked to earnings overview per requirement */}
-                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-500">
-                      Revenue Overview
-                   </span>
-                </div>
-                <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
-                  Total Income
-                </p>
-             </div>
-             <TrendingUp className="h-5 w-5 text-brand-active" />
-          </div>
-          <div className="relative">
-            <p className="text-3xl font-black tracking-tighter">{formatUGX(totalRevenue)}</p>
-          </div>
-          <div className="relative grid grid-cols-2 gap-y-3 pt-2">
-            <div className="flex flex-col">
-              <span className="text-[8px] font-bold uppercase tracking-widest text-slate-500">
-                Global Trips
-              </span>
-              <span className="text-xs font-bold text-slate-200">{totalTrips} services</span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[8px] font-bold uppercase tracking-widest text-slate-500">
-                Active Hours
-              </span>
-              <span className="text-xs font-bold text-slate-200">{hours}h session</span>
-            </div>
-          </div>
-        </section>
-
-        {/* Quarter/Year sub-selectors: shown when the driver selects Quarter or Year period */}
         {(period === "quarter" || period === "year") && (
-          <section className="rounded-2xl border-2 border-orange-500/10 bg-cream p-4 shadow-sm">
+          <section className="rounded-[1.5rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
             <div className={`grid gap-3 ${period === "quarter" ? "grid-cols-2" : "grid-cols-1"}`}>
-              <div className="space-y-1">
-                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block">Year</label>
-                <select
-                  value={selectedYear}
-                  onChange={(e) => setSelectedYear(e.target.value)}
-                  className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-2.5 text-[11px] font-black uppercase tracking-wide text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30"
-                >
-                  {yearOptions.map((y) => (
-                    <option key={y} value={y}>{y}</option>
-                  ))}
-                </select>
-              </div>
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-[11px] font-black uppercase tracking-wide text-slate-800 dark:text-slate-100"
+              >
+                {yearOptions.map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </select>
               {period === "quarter" && (
-                <div className="space-y-1">
-                  <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block">Quarter</label>
-                  <select
-                    value={selectedQuarter}
-                    onChange={(e) => setSelectedQuarter(e.target.value)}
-                    className="w-full rounded-2xl border border-slate-100 bg-white px-3 py-2.5 text-[11px] font-black uppercase tracking-wide text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30"
-                  >
-                    <option value="Q1">Q1</option>
-                    <option value="Q2">Q2</option>
-                    <option value="Q3">Q3</option>
-                    <option value="Q4">Q4</option>
-                  </select>
-                </div>
+                <select
+                  value={selectedQuarter}
+                  onChange={(e) => setSelectedQuarter(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-[11px] font-black uppercase tracking-wide text-slate-800 dark:text-slate-100"
+                >
+                  <option value="Q1">Q1</option>
+                  <option value="Q2">Q2</option>
+                  <option value="Q3">Q3</option>
+                  <option value="Q4">Q4</option>
+                </select>
               )}
             </div>
           </section>
         )}
 
-        {/* Analytics stat cards — each is clickable and routes to the relevant detail page */}
-        <div className="grid grid-cols-2 gap-3 pb-2">
+        <section
+          onClick={() => navigate("/driver/earnings/overview")}
+          className="relative overflow-hidden rounded-[2.5rem] bg-slate-900 p-6 text-white shadow-xl border border-slate-800 cursor-pointer active:scale-[0.99] transition-transform"
+        >
+          <div className="absolute top-0 right-0 h-40 w-40 rounded-full bg-emerald-500/10 blur-3xl" />
+          <div className="relative flex items-start justify-between">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-400">Revenue Overview</p>
+              <p className="mt-2 text-3xl font-black tracking-tight">{formatUGX(totalRevenue)}</p>
+            </div>
+            <TrendingUp className="h-5 w-5 text-emerald-400" />
+          </div>
+          <div className="relative mt-6 grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-[9px] font-black uppercase tracking-widest text-slate-500">Global Trips</p>
+              <p className="text-sm font-bold text-slate-200">{totalTrips} services</p>
+            </div>
+            <div>
+              <p className="text-[9px] font-black uppercase tracking-widest text-slate-500">Active Hours</p>
+              <p className="text-sm font-bold text-slate-200">{hours}h session</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <StatCard
             icon={DollarSign}
             label="Income Overview"
@@ -582,57 +587,156 @@ export default function AnalyticsDashboard() {
                 : "No completed trips yet"
             }
             color="#8b5cf6"
-            onClick={() => navigate(
-              assignableJobTypes.includes("delivery")
-                ? "/driver/jobs/list?category=delivery"
-                : "/driver/history/rides"
-            )}
+            onClick={() =>
+              navigate(
+                assignableJobTypes.includes("delivery")
+                  ? "/driver/jobs/list?category=delivery"
+                  : "/driver/history/rides"
+              )
+            }
           />
-        </div>
-
-        <section className="space-y-4 rounded-3xl border-2 border-orange-500/10 bg-cream p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <h3 className="px-1 text-[11px] font-bold uppercase tracking-widest text-slate-400">
-              Earnings Trend
-            </h3>
-            <div className="flex items-center space-x-1 rounded-full bg-orange-50 px-2 py-0.5">
-              <TrendingUp className="h-3 w-3 text-orange-600" />
-              <span className="text-[10px] font-black text-orange-600">Live</span>
-            </div>
-          </div>
-          <div className="rounded-2xl border border-orange-100/50 bg-white p-2 shadow-inner">
-            <EarningsTrendChart values={trendValues} />
-          </div>
         </section>
 
-        <section className="space-y-4 rounded-3xl border-2 border-orange-500/10 bg-cream p-5 shadow-sm">
-          <h3 className="px-1 text-[11px] font-bold uppercase tracking-widest text-slate-400">
-            Service Volume
-          </h3>
-          <div className="rounded-2xl border border-orange-100/50 bg-white p-4 shadow-inner">
-            <RidesDeliveriesChart
-              rows={dailyRows.map((row) => ({
-                label: row.label,
-                rides: row.rides,
-                deliveries: row.deliveries,
-              }))}
-            />
-          </div>
-        </section>
+        {viewTab === "overview" && (
+          <>
+            <section className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <div className="rounded-[1.75rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm space-y-2">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
+                  Active Categories
+                </p>
+                <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{activeCategoriesLabel}</p>
+              </div>
+              <div className="rounded-[1.75rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm space-y-2">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
+                  Workload Mix
+                </p>
+                <p className="text-sm font-bold text-slate-700 dark:text-slate-200">
+                  Ride services: {ridesCount} · Delivery services: {deliveryCount}
+                </p>
+              </div>
+            </section>
 
-        <section className="space-y-4 rounded-3xl border border-slate-50 bg-white p-5 pb-6 shadow-sm">
-          <h3 className="px-1 text-[11px] font-bold uppercase tracking-widest text-slate-400">
-            Segment Composition
-          </h3>
-          <ServiceBreakdown services={serviceBreakdown} />
-        </section>
+            <section className="rounded-[1.75rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                  Earnings Trend
+                </h3>
+                <span className="rounded-full bg-orange-50 dark:bg-orange-500/15 px-2 py-1 text-[10px] font-black text-orange-600">
+                  Live
+                </span>
+              </div>
+              <div className="rounded-2xl border border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-2 shadow-inner">
+                <EarningsTrendChart values={trendValues} />
+              </div>
+            </section>
 
-        <section className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3">
-          <p className="text-[10px] font-black uppercase tracking-widest text-emerald-700">
-            Active categories: {activeCategoriesLabel}
-          </p>
-        </section>
-      </main>
+            <section className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <div className="rounded-[1.75rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm">
+                <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                  Service Volume
+                </h3>
+                <RidesDeliveriesChart
+                  rows={dailyRows.map((row) => ({
+                    label: row.label,
+                    rides: row.rides,
+                    deliveries: row.deliveries,
+                  }))}
+                />
+              </div>
+
+              <div className="rounded-[1.75rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm">
+                <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                  Ratings Distribution
+                </h3>
+                <RatingsChart distribution={ratingDistribution} />
+              </div>
+            </section>
+
+            <section className="rounded-[1.75rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm">
+              <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                Segment Composition
+              </h3>
+              <ServiceBreakdown services={serviceBreakdown} />
+            </section>
+          </>
+        )}
+
+        {viewTab === "trends" && (
+          <>
+            <section className="rounded-[1.75rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                  Earnings Trend
+                </h3>
+                <span className="rounded-full bg-orange-50 dark:bg-orange-500/15 px-2 py-1 text-[10px] font-black text-orange-600">
+                  Live
+                </span>
+              </div>
+              <div className="rounded-2xl border border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-2 shadow-inner">
+                <EarningsTrendChart values={trendValues} />
+              </div>
+            </section>
+
+            <section className="rounded-[1.75rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm">
+              <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                Service Volume
+              </h3>
+              <RidesDeliveriesChart
+                rows={dailyRows.map((row) => ({
+                  label: row.label,
+                  rides: row.rides,
+                  deliveries: row.deliveries,
+                }))}
+              />
+            </section>
+
+            <section className="rounded-[1.75rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm">
+              <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                Ratings Distribution
+              </h3>
+              <RatingsChart distribution={ratingDistribution} />
+            </section>
+          </>
+        )}
+
+        {viewTab === "breakdown" && (
+          <>
+            <section className="rounded-[1.75rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm">
+              <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                Segment Composition
+              </h3>
+              <ServiceBreakdown services={serviceBreakdown} />
+            </section>
+
+            <section className="rounded-[1.75rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm space-y-3">
+              {serviceRows.map((row) => (
+                <div
+                  key={row.type}
+                  className="rounded-2xl border border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-4 flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      className="h-2.5 w-2.5 rounded-full"
+                      style={{ backgroundColor: row.color }}
+                    />
+                    <div>
+                      <p className="text-[11px] font-black uppercase tracking-widest text-slate-700 dark:text-slate-200">
+                        {row.label}
+                      </p>
+                      <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
+                        {row.jobs} services
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-sm font-black text-slate-900 dark:text-slate-100">
+                    {formatUGX(row.revenue)}
+                  </p>
+                </div>
+              ))}
+            </section>
+          </>
+        )}
+      </div>
     </div>
   );
 }

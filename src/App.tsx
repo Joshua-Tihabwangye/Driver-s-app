@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import {
   Navigate,
   Route,
@@ -6,7 +6,7 @@ import {
   useLocation,
 } from "react-router-dom";
 import AppPhoneShell from "./components/AppPhoneShell";
-import SupervisorQAMode from "./components/SupervisorQAMode";
+import BottomNav from "./components/BottomNav";
 import { SCREENS } from "./config/routes";
 import {
   AUTHENTICATED_HOME_ROUTE,
@@ -53,6 +53,8 @@ const SENSITIVE_ONBOARDING_IDS = new Set([
   "TrainingCompletion",
 ]);
 
+const PHONE_WIDTH_MEDIA = "(max-width: 640px)";
+
 function GuestOnlyRoute({ children }: { children: ReactNode }) {
   const { isLoggedIn } = useAuth();
   if (isLoggedIn) {
@@ -84,15 +86,39 @@ export default function App() {
   const { isDark } = useTheme();
   const { onboardingCheckpoints } = useStore();
   const registrationStarted = onboardingCheckpoints.roleSelected;
-  const showSupervisorQaMode = !import.meta.env.PROD;
+  const [isPhoneView, setIsPhoneView] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return window.matchMedia(PHONE_WIDTH_MEDIA).matches;
+  });
   const appShellScreens = SCREENS.filter(
     (screen) => !AUTH_ROUTES_WITHOUT_SHELL.has(screen.path)
   );
 
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const mediaQuery = window.matchMedia(PHONE_WIDTH_MEDIA);
+    const handleWidthChange = (event: MediaQueryListEvent) => {
+      setIsPhoneView(event.matches);
+    };
+    setIsPhoneView(mediaQuery.matches);
+
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener("change", handleWidthChange);
+    } else {
+      mediaQuery.addListener(handleWidthChange);
+    }
+
+    return () => {
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener("change", handleWidthChange);
+      } else {
+        mediaQuery.removeListener(handleWidthChange);
+      }
+    };
+  }, []);
+
   return (
     <div className={`app-root ${isDark ? "dark" : ""}`}>
-      {showSupervisorQaMode && <SupervisorQAMode />}
-
       <Routes>
         {/* Auth Flow - No Shell */}
         <Route
@@ -126,7 +152,14 @@ export default function App() {
 
         {/* App Flow - Mobile Phone View */}
         {appShellScreens.map((screen) => {
-          const shellElement = (
+          const shouldRenderAnalyticsOutsideShell =
+            screen.id === "AnalyticsDashboard" && !isPhoneView;
+          const screenElement = shouldRenderAnalyticsOutsideShell ? (
+            <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-[60px]">
+              <screen.Component />
+              <BottomNav isVisible={true} />
+            </div>
+          ) : (
             <AppPhoneShell>
               <screen.Component />
             </AppPhoneShell>
@@ -145,8 +178,8 @@ export default function App() {
               path={screen.path}
               element={
                 isCurrentlyPublic
-                  ? shellElement
-                  : <RequireAuth>{shellElement}</RequireAuth>
+                  ? screenElement
+                  : <RequireAuth>{screenElement}</RequireAuth>
               }
             />
           );
