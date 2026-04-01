@@ -12,6 +12,7 @@ import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
 import {
   areAllRequiredDocumentsUploaded,
+  getRequiredDocumentSides,
   isAcceptedDocumentFile,
   isDocumentEntryComplete,
   isDocumentEntryRejected,
@@ -85,6 +86,7 @@ function DocumentCard({
   backStatus,
   backFileName,
   backError,
+  showBackCopy,
   onUploadFront,
   onUploadBack,
 }: {
@@ -98,8 +100,9 @@ function DocumentCard({
   backStatus: string;
   backFileName: string;
   backError: string;
+  showBackCopy: boolean;
   onUploadFront: () => void;
-  onUploadBack: () => void;
+  onUploadBack?: () => void;
 }) {
   return (
     <div
@@ -127,13 +130,15 @@ function DocumentCard({
           error={frontError}
           onClick={onUploadFront}
         />
-        <CopyRow
-          label="Back Copy"
-          status={backStatus}
-          fileName={backFileName}
-          error={backError}
-          onClick={onUploadBack}
-        />
+        {showBackCopy && onUploadBack && (
+          <CopyRow
+            label="Back Copy"
+            status={backStatus}
+            fileName={backFileName}
+            error={backError}
+            onClick={onUploadBack}
+          />
+        )}
       </div>
     </div>
   );
@@ -154,9 +159,10 @@ export default function DocumentUpload() {
 
   const [docs, setDocs] = useState<DocumentUploadState>(() => readStoredDocumentState());
   const allRequiredUploaded = areAllRequiredDocumentsUploaded(docs);
-  const hasRejectedFiles = Object.values(docs).some((entry) =>
-    isDocumentEntryRejected(entry)
-  );
+  const hasRejectedFiles =
+    isDocumentEntryRejected("id", docs.id) ||
+    isDocumentEntryRejected("license", docs.license) ||
+    isDocumentEntryRejected("police", docs.police);
 
   useEffect(() => {
     setOnboardingCheckpoint("documentsVerified", allRequiredUploaded);
@@ -226,7 +232,7 @@ export default function DocumentUpload() {
       key: "police" as const,
       icon: ClipboardCheck,
       title: "Conduct Clearance",
-      subtitle: "Upload both front and back copies",
+      subtitle: "Upload one clear copy",
     },
   ];
 
@@ -250,7 +256,7 @@ export default function DocumentUpload() {
             </p>
           </div>
           <p className="text-sm font-black leading-snug tracking-tight text-slate-900">
-            Upload front and back copies for every required document.
+            Upload required copies for every document.
           </p>
           <p className="text-[11px] font-medium leading-relaxed text-slate-500">
             Accepted formats: image files and PDF only. Invalid formats are rejected and
@@ -268,13 +274,18 @@ export default function DocumentUpload() {
           <div className="space-y-3">
             {documentCards.map((doc) => {
               const entry = docs[doc.key];
-              const isComplete = isDocumentEntryComplete(entry);
+              const requiredSides = getRequiredDocumentSides(doc.key);
+              const isComplete = isDocumentEntryComplete(doc.key, entry);
+              const completedSubtitle =
+                requiredSides.length === 2
+                  ? "Front and back copies uploaded"
+                  : "Required copy uploaded";
               return (
                 <DocumentCard
                   key={doc.key}
                   icon={doc.icon}
                   title={doc.title}
-                  subtitle={isComplete ? "Front and back copies uploaded" : doc.subtitle}
+                  subtitle={isComplete ? completedSubtitle : doc.subtitle}
                   emphasise={entry.emphasise || focusedDoc === doc.key}
                   frontStatus={entry.front.status}
                   frontFileName={entry.front.fileName}
@@ -282,8 +293,13 @@ export default function DocumentUpload() {
                   backStatus={entry.back.status}
                   backFileName={entry.back.fileName}
                   backError={entry.back.error}
+                  showBackCopy={requiredSides.includes("back")}
                   onUploadFront={() => triggerFilePick(doc.key, "front")}
-                  onUploadBack={() => triggerFilePick(doc.key, "back")}
+                  onUploadBack={
+                    requiredSides.includes("back")
+                      ? () => triggerFilePick(doc.key, "back")
+                      : undefined
+                  }
                 />
               );
             })}
@@ -321,12 +337,6 @@ export default function DocumentUpload() {
             accept="image/*,.pdf"
             onChange={(e) => handleFileSelected("police", "front", e)}
           />
-          <input
-            id="doc-upload-police-back"
-            type="file"
-            accept="image/*,.pdf"
-            onChange={(e) => handleFileSelected("police", "back", e)}
-          />
         </div>
 
         <section className="flex items-start space-x-3 rounded-3xl border-2 border-brand-active/10 bg-brand-active/5 p-5 shadow-sm">
@@ -338,7 +348,8 @@ export default function DocumentUpload() {
               Upload Rules
             </p>
             <div className="space-y-1 font-medium">
-              <p>- Upload both front and back copies for each document.</p>
+              <p>- National ID and Driver's License require front and back copies.</p>
+              <p>- Conduct Clearance requires one clear copy only.</p>
               <p>- Use image or PDF format only.</p>
               <p>- Rejected files must be re-uploaded with a valid format.</p>
             </div>
@@ -366,7 +377,7 @@ export default function DocumentUpload() {
           </button>
           {!allRequiredUploaded && (
             <p className="mt-2 text-center text-[10px] font-bold uppercase tracking-tight text-slate-400">
-              Upload front and back copies for all required documents to proceed.
+              Upload all required document copies to proceed.
             </p>
           )}
         </section>

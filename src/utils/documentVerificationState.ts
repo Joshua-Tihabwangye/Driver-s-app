@@ -3,6 +3,16 @@ export const DOCUMENT_UPLOAD_STATE_KEY = "driver_document_upload_state";
 export type DocumentUploadKey = "id" | "license" | "police";
 export type DocumentUploadSide = "front" | "back";
 export type DocumentUploadStatus = "Missing" | "Uploaded" | "Rejected";
+const DOCUMENT_UPLOAD_KEYS: readonly DocumentUploadKey[] = ["id", "license", "police"];
+const DEFAULT_REQUIRED_SIDES: readonly DocumentUploadSide[] = ["front", "back"];
+
+export const DOCUMENT_REQUIRED_SIDES: Readonly<
+  Record<DocumentUploadKey, readonly DocumentUploadSide[]>
+> = {
+  id: ["front", "back"],
+  license: ["front", "back"],
+  police: ["front"],
+};
 
 export interface DocumentUploadCopy {
   status: DocumentUploadStatus;
@@ -148,31 +158,50 @@ export function isAcceptedDocumentFile(file: File): boolean {
   return SUPPORTED_EXTENSIONS.some((ext) => fileName.endsWith(ext));
 }
 
-export function isDocumentEntryComplete(entry: DocumentUploadEntry): boolean {
-  return entry.front.status === "Uploaded" && entry.back.status === "Uploaded";
+export function getRequiredDocumentSides(
+  key: DocumentUploadKey
+): readonly DocumentUploadSide[] {
+  return DOCUMENT_REQUIRED_SIDES[key] || DEFAULT_REQUIRED_SIDES;
 }
 
-export function isDocumentEntryRejected(entry: DocumentUploadEntry): boolean {
-  return entry.front.status === "Rejected" || entry.back.status === "Rejected";
+export function isDocumentSideRequired(
+  key: DocumentUploadKey,
+  side: DocumentUploadSide
+): boolean {
+  return getRequiredDocumentSides(key).includes(side);
+}
+
+export function isDocumentEntryComplete(
+  key: DocumentUploadKey,
+  entry: DocumentUploadEntry
+): boolean {
+  return getRequiredDocumentSides(key).every(
+    (side) => entry[side].status === "Uploaded"
+  );
+}
+
+export function isDocumentEntryRejected(
+  key: DocumentUploadKey,
+  entry: DocumentUploadEntry
+): boolean {
+  return getRequiredDocumentSides(key).some(
+    (side) => entry[side].status === "Rejected"
+  );
 }
 
 export function areAllRequiredDocumentsUploaded(
   state: DocumentUploadState
 ): boolean {
-  return Object.values(state).every((doc) => isDocumentEntryComplete(doc));
+  return DOCUMENT_UPLOAD_KEYS.every((key) => isDocumentEntryComplete(key, state[key]));
 }
 
 export function getFirstMissingDocumentKey(
   state: DocumentUploadState
 ): DocumentUploadKey | null {
-  if (!isDocumentEntryComplete(state.id)) {
-    return "id";
-  }
-  if (!isDocumentEntryComplete(state.license)) {
-    return "license";
-  }
-  if (!isDocumentEntryComplete(state.police)) {
-    return "police";
+  for (const key of DOCUMENT_UPLOAD_KEYS) {
+    if (!isDocumentEntryComplete(key, state[key])) {
+      return key;
+    }
   }
   return null;
 }

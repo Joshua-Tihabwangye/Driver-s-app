@@ -23,6 +23,7 @@ import StatusChip from "../components/StatusChip";
 import { useStore } from "../context/StoreContext";
 import {
   areAllRequiredDocumentsUploaded,
+  getRequiredDocumentSides,
   isDocumentEntryComplete,
   isDocumentEntryRejected,
   readStoredDocumentState,
@@ -151,10 +152,10 @@ export default function DriverProfileOnboarding() {
 
   const getDocumentStatusLabel = (key: DocumentUploadKey) => {
     const entry = documentState[key];
-    if (isDocumentEntryComplete(entry)) {
+    if (isDocumentEntryComplete(key, entry)) {
       return "Verified";
     }
-    if (isDocumentEntryRejected(entry)) {
+    if (isDocumentEntryRejected(key, entry)) {
       return "Rejected";
     }
     return "Pending";
@@ -162,19 +163,25 @@ export default function DriverProfileOnboarding() {
 
   const getDocumentDescription = (key: DocumentUploadKey) => {
     const entry = documentState[key];
+    const requiredSides = getRequiredDocumentSides(key);
     const uploadedSides =
-      Number(entry.front.status === "Uploaded") + Number(entry.back.status === "Uploaded");
+      Number(entry.front.status === "Uploaded") +
+      Number(requiredSides.includes("back") && entry.back.status === "Uploaded");
 
-    if (isDocumentEntryComplete(entry)) {
-      return "Front and back copies uploaded";
+    if (isDocumentEntryComplete(key, entry)) {
+      return requiredSides.length === 2
+        ? "Front and back copies uploaded"
+        : "Required copy uploaded";
     }
-    if (isDocumentEntryRejected(entry)) {
+    if (isDocumentEntryRejected(key, entry)) {
       return "Invalid format rejected. Re-upload with PDF or image.";
     }
-    if (uploadedSides === 1) {
-      return "Upload the remaining side copy.";
+    if (uploadedSides > 0 && uploadedSides < requiredSides.length) {
+      return "Upload the remaining required copy.";
     }
-    return "Upload front and back copies.";
+    return requiredSides.length === 2
+      ? "Upload front and back copies."
+      : "Upload one clear copy.";
   };
 
   useEffect(() => {
@@ -248,14 +255,8 @@ export default function DriverProfileOnboarding() {
       },
       {
         id: "police-front",
-        label: "Conduct Cert (Front)",
+        label: "Conduct Cert",
         copy: documentState.police.front,
-        uploadRoute: "/driver/onboarding/profile/documents/upload?focus=police",
-      },
-      {
-        id: "police-back",
-        label: "Conduct Cert (Back)",
-        copy: documentState.police.back,
         uploadRoute: "/driver/onboarding/profile/documents/upload?focus=police",
       },
     ],

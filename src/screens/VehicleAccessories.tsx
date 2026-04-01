@@ -4,6 +4,7 @@ import {
   Package,
   XCircle
 } from "lucide-react";
+import { useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
@@ -74,7 +75,22 @@ export default function VehicleAccessories() {
   
   const isNew = vehicleId === "new";
   const vehicle = isNew ? draftVehicle : vehicles.find(v => v.id === vehicleId);
-  const accessories = vehicle?.accessories || (vehicle ? getDefaultAccessoriesForType(vehicle.type) : {});
+
+  useEffect(() => {
+    if (!vehicleId || !vehicle) return;
+    const hasInventory = Boolean(vehicle.accessories && Object.keys(vehicle.accessories).length > 0);
+    if (!hasInventory) {
+      resetVehicleAccessories(vehicleId);
+    }
+  }, [vehicle, vehicleId, resetVehicleAccessories]);
+
+  const accessories = useMemo(() => {
+    if (!vehicle) return {};
+    if (vehicle.accessories && Object.keys(vehicle.accessories).length > 0) {
+      return vehicle.accessories;
+    }
+    return getDefaultAccessoriesForType(vehicle.type);
+  }, [vehicle, getDefaultAccessoriesForType]);
 
   return (
     <div className="flex flex-col min-h-full bg-cream/30">
