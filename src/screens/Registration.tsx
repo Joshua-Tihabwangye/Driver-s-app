@@ -34,7 +34,12 @@ function Input({ label, type = "text", value, onChange, placeholder }) {
 export default function Registration() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { setOnboardingCheckpoint, driverProfile, setDriverProfile } = useStore();
+  const {
+    setOnboardingCheckpoint,
+    driverProfile,
+    setDriverProfile,
+    resetOnboardingVehicleSetup,
+  } = useStore();
   const selectedServiceFromState = (
     location.state as { selectedService?: RegisterServiceKey } | null
   )?.selectedService;
@@ -137,6 +142,7 @@ export default function Registration() {
     });
 
     resetStoredDocumentState();
+    resetOnboardingVehicleSetup();
     setOnboardingCheckpoint("documentsVerified", false);
     setOnboardingCheckpoint("trainingCompleted", false);
 

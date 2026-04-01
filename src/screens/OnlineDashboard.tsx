@@ -8,7 +8,7 @@ import {
   ShieldCheck,
   Wifi
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import OfflineConfirmModal from "../components/OfflineConfirmModal";
@@ -40,7 +40,13 @@ function QuickAction({ icon: Icon, label, sub, onClick }: any) {
 
 export default function OnlineDashboard() {
   const navigate = useNavigate();
-  const { dashboardMetrics, assignableJobTypes } = useStore();
+  const {
+    dashboardMetrics,
+    assignableJobTypes,
+    canGoOnline,
+    driverPresenceStatus,
+    setDriverOffline,
+  } = useStore();
   const { pendingJobs } = useJobs();
   const { onlineTime, jobsCount, earningsAmount } = dashboardMetrics;
   const [showOfflineModal, setShowOfflineModal] = useState(false);
@@ -67,6 +73,22 @@ export default function OnlineDashboard() {
     [pendingJobs]
   );
 
+  useEffect(() => {
+    if (driverPresenceStatus === "online") {
+      return;
+    }
+
+    if (!canGoOnline) {
+      navigate("/driver/dashboard/required-actions", { replace: true });
+      return;
+    }
+
+    navigate(
+      "/driver/preferences/identity/face-capture?mode=go-online&next=/driver/dashboard/online",
+      { replace: true }
+    );
+  }, [canGoOnline, driverPresenceStatus, navigate]);
+
   return (
     <div className="flex flex-col h-full bg-transparent">
       <style>{`
@@ -92,7 +114,11 @@ export default function OnlineDashboard() {
 
       <OfflineConfirmModal
         isOpen={showOfflineModal}
-        onConfirm={() => { setShowOfflineModal(false); navigate("/driver/dashboard/offline"); }}
+        onConfirm={() => {
+          setShowOfflineModal(false);
+          setDriverOffline();
+          navigate("/driver/dashboard/offline");
+        }}
         onCancel={() => setShowOfflineModal(false)}
       />
 

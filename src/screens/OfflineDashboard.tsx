@@ -4,6 +4,7 @@ import {
   Info,
   WifiOff
 } from "lucide-react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
@@ -38,10 +39,14 @@ function IssueRow({ title, text, type, onClick }: any) {
 
 export default function OfflineDashboard() {
   const navigate = useNavigate();
-  const { canGoOnline, onboardingBlockers } = useStore();
+  const { canGoOnline, onboardingBlockers, setDriverOffline } = useStore();
   const goOnlineTarget = canGoOnline
-    ? "/driver/dashboard/online"
+    ? "/driver/preferences/identity/face-capture?mode=go-online&next=/driver/dashboard/online"
     : "/driver/dashboard/required-actions";
+
+  useEffect(() => {
+    setDriverOffline();
+  }, [setDriverOffline]);
 
   return (
     <div className="flex flex-col h-full bg-transparent">
@@ -92,7 +97,9 @@ export default function OfflineDashboard() {
               title="All Required Steps Completed"
               text="No blockers found. You can now switch to online mode."
               type="info"
-              onClick={() => navigate("/driver/dashboard/online")}
+              onClick={() =>
+                navigate("/driver/preferences/identity/face-capture?mode=go-online&next=/driver/dashboard/online")
+              }
             />
           ) : (
             onboardingBlockers.map((blocker) => (

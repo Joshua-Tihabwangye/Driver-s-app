@@ -61,7 +61,7 @@ export default function DocumentVerified() {
   }, [allDocumentsVerified, documentState, navigate, setOnboardingCheckpoint]);
 
   const primaryCtaRoute = trainingCompleted
-    ? "/driver/dashboard/online"
+    ? "/driver/preferences/identity/face-capture?mode=go-online&next=/driver/dashboard/online"
     : "/driver/training/intro";
   const primaryCtaLabel = trainingCompleted ? "Go Online" : "Start Training";
 

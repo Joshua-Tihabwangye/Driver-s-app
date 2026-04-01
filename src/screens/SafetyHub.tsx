@@ -24,7 +24,7 @@ function ContactForm({
   onCancel,
 }: {
   contact?: SharedContact;
-  onSave: (contact: Omit<SharedContact, "id"> | SharedContact) => void;
+  onSave: (contact: Omit<SharedContact, "id" | "createdAt"> | SharedContact) => void;
   onCancel: () => void;
 }) {
   const [name, setName] = useState(contact?.name || "");
@@ -78,7 +78,6 @@ function ContactForm({
     if (contact) {
       onSave({ ...contact, name, phone, relationship });
     } else {
-      // @ts-ignore - StoreContext takes Omit<SharedContact, 'id'>
       onSave({ name, phone, relationship });
     }
   };
@@ -199,7 +198,7 @@ export default function SafetyHub() {
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const handleAddSave = (contact: Omit<SharedContact, "id">) => {
+  const handleAddSave = (contact: Omit<SharedContact, "id" | "createdAt">) => {
     addEmergencyContact(contact);
     setIsAdding(false);
   };

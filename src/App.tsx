@@ -43,6 +43,7 @@ const SENSITIVE_ONBOARDING_IDS = new Set([
   "VehicleDetails",
   "BusinessVehicles",
   "VehicleAccessories",
+  "EmergencyContactsManager",
   "TrainingIntro",
   "TrainingInfoSession",
   "EarningsTutorial",
