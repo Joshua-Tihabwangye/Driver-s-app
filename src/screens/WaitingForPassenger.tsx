@@ -2,14 +2,12 @@ import { buildPrivateTripRoute } from "../data/constants";
 import {
   ChevronLeft,
   Clock,
-  Map,
   MapPin,
   MessageCircle,
   Phone
 } from "lucide-react";
 import { useEffect,useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – WaitingForPassenger Driver App – Waiting for Passenger (v2)
@@ -114,30 +112,41 @@ export default function WaitingForPassenger() {
 
   return (
     <div className="flex flex-col min-h-full ">
-      <PageHeader 
-        title={headerTitle} 
-        subtitle="Driver" 
-        onBack={() => navigate(-1)} 
-      />
+      {/* Full-width top map */}
+      <section className="relative w-full h-[320px] overflow-hidden bg-slate-200">
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
+
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="absolute top-4 left-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-slate-900/65 text-white backdrop-blur-sm"
+          aria-label="Go back"
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+
+        {/* Pickup marker */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="relative flex flex-col items-center">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 shadow-xl border-2 border-white">
+              <MapPin className="h-4 w-4 text-orange-500" />
+            </div>
+            <span className="mt-3 rounded-full bg-slate-900/80 px-3 py-1 text-[9px] font-black text-white uppercase tracking-widest backdrop-blur-sm border border-white/10">
+              Docking Point
+            </span>
+          </div>
+        </div>
+      </section>
 
       {/* Content */}
-      <main className="flex-1 px-6 pt-4 pb-16 space-y-6">
-
-        {/* Map container (static pickup view) */}
-        <section className="relative rounded-[2.5rem] overflow-hidden border border-slate-100 bg-slate-200 h-[240px] shadow-2xl">
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
-
-          {/* Pickup marker */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="relative flex flex-col items-center">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 shadow-xl border-2 border-white">
-                <MapPin className="h-4 w-4 text-orange-500" />
-              </div>
-              <span className="mt-3 rounded-full bg-slate-900/80 px-3 py-1 text-[9px] font-black text-white uppercase tracking-widest backdrop-blur-sm border border-white/10">
-                Docking Point
-              </span>
-            </div>
-          </div>
+      <main className="flex-1 px-6 pt-5 pb-16 space-y-6">
+        <section className="space-y-1">
+          <p className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">
+            Driver · {jobTypeLabelMap[jobType] || "Ride"}
+          </p>
+          <h1 className="text-lg font-black text-slate-900 uppercase tracking-tight">
+            {headerTitle}
+          </h1>
         </section>
 
         {/* Waiting / on-scene timer */}

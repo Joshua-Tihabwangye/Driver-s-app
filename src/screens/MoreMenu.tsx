@@ -135,33 +135,6 @@ export default function MoreMenu() {
           <ChevronRight className="h-5 w-5 text-slate-300 ml-2 shrink-0" />
         </button>
 
-        <MenuSection title="Fleet & Tools">
-          <MenuItem
-            icon={Car}
-            label="Manage Fleet"
-            description="Vehicle docs and accessories"
-            onClick={() => navigate("/driver/manage/vehicles")}
-          />
-          <MenuItem
-            icon={History}
-            label="Ride History"
-            description="View your past completed tasks"
-            onClick={() => navigate("/driver/history/rides")}
-          />
-          <MenuItem
-            icon={Star}
-            label="Ratings & Reviews"
-            description="View your performance feedback"
-            onClick={() => navigate("/driver/ratings")}
-          />
-          <MenuItem
-            icon={Map}
-            label="Surge Map"
-            description="Check area demand zones"
-            onClick={() => navigate("/driver/surge/map")}
-          />
-        </MenuSection>
-
         <MenuSection title="App Preferences">
           <MenuItem
             icon={SlidersHorizontal}
@@ -188,6 +161,33 @@ export default function MoreMenu() {
             label="Service Legend"
             description="Icon reference and job types"
             onClick={() => navigate("/driver/settings/job-types-legend")}
+          />
+        </MenuSection>
+
+        <MenuSection title="Fleet & Tools">
+          <MenuItem
+            icon={Car}
+            label="Manage Fleet"
+            description="Vehicle docs and accessories"
+            onClick={() => navigate("/driver/manage/vehicles")}
+          />
+          <MenuItem
+            icon={History}
+            label="Ride History"
+            description="View your past completed tasks"
+            onClick={() => navigate("/driver/history/rides")}
+          />
+          <MenuItem
+            icon={Star}
+            label="Ratings & Reviews"
+            description="View your performance feedback"
+            onClick={() => navigate("/driver/ratings")}
+          />
+          <MenuItem
+            icon={Map}
+            label="Surge Map"
+            description="Check area demand zones"
+            onClick={() => navigate("/driver/surge/map")}
           />
         </MenuSection>
 

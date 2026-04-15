@@ -385,7 +385,7 @@ const PRIVATE_TRIP_TRANSITIONS: Record<
   Exclude<TripWorkflowStage, "idle" | "shared_active">,
   TripWorkflowStage[]
 > = {
-  navigate_to_pickup: ["arrived_pickup", "cancel_reason"],
+  navigate_to_pickup: ["arrived_pickup", "waiting_for_passenger", "cancel_reason"],
   arrived_pickup: [
     "waiting_for_passenger",
     "rider_verified",
@@ -2512,6 +2512,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }),
     [driverRoleSelection, sharedRidesEnabled]
   );
+  const localhostSeedRequestJobTypes = useMemo(
+    () =>
+      (["ride", "delivery"] as const).filter(
+        (jobType) => assignableJobTypes.includes(jobType)
+      ),
+    [assignableJobTypes]
+  );
   const rideCapable = assignableJobTypes.includes("ride");
   const canAcceptJobType = useCallback(
     (jobType: JobCategory) => {
@@ -2522,6 +2529,63 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     },
     [assignableJobTypes, rideCapable, sharedRidesEnabled]
   );
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const host = window.location.hostname;
+    const isLocalhost =
+      host === "localhost" || host === "127.0.0.1" || host === "::1";
+    if (!isLocalhost || localhostSeedRequestJobTypes.length === 0) {
+      return;
+    }
+
+    const missingRequestTypes = localhostSeedRequestJobTypes.filter(
+      (jobType) =>
+        !jobs.some((job) => job.jobType === jobType && job.status === "pending")
+    );
+    if (missingRequestTypes.length === 0) {
+      return;
+    }
+
+    setJobs((prev) => {
+      const missingTypeSet = new Set<JobCategory>(missingRequestTypes);
+      const now = Date.now();
+      let changed = false;
+
+      const restored = prev.map((job, index) => {
+        if (!missingTypeSet.has(job.jobType) || job.status === "pending") {
+          return job;
+        }
+        changed = true;
+        return {
+          ...job,
+          status: "pending" as const,
+          requestedAt: now - index * 60000,
+        };
+      });
+
+      const existingIds = new Set(restored.map((job) => job.id));
+      const seeded = initialJobs
+        .filter(
+          (job) =>
+            missingTypeSet.has(job.jobType) && !existingIds.has(job.id)
+        )
+        .map((job, index) => ({
+          ...job,
+          status: "pending" as const,
+          requestedAt: now - (restored.length + index) * 60000,
+        }));
+
+      if (!changed && seeded.length === 0) {
+        return prev;
+      }
+
+      return [...seeded, ...restored];
+    });
+  }, [activeTrip.stage, activeTrip.status, jobs, localhostSeedRequestJobTypes]);
+
   const acceptSpecializedJob = useCallback(
     (jobId: string, jobType: SpecializedJobType) => {
       if (!canAcceptJobType(jobType)) {

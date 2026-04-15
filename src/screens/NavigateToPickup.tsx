@@ -2,14 +2,11 @@ import { buildPrivateTripRoute } from "../data/constants";
 import {
 ChevronLeft,
 Clock,
-Map,
 MapPin,
 Navigation,
 Phone
 } from "lucide-react";
-import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – NavigateToPickup Driver App – Navigate to Pick-Up Location (v2)
@@ -25,7 +22,6 @@ import { useStore } from "../context/StoreContext";
 
 
 export default function NavigateToPickup() {
-  const [hasArrived, setHasArrived] = useState(false);
   const navigate = useNavigate();
   const { tripId: routeTripId } = useParams();
   const { activeTrip, transitionActiveTripStage } = useStore();
@@ -34,7 +30,9 @@ export default function NavigateToPickup() {
   // This ensures state transitions work for all job types (ride, delivery, rental, etc.)
   const jobType = activeTrip.jobType || "ride";
 
-  const navigateToTripStage = (stage: "arrived_pickup" | "cancel_reason") => {
+  const navigateToTripStage = (
+    stage: "waiting_for_passenger" | "cancel_reason"
+  ) => {
     if (!tripId) {
       navigate("/driver/jobs/list");
       return;
@@ -43,12 +41,11 @@ export default function NavigateToPickup() {
     // Transition the state machine for ALL job types, not just rides.
     // Previously this was gated behind `activeTrip.jobType === "ride"`,
     // which silently skipped transitions for delivery/rental/tour/ambulance.
-    if (stage === "arrived_pickup" && activeTrip.tripId === tripId) {
+    if (stage === "waiting_for_passenger" && activeTrip.tripId === tripId) {
       transitionActiveTripStage(stage);
     }
 
-    const routeStage = stage === "arrived_pickup" ? "arrived_pickup" : "cancel_reason";
-    navigate(buildPrivateTripRoute(routeStage, tripId));
+    navigate(buildPrivateTripRoute(stage, tripId));
   };
 
   const handleOpenNavigation = () => {
@@ -91,22 +88,76 @@ export default function NavigateToPickup() {
     : null;
 
   return (
-    <div className="flex flex-col h-full ">
+    <div className="flex flex-col min-h-full">
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <PageHeader 
-        title="Navigate to pickup" 
-        subtitle={`Driver · ${jobTypeLabelMap[jobType]}`} 
-        onBack={() => navigate(-1)} 
-      />
+      {/* Full-width top map */}
+      <section className="relative w-full h-[320px] overflow-hidden bg-slate-200">
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
 
+        {/* Route polyline */}
+        <div className="absolute inset-0">
+          <svg
+            className="w-full h-full"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+          >
+            <path
+              d="M20 80 C 30 70, 45 60, 65 40 S 80 25, 85 20"
+              fill="none"
+              stroke="#12c98c"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeDasharray="4 2"
+            />
+          </svg>
+        </div>
 
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="absolute top-4 left-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-slate-900/65 text-white backdrop-blur-sm"
+          aria-label="Go back"
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+
+        {/* Driver marker (bottom) */}
+        <div className="absolute left-7 bottom-10 flex flex-col items-center">
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/90 border border-white">
+            <Navigation className="h-3.5 w-3.5 text-brand-active" />
+          </div>
+        </div>
+
+        {/* Pickup marker (top) */}
+        <div className="absolute right-9 top-9 flex flex-col items-center">
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/90 border border-white shadow-lg">
+            <MapPin className="h-3.5 w-3.5 text-brand-active" />
+          </div>
+        </div>
+
+        <div className="absolute top-4 right-4 z-10">
+           <div className="bg-cream/90 backdrop-blur-md rounded-full px-3 py-1 flex items-center space-x-2 border-2 border-brand-active/20">
+              <div className="w-1.5 h-1.5 rounded-full bg-brand-active animate-pulse" />
+              <span className="text-[9px] font-black text-slate-900 uppercase tracking-widest">Tracking Customer</span>
+           </div>
+        </div>
+      </section>
 
       {/* Content */}
-      <main className="flex-1 px-6 pt-4 pb-16 overflow-y-auto scrollbar-hide space-y-6">
+      <main className="flex-1 px-6 pt-5 pb-16 overflow-y-auto scrollbar-hide space-y-6">
+        <section className="space-y-1">
+          <p className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">
+            Driver · {jobTypeLabelMap[jobType]}
+          </p>
+          <h1 className="text-lg font-black text-slate-900 uppercase tracking-tight">
+            Navigate to pickup
+          </h1>
+        </section>
+
         {isAmbulance && (
           <div className="rounded-2xl bg-red-50 border border-red-100 px-4 py-3 flex items-center space-x-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-red-100/50 text-red-600 font-black text-xs">
@@ -117,50 +168,6 @@ export default function NavigateToPickup() {
             </p>
           </div>
         )}
-
-        {/* Map container */}
-        <section className="relative rounded-[2.5rem] overflow-hidden border border-slate-100 bg-slate-200 h-[260px] shadow-2xl">
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
-
-          {/* Route polyline */}
-          <div className="absolute inset-0">
-            <svg
-              className="w-full h-full"
-              viewBox="0 0 100 100"
-              preserveAspectRatio="none"
-            >
-              <path
-                d="M20 80 C 30 70, 45 60, 65 40 S 80 25, 85 20"
-                fill="none"
-                stroke="#12c98c"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeDasharray="4 2"
-              />
-            </svg>
-          </div>
-
-          {/* Driver marker (bottom) */}
-          <div className="absolute left-7 bottom-10 flex flex-col items-center">
-            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/90 border border-white">
-              <Navigation className="h-3.5 w-3.5 text-brand-active" />
-            </div>
-          </div>
-
-          {/* Pickup marker (top) */}
-          <div className="absolute right-9 top-9 flex flex-col items-center">
-            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/90 border border-white shadow-lg">
-              <MapPin className="h-3.5 w-3.5 text-brand-active" />
-            </div>
-          </div>
-
-          <div className="absolute top-4 left-4">
-             <div className="bg-cream/90 backdrop-blur-md rounded-full px-3 py-1 flex items-center space-x-2 border-2 border-brand-active/20">
-                <div className="w-1.5 h-1.5 rounded-full bg-brand-active animate-pulse" />
-                <span className="text-[9px] font-black text-slate-900 uppercase tracking-widest">Tracking Customer</span>
-             </div>
-          </div>
-        </section>
 
         {/* Trip info + actions */}
         <section className="space-y-4">
@@ -184,7 +191,7 @@ export default function NavigateToPickup() {
                     <span>ETA 18:22</span>
                   </div>
                 )}
-                {!isAmbulance && hasArrived && (
+                {!isAmbulance && (
                   <button
                     type="button"
                     onClick={() => window.open("tel:+256700000000")}
@@ -193,9 +200,6 @@ export default function NavigateToPickup() {
                     <Phone className="h-3 w-3 mr-2" />
                     Call
                   </button>
-                )}
-                {!isAmbulance && !hasArrived && (
-                  <div className="h-[26px]" /> // Placeholder to keep layout stable
                 )}
               </div>
             </div>
@@ -208,33 +212,21 @@ export default function NavigateToPickup() {
               >
                 Cancel
               </button>
-              {hasArrived ? (
-                <button
-                  type="button"
-                  onClick={() => navigateToTripStage("arrived_pickup")}
-                  className="flex-[2] rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-brand-active text-white shadow-xl shadow-brand-active/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center animate-in fade-in zoom-in-95 duration-300"
-                >
-                  Continue to Pickup
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setHasArrived(true)}
-                  className="flex-[2] rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-orange-500 text-white shadow-xl shadow-orange-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center"
-                >
-                  Confirm Arrival
-                </button>
-              )}
-            </div>
-            {!hasArrived && (
               <button
                 type="button"
-                onClick={handleOpenNavigation}
-                className="w-full rounded-full py-3 text-[10px] font-black uppercase tracking-widest border border-slate-200 bg-white text-slate-600 hover:border-slate-300 transition-all"
+                onClick={() => navigateToTripStage("waiting_for_passenger")}
+                className="flex-[2] rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-orange-500 text-white shadow-xl shadow-orange-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center"
               >
-                Open Live Navigation
+                Confirm Arrival
               </button>
-            )}
+            </div>
+            <button
+              type="button"
+              onClick={handleOpenNavigation}
+              className="w-full rounded-full py-3 text-[10px] font-black uppercase tracking-widest border border-slate-200 bg-white text-slate-600 hover:border-slate-300 transition-all"
+            >
+              Open Live Navigation
+            </button>
           </div>
 
           <div className="bg-[#f0fff4]/50 rounded-3xl p-4 text-center border-2 border-orange-500/10">

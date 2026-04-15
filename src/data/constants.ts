@@ -60,7 +60,8 @@ export const PRIVATE_TRIP_ROUTE_BUILDERS: Record<
   TripStageRouteBuilder
 > = {
   navigate_to_pickup: (tripId) => `/driver/trip/${tripId}/navigate-to-pickup`,
-  arrived_pickup: (tripId) => `/driver/trip/${tripId}/arrived`,
+  // Legacy alias kept for backward compatibility with older stage values.
+  arrived_pickup: (tripId) => `/driver/trip/${tripId}/waiting`,
   waiting_for_passenger: (tripId) => `/driver/trip/${tripId}/waiting`,
   rider_verification: (tripId) => `/driver/trip/${tripId}/verify-rider`,
   start_drive: (tripId) => `/driver/trip/${tripId}/start`,
