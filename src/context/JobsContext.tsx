@@ -1,4 +1,13 @@
-import { createContext, ReactNode, useContext, useMemo, useCallback } from "react";
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useMemo,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useStore } from "./StoreContext";
 
 import type { Job, SharedContact } from "../data/types";
@@ -25,14 +34,12 @@ const normalizeEmail = (value?: string) => (value || "").trim().toLowerCase();
 const JobsContext = createContext<JobsContextType | undefined>(undefined);
 
 export function JobsProvider({ children }: { children: ReactNode }) {
-  const {
-    jobs,
-    updateJobStatus,
-    addSharedContactToJob,
-    canAcceptJobType,
-    activeTrip,
-    assignableJobTypes,
-  } = useStore();
+  const { jobs, updateJobStatus, addSharedContactToJob, canAcceptJobType, activeTrip, assignableJobTypes } = useStore();
+  const isDevMode = import.meta.env.DEV;
+  const [hiddenWorkedJobIds, setHiddenWorkedJobIds] = useState<Set<string>>(
+    () => new Set()
+  );
+  const previousJobStatusesRef = useRef<Map<string, Job["status"]>>(new Map());
 
   const attendJob = useCallback((id: string) => {
     updateJobStatus(id, "attended");
@@ -75,6 +82,32 @@ export function JobsProvider({ children }: { children: ReactNode }) {
     return addSharedContactToJob(jobId, nextContact);
   }, [jobs, addSharedContactToJob]);
 
+  useEffect(() => {
+    if (!isDevMode) {
+      return;
+    }
+
+    setHiddenWorkedJobIds((prev) => {
+      const next = new Set(prev);
+
+      for (const job of jobs) {
+        const previousStatus = previousJobStatusesRef.current.get(job.id);
+        if (previousStatus === "pending" && job.status !== "pending") {
+          next.add(job.id);
+        }
+      }
+
+      previousJobStatusesRef.current = new Map(
+        jobs.map((job) => [job.id, job.status])
+      );
+
+      if (next.size === prev.size) {
+        return prev;
+      }
+      return next;
+    });
+  }, [jobs, isDevMode]);
+
   const sharedEligible = canAcceptJobType("shared");
   const rideRequestsEnabled = assignableJobTypes.includes("ride");
   const deliveryRequestsEnabled = assignableJobTypes.includes("delivery");
@@ -82,7 +115,13 @@ export function JobsProvider({ children }: { children: ReactNode }) {
     () =>
       jobs
         .filter((job) => {
-          if (job.status !== "pending") {
+          // Development-only workflow:
+          // hide jobs worked in this runtime (no persistence) while keeping
+          // production behavior unchanged below.
+          if (isDevMode && hiddenWorkedJobIds.has(job.id)) {
+            return false;
+          }
+          if (!isDevMode && job.status !== "pending") {
             return false;
           }
           if (
@@ -111,6 +150,8 @@ export function JobsProvider({ children }: { children: ReactNode }) {
       activeTrip,
       rideRequestsEnabled,
       deliveryRequestsEnabled,
+      isDevMode,
+      hiddenWorkedJobIds,
     ]
   );
 

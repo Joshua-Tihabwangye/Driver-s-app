@@ -1,12 +1,12 @@
 import {
   AlertTriangle,
   Check,
+  ChevronLeft,
   Package,
   X,
 } from "lucide-react";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – PickupConfirmation Alert – Pick Up Confirmation (v1)
@@ -29,19 +29,39 @@ export default function PickupConfirmation() {
 
   return (
     <div className="flex flex-col h-full ">
-      <PageHeader 
-        title="Confirm Pickup" 
-        subtitle="Driver · Deliveries" 
-        onBack={() => navigate(-1)} 
-      />
+      <section className="relative w-full h-[460px] overflow-hidden bg-slate-200">
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="rounded-full bg-slate-900 px-3 py-1 text-[9px] font-black text-white uppercase tracking-widest border border-white/20">
+            Burger Hub · Acacia Mall
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="absolute left-4 top-6 z-20 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/90 text-slate-900 shadow-xl border border-white/70 backdrop-blur active:scale-95 transition-transform"
+          aria-label="Go back"
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+      </section>
 
-      <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-6">
+      <main className="flex-1 px-6 pt-5 pb-16 overflow-y-auto scrollbar-hide space-y-6">
+        <section className="space-y-1">
+          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-500">
+            Driver · Deliveries
+          </p>
+          <h1 className="text-xl font-black tracking-tight text-slate-900">
+            Confirm Pickup
+          </h1>
+        </section>
+
         {/* Location context */}
-        <section className="relative rounded-[2.5rem] overflow-hidden border border-slate-200 bg-slate-200 h-[200px] shadow-lg">
+        <section className="relative rounded-[2.5rem] overflow-hidden border border-slate-200 bg-slate-200 h-[220px] shadow-lg">
           <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="relative flex flex-col items-center">
-<span className="mt-2 rounded-full bg-slate-900 px-3 py-1 text-[9px] font-black text-white uppercase tracking-widest border border-white/20">
+              <span className="mt-2 rounded-full bg-slate-900 px-3 py-1 text-[9px] font-black text-white uppercase tracking-widest border border-white/20">
                 Burger Hub · Acacia Mall
               </span>
             </div>

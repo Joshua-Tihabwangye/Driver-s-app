@@ -1,13 +1,10 @@
 import {
 ChevronLeft,
 Clock,
-Map,
 MapPin,
-Navigation,
 Package
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – DeliveryRouteDetails Route Details (v1)
 // Shows a multi-stop delivery route with upcoming stops and ETA details.
@@ -77,15 +74,7 @@ export default function DeliveryRouteDetails() {
 
   return (
     <div className="flex flex-col h-full ">
-      <PageHeader 
-        title="Route Details" 
-        subtitle="Driver · Deliveries" 
-        onBack={() => navigate(-1)} 
-      />
-
-      <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-6">
-        {/* Map preview */}
-        <section className="relative rounded-[2.5rem] overflow-hidden border border-slate-200 bg-slate-200 h-[240px] shadow-lg">
+      <section className="relative w-full h-[460px] overflow-hidden bg-slate-200">
           <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
 
           {/* Route polyline (simplified SVG) */}
@@ -115,6 +104,24 @@ export default function DeliveryRouteDetails() {
               Start
             </span>
           </div>
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="absolute left-4 top-6 z-20 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/90 text-slate-900 shadow-xl border border-white/70 backdrop-blur active:scale-95 transition-transform"
+            aria-label="Go back"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+      </section>
+
+      <main className="flex-1 px-6 pt-5 pb-16 overflow-y-auto scrollbar-hide space-y-6">
+        <section className="space-y-1">
+          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-500">
+            Driver · Deliveries
+          </p>
+          <h1 className="text-xl font-black tracking-tight text-slate-900">
+            Route Details
+          </h1>
         </section>
 
         {/* Stops list */}
