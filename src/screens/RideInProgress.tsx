@@ -3,7 +3,6 @@ import {
 ChevronLeft,
 Clock,
 DollarSign,
-Map,
 MapPin,
 Navigation,
 ShieldCheck,
@@ -11,7 +10,6 @@ Share2
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – RideInProgress Driver App – Ride in Progress (v2)
@@ -48,8 +46,10 @@ export default function RideInProgress() {
     delivery: "Delivery",
     rental: "Rental",
     tour: "Tour",
-    ambulance: "Ambulance"
-};
+    ambulance: "Ambulance",
+    shared: "Shared",
+    shuttle: "Shuttle",
+  };
 
   const isRental = jobType === "rental";
   const isTour = jobType === "tour";
@@ -109,63 +109,74 @@ export default function RideInProgress() {
   };
 
   return (
-    <div className="flex flex-col h-full ">
+    <div className="flex flex-col min-h-full">
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { width: 0; height: 0; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <PageHeader 
-        title="Ride in progress" 
-        subtitle="Driver" 
-        onBack={() => navigate(-1)} 
-      />
+      {/* Full-width top map */}
+      <section className="relative w-full h-[460px] overflow-hidden bg-slate-200">
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
+
+        {/* Route polyline */}
+        <div className="absolute inset-0">
+          <svg
+            className="w-full h-full"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+          >
+            <path
+              d="M16 80 C 30 70, 42 60, 56 48 S 78 30, 86 22"
+              fill="none"
+              stroke="#f97316"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              strokeDasharray="5 3"
+            />
+          </svg>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="absolute top-4 left-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-slate-900/65 text-white backdrop-blur-sm"
+          aria-label="Go back"
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+
+        <div className="absolute top-4 right-4 z-10">
+           <div className="bg-cream/90 backdrop-blur-md rounded-full px-3 py-1 flex items-center space-x-2 border-2 border-orange-500/20">
+              <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+              <span className="text-[9px] font-black text-slate-900 uppercase tracking-widest">Navigation Active</span>
+           </div>
+        </div>
+
+        {/* Driver marker */}
+        <div className="absolute left-16 bottom-16 flex flex-col items-center">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 border border-white shadow-lg">
+            <Navigation className="h-4 w-4 text-orange-500" />
+          </div>
+        </div>
+
+        {/* Drop-off marker */}
+        <div className="absolute right-10 top-16 flex flex-col items-center">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 border border-white shadow-lg">
+            <MapPin className="h-4 w-4 text-orange-500" />
+          </div>
+        </div>
+      </section>
 
       {/* Content */}
-      <main className="flex-1 px-6 pt-4 pb-16 overflow-y-auto scrollbar-hide space-y-6">
-
-        {/* Map container */}
-        <section className="relative rounded-[2.5rem] overflow-hidden border border-slate-100 bg-slate-200 h-[320px] shadow-2xl">
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
-
-          {/* Route polyline */}
-          <div className="absolute inset-0">
-            <svg
-              className="w-full h-full"
-              viewBox="0 0 100 100"
-              preserveAspectRatio="none"
-            >
-              <path
-                d="M16 80 C 30 70, 42 60, 56 48 S 78 30, 86 22"
-                fill="none"
-                stroke="#f97316"
-                strokeWidth="2.4"
-                strokeLinecap="round"
-                strokeDasharray="5 3"
-              />
-            </svg>
-          </div>
-
-          <div className="absolute top-4 left-4">
-             <div className="bg-cream/90 backdrop-blur-md rounded-full px-3 py-1 flex items-center space-x-2 border-2 border-orange-500/20">
-                <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
-                <span className="text-[9px] font-black text-slate-900 uppercase tracking-widest">Navigation Active</span>
-             </div>
-          </div>
-
-          {/* Driver marker */}
-          <div className="absolute left-16 bottom-16 flex flex-col items-center">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 border border-white shadow-lg">
-              <Navigation className="h-4 w-4 text-orange-500" />
-            </div>
-          </div>
-
-          {/* Drop-off marker */}
-          <div className="absolute right-10 top-10 flex flex-col items-center">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 border border-white shadow-lg">
-              <MapPin className="h-4 w-4 text-orange-500" />
-            </div>
-          </div>
+      <main className="flex-1 px-6 pt-5 pb-16 overflow-y-auto scrollbar-hide space-y-6">
+        <section className="space-y-1">
+          <p className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">
+            Driver · {jobTypeLabelMap[jobType] || "Ride"}
+          </p>
+          <h1 className="text-lg font-black text-slate-900 uppercase tracking-tight">
+            Ride in progress
+          </h1>
         </section>
 
         {/* Trip info */}

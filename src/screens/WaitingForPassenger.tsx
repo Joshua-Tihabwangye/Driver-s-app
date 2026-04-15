@@ -113,7 +113,7 @@ export default function WaitingForPassenger() {
   return (
     <div className="flex flex-col min-h-full ">
       {/* Full-width top map */}
-      <section className="relative w-full h-[320px] overflow-hidden bg-slate-200">
+      <section className="relative w-full h-[460px] overflow-hidden bg-slate-200">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
 
         <button
