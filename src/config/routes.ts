@@ -109,7 +109,6 @@ import ConfirmPickupLocation from "../screens/ConfirmPickupLocation";
 import PackagePickupQR from "../screens/PackagePickupQR";
 import QRScanner from "../screens/QRScanner";
 import QRScanConfirmation from "../screens/QRScanConfirmation";
-import QRInstruction from "../screens/QRInstruction";
 import QRScannerActive from "../screens/QRScannerActive";
 import QRScanned from "../screens/QRScanned";
 import QRProcessing from "../screens/QRProcessing";
@@ -256,7 +255,6 @@ export const SCREENS: ScreenConfig[] = [
   { id: "PackagePickupQR", label: "Package Pickup Verification", path: "/driver/delivery/pickup/qr", Component: PackagePickupQR },
   { id: "QRScanner", label: "QR Code Scanner", path: "/driver/qr/scanner", Component: QRScanner },
   { id: "QRScanConfirmation", label: "Scan QR Code Confirmation", path: "/driver/qr/scan-confirmation", Component: QRScanConfirmation },
-  { id: "QRInstruction", label: "Scan QR Code – Instruction Popup", path: "/driver/qr/instruction", Component: QRInstruction },
   { id: "QRScannerActive", label: "Scan QR Code – Active Camera View", path: "/driver/qr/active", Component: QRScannerActive },
   { id: "QRScanned", label: "QR Code Scanned – Confirmation Indicator", path: "/driver/qr/scanned", Component: QRScanned },
   { id: "QRProcessing", label: "QR Code – Processing Stage", path: "/driver/qr/processing", Component: QRProcessing },

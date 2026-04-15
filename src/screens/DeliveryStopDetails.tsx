@@ -1,11 +1,12 @@
 import {
+Camera,
 ChevronLeft,
 Clock,
 MessageCircle,
 Package,
 Phone
 } from "lucide-react";
-import { useEffect } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { SAMPLE_IDS } from "../data/constants";
 import { useStore } from "../context/StoreContext";
@@ -17,8 +18,16 @@ import { useStore } from "../context/StoreContext";
 
 export default function DeliveryStopDetails() {
   const navigate = useNavigate();
-  const { routeId } = useParams();
-  const { deliveryStageAtLeast, confirmDeliveryDropoff, deliveryWorkflow } = useStore();
+  const { routeId, stopId } = useParams();
+  const {
+    deliveryStageAtLeast,
+    confirmDeliveryDropoff,
+    deliveryWorkflow,
+    resetDeliveryWorkflow,
+  } = useStore();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [signatureProofUrl, setSignatureProofUrl] = useState<string | null>(null);
+  const [signatureProofName, setSignatureProofName] = useState("");
 
   useEffect(() => {
     if (!deliveryStageAtLeast("in_delivery")) {
@@ -26,13 +35,76 @@ export default function DeliveryStopDetails() {
     }
   }, [deliveryStageAtLeast, navigate]);
 
-  const nextStop = {
-    label: "Naguru (Block B)",
-    detail: "Deliver order #3235 · FreshMart groceries",
-    etaTime: "18:40",
-    etaDistance: "2.3 km · 8 min",
-    contactName: "Sarah",
-    contactPhone: "+256 700 000 333"
+  const stopDetailsById = {
+    "gamma-stop": {
+      label: "Naguru (Block B)",
+      detail: "Deliver order #3235 · FreshMart groceries",
+      etaTime: "18:40",
+      etaDistance: "2.3 km · 8 min",
+      contactName: "Sarah",
+      contactPhone: "+256 700 000 333",
+    },
+    "beta-stop": {
+      label: "Ntinda (Main Road)",
+      detail: "Deliver order #3230 · Pharmacy package",
+      etaTime: "18:55",
+      etaDistance: "3.0 km · 11 min",
+      contactName: "Michael",
+      contactPhone: "+256 700 000 444",
+    },
+    "alpha-stop": {
+      label: "Lugogo (Main Gate)",
+      detail: "Deliver order #3221 · Food package",
+      etaTime: "18:20",
+      etaDistance: "1.8 km · 6 min",
+      contactName: "Daniel",
+      contactPhone: "+256 700 000 222",
+    },
+  };
+  const nextStop =
+    stopDetailsById[(stopId || "") as keyof typeof stopDetailsById] ||
+    stopDetailsById["gamma-stop"];
+
+  useEffect(() => {
+    return () => {
+      if (signatureProofUrl) {
+        window.URL.revokeObjectURL(signatureProofUrl);
+      }
+    };
+  }, [signatureProofUrl]);
+
+  const sanitizePhone = (phone: string) => (phone || "").replace(/[^\d+]/g, "");
+  const handleCall = () => {
+    const target = sanitizePhone(nextStop.contactPhone);
+    if (target) window.open(`tel:${target}`);
+  };
+  const handleMessage = () => {
+    const target = sanitizePhone(nextStop.contactPhone);
+    if (target) window.open(`sms:${target}`);
+  };
+
+  const handleCaptureSignatureProof = (
+    event: ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (signatureProofUrl) {
+      window.URL.revokeObjectURL(signatureProofUrl);
+    }
+
+    const objectUrl = window.URL.createObjectURL(file);
+    setSignatureProofUrl(objectUrl);
+    setSignatureProofName(file.name || "signature-proof.jpg");
+  };
+
+  const handleConfirmDropOff = () => {
+    if (!signatureProofUrl) {
+      return;
+    }
+    confirmDeliveryDropoff();
+    resetDeliveryWorkflow();
+    navigate("/driver/jobs/list", { replace: true });
   };
 
   return (
@@ -122,14 +194,66 @@ export default function DeliveryStopDetails() {
                 </span>
               </div>
               <div className="flex items-center space-x-3">
-                <button className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 border border-slate-100 shadow-lg shadow-slate-200/50 text-slate-900 active:scale-90 transition-transform">
+                <button
+                  type="button"
+                  onClick={handleMessage}
+                  className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 border border-slate-100 shadow-lg shadow-slate-200/50 text-slate-900 active:scale-90 transition-transform"
+                >
                   <MessageCircle className="h-6 w-6" />
                 </button>
-                <button className="flex h-14 w-14 items-center justify-center rounded-[1.25rem] bg-orange-50 border border-orange-100 shadow-xl shadow-orange-200/50 text-orange-500 active:scale-90 transition-transform">
+                <button
+                  type="button"
+                  onClick={handleCall}
+                  className="flex h-14 w-14 items-center justify-center rounded-[1.25rem] bg-orange-50 border border-orange-100 shadow-xl shadow-orange-200/50 text-orange-500 active:scale-90 transition-transform"
+                >
                   <Phone className="h-7 w-7" />
                 </button>
               </div>
             </div>
+          </div>
+
+          <div className="rounded-[2.5rem] border border-slate-100 bg-white p-6 shadow-xl shadow-slate-200/50 space-y-4">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                Proof of Delivery
+              </p>
+              <p className="mt-1 text-[11px] font-medium text-slate-600">
+                Open camera and capture the signed delivery sheet before confirming drop-off.
+              </p>
+            </div>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={handleCaptureSignatureProof}
+            />
+
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full rounded-[1.5rem] border border-orange-200 bg-orange-50 px-4 py-3 text-[11px] font-black uppercase tracking-widest text-orange-700 active:scale-[0.98] transition-all"
+            >
+              <span className="inline-flex items-center">
+                <Camera className="h-4 w-4 mr-2" />
+                {signatureProofUrl ? "Retake Signature Photo" : "Capture Signature Photo"}
+              </span>
+            </button>
+
+            {signatureProofUrl && (
+              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-3 space-y-2">
+                <img
+                  src={signatureProofUrl}
+                  alt="Recipient signature proof"
+                  className="w-full h-44 object-cover rounded-xl border border-slate-200"
+                />
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 truncate">
+                  Captured: <span className="text-slate-900">{signatureProofName}</span>
+                </p>
+              </div>
+            )}
           </div>
 
           <p className="text-[10px] text-slate-400 font-medium text-center px-6 leading-relaxed">
@@ -138,11 +262,13 @@ export default function DeliveryStopDetails() {
           </p>
           <button
             type="button"
-            onClick={() => {
-              confirmDeliveryDropoff();
-              navigate("/driver/delivery/dropoff/confirmed");
-            }}
-            className="w-full rounded-[2rem] bg-orange-500 py-5 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-orange-200/50 flex items-center justify-center active:scale-[0.98] transition-all hover:bg-orange-600"
+            onClick={handleConfirmDropOff}
+            disabled={!signatureProofUrl}
+            className={`w-full rounded-[2rem] py-5 text-[11px] font-black uppercase tracking-widest shadow-xl flex items-center justify-center active:scale-[0.98] transition-all ${
+              signatureProofUrl
+                ? "bg-orange-500 text-white shadow-orange-200/50 hover:bg-orange-600"
+                : "bg-slate-200 text-slate-500 shadow-slate-200 cursor-not-allowed"
+            }`}
           >
             Confirm Delivered at Drop-Off
           </button>

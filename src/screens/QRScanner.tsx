@@ -1,10 +1,9 @@
 import {
 Camera,
-ChevronLeft,
 Info,
-QrCode
+X
 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
@@ -18,12 +17,29 @@ import { useStore } from "../context/StoreContext";
 export default function QRScanner() {
   const navigate = useNavigate();
   const { deliveryStageAtLeast } = useStore();
+  const [showInstructionNotice, setShowInstructionNotice] = useState(true);
+  const [scanState, setScanState] = useState<"scanning" | "detected">("scanning");
 
   useEffect(() => {
     if (!deliveryStageAtLeast("pickup_confirmed")) {
       navigate("/driver/delivery/pickup/confirm", { replace: true });
     }
   }, [deliveryStageAtLeast, navigate]);
+
+  useEffect(() => {
+    const detectTimer = window.setTimeout(() => {
+      setScanState("detected");
+    }, 2200);
+
+    const forwardTimer = window.setTimeout(() => {
+      navigate("/driver/qr/processing", { replace: true });
+    }, 3000);
+
+    return () => {
+      window.clearTimeout(detectTimer);
+      window.clearTimeout(forwardTimer);
+    };
+  }, [navigate]);
 
   return (
     <div className="flex flex-col h-full ">
@@ -47,6 +63,34 @@ export default function QRScanner() {
       />
 
       <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-6">
+        {showInstructionNotice && (
+          <section className="rounded-[1.75rem] border border-orange-200 bg-orange-50 px-4 py-3 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white text-orange-500 border border-orange-100">
+                  <Info className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-900">
+                    Scan Guidance
+                  </p>
+                  <p className="mt-1 text-[11px] font-medium text-slate-600 leading-relaxed">
+                    Align the pickup QR inside the frame. After detection, verification will continue automatically.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowInstructionNotice(false)}
+                className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-orange-200 bg-white text-slate-500 active:scale-95 transition-transform"
+                aria-label="Close notification"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </section>
+        )}
+
         {/* Camera / scanner view */}
         <section className="relative rounded-[3rem] overflow-hidden border border-slate-100 bg-black h-[320px] shadow-2xl flex items-center justify-center">
           {/* Simulated camera background */}
@@ -70,7 +114,7 @@ export default function QRScanner() {
           {/* Overlay text */}
           <div className="absolute top-6 inset-x-0 text-center">
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">
-              Align Code in Frame
+              {scanState === "scanning" ? "Align Code in Frame" : "QR Detected"}
             </span>
           </div>
         </section>
@@ -86,18 +130,12 @@ export default function QRScanner() {
                 Scan Automatically
               </p>
               <p className="font-medium leading-relaxed">
-                Hold your device steady. The scan will trigger once the QR code 
-                is in clear focus.
+                {scanState === "scanning"
+                  ? "Hold your device steady. The scan will trigger once the QR code is in clear focus."
+                  : "Code captured successfully. Redirecting to verification..."}
               </p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => navigate("/driver/qr/scan-confirmation")}
-            className="w-full rounded-[2rem] bg-orange-500 px-6 py-5 text-[11px] font-black uppercase tracking-widest text-white active:scale-[0.98] transition-all hover:bg-orange-600 shadow-xl shadow-orange-200/50"
-          >
-            I Have Scanned the Pickup QR
-          </button>
           <button
             type="button"
             onClick={() => navigate(-1)}
