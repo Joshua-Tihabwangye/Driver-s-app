@@ -139,7 +139,7 @@ export default function ConfirmPickupLocation() {
             type="button"
             onClick={() => {
               confirmDeliveryPickup();
-              navigate("/driver/qr/instruction");
+              navigate("/driver/qr/scanner");
             }}
             className="w-full rounded-[2rem] bg-orange-500 py-5 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-orange-200/50 flex items-center justify-center active:scale-[0.98] transition-all hover:bg-orange-600"
           >

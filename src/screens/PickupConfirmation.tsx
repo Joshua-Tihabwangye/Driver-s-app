@@ -56,18 +56,6 @@ export default function PickupConfirmation() {
           </h1>
         </section>
 
-        {/* Location context */}
-        <section className="relative rounded-[2.5rem] overflow-hidden border border-slate-200 bg-slate-200 h-[220px] shadow-lg">
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="relative flex flex-col items-center">
-              <span className="mt-2 rounded-full bg-slate-900 px-3 py-1 text-[9px] font-black text-white uppercase tracking-widest border border-white/20">
-                Burger Hub · Acacia Mall
-              </span>
-            </div>
-          </div>
-        </section>
-
         {/* Alert card */}
         <section className="space-y-4">
           <div className="rounded-[2.5rem] bg-amber-50 border border-amber-100 p-6 flex items-start space-x-4 text-[11px] text-amber-800 shadow-sm">
@@ -107,7 +95,7 @@ export default function PickupConfirmation() {
             type="button"
             onClick={() => {
               confirmDeliveryPickup();
-              navigate("/driver/qr/instruction");
+              navigate("/driver/qr/scanner");
             }}
             className="w-full rounded-[2rem] bg-orange-500 py-5 text-sm font-black uppercase tracking-widest text-white shadow-xl shadow-orange-200/50 flex items-center justify-center active:scale-[0.98] transition-all hover:bg-orange-600"
           >

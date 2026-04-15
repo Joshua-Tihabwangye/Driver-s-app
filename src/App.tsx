@@ -134,6 +134,10 @@ export default function App() {
           element={<Navigate to="/driver/preferences/identity/upload-image" replace />}
         />
         <Route
+          path="/driver/qr/instruction"
+          element={<Navigate to="/driver/qr/scanner" replace />}
+        />
+        <Route
           path="/auth/forgot-password"
           element={
             <GuestOnlyRoute>

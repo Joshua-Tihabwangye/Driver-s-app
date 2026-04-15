@@ -16,7 +16,7 @@ export default function DeliveryDropoffConfirmed() {
 
   const handleFinish = () => {
     resetDeliveryWorkflow();
-    navigate("/driver/dashboard/online");
+    navigate("/driver/jobs/list");
   };
 
   return (
