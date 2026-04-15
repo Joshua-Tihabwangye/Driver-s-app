@@ -164,8 +164,8 @@ export default function OnlineMapView({
         }
       />
 
-      <main className="flex-1 px-4 pt-3 pb-16">
-        <section className={`relative rounded-[2rem] overflow-hidden border-2 border-orange-500/10 bg-slate-200 dark:bg-slate-900 shadow-2xl ${
+      <main className="flex-1 pt-3 pb-16">
+        <section className={`relative w-full overflow-hidden bg-slate-200 dark:bg-slate-900 shadow-2xl ${
           showQuickActions
             ? "h-[calc(100dvh-320px)] min-h-[420px]"
             : "h-[calc(100dvh-180px)] min-h-[520px]"
@@ -314,7 +314,7 @@ export default function OnlineMapView({
         </section>
 
         {showQuickActions && (
-          <section className="mt-4 space-y-3 pb-2">
+          <section className="mt-4 space-y-3 pb-2 px-4">
             <div className="px-1">
               <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">
                 Quick Actions

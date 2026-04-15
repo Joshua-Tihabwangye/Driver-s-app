@@ -117,6 +117,7 @@ export default function RideRequestIncoming() {
   const navigate = useNavigate();
   const {
     jobs,
+    assignableJobTypes,
     acceptRideJob,
     acceptDeliveryJob,
     acceptSpecializedJob,
@@ -133,6 +134,18 @@ export default function RideRequestIncoming() {
       setJobType(routeState.jobType);
     }
   }, [routeState?.jobType]);
+
+  const selectableJobTypes = useMemo(() => {
+    const filtered = JOB_TYPES.filter((type) => assignableJobTypes.includes(type));
+    return filtered.length > 0 ? filtered : JOB_TYPES;
+  }, [assignableJobTypes]);
+
+  useEffect(() => {
+    if (selectableJobTypes.includes(jobType)) {
+      return;
+    }
+    setJobType(selectableJobTypes[0]);
+  }, [jobType, selectableJobTypes]);
 
   const resolveRequestedJob = useMemo(() => {
     return (targetType: JobCategory) => {
@@ -332,7 +345,7 @@ export default function RideRequestIncoming() {
         {/* Job type selector (for preview only) */}
         <section className="bg-slate-100/50 backdrop-blur-sm rounded-3xl p-2 border border-slate-100">
           <div className="flex flex-wrap gap-1.5 justify-center">
-            {JOB_TYPES.map((type) => (
+            {selectableJobTypes.map((type) => (
               <button
                 key={type}
                 type="button"
