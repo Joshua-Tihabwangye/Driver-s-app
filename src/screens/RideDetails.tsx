@@ -23,6 +23,14 @@ export default function RideDetails() {
   const { tripId } = useParams();
   const navigate = useNavigate();
   const { trips, revenueEvents } = useStore();
+  const handleBackToHistory = () => {
+    const historyIndex = window.history.state?.idx;
+    if (typeof historyIndex === "number" && historyIndex > 0) {
+      navigate(-1);
+      return;
+    }
+    navigate("/driver/history/rides", { replace: true });
+  };
 
   const trip = useMemo(
     () => trips.find((entry) => entry.id === tripId && entry.jobType === "ride") || null,
@@ -40,14 +48,14 @@ export default function RideDetails() {
   if (!trip) {
     return (
       <div className="flex flex-col h-full bg-slate-50">
-        <PageHeader title="Ride Summary" onBack={() => navigate("/driver/history/rides")} />
+        <PageHeader title="Ride Summary" onBack={handleBackToHistory} />
         <main className="flex-1 flex items-center justify-center p-6">
           <div className="rounded-[2rem] border border-slate-100 bg-white p-6 text-center space-y-3 shadow-sm">
             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
               Ride not found
             </p>
             <button
-              onClick={() => navigate("/driver/history/rides")}
+              onClick={handleBackToHistory}
               className="rounded-full bg-slate-900 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white"
             >
               Back to History
@@ -63,7 +71,7 @@ export default function RideDetails() {
 
   return (
     <div className="flex flex-col h-full bg-slate-50">
-      <PageHeader title="Ride Summary" onBack={() => navigate("/driver/history/rides")} />
+      <PageHeader title="Ride Summary" onBack={handleBackToHistory} />
 
       <main className="flex-1 overflow-y-auto px-4 py-6 space-y-6 scrollbar-hide">
         <section className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 flex flex-col items-center justify-center space-y-2 relative overflow-hidden">

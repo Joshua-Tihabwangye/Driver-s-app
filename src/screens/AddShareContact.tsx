@@ -219,8 +219,8 @@ export default function AddShareContact() {
               type="submit"
               className={`w-full py-5 rounded-full text-[13px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 shadow-lg flex items-center justify-center space-x-2 ${
                 isSubmitting || !formData.name || !formData.phone
-                  ? "bg-slate-200 text-slate-400 cursor-not-allowed"
-                  : "bg-orange-500 text-white shadow-orange-500/30 hover:bg-emerald-500 hover:shadow-emerald-500/30"
+                  ? "bg-slate-200 text-slate-500 cursor-not-allowed dark:!bg-slate-700 dark:!text-slate-300"
+                  : "bg-orange-500 text-white shadow-orange-500/30 hover:bg-emerald-500 hover:shadow-emerald-500/30 dark:!bg-orange-600 dark:!text-white dark:hover:!bg-emerald-600"
               }`}
             >
               {isSubmitting ? (
