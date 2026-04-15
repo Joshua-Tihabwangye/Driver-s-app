@@ -25,7 +25,14 @@ const normalizeEmail = (value?: string) => (value || "").trim().toLowerCase();
 const JobsContext = createContext<JobsContextType | undefined>(undefined);
 
 export function JobsProvider({ children }: { children: ReactNode }) {
-  const { jobs, updateJobStatus, addSharedContactToJob, canAcceptJobType, activeTrip } = useStore();
+  const {
+    jobs,
+    updateJobStatus,
+    addSharedContactToJob,
+    canAcceptJobType,
+    activeTrip,
+    assignableJobTypes,
+  } = useStore();
 
   const attendJob = useCallback((id: string) => {
     updateJobStatus(id, "attended");
@@ -69,6 +76,8 @@ export function JobsProvider({ children }: { children: ReactNode }) {
   }, [jobs, addSharedContactToJob]);
 
   const sharedEligible = canAcceptJobType("shared");
+  const rideRequestsEnabled = assignableJobTypes.includes("ride");
+  const deliveryRequestsEnabled = assignableJobTypes.includes("delivery");
   const pendingJobs = useMemo(
     () =>
       jobs
@@ -83,13 +92,26 @@ export function JobsProvider({ children }: { children: ReactNode }) {
           ) {
             return false;
           }
+          if (job.jobType === "ride" && !rideRequestsEnabled) {
+            return false;
+          }
+          if (job.jobType === "delivery" && !deliveryRequestsEnabled) {
+            return false;
+          }
           if (job.jobType === "shared") {
-            return sharedEligible;
+            return sharedEligible && rideRequestsEnabled;
           }
           return canAcceptJobType(job.jobType);
         })
         .sort((a, b) => b.requestedAt - a.requestedAt),
-    [jobs, canAcceptJobType, sharedEligible, activeTrip]
+    [
+      jobs,
+      canAcceptJobType,
+      sharedEligible,
+      activeTrip,
+      rideRequestsEnabled,
+      deliveryRequestsEnabled,
+    ]
   );
 
   const attendedJobs = useMemo(

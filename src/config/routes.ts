@@ -59,7 +59,6 @@ import RideRequestsList from "../screens/RideRequestsList";
 import RideRequestsPrompt from "../screens/RideRequestsPrompt";
 import NavigateToPickup from "../screens/NavigateToPickup";
 import NavigationInProgress from "../screens/NavigationInProgress";
-import ArrivedAtPickup from "../screens/ArrivedAtPickup";
 import WaitingForPassenger from "../screens/WaitingForPassenger";
 import CancelNoShow from "../screens/CancelNoShow";
 import RiderVerification from "../screens/RiderVerification";
@@ -201,7 +200,6 @@ export const SCREENS: ScreenConfig[] = [
   // Navigation & trip
   { id: "NavigateToPickup", label: "Navigate to Pick-Up Location", path: "/driver/trip/:tripId/navigate-to-pickup", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/navigate-to-pickup`, Component: NavigateToPickup },
   { id: "NavigationInProgress", label: "Navigation in Progress", path: "/driver/trip/:tripId/navigation", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/navigation`, Component: NavigationInProgress },
-  { id: "ArrivedAtPickup", label: "Arrived at Pickup Point", path: "/driver/trip/:tripId/arrived", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/arrived`, Component: ArrivedAtPickup },
   { id: "WaitingForPassenger", label: "Waiting for Passenger", path: "/driver/trip/:tripId/waiting", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/waiting`, Component: WaitingForPassenger },
   { id: "CancelNoShow", label: "Cancel Ride – Passenger No-Show", path: "/driver/trip/:tripId/cancel/no-show", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/cancel/no-show`, Component: CancelNoShow },
   { id: "RiderVerification", label: "Rider Verification Code Entry", path: "/driver/trip/:tripId/verify-rider", previewPath: `/driver/trip/${SAMPLE_IDS.trip}/verify-rider`, Component: RiderVerification },

@@ -93,10 +93,10 @@ export default function NavigationInProgress() {
       activeTrip.tripId === tripId &&
       activeTrip.jobType === "ride"
     ) {
-      transitionActiveTripStage("arrived_pickup");
+      transitionActiveTripStage("waiting_for_passenger");
     }
 
-    navigate(buildPrivateTripRoute("arrived_pickup", tripId), {
+    navigate(buildPrivateTripRoute("waiting_for_passenger", tripId), {
       state: routeState,
     });
   };

@@ -8,6 +8,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useAuth } from "../context/AuthContext";
 import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – FaceCapture Face Capture
@@ -62,9 +63,11 @@ export default function FaceCapture() {
   });
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { isLoggedIn, login } = useAuth();
   const { canGoOnline, setDriverOnline } = useStore();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const [pendingGoOnlineRoute, setPendingGoOnlineRoute] = useState<string | null>(null);
   const isGoOnlineMode = searchParams.get("mode") === "go-online";
   const nextRoute = searchParams.get("next") || "/driver/dashboard/online";
 
@@ -136,6 +139,14 @@ export default function FaceCapture() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!pendingGoOnlineRoute || !isLoggedIn) {
+      return;
+    }
+    navigate(pendingGoOnlineRoute, { replace: true });
+    setPendingGoOnlineRoute(null);
+  }, [isLoggedIn, navigate, pendingGoOnlineRoute]);
+
   const handleCapture = () => {
     const videoElement = videoRef.current;
     if (!videoElement || videoElement.videoWidth === 0 || videoElement.videoHeight === 0) {
@@ -167,12 +178,16 @@ export default function FaceCapture() {
 
     stopCameraStream();
     if (isGoOnlineMode) {
-      if (!canGoOnline) {
-        navigate("/driver/dashboard/required-actions", { replace: true });
+      const targetRoute = canGoOnline ? nextRoute : "/driver/dashboard/required-actions";
+      if (canGoOnline) {
+        setDriverOnline();
+      }
+      if (!isLoggedIn) {
+        setPendingGoOnlineRoute(targetRoute);
+        login();
         return;
       }
-      setDriverOnline();
-      navigate(nextRoute, { replace: true });
+      navigate(targetRoute, { replace: true });
       return;
     }
     navigate("/driver/onboarding/profile");

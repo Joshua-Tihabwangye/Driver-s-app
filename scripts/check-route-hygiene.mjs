@@ -50,7 +50,6 @@ for (const legacyPath of removedLegacyPaths) {
 const requiredRideRoutes = [
   'id: "NavigateToPickup"',
   'id: "NavigationInProgress"',
-  'id: "ArrivedAtPickup"',
   'id: "WaitingForPassenger"',
   'id: "RiderVerification"',
   'id: "StartDrive"',
@@ -82,7 +81,7 @@ check(
 
 check(
   "NavigationInProgress routes to valid private trip stages",
-  navigationInProgress.includes('buildPrivateTripRoute("arrived_pickup", tripId)') &&
+  navigationInProgress.includes('buildPrivateTripRoute("waiting_for_passenger", tripId)') &&
     navigationInProgress.includes('buildPrivateTripRoute("navigate_to_pickup", tripId)') &&
     navigationInProgress.includes('buildPrivateTripRoute("cancel_reason", tripId)'),
   "NavigationInProgress actions should resolve to valid canonical stage routes"
