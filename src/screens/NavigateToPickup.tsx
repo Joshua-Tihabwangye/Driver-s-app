@@ -119,7 +119,7 @@ export default function NavigateToPickup() {
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-slate-900/65 text-white backdrop-blur-sm"
+          className="absolute top-4 left-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-slate-900/65 text-white backdrop-blur-sm active:scale-95 transition-transform"
           aria-label="Go back"
         >
           <ChevronLeft className="h-5 w-5" />

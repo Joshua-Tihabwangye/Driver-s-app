@@ -10,9 +10,10 @@ import {
   CheckCircle2,
   AlertCircle,
   ChevronRight,
-  Share2
+  Share2,
+  QrCode
 } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 
@@ -36,9 +37,20 @@ export default function ActiveSharedTrip() {
 
   const [waitTimer, setWaitTimer] = useState<number | null>(null);
   const [verifyingStopId, setVerifyingStopId] = useState<string | null>(null);
+  const [verificationMethod, setVerificationMethod] = useState<"otp" | "qr">("otp");
+  const [scannerError, setScannerError] = useState("");
+  const [isScannerReady, setIsScannerReady] = useState(false);
+  const scannerVideoRef = useRef<HTMLVideoElement | null>(null);
+  const scannerStreamRef = useRef<MediaStream | null>(null);
   const [showMatchPrompt, setShowMatchPrompt] = useState(false);
   const completedTripRef = useRef<string | null>(null);
   const lastPromptTimeRef = useRef<number>(Date.now());
+
+  // Automated Verification State
+  const [otpCode, setOtpCode] = useState(Array(4).fill(""));
+  const otpInputsRef = useRef<(HTMLInputElement | null)[]>([]);
+  const hasAutoVerifiedRef = useRef(false);
+  const isOtpComplete = otpCode.every((c) => c !== "");
 
   useEffect(() => {
     if (!routeTripId) {
@@ -121,9 +133,9 @@ export default function ActiveSharedTrip() {
     });
   }, [activeSharedTrip, completeActiveSharedTrip, navigate, routeTripId]);
 
-  const currentStop = activeSharedTrip.stops[activeSharedTrip.currentStopIndex];
-  const passengerForStop = activeSharedTrip.passengers.find(p => p.id === currentStop?.passengerId);
-  const isChainCompleted = activeSharedTrip.chainStatus === "completed";
+  const currentStop = activeSharedTrip?.stops?.[activeSharedTrip?.currentStopIndex];
+  const passengerForStop = activeSharedTrip?.passengers?.find(p => p.id === currentStop?.passengerId);
+  const isChainCompleted = activeSharedTrip?.chainStatus === "completed";
 
   // Co-rider Match Simulation logic
   useEffect(() => {
@@ -146,6 +158,96 @@ export default function ActiveSharedTrip() {
 
     return () => clearInterval(interval);
   }, [activeSharedTrip, isChainCompleted, showMatchPrompt]);
+
+  const handleOtpChange = (index: number, value: string) => {
+    if (!/^[0-9]?$/.test(value)) return;
+    const next = [...otpCode];
+    next[index] = value;
+    setOtpCode(next);
+    if (value && index < 3) {
+      otpInputsRef.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === "Backspace" && !otpCode[index] && index > 0) {
+      otpInputsRef.current[index - 1]?.focus();
+    }
+  };
+
+  // Auto-verify OTP when complete
+  useEffect(() => {
+    if (isOtpComplete && verifyingStopId && !hasAutoVerifiedRef.current) {
+      const currentStop = activeSharedTrip?.stops?.find(s => s.id === verifyingStopId);
+      const passengerForStop = activeSharedTrip?.passengers?.find(p => p.id === currentStop?.passengerId);
+      
+      if (passengerForStop) {
+        hasAutoVerifiedRef.current = true;
+        markRiderOnboard(passengerForStop.id);
+        
+        // Reset state
+        setVerifyingStopId(null);
+        setOtpCode(Array(4).fill(""));
+        
+        setTimeout(() => {
+          hasAutoVerifiedRef.current = false;
+        }, 1000);
+      }
+    }
+  }, [isOtpComplete, verifyingStopId, activeSharedTrip, markRiderOnboard]);
+
+  useEffect(() => {
+    if (currentStop?.status === 'current' && currentStop?.type === 'pickup' && !verifyingStopId && !hasAutoVerifiedRef.current) {
+      setVerifyingStopId(currentStop.id);
+      setVerificationMethod("otp");
+    }
+  }, [currentStop?.status, currentStop?.type, currentStop?.id, verifyingStopId]);
+
+  useEffect(() => {
+    if (verifyingStopId && verificationMethod === "otp") {
+      setTimeout(() => {
+        otpInputsRef.current[0]?.focus();
+      }, 100);
+    }
+  }, [verifyingStopId, verificationMethod]);
+
+  const formatTimer = (secs: number) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  };
+
+  const stopScanner = useCallback(() => {
+    setIsScannerReady(false);
+    if (scannerStreamRef.current) {
+      scannerStreamRef.current.getTracks().forEach((track) => track.stop());
+      scannerStreamRef.current = null;
+    }
+  }, []);
+
+  const startScanner = async () => {
+    setScannerError("");
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+        audio: false,
+      });
+      scannerStreamRef.current = stream;
+      if (scannerVideoRef.current) {
+        scannerVideoRef.current.srcObject = stream;
+      }
+      setIsScannerReady(true);
+    } catch (err) {
+      setScannerError("Camera access denied. Please allow permissions.");
+    }
+  };
+
+  useEffect(() => {
+    if (verificationMethod !== "qr" || !verifyingStopId) {
+      stopScanner();
+    }
+    return () => stopScanner();
+  }, [verificationMethod, verifyingStopId, stopScanner]);
 
   if (!activeSharedTrip || (routeTripId && activeSharedTrip.id !== routeTripId)) {
     return (
@@ -177,12 +279,6 @@ export default function ActiveSharedTrip() {
     );
   }
 
-  const formatTimer = (secs: number) => {
-    const m = Math.floor(secs / 60);
-    const s = secs % 60;
-    return `${m}:${s.toString().padStart(2, '0')}`;
-  };
-
   return (
     <div className="flex flex-col h-full bg-slate-50 relative">
 
@@ -191,11 +287,39 @@ export default function ActiveSharedTrip() {
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <PageHeader 
-        title="Shared Ride" 
-        subtitle="Active Chain" 
-        onBack={() => navigate(-1)} 
-      />
+      {/* Full-width top map */}
+      <section className="relative w-full h-[460px] overflow-hidden bg-slate-200 shrink-0">
+        <div className="absolute inset-0 bg-slate-200" style={{ backgroundImage: 'radial-gradient(#f97316 1px, transparent 1px)', backgroundSize: '24px 24px', opacity: 0.3 }} />
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 border-2 border-white shadow-xl">
+            <Navigation className="h-5 w-5 text-orange-500" />
+          </div>
+          <div className="w-16 h-16 bg-orange-500/20 rounded-full absolute animate-ping" />
+        </div>
+        
+        <div className="absolute top-4 left-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-slate-900/65 text-white backdrop-blur-sm active:scale-95 transition-transform" onClick={() => navigate(-1)}>
+          <ChevronLeft className="h-5 w-5" />
+        </div>
+
+        <div className="absolute top-4 right-14 bg-orange-500/90 text-white px-3 py-1.5 rounded-full flex items-center shadow-lg border border-orange-400">
+           <Users className="h-3 w-3 mr-1.5" />
+           <span className="text-[10px] font-black uppercase tracking-widest">{activeSharedTrip.occupiedSeats}/{activeSharedTrip.seatCapacity} Seats</span>
+        </div>
+        
+        <div className="absolute top-4 right-4 flex flex-col items-end space-y-2">
+            <div className="bg-slate-900/80 backdrop-blur-md text-white px-3 py-1.5 rounded-full flex flex-col items-end shadow-lg border border-white/10">
+               <span className="text-[8px] text-emerald-400 font-bold uppercase tracking-widest">Revenue</span>
+               <span className="text-[12px] font-black uppercase tracking-widest">${activeSharedTrip.estimatedTotalEarnings.toFixed(2)}</span>
+            </div>
+            
+             <button
+                onClick={toggleAllowMatches}
+                className={`text-[9px] font-black uppercase px-3 py-1.5 rounded-full tracking-widest transition-all shadow-lg ${activeSharedTrip.allowAdditionalMatches ? "bg-orange-500 text-white border border-orange-400" : "bg-slate-100/90 backdrop-blur text-slate-500 border border-white"}`}
+              >
+                {activeSharedTrip.allowAdditionalMatches ? "Taking Matches" : "Vehicle Full"}
+              </button>
+            </div>
+      </section>
 
       {/* New Match Modal Overlay */}
       {showMatchPrompt && (
@@ -251,36 +375,15 @@ export default function ActiveSharedTrip() {
       )}
 
       {/* Main Content */}
-      <main className="flex-1 px-6 pt-6 pb-24 overflow-y-auto scrollbar-hide space-y-6">
+      <main className="flex-1 px-6 pt-5 pb-24 overflow-y-auto scrollbar-hide space-y-6">
         
-        {/* Active Map */}
-        <section className="relative rounded-[2.5rem] overflow-hidden border border-slate-100 bg-slate-200 h-[260px] shadow-lg">
-          <div className="absolute inset-0 bg-slate-200" style={{ backgroundImage: 'radial-gradient(#f97316 1px, transparent 1px)', backgroundSize: '24px 24px', opacity: 0.3 }} />
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 border-2 border-white shadow-xl">
-              <Navigation className="h-5 w-5 text-orange-500" />
-            </div>
-            <div className="w-16 h-16 bg-orange-500/20 rounded-full absolute animate-ping" />
-          </div>
-          
-          <div className="absolute top-4 left-4 bg-orange-500/90 text-white px-3 py-1.5 rounded-full flex items-center shadow-lg border border-orange-400">
-             <Users className="h-3 w-3 mr-1.5" />
-             <span className="text-[10px] font-black uppercase tracking-widest">{activeSharedTrip.occupiedSeats}/{activeSharedTrip.seatCapacity} Seats</span>
-          </div>
-          
-          <div className="absolute top-4 right-4 flex flex-col items-end space-y-2">
-            <div className="bg-slate-900/80 backdrop-blur-md text-white px-3 py-1.5 rounded-full flex flex-col items-end shadow-lg border border-white/10">
-               <span className="text-[8px] text-emerald-400 font-bold uppercase tracking-widest">Real-time Revenue</span>
-               <span className="text-[12px] font-black uppercase tracking-widest">${activeSharedTrip.estimatedTotalEarnings.toFixed(2)}</span>
-            </div>
-            
-             <button
-                onClick={toggleAllowMatches}
-                className={`text-[9px] font-black uppercase px-3 py-1.5 rounded-full tracking-widest transition-all shadow-lg ${activeSharedTrip.allowAdditionalMatches ? "bg-orange-500 text-white border border-orange-400" : "bg-slate-100/90 backdrop-blur text-slate-500 border border-white"}`}
-              >
-                {activeSharedTrip.allowAdditionalMatches ? "Taking Matches" : "Vehicle Full"}
-              </button>
-            </div>
+        <section className="space-y-1">
+          <p className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">
+            Active Chain
+          </p>
+          <h1 className="text-lg font-black text-slate-900 uppercase tracking-tight">
+            Shared Ride
+          </h1>
         </section>
 
         {/* Safety Share Integration */}
@@ -383,38 +486,106 @@ export default function ActiveSharedTrip() {
                 )}
                 
                 {currentStop.status === "current" && currentStop.type === "pickup" && (
-                  <div className="flex flex-col space-y-3">
+                  <div className="flex flex-col space-y-4">
                     {verifyingStopId === currentStop.id ? (
-                      <div className="bg-slate-100 p-4 rounded-3xl flex flex-col space-y-3 border border-slate-200">
-                        <span className="text-xs font-bold text-center text-slate-700">Verify Passenger: {passengerForStop?.firstName}</span>
-                        <input 
-                           type="text" 
-                           placeholder="Enter 4-digit PIN" 
-                           className="rounded-2xl border-slate-300 text-center text-sm font-bold bg-white focus:ring-orange-500 focus:border-orange-500 mx-8 py-3" 
-                           maxLength={4} 
-                        />
+                      <div className="bg-slate-50 p-6 rounded-[2rem] flex flex-col space-y-4 border border-slate-100 shadow-inner">
+                        <div className="flex flex-col items-center text-center space-y-1">
+                           <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Verify Passenger</span>
+                           <span className="text-sm font-black text-slate-900">{passengerForStop?.firstName}</span>
+                        </div>
+
+                        <div className="flex p-1 bg-slate-200/50 rounded-2xl mx-auto w-fit">
+                          <button
+                            onClick={() => setVerificationMethod("otp")}
+                            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${verificationMethod === "otp" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+                          >
+                            PIN Entry
+                          </button>
+                          <button
+                            onClick={() => {
+                              setVerificationMethod("qr");
+                              startScanner();
+                            }}
+                            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${verificationMethod === "qr" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+                          >
+                            Scan QR
+                          </button>
+                        </div>
+
+                        {verificationMethod === "otp" ? (
+                          <div className="space-y-4 py-2">
+                            <div className="flex items-center justify-center space-x-3">
+                              {otpCode.map((digit, index) => (
+                                <input
+                                  key={index}
+                                  ref={(el) => (otpInputsRef.current[index] = el)}
+                                  type="text"
+                                  maxLength={1}
+                                  value={digit}
+                                  onChange={(e) => handleOtpChange(index, e.target.value)}
+                                  onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                                  className="h-14 w-14 rounded-2xl border-2 border-orange-500/10 bg-white text-center text-xl font-black text-slate-900 focus:border-orange-500 focus:outline-none transition-all shadow-sm"
+                                />
+                              ))}
+                            </div>
+                            <div className="bg-[#f0fff4]/50 rounded-3xl p-4 text-center border-2 border-orange-500/10">
+                               <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight leading-relaxed max-w-[240px] mx-auto">
+                                 {isOtpComplete ? "Verifying code..." : "Auto-start enabled after full OTP"}
+                               </p>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            <div className="relative aspect-square w-full rounded-3xl overflow-hidden bg-black shadow-lg">
+                              {scannerError ? (
+                                <div className="absolute inset-0 flex items-center justify-center p-6 text-center">
+                                  <p className="text-white text-[10px] font-bold uppercase">{scannerError}</p>
+                                </div>
+                              ) : (
+                                <video
+                                  ref={scannerVideoRef}
+                                  autoPlay
+                                  playsInline
+                                  className="absolute inset-0 w-full h-full object-cover"
+                                />
+                              )}
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-32 h-32 border-2 border-orange-500 rounded-2xl flex items-center justify-center">
+                                   {!isScannerReady && !scannerError && <QrCode className="h-8 w-8 text-white/40 animate-pulse" />}
+                                </div>
+                              </div>
+                            </div>
+                            <button 
+                              onClick={() => {
+                                if (passengerForStop) {
+                                  markRiderOnboard(passengerForStop.id);
+                                  setVerifyingStopId(null);
+                                  stopScanner();
+                                }
+                              }}
+                              className="w-full rounded-full bg-emerald-500 py-4 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-emerald-500/20 active:scale-95 transition-all"
+                            >
+                               I Have Scanned Customer QR
+                            </button>
+                          </div>
+                        )}
+                        
                         <button 
                           onClick={() => {
                             setVerifyingStopId(null);
-                            if (passengerForStop) markRiderOnboard(passengerForStop.id);
+                            stopScanner();
                           }}
-                          className="w-full rounded-[2rem] bg-orange-500 py-4 text-[11px] font-black uppercase tracking-widest text-slate-900 shadow-md active:scale-[0.98]"
+                          className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600"
                         >
-                          Start Trip for {passengerForStop?.firstName}
+                          Cancel Verification
                         </button>
                       </div>
                     ) : (
                       <div className="flex space-x-3">
-                        <button 
-                          onClick={() => setVerifyingStopId(currentStop.id)}
-                          className="flex-1 rounded-[2rem] bg-orange-500 py-4 text-[11px] font-black uppercase tracking-widest text-slate-900 shadow-xl active:scale-[0.98]"
-                        >
-                          Verify Rider Identity
-                        </button>
                         {waitTimer === 0 && (
                           <button 
                             onClick={() => passengerForStop && markRiderNoShow(passengerForStop.id)}
-                            className="rounded-[2rem] border-2 border-red-500 text-red-500 px-6 py-4 text-[11px] font-black uppercase tracking-widest hover:bg-red-50 active:scale-[0.98]"
+                            className="w-full rounded-full border-2 border-red-500 text-red-500 px-6 py-4 text-[11px] font-black uppercase tracking-widest hover:bg-red-50 active:scale-95 transition-all"
                           >
                             No Show
                           </button>
