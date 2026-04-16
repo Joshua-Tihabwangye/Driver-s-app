@@ -26,14 +26,19 @@ export default function DeliveryStopDetails() {
     resetDeliveryWorkflow,
   } = useStore();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const [signatureProofUrl, setSignatureProofUrl] = useState<string | null>(null);
   const [signatureProofName, setSignatureProofName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!deliveryStageAtLeast("in_delivery")) {
+    if (!isSubmitting && !deliveryStageAtLeast("in_delivery")) {
       navigate("/driver/delivery/pickup/confirmed", { replace: true });
     }
-  }, [deliveryStageAtLeast, navigate]);
+  }, [deliveryStageAtLeast, navigate, isSubmitting]);
 
   const stopDetailsById = {
     "gamma-stop": {
@@ -83,6 +88,55 @@ export default function DeliveryStopDetails() {
     if (target) window.open(`sms:${target}`);
   };
 
+  const startCamera = async () => {
+    setIsCameraOpen(true);
+    setCameraError(null);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (err) {
+      console.error("Camera access error:", err);
+      setCameraError("Unable to access camera. Please check permissions.");
+    }
+  };
+
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+    setIsCameraOpen(false);
+  };
+
+  const takePhoto = () => {
+    if (videoRef.current) {
+      const video = videoRef.current;
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob((blob) => {
+          if (blob) {
+            if (signatureProofUrl) {
+              window.URL.revokeObjectURL(signatureProofUrl);
+            }
+            const objectUrl = window.URL.createObjectURL(blob);
+            setSignatureProofUrl(objectUrl);
+            setSignatureProofName(`signature-${Date.now()}.jpg`);
+            stopCamera();
+          }
+        }, "image/jpeg");
+      }
+    }
+  };
+
   const handleCaptureSignatureProof = (
     event: ChangeEvent<HTMLInputElement>
   ) => {
@@ -102,6 +156,7 @@ export default function DeliveryStopDetails() {
     if (!signatureProofUrl) {
       return;
     }
+    setIsSubmitting(true);
     confirmDeliveryDropoff();
     resetDeliveryWorkflow();
     navigate("/driver/jobs/list", { replace: true });
@@ -233,7 +288,7 @@ export default function DeliveryStopDetails() {
 
             <button
               type="button"
-              onClick={() => fileInputRef.current?.click()}
+              onClick={startCamera}
               className="w-full rounded-[1.5rem] border border-orange-200 bg-orange-50 px-4 py-3 text-[11px] font-black uppercase tracking-widest text-orange-700 active:scale-[0.98] transition-all"
             >
               <span className="inline-flex items-center">
@@ -241,6 +296,44 @@ export default function DeliveryStopDetails() {
                 {signatureProofUrl ? "Retake Signature Photo" : "Capture Signature Photo"}
               </span>
             </button>
+
+            {isCameraOpen && (
+              <div className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center p-6">
+                <div className="relative w-full max-w-md aspect-[3/4] rounded-[2rem] overflow-hidden bg-slate-900 shadow-2xl">
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    className="w-full h-full object-cover"
+                  />
+                  {cameraError && (
+                    <div className="absolute inset-0 flex items-center justify-center p-6 text-center">
+                      <p className="text-white text-sm font-medium">{cameraError}</p>
+                    </div>
+                  )}
+                  <div className="absolute inset-x-0 bottom-8 flex justify-center items-center space-x-8 px-6">
+                    <button
+                      type="button"
+                      onClick={stopCamera}
+                      className="h-14 w-14 flex items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md text-white border border-white/30"
+                    >
+                      <ChevronLeft className="h-7 w-7" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={takePhoto}
+                      className="h-20 w-20 flex items-center justify-center rounded-full bg-white shadow-xl active:scale-95 transition-transform"
+                    >
+                      <div className="h-16 w-16 rounded-full border-4 border-slate-900" />
+                    </button>
+                    <div className="h-14 w-14" /> {/* Spacer */}
+                  </div>
+                </div>
+                <p className="mt-6 text-white/60 text-[10px] font-black uppercase tracking-widest">
+                  Center the signed sheet in the frame
+                </p>
+              </div>
+            )}
 
             {signatureProofUrl && (
               <div className="rounded-2xl border border-slate-100 bg-slate-50 p-3 space-y-2">
