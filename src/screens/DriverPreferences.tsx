@@ -51,7 +51,7 @@ interface RequirementCardProps extends PreferenceOption {
 }
 
 interface TaskCategoryOption {
-  id: TaskCategoryKey;
+  id: TaskCategoryKey | "dual";
   icon: LucideIcon;
   label: string;
   description: string;
@@ -97,6 +97,12 @@ const TASK_CATEGORY_OPTIONS: TaskCategoryOption[] = [
     icon: Package,
     label: "Delivery",
     description: "Food and parcel",
+  },
+  {
+    id: "dual",
+    icon: Truck,
+    label: "Delivery+Rides",
+    description: "Dual mode service",
   },
   {
     id: "rental",
@@ -277,11 +283,23 @@ export default function DriverPreferences() {
     setSelectedServiceIds((prev) => toggleInList(prev, id));
   };
 
-  const toggleTaskCategory = (id: TaskCategoryKey) => {
-    setTaskCategories((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
+  const toggleTaskCategory = (id: TaskCategoryKey | "dual") => {
+    setTaskCategories(() => {
+      const next: Record<TaskCategoryKey, boolean> = {
+        ride: false,
+        delivery: false,
+        rental: false,
+        tour: false,
+        ambulance: false,
+      };
+      if (id === "dual") {
+        next.ride = true;
+        next.delivery = true;
+      } else {
+        next[id] = true;
+      }
+      return next;
+    });
     setTaskCategoryError("");
   };
 
@@ -359,7 +377,11 @@ export default function DriverPreferences() {
             </p>
             <div className="grid grid-cols-2 gap-2">
               {TASK_CATEGORY_OPTIONS.map((option) => {
-                const active = taskCategories[option.id];
+                const isDual = option.id === "dual";
+                const isDualActive = taskCategories.ride && taskCategories.delivery;
+                const active = isDual
+                  ? isDualActive
+                  : taskCategories[option.id as TaskCategoryKey] && !isDualActive;
                 return (
                   <button
                     key={option.id}

@@ -59,8 +59,9 @@ export default function EarningsOverview() {
   const deliveryRev = filteredRevenue.filter(r => r.category === "delivery").reduce((sum, r) => sum + r.amount, 0);
   const rentalRev = filteredRevenue.filter(r => r.category === "rental").reduce((sum, r) => sum + r.amount, 0);
   const tourRev = filteredRevenue.filter(r => r.category === "tour").reduce((sum, r) => sum + r.amount, 0);
+  const ambulanceRev = filteredRevenue.filter(r => r.category === "ambulance").reduce((sum, r) => sum + r.amount, 0);
   
-  const totalRevenue = rideRev + sharedRev + deliveryRev + rentalRev + tourRev;
+  const totalRevenue = rideRev + sharedRev + deliveryRev + rentalRev + tourRev + ambulanceRev;
   const sharedPercentage = totalRevenue > 0
     ? Math.round((sharedRev / totalRevenue) * 100)
     : 0;
@@ -68,7 +69,7 @@ export default function EarningsOverview() {
   const avgPerJob = dashboardMetrics.jobsCount > 0 ? totalRevenue / dashboardMetrics.jobsCount : 0;
 
   // Determine Top Earning Category
-  const revMap = { "Private": rideRev, "Shared": sharedRev, "Delivery": deliveryRev, "Rental": rentalRev, "Tour": tourRev };
+  const revMap = { "Private": rideRev, "Shared": sharedRev, "Delivery": deliveryRev, "Rental": rentalRev, "Tour": tourRev, "Ambulance": ambulanceRev };
   const topCategory =
     totalRevenue > 0
       ? Object.entries(revMap).reduce((a, b) => (a[1] > b[1] ? a : b))[0]
@@ -191,22 +192,31 @@ export default function EarningsOverview() {
           </div>
 
           <div className="flex items-end justify-between h-40 px-1 pt-6 border-b border-slate-50 pb-2">
-            {recentEarnings.slice().reverse().map((e, i) => (
-              <div key={e.id} className="flex flex-col items-center space-y-4">
-                <div
-                   className={`w-4 rounded-full ${i === 6 ? 'bg-orange-500 shadow-xl shadow-orange-500/30 scale-x-110' : 'bg-slate-100'} relative transition-all duration-700 hover:bg-slate-200 cursor-pointer group`}
-                  style={{ height: `${(e.amount / 20000) * 140}px` }}
-                >
-                  {i === 6 && (
-                    <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[9px] px-3 py-1.5 rounded-xl font-black shadow-2xl whitespace-nowrap z-20 animate-in zoom-in-50 duration-300">
-                      {formatUGX(e.amount)}
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-full" />
+            {(() => {
+              const maxVal = Math.max(...recentEarnings.map((e) => e.amount), 1000);
+              return recentEarnings.slice().reverse().map((e, i) => (
+                <div key={e.id} className="flex flex-col items-center space-y-4">
+                  <div
+                    className={`w-4 rounded-full ${
+                      i === 6
+                        ? "bg-orange-500 shadow-xl shadow-orange-500/30 scale-x-110"
+                        : "bg-slate-100"
+                    } relative transition-all duration-700 hover:bg-slate-200 cursor-pointer group`}
+                    style={{ height: `${Math.max((e.amount / maxVal) * 110, 8)}px` }}
+                  >
+                    {i === 6 && (
+                      <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[9px] px-3 py-1.5 rounded-xl font-black shadow-2xl whitespace-nowrap z-20 animate-in zoom-in-50 duration-300">
+                        {formatUGX(e.amount)}
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-full" />
+                  </div>
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">
+                    {new Date(e.date).toLocaleDateString("en-US", { weekday: "short" })}
+                  </span>
                 </div>
-                <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">{new Date(e.date).toLocaleDateString('en-US', { weekday: 'short' })}</span>
-              </div>
-            ))}
+              ));
+            })()}
           </div>
         </section>
 
@@ -227,11 +237,13 @@ export default function EarningsOverview() {
              </div>
              <div className="space-y-3.5">
                 {[
-                  { label: "Private Rides", val: rideRev, color: "bg-slate-900", text: "text-slate-600", bg: "bg-slate-50", border: "border-slate-100" },
-                  { label: "Shared Rides", val: sharedRev, color: "bg-orange-500", text: "text-orange-600", bg: "bg-orange-50", border: "border-orange-100" },
-                  { label: "Deliveries", val: deliveryRev, color: "bg-blue-500", text: "text-blue-600", bg: "bg-blue-50", border: "border-blue-100" },
-                  { label: "Rentals & Tours", val: rentalRev + tourRev, color: "bg-purple-500", text: "text-purple-600", bg: "bg-purple-50", border: "border-purple-100" }
-                ].map((item) => (
+                  { id: "ride", label: "Private Rides", val: rideRev, color: "bg-slate-900", text: "text-slate-600", bg: "bg-slate-50", border: "border-slate-100" },
+                  { id: "shared", label: "Shared Rides", val: sharedRev, color: "bg-orange-500", text: "text-orange-600", bg: "bg-orange-50", border: "border-orange-100" },
+                  { id: "delivery", label: "Deliveries", val: deliveryRev, color: "bg-blue-500", text: "text-blue-600", bg: "bg-blue-50", border: "border-blue-100" },
+                  { id: "rental", label: "Rentals", val: rentalRev, color: "bg-purple-500", text: "text-purple-600", bg: "bg-purple-50", border: "border-purple-100" },
+                  { id: "tour", label: "Tours", val: tourRev, color: "bg-emerald-500", text: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-100" },
+                  { id: "ambulance", label: "Ambulance", val: ambulanceRev, color: "bg-red-500", text: "text-red-600", bg: "bg-red-50", border: "border-red-100" }
+                ].filter(item => assignableJobTypes.includes(item.id as any)).map((item) => (
                   <div key={item.label} className={`flex items-center justify-between p-4 rounded-[1.8rem] ${item.bg} border ${item.border} transition-transform hover:scale-[1.02]`}>
                     <div className="flex items-center space-x-4">
                        <div className={`h-2.5 w-2.5 rounded-full ${item.color} shadow-sm`} />
