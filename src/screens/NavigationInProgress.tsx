@@ -198,19 +198,12 @@ export default function NavigationInProgress() {
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <PageHeader 
-        title="Navigation in progress" 
-        subtitle="Driver" 
-        onBack={() => navigate(-1)} 
-      />
-
-      {/* Content */}
-      <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide">
-        {/* Map container */}
+      {/* Map Explorer / Trip Progress View */}
+      <section className="relative w-full h-[460px] overflow-hidden bg-slate-200 shadow-2xl shrink-0">
         <button
           type="button"
           onClick={() => navigate("/driver/map/online")}
-          className="relative rounded-[2.5rem] overflow-hidden border border-slate-100 bg-slate-200 h-[360px] mb-6 w-full text-left active:scale-[0.99] transition-transform shadow-2xl"
+          className="absolute inset-0 w-full text-left"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
 
@@ -228,7 +221,7 @@ export default function NavigationInProgress() {
             </svg>
           </div>
 
-          <div className="absolute top-4 left-4">
+          <div className="absolute top-4 left-16">
              <div className="bg-slate-900/40 backdrop-blur-md rounded-full px-4 py-2 flex items-center space-x-2 border border-white/10">
                 <div className="w-2 h-2 rounded-full bg-brand-active animate-pulse" />
                 <span className="text-[10px] font-black text-white uppercase tracking-widest">Active Trajectory</span>
@@ -252,6 +245,27 @@ export default function NavigationInProgress() {
             </span>
           </div>
         </button>
+
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="absolute top-4 left-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-slate-900/65 text-white backdrop-blur-sm active:scale-95 transition-transform"
+          aria-label="Go back"
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+      </section>
+
+      {/* Content */}
+      <main className="flex-1 px-6 pt-5 pb-16 overflow-y-auto scrollbar-hide">
+        <section className="space-y-1 mb-6">
+          <p className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">
+            Navigation System
+          </p>
+          <h1 className="text-lg font-black text-slate-900 uppercase tracking-tight">
+            Navigation in progress
+          </h1>
+        </section>
 
         {/* Trip info + controls */}
         <section className="space-y-4">
