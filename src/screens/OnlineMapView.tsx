@@ -1,6 +1,7 @@
 import {
   Activity,
   AlertTriangle,
+  ChevronLeft,
   Compass,
   Layers,
   MapPin,
@@ -147,29 +148,33 @@ export default function OnlineMapView({
 
   return (
     <div className="flex flex-col h-full bg-transparent">
-      <PageHeader
-        title={homeMode ? "Dashboard" : "Map Explorer"}
-        subtitle={homeMode ? "Online" : "Navigation"}
-        hideBack={homeMode}
-        onBack={!homeMode ? () => navigate(-1) : undefined}
-        rightAction={
+      {/* Map Explorer / Dashboard Map View */}
+      <section className={`relative w-full overflow-hidden bg-slate-200 dark:bg-slate-900 shadow-2xl ${
+        showQuickActions
+          ? "h-[460px]"
+          : "h-[540px]"
+      }`}>
+        {!homeMode && (
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="absolute top-4 left-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-slate-900/65 text-white backdrop-blur-sm active:scale-95 transition-transform"
+            aria-label="Go back"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+        )}
+
+        <div className="absolute top-4 right-4 z-20 flex items-center space-x-2">
           <button
             type="button"
             onClick={() => setShowOfflineModal(true)}
-            className="inline-flex items-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1 text-[10px] font-black text-slate-900 dark:text-slate-200 uppercase tracking-widest shrink-0 shadow-sm active:scale-95 transition-transform"
+            className="inline-flex items-center rounded-full bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border border-white dark:border-slate-700 px-3 py-1.5 text-[10px] font-black text-slate-900 dark:text-slate-200 uppercase tracking-widest shrink-0 shadow-xl active:scale-95 transition-transform"
           >
             <Wifi className="h-3 w-3 mr-1.5 animate-pulse text-brand-active" />
             Online
           </button>
-        }
-      />
-
-      <main className="flex-1 pt-3 pb-16">
-        <section className={`relative w-full overflow-hidden bg-slate-200 dark:bg-slate-900 shadow-2xl ${
-          showQuickActions
-            ? "h-[calc(100dvh-320px)] min-h-[420px]"
-            : "h-[calc(100dvh-180px)] min-h-[520px]"
-        }`}>
+        </div>
           <div
             className={`absolute inset-0 ${
               mapLayer === "traffic"
@@ -311,6 +316,16 @@ export default function OnlineMapView({
               {locationHint}
             </div>
           )}
+      </section>
+
+      <main className="flex-1 px-6 pt-5 pb-16 overflow-y-auto scrollbar-hide space-y-6">
+        <section className="space-y-1">
+          <p className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">
+            {homeMode ? "Driver Dashboard" : "Navigation Explorer"}
+          </p>
+          <h1 className="text-lg font-black text-slate-900 uppercase tracking-tight">
+            {homeMode ? "Active Driver Operations" : "Real-time Map Navigation"}
+          </h1>
         </section>
 
         {showQuickActions && (

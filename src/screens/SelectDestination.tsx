@@ -46,13 +46,39 @@ export default function SelectDestination() {
 
   return (
     <div className="flex flex-col h-full ">
-      <PageHeader 
-        title="Pick Destination" 
-        subtitle="Driver · Navigation" 
-        onBack={() => navigate(-1)} 
-      />
+      {/* Map Preview / Destination Picker */}
+      <section className="relative w-full h-[460px] overflow-hidden bg-slate-200 shrink-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
 
-      <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-6">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="absolute top-4 left-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-slate-900/65 text-white backdrop-blur-sm active:scale-95 transition-transform"
+          aria-label="Go back"
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+
+        {/* Current location marker */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="relative flex items-center justify-center">
+            <div className="h-20 w-20 rounded-full bg-orange-500/10 animate-ping" />
+            <div className="absolute h-12 w-12 rounded-full bg-orange-500/20" />
+            <div className="absolute h-5 w-5 rounded-full bg-orange-500 border-4 border-white shadow-lg" />
+          </div>
+        </div>
+      </section>
+
+      <main className="flex-1 px-6 pt-5 pb-16 overflow-y-auto scrollbar-hide space-y-6">
+        <section className="space-y-1">
+          <p className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">
+            Pick Destination
+          </p>
+          <h1 className="text-lg font-black text-slate-900 uppercase tracking-tight">
+            Select Your Target Location
+          </h1>
+        </section>
+
         {/* Search input */}
         <section className="space-y-4">
           <div className="flex items-center rounded-[2rem] bg-white px-6 py-4 border border-slate-100 shadow-xl shadow-slate-200/50">
@@ -69,20 +95,6 @@ export default function SelectDestination() {
             Choose a destination to plan your route, see distance and estimated
             time.
           </p>
-        </section>
-
-        {/* Map preview */}
-        <section className="relative rounded-[2.5rem] overflow-hidden border border-slate-200 bg-slate-200 h-[200px] shadow-lg">
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
-
-          {/* Current location marker */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="relative flex items-center justify-center">
-              <div className="h-16 w-16 rounded-full bg-orange-500/20 animate-pulse" />
-              <div className="absolute h-10 w-10 rounded-full bg-orange-500/40" />
-              <div className="absolute h-5 w-5 rounded-full bg-orange-500 border-4 border-white shadow-lg" />
-            </div>
-          </div>
         </section>
 
         {/* Recent / favourite destinations */}

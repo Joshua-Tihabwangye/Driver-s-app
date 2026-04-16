@@ -33,14 +33,41 @@ export default function EmergencyAssistanceMap() {
 
   return (
     <div className="flex flex-col h-full ">
-      <PageHeader 
-        title="Safety Toolkit" 
-        subtitle="Support" 
-        onBack={() => navigate(-1)} 
-      />
+      {/* Map Explorer / Location Preview */}
+      <section className="relative w-full h-[460px] overflow-hidden bg-slate-200 shrink-0">
+        <img
+          src="https://images.unsplash.com/photo-1524661135-423995f22d0b?w=1200&h=800&fit=crop"
+          alt="Location Map"
+          className="w-full h-full object-cover"
+        />
+
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="absolute top-4 left-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-slate-900/65 text-white backdrop-blur-sm active:scale-95 transition-transform"
+          aria-label="Go back"
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+
+        {/* Address Overlay */}
+        <div className="absolute inset-x-4 bottom-4">
+          <div className="bg-slate-900/90 backdrop-blur-md p-4 rounded-3xl text-white text-[10px] font-bold text-center leading-relaxed shadow-2xl border border-white/10 uppercase tracking-tight">
+            123 Maplewood Crescent, Greenfield Heights, Springfield, IL 62704
+          </div>
+        </div>
+      </section>
 
       {/* Content Area */}
-      <main className="flex-1 flex flex-col p-6 relative overflow-y-auto scrollbar-hide space-y-8">
+      <main className="flex-1 flex flex-col px-6 pt-5 pb-16 relative overflow-y-auto scrollbar-hide space-y-8">
+        <section className="space-y-1">
+          <p className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">
+            Safety Toolkit Support
+          </p>
+          <h1 className="text-lg font-black text-slate-900 uppercase tracking-tight">
+            Assistance and Emergency Hub
+          </h1>
+        </section>
 
         {/* Section Header */}
         <div className="flex items-center justify-between">
@@ -74,22 +101,6 @@ export default function EmergencyAssistanceMap() {
             </button>
           ))}
         </div>
-
-        {/* Map Snippet */}
-        <section className="relative rounded-[2.5rem] overflow-hidden border-2 border-orange-500/10 shadow-2xl h-48 shrink-0">
-          <img
-            src="https://images.unsplash.com/photo-1524661135-423995f22d0b?w=600&h=400&fit=crop"
-            alt="Location Map"
-            className="w-full h-full object-cover"
-          />
-
-          {/* Address Overlay */}
-          <div className="absolute inset-x-4 bottom-4">
-            <div className="bg-slate-900/90 backdrop-blur-md p-4 rounded-3xl text-white text-[10px] font-bold text-center leading-relaxed shadow-2xl border border-white/10 uppercase tracking-tight">
-              123 Maplewood Crescent, Greenfield Heights, Springfield, IL 62704
-            </div>
-          </div>
-        </section>
 
         {/* Emergency options */}
         <section className="space-y-3">
