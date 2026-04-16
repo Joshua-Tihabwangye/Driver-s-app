@@ -110,13 +110,20 @@ export const MOCK_DASHBOARD_STATS = {
   },
 };
 
+// Helper for recent dates in mock data
+const todayDate = new Date().toISOString().split('T')[0];
+const yesterdayDate = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+const dayBeforeYesterdayDate = new Date(Date.now() - 172800000).toISOString().split('T')[0];
+const threeDaysAgoDate = new Date(Date.now() - 259200000).toISOString().split('T')[0];
+const fourDaysAgoDate = new Date(Date.now() - 345600000).toISOString().split('T')[0];
+
 // ── Completed Trips History ────────────────────────────────
 export const MOCK_COMPLETED_TRIPS: import('./types').TripRecord[] = [
   { 
     id: "tr-101", 
     from: "Acacia Mall", 
     to: "Ntinda", 
-    date: "2026-03-20", 
+    date: todayDate, 
     time: "10:15 AM", 
     amount: "12500", 
     jobType: "ride", 
@@ -130,7 +137,7 @@ export const MOCK_COMPLETED_TRIPS: import('./types').TripRecord[] = [
     id: "tr-102", 
     from: "Arena Mall", 
     to: "Kibuli", 
-    date: "2026-03-20", 
+    date: todayDate, 
     time: "09:30 AM", 
     amount: "8000", 
     jobType: "shared", 
@@ -144,12 +151,12 @@ export const MOCK_COMPLETED_TRIPS: import('./types').TripRecord[] = [
       ]
     }
   },
-  { id: "tr-103", from: "Bugolobi", to: "Luzira", date: "2026-03-19", time: "04:45 PM", amount: "15000", jobType: "ride", status: "completed", distance: "4.8 km", duration: "15 min" },
+  { id: "tr-103", from: "Bugolobi", to: "Luzira", date: yesterdayDate, time: "04:45 PM", amount: "15000", jobType: "ride", status: "completed", distance: "4.8 km", duration: "15 min" },
   { 
     id: "tr-104", 
     from: "Makerere", 
     to: "Wandegeya", 
-    date: "2026-03-19", 
+    date: yesterdayDate, 
     time: "02:10 PM", 
     amount: "5500", 
     jobType: "delivery", 
@@ -167,12 +174,12 @@ export const MOCK_COMPLETED_TRIPS: import('./types').TripRecord[] = [
       }
     }
   },
-  { id: "tr-105", from: "City Square", to: "Kololo", date: "2026-03-18", time: "11:20 AM", amount: "9000", jobType: "shared", status: "completed", distance: "2.8 km", duration: "14 min" },
+  { id: "tr-105", from: "City Square", to: "Kololo", date: dayBeforeYesterdayDate, time: "11:20 AM", amount: "9000", jobType: "shared", status: "completed", distance: "2.8 km", duration: "14 min" },
   { 
     id: "tr-106", 
     from: "Sheraton Hotel", 
     to: "Speke Resort", 
-    date: "2026-03-18", 
+    date: dayBeforeYesterdayDate, 
     time: "06:40 PM", 
     amount: "64800", 
     jobType: "rental", 
@@ -193,7 +200,7 @@ export const MOCK_COMPLETED_TRIPS: import('./types').TripRecord[] = [
     id: "tr-107", 
     from: "Airport", 
     to: "Safari Lodge", 
-    date: "2026-03-17", 
+    date: threeDaysAgoDate, 
     time: "05:25 PM", 
     amount: "72500", 
     jobType: "tour", 
@@ -216,7 +223,7 @@ export const MOCK_COMPLETED_TRIPS: import('./types').TripRecord[] = [
     id: "tr-108", 
     from: "Near Acacia Road", 
     to: "City Hospital", 
-    date: "2026-03-17", 
+    date: fourDaysAgoDate, 
     time: "08:14 AM", 
     amount: "0", 
     jobType: "ambulance", 

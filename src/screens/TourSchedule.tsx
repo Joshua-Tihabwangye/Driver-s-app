@@ -89,6 +89,9 @@ export default function TourSchedule() {
 
   const segments = tour?.segments || [];
   const completedCount = segments.filter((s) => s.status === "completed").length;
+  const currentCheckpointDisplay = segments.findIndex(s => s.status !== 'completed') === -1 
+    ? segments.length 
+    : segments.findIndex(s => s.status !== 'completed') + 1;
 
   const progress = useMemo(() => {
     if (segments.length === 0) return 0;
@@ -153,7 +156,7 @@ export default function TourSchedule() {
                   Live Progress
                 </span>
                 <span className="text-sm font-black uppercase tracking-tight">
-                   {completedCount} / {segments.length} Checkpoints
+                   {currentCheckpointDisplay} / {segments.length} Checkpoints
                 </span>
               </div>
             </div>

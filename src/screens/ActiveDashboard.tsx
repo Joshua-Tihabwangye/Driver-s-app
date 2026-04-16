@@ -1,109 +1,18 @@
-import { useMemo } from "react";
-import { buildJobDetailRoute } from "../data/constants";
 import {
   Activity,
-  Ambulance,
-  Bus,
-  Briefcase,
-  Car,
   Clock,
   DollarSign,
   Map,
-  Package,
-  TrendingUp,
-  Users,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import MetricCard from "../components/MetricCard";
 import PageHeader from "../components/PageHeader";
-import { useJobs } from "../context/JobsContext";
 import { useStore } from "../context/StoreContext";
-import type { JobCategory } from "../data/types";
-import { ASSIGNABLE_JOB_TYPE_ORDER } from "../utils/taskCategories";
-
-// EVzone Driver App – ActiveDashboard Driver App – Active Dashboard (Online Mode)
-// Performance dashboard showing online time, trips, earnings and job mix.
-
-function JobMixPill({ icon: Icon, label, value, onClick }: { icon: any; label: string; value: string | number; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex flex-col items-start rounded-2xl border border-brand-active/10 px-4 py-4 text-left active:scale-[0.98] transition-all group list-item-refined hover:scale-[1.01]`}
-    >
-      <div className="flex items-center space-x-3 mb-3">
-        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white dark:bg-slate-700 shadow-sm border border-brand-active/10 group-hover:scale-110 transition-transform">
-          <Icon className="h-4 w-4 text-brand-active" />
-        </div>
-        <span className="text-[11px] font-medium transition-colors list-title uppercase tracking-wider">{label}</span>
-      </div>
-      <div className="flex items-center justify-between w-full">
-         <span className="text-xl font-black text-slate-900 dark:text-slate-100 tracking-tighter">{value}</span>
-          <div className="p-1 bg-orange-500/10 rounded-full">
-            <TrendingUp className="h-3 w-3 text-orange-600" />
-          </div>
-      </div>
-    </button>
-  );
-}
 
 export default function ActiveDashboard() {
   const navigate = useNavigate();
-  const { dashboardMetrics, assignableJobTypes } = useStore();
-  const { pendingJobs } = useJobs();
-  const { onlineTime, jobsCount, earningsAmount, jobMix } = dashboardMetrics;
-  const totalJobs = jobsCount;
-  const latestPendingByType = useMemo(() => {
-    const map = new globalThis.Map<JobCategory, { id: string; requestedAt: number }>();
-    for (const job of pendingJobs) {
-      const requestedAt = Number(job.requestedAt || 0);
-      const existing = map.get(job.jobType);
-      if (!existing || requestedAt > existing.requestedAt) {
-        map.set(job.jobType, { id: job.id, requestedAt });
-      }
-    }
-
-    const latestIds = new globalThis.Map<JobCategory, string>();
-    for (const [jobType, entry] of map.entries()) {
-      latestIds.set(jobType, entry.id);
-    }
-    return latestIds;
-  }, [pendingJobs]);
-
-  const navigateToLatestJob = (jobType: JobCategory) => {
-    const selectedJobId = latestPendingByType.get(jobType);
-    if (!selectedJobId) {
-      navigate(`/driver/jobs/list?category=${jobType}`);
-      return;
-    }
-    navigate(buildJobDetailRoute(jobType, selectedJobId), {
-      state: {
-        jobType,
-        jobId: selectedJobId,
-      },
-    });
-  };
-
-  const dashboardPillConfigs: Record<
-    JobCategory,
-    { icon: any; label: string; value: number }
-  > = {
-    ride: { icon: Car, label: "Rides", value: jobMix.ride },
-    delivery: { icon: Package, label: "Cargo", value: jobMix.delivery },
-    rental: { icon: Briefcase, label: "Rentals", value: jobMix.rental },
-    tour: { icon: Map, label: "Tours", value: jobMix.tour },
-    ambulance: { icon: Ambulance, label: "Emergency", value: jobMix.ambulance },
-    shared: { icon: Users, label: "Shared", value: jobMix.shared },
-    shuttle: { icon: Bus, label: "Shuttle", value: jobMix.shuttle },
-  };
-
-  const visiblePillCategories = useMemo(
-    () =>
-      ASSIGNABLE_JOB_TYPE_ORDER.filter((jobType) =>
-        assignableJobTypes.includes(jobType)
-      ),
-    [assignableJobTypes]
-  );
+  const { dashboardMetrics } = useStore();
+  const { onlineTime, jobsCount, earningsAmount } = dashboardMetrics;
 
   return (
     <div className="flex flex-col h-full bg-transparent">
@@ -182,36 +91,6 @@ export default function ActiveDashboard() {
           </div>
         </section>
 
-        {/* Job mix breakdown */}
-        <section className="space-y-4 pb-8">
-          <div className="flex items-center justify-between px-1">
-            <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Job Types</h2>
-            <div className="bg-brand-active/10 px-3 py-1 rounded-lg">
-               <span className="text-[10px] font-black text-brand-active uppercase tracking-tight">{totalJobs} TOTAL</span>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-3">
-            {visiblePillCategories.map((jobType) => {
-              const config = dashboardPillConfigs[jobType];
-              return (
-                <JobMixPill
-                  key={jobType}
-                  icon={config.icon}
-                  label={config.label}
-                  value={config.value}
-                  onClick={() => navigateToLatestJob(jobType)}
-                />
-              );
-            })}
-          </div>
-
-          <div className="bg-cream p-5 rounded-3xl border-2 border-orange-500/10 shadow-sm">
-             <p className="text-[10px] text-slate-400 leading-relaxed font-bold uppercase tracking-tight">
-                SYSTEM NOTICE: Specialized jobs (Emergency/VIP) are restricted to high-trust driver profiles. Maintain 4.9+ rating for continued access.
-             </p>
-          </div>
-        </section>
       </main>
     </div>
   );

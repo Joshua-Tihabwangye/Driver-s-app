@@ -328,11 +328,12 @@ export default function AnalyticsDashboard() {
   ).length;
 
   const dailyRows = useMemo(() => {
+    const lookback = period === "month" ? 30 : period === "today" ? 1 : 7;
     const now = new Date();
     now.setHours(0, 0, 0, 0);
-    const dayStarts = Array.from({ length: 7 }, (_, index) => {
+    const dayStarts = Array.from({ length: lookback }, (_, index) => {
       const day = new Date(now);
-      day.setDate(now.getDate() - (6 - index));
+      day.setDate(now.getDate() - (lookback - 1 - index));
       return day.getTime();
     });
 
@@ -350,14 +351,18 @@ export default function AnalyticsDashboard() {
         .filter((event) => event.timestamp >= start && event.timestamp < end)
         .reduce((sum, event) => sum + event.amount, 0);
 
+      const label = lookback > 7 
+        ? new Date(start).toLocaleDateString("en-US", { day: "numeric" })
+        : new Date(start).toLocaleDateString("en-US", { weekday: "short" });
+
       return {
-        label: new Date(start).toLocaleDateString("en-US", { weekday: "short" }),
+        label,
         rides,
         deliveries,
         total,
       };
     });
-  }, [periodTrips, periodRevenue]);
+  }, [periodTrips, periodRevenue, period]);
 
   const trendValues = dailyRows.map((row) => row.total);
   const serviceBreakdown = useMemo(() => {
