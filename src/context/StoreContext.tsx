@@ -685,13 +685,17 @@ function readStoredVehicles(): Vehicle[] {
 }
 
 function readStoredJobs(): Job[] {
+  // In development mode, we always want the initial mock job requests 
+  // to be displayed on refresh to help with workflow refinement.
+  const isDev = import.meta.env.DEV;
+
   if (typeof window === "undefined") {
     return [...initialJobs];
   }
 
   try {
     const raw = window.localStorage.getItem(JOBS_STORAGE_KEY);
-    if (!raw) {
+    if (!raw || isDev) {
       return [...initialJobs];
     }
 

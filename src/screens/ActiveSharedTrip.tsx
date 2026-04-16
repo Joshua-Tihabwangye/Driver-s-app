@@ -536,26 +536,53 @@ export default function ActiveSharedTrip() {
                           </div>
                         ) : (
                           <div className="space-y-4">
-                            <div className="relative aspect-square w-full rounded-3xl overflow-hidden bg-black shadow-lg">
+                            <div className="relative rounded-[2.5rem] overflow-hidden border border-slate-100 bg-black h-[240px] shadow-2xl">
                               {scannerError ? (
-                                <div className="absolute inset-0 flex items-center justify-center p-6 text-center">
-                                  <p className="text-white text-[10px] font-bold uppercase">{scannerError}</p>
+                                <div className="absolute inset-0 flex items-center justify-center px-6 text-center">
+                                  <p className="text-[11px] font-bold text-white/90 uppercase tracking-tight leading-relaxed">
+                                    {scannerError}
+                                  </p>
                                 </div>
                               ) : (
                                 <video
                                   ref={scannerVideoRef}
+                                  className="absolute inset-0 h-full w-full object-cover"
                                   autoPlay
                                   playsInline
-                                  className="absolute inset-0 w-full h-full object-cover"
+                                  muted
                                 />
                               )}
+
+                              <div className="absolute inset-0 bg-black/25" />
                               <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="w-32 h-32 border-2 border-orange-500 rounded-2xl flex items-center justify-center">
-                                   {!isScannerReady && !scannerError && <QrCode className="h-8 w-8 text-white/40 animate-pulse" />}
+                                <div className="relative flex h-48 w-48 items-center justify-center">
+                                  <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-orange-500 rounded-tl-2xl" />
+                                  <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-orange-500 rounded-tr-2xl" />
+                                  <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-orange-500 rounded-bl-2xl" />
+                                  <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-orange-500 rounded-br-2xl" />
+                                  {!isScannerReady && !scannerError && (
+                                    <QrCode className="h-14 w-14 text-white/40" />
+                                  )}
                                 </div>
                               </div>
+                              <div className="absolute inset-x-0 top-5 text-center">
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50">
+                                  Align customer QR in frame
+                                </span>
+                              </div>
+                              <div className="absolute inset-x-0 bottom-4 text-center">
+                                <span className="inline-flex rounded-full bg-black/50 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-white/90">
+                                  {scannerError
+                                    ? "Camera unavailable"
+                                    : isScannerReady
+                                    ? "Camera ready"
+                                    : "Starting camera..."}
+                                </span>
+                              </div>
                             </div>
-                            <button 
+
+                            <button
+                              type="button"
                               onClick={() => {
                                 if (passengerForStop) {
                                   markRiderOnboard(passengerForStop.id);
@@ -563,7 +590,7 @@ export default function ActiveSharedTrip() {
                                   stopScanner();
                                 }
                               }}
-                              className="w-full rounded-full bg-emerald-500 py-4 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-emerald-500/20 active:scale-95 transition-all"
+                              className="w-full rounded-full bg-orange-500 py-4 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-orange-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
                             >
                                I Have Scanned Customer QR
                             </button>

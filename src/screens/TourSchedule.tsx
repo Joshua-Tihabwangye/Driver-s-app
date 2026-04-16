@@ -89,7 +89,25 @@ export default function TourSchedule() {
 
   const segments = tour?.segments || [];
   const completedCount = segments.filter((s) => s.status === "completed").length;
-  const progress = segments.length > 0 ? (completedCount / segments.length) * 100 : 0;
+
+  const progress = useMemo(() => {
+    if (segments.length === 0) return 0;
+    
+    const statusWeights: Record<TourSegmentStatus, number> = {
+      upcoming: 0,
+      preparing: 0.2,
+      navigating: 0.4,
+      arrived: 0.6,
+      "in-progress": 0.8,
+      completed: 1.0,
+    };
+
+    const totalWeightedProgress = segments.reduce((acc, s) => {
+      return acc + (statusWeights[s.status] || 0);
+    }, 0);
+
+    return (totalWeightedProgress / segments.length) * 100;
+  }, [segments]);
 
   const handleStatusChange = (segmentId: string | number, newStatus: TourSegmentStatus) => {
     if (tourId) {
