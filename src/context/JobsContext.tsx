@@ -118,10 +118,10 @@ export function JobsProvider({ children }: { children: ReactNode }) {
           // Development-only workflow:
           // hide jobs worked in this runtime (no persistence) while keeping
           // production behavior unchanged below.
-          if (isDevMode && hiddenWorkedJobIds.has(job.id)) {
+          if (job.status !== "pending") {
             return false;
           }
-          if (!isDevMode && job.status !== "pending") {
+          if (isDevMode && hiddenWorkedJobIds.has(job.id)) {
             return false;
           }
           if (
