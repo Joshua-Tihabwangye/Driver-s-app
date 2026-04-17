@@ -137,17 +137,17 @@ export default function MoreMenu() {
 
         <MenuSection title="App Preferences">
           <MenuItem
-            icon={SlidersHorizontal}
-            label="Preferences"
-            description="Driver defaults and app behavior"
-            onClick={() => navigate("/driver/preferences", { state: { returnTo: "/driver/more" } })}
-            themeColor="green"
-          />
-          <MenuItem
             icon={SettingsIcon}
             label="Settings"
             description="App theme, language and privacy"
             onClick={() => navigate("/driver/settings")}
+            themeColor="green"
+          />
+          <MenuItem
+            icon={SlidersHorizontal}
+            label="Preferences"
+            description="Driver defaults and app behavior"
+            onClick={() => navigate("/driver/preferences", { state: { returnTo: "/driver/more" } })}
             themeColor="green"
           />
           <MenuItem
