@@ -56,6 +56,21 @@ export default function AppPhoneShell({ children }: AppPhoneShellProps) {
     };
   }, []);
 
+  useEffect(() => {
+    // Wait for the DOM to update to ensure nested scroll containers are reset properly
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+      const scrollEl = document.querySelector(".evz-page-scroll");
+      if (scrollEl) {
+        scrollEl.scrollTo(0, 0);
+      }
+      
+      // Also scroll any other internal scrollable elements (like MoreMenu's nested <main>)
+      const innerScrolls = document.querySelectorAll(".overflow-y-auto");
+      innerScrolls.forEach((el) => el.scrollTo(0, 0));
+    }, 0);
+  }, [pathname]);
+
   const isDriverRoute = pathname.startsWith("/driver/");
   const isOnboardingRoute =
     pathname.startsWith("/driver/register") ||

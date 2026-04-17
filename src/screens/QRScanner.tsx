@@ -1,12 +1,13 @@
 import {
-Camera,
-Info,
-X
+  Camera,
+  Info,
+  X
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
+import jsQR from "jsqr";
 
 // EVzone Driver App – QRScanner QR Code Scanner (v2)
 // Base QR scanning screen with camera view and scan frame overlay.
@@ -20,6 +21,11 @@ export default function QRScanner() {
   const [showInstructionNotice, setShowInstructionNotice] = useState(true);
   const [scanState, setScanState] = useState<"scanning" | "detected">("scanning");
 
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const [cameraError, setCameraError] = useState("");
+
   useEffect(() => {
     if (!deliveryStageAtLeast("pickup_confirmed")) {
       navigate("/driver/delivery/pickup/confirm", { replace: true });
@@ -27,19 +33,99 @@ export default function QRScanner() {
   }, [deliveryStageAtLeast, navigate]);
 
   useEffect(() => {
-    const detectTimer = window.setTimeout(() => {
-      setScanState("detected");
-    }, 2200);
+    let isCancelled = false;
+    let animationFrameId: number;
 
-    const forwardTimer = window.setTimeout(() => {
-      navigate("/driver/qr/processing", { replace: true });
-    }, 3000);
+    const startCamera = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" }
+        });
+        if (isCancelled) {
+          stream.getTracks().forEach((track) => track.stop());
+          return;
+        }
+        streamRef.current = stream;
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.setAttribute("playsinline", "true");
+          await videoRef.current.play().catch(() => undefined);
+          tick();
+        }
+      } catch (err) {
+        setCameraError("Camera access denied or unavailable.");
+      }
+    };
+
+    const tick = () => {
+      if (isCancelled || scanState === "detected") return;
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      
+      if (video && video.readyState === video.HAVE_ENOUGH_DATA && canvas) {
+        canvas.height = video.videoHeight;
+        canvas.width = video.videoWidth;
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        if (ctx) {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const code = jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: "dontInvert"
+          });
+          
+          if (code && code.data) {
+            setScanState("detected");
+            return; // Stop ticking once detected
+          }
+        }
+      }
+      animationFrameId = requestAnimationFrame(tick);
+    };
+
+    if (scanState === "scanning") {
+      startCamera();
+    }
 
     return () => {
-      window.clearTimeout(detectTimer);
-      window.clearTimeout(forwardTimer);
+      isCancelled = true;
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
+      }
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
     };
-  }, [navigate]);
+  }, [scanState]);
+
+  // Auto-simulate a successful scan after 15 seconds to proceed with workflow simulation
+  useEffect(() => {
+    let autoSimulateTimer: number;
+    if (scanState === "scanning") {
+      autoSimulateTimer = window.setTimeout(() => {
+        setScanState("detected");
+      }, 15000);
+    }
+    return () => {
+      if (autoSimulateTimer) {
+        window.clearTimeout(autoSimulateTimer);
+      }
+    };
+  }, [scanState]);
+
+  useEffect(() => {
+    if (scanState === "detected") {
+      const forwardTimer = window.setTimeout(() => {
+        navigate("/driver/qr/processing", { replace: true });
+      }, 1500);
+      return () => {
+        window.clearTimeout(forwardTimer);
+      };
+    }
+  }, [scanState, navigate]);
 
   return (
     <div className="flex flex-col h-full ">
@@ -93,8 +179,25 @@ export default function QRScanner() {
 
         {/* Camera / scanner view */}
         <section className="relative rounded-[3rem] overflow-hidden border border-slate-100 bg-black h-[320px] shadow-2xl flex items-center justify-center">
-          {/* Simulated camera background */}
-          <div className="absolute inset-0 bg-slate-900/90" />
+          {cameraError ? (
+            <div className="absolute inset-0 flex items-center justify-center bg-slate-900">
+               <p className="text-white/60 text-xs text-center px-4 font-black uppercase tracking-widest">{cameraError}</p>
+            </div>
+          ) : (
+            <>
+              <video
+                ref={videoRef}
+                className="absolute inset-0 w-full h-full object-cover opacity-90"
+                autoPlay
+                muted
+                playsInline
+              />
+              {/* Overlay darken */}
+              <div className="absolute inset-0 bg-slate-900/50" />
+            </>
+          )}
+
+          <canvas ref={canvasRef} className="hidden" />
 
           {/* Scan box frame */}
           <div className="relative flex h-56 w-56 items-center justify-center">
@@ -105,10 +208,14 @@ export default function QRScanner() {
             <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-orange-500 rounded-br-2xl" />
 
             {/* Moving scan line */}
-            <div className="absolute left-6 right-6 top-6 h-1 w-auto bg-gradient-to-r from-transparent via-orange-400 to-transparent qr-scan-line shadow-[0_0_15px_rgba(249,115,22,0.5)]" />
+            {scanState === "scanning" && !cameraError && (
+              <div className="absolute left-6 right-6 top-6 h-1 w-auto bg-gradient-to-r from-transparent via-orange-400 to-transparent qr-scan-line shadow-[0_0_15px_rgba(249,115,22,0.5)]" />
+            )}
 
             {/* Camera icon hint */}
-            <Camera className="h-12 w-12 text-white/20" />
+            {!cameraError && (
+              <Camera className="relative h-12 w-12 text-white/40 drop-shadow-lg" />
+            )}
           </div>
 
           {/* Overlay text */}
