@@ -23,10 +23,12 @@ import StatusChip from "../components/StatusChip";
 import { useStore } from "../context/StoreContext";
 import {
   areAllRequiredDocumentsCompliant,
+  getDocumentExpiryStatus,
   getRequiredDocumentSides,
   isDocumentEntryComplete,
   isDocumentEntryRejected,
   readStoredDocumentState,
+  validateDocumentExpiryDate,
   type DocumentUploadKey,
 } from "../utils/documentVerificationState";
 import { formatPrimaryTaskRoleLabelFromAssignable } from "../utils/taskCategories";
@@ -122,6 +124,8 @@ export default function DriverProfileOnboarding() {
     onboardingBlockers,
     onboardingCheckpoints,
     setOnboardingCheckpoint,
+    resolveGoOnlineAttempt,
+    setDriverOnline,
     vehicles,
     selectedVehicleIndex,
     emergencyContacts,
@@ -152,7 +156,13 @@ export default function DriverProfileOnboarding() {
 
   const getDocumentStatusLabel = (key: DocumentUploadKey) => {
     const entry = documentState[key];
-    if (isDocumentEntryComplete(key, entry)) {
+    const complete = isDocumentEntryComplete(key, entry);
+    const expiryStatus = getDocumentExpiryStatus(entry.expiryDate);
+    const hasValidExpiry = validateDocumentExpiryDate(entry.expiryDate).valid;
+    if (complete && (expiryStatus === "expired" || !hasValidExpiry)) {
+      return "Expired";
+    }
+    if (complete) {
       return "Verified";
     }
     if (isDocumentEntryRejected(key, entry)) {
@@ -167,8 +177,14 @@ export default function DriverProfileOnboarding() {
     const uploadedSides =
       Number(entry.front.status === "Uploaded") +
       Number(requiredSides.includes("back") && entry.back.status === "Uploaded");
+    const complete = isDocumentEntryComplete(key, entry);
+    const expiryStatus = getDocumentExpiryStatus(entry.expiryDate);
+    const hasValidExpiry = validateDocumentExpiryDate(entry.expiryDate).valid;
 
-    if (isDocumentEntryComplete(key, entry)) {
+    if (complete && (expiryStatus === "expired" || !hasValidExpiry)) {
+      return "Document expired. Upload an updated copy with a future expiry date.";
+    }
+    if (complete) {
       return requiredSides.length === 2
         ? "Front and back copies uploaded"
         : "Required copy uploaded";
@@ -937,6 +953,22 @@ export default function DriverProfileOnboarding() {
             onClick={() => {
               if (gatewayAction.label === "Complete Required Steps") {
                 navigate(gatewayAction.route);
+                return;
+              }
+              if (gatewayAction.label === "Go Online") {
+                const decision = resolveGoOnlineAttempt("/driver/dashboard/online");
+                if (decision.allowed && !decision.requiresSelfie) {
+                  setDriverOnline();
+                  navigate("/driver/dashboard/online", { replace: true });
+                  return;
+                }
+                navigate(decision.route, {
+                  state: decision.allowed
+                    ? undefined
+                    : {
+                        offlineGuardMessage: decision.message,
+                      },
+                });
                 return;
               }
               if (!documentsComplete) {
