@@ -7,10 +7,15 @@ import {
   Heart, 
   MessageSquare, 
   CheckCircle2,
-  ChevronRight
+  ChevronRight,
+  Smartphone
 } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import { useJobs } from "../context/JobsContext";
+import {
+  canUsePhonebookPicker,
+  pickSinglePhonebookContact,
+} from "../utils/phonebook";
 
 export default function AddShareContact() {
   const { rideId } = useParams();
@@ -28,8 +33,40 @@ export default function AddShareContact() {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPickingPhonebook, setIsPickingPhonebook] = useState(false);
+  const [pickerMessage, setPickerMessage] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const handlePickFromPhonebook = async () => {
+    if (!canUsePhonebookPicker()) {
+      setPickerMessage(
+        "Phonebook is unavailable on this browser/device. Enter details manually."
+      );
+      return;
+    }
+
+    setIsPickingPhonebook(true);
+    setPickerMessage("");
+    try {
+      const picked = await pickSinglePhonebookContact();
+      if (!picked) {
+        setPickerMessage("No contact selected from phonebook.");
+        return;
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        name: picked.name || prev.name,
+        phone: picked.phone || prev.phone,
+      }));
+      setPickerMessage("Contact selected from phonebook.");
+    } catch {
+      setPickerMessage("Could not open phonebook. Enter details manually.");
+    } finally {
+      setIsPickingPhonebook(false);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,25 +147,20 @@ export default function AddShareContact() {
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-500">Full Name</span>
                   <button 
                     type="button"
-                    onClick={() => {
-                      const mockContacts = [
-                        { name: "Sarah Johnson", phone: "+256 700 123 456", email: "sarah.j@example.com" },
-                        { name: "David Wilson", phone: "+256 755 987 654", email: "david.w@example.com" },
-                        { name: "Michael Okello", phone: "+256 772 111 222", email: "m.okello@example.com" }
-                      ];
-                      const contact = mockContacts[Math.floor(Math.random() * mockContacts.length)];
-                      setFormData({
-                        ...formData,
-                        name: contact.name,
-                        phone: contact.phone,
-                        email: contact.email
-                      });
-                    }}
+                    onClick={handlePickFromPhonebook}
                     className="text-[9px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 hover:bg-emerald-100 transition-colors"
                   >
-                    Select from Contacts
+                    <span className="inline-flex items-center gap-1">
+                      <Smartphone className="h-3 w-3" />
+                      {isPickingPhonebook ? "Opening..." : "Phonebook"}
+                    </span>
                   </button>
                 </div>
+                {pickerMessage ? (
+                  <p className="ml-1 text-[9px] font-bold uppercase tracking-tight text-slate-500">
+                    {pickerMessage}
+                  </p>
+                ) : null}
                 <div className="relative">
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <input

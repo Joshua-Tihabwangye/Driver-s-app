@@ -24,7 +24,7 @@ export const REGISTER_SERVICE_LABELS: Record<RegisterServiceKey, string> = {
   driver: "EVzone Driver",
   faith: "FaithHub",
   charging: "EVzone Charging",
-  wallet: "Wallet Agent",
+  wallet: "EVzone Wallet Agent",
 };
 
 const SELECTED_SERVICE_STORAGE_KEY = "evz_selected_register_service";
