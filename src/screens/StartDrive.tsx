@@ -8,6 +8,7 @@ ShieldCheck,
 User
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
+import SlideToConfirm from "../components/SlideToConfirm";
 import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – StartDrive Driver App – Start Drive (v2)
@@ -243,13 +244,14 @@ export default function StartDrive() {
         {/* CTA */}
         <section className="space-y-4">
           <div className="flex flex-col space-y-3">
-             <button
-                type="button"
-                onClick={handleStart}
-                className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-orange-500 text-white shadow-xl shadow-orange-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
-              >
-                {primaryCtaText}
-             </button>
+             <SlideToConfirm
+               instruction={`Slide to ${primaryCtaText.toLowerCase()}`}
+               successLabel="Trip started"
+               onConfirm={() => {
+                 handleStart();
+                 return true;
+               }}
+             />
              <button
                type="button"
                onClick={handleBackToVerification}

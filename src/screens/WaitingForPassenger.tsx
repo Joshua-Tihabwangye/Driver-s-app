@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useEffect,useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import SlideToConfirm from "../components/SlideToConfirm";
 import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – WaitingForPassenger Driver App – Waiting for Passenger (v2)
@@ -204,13 +205,18 @@ export default function WaitingForPassenger() {
             </p>
 
             <div className="space-y-3">
-              <button
-                type="button"
-                onClick={() => navigateToStage("rider_verification")}
-                className="w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-orange-500 text-white shadow-xl shadow-orange-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
-              >
-                {isAmbulance ? "Continue Protocol" : "Rider Onboard - Verify Code"}
-              </button>
+              <SlideToConfirm
+                instruction={
+                  isAmbulance
+                    ? "Slide to continue protocol"
+                    : "Slide to verify rider onboard"
+                }
+                successLabel={isAmbulance ? "Protocol continued" : "Verification started"}
+                onConfirm={() => {
+                  navigateToStage("rider_verification");
+                  return true;
+                }}
+              />
               <button
                 type="button"
                 onClick={() => navigateToStage("cancel_no_show")}

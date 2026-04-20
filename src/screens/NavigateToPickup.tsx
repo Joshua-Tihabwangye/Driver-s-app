@@ -7,6 +7,7 @@ Navigation,
 Phone
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
+import SlideToConfirm from "../components/SlideToConfirm";
 import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – NavigateToPickup Driver App – Navigate to Pick-Up Location (v2)
@@ -212,13 +213,16 @@ export default function NavigateToPickup() {
               >
                 Cancel
               </button>
-              <button
-                type="button"
-                onClick={() => navigateToTripStage("waiting_for_passenger")}
-                className="flex-[2] rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-orange-500 text-white shadow-xl shadow-orange-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center"
-              >
-                Confirm Arrival
-              </button>
+              <div className="flex-[2]">
+                <SlideToConfirm
+                  instruction="Slide to confirm arrival"
+                  successLabel="Arrival confirmed"
+                  onConfirm={() => {
+                    navigateToTripStage("waiting_for_passenger");
+                    return true;
+                  }}
+                />
+              </div>
             </div>
             <button
               type="button"

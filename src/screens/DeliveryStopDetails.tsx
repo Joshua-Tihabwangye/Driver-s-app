@@ -8,6 +8,7 @@ Phone
 } from "lucide-react";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import SlideToConfirm from "../components/SlideToConfirm";
 import { SAMPLE_IDS } from "../data/constants";
 import { useStore } from "../context/StoreContext";
 
@@ -353,18 +354,16 @@ export default function DeliveryStopDetails() {
             Use quick communication to coordinate gate access, entrances or
             safe meeting spots when needed.
           </p>
-          <button
-            type="button"
-            onClick={handleConfirmDropOff}
-            disabled={!signatureProofUrl}
-            className={`w-full rounded-[2rem] py-5 text-[11px] font-black uppercase tracking-widest shadow-xl flex items-center justify-center active:scale-[0.98] transition-all ${
-              signatureProofUrl
-                ? "bg-orange-500 text-white shadow-orange-200/50 hover:bg-orange-600"
-                : "bg-slate-200 text-slate-500 shadow-slate-200 cursor-not-allowed"
-            }`}
-          >
-            Confirm Delivered at Drop-Off
-          </button>
+          <SlideToConfirm
+            instruction="Slide to confirm delivered"
+            successLabel="Delivery confirmed"
+            onConfirm={() => {
+              handleConfirmDropOff();
+              return true;
+            }}
+            disabled={!signatureProofUrl || isSubmitting}
+            loading={isSubmitting}
+          />
           <button
             type="button"
             onClick={() =>
