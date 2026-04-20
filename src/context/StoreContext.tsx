@@ -288,6 +288,8 @@ const JOBS_STORAGE_KEY = "driver_jobs";
 const TRIPS_STORAGE_KEY = "driver_trips";
 const REVENUE_EVENTS_STORAGE_KEY = "driver_revenue_events";
 const TRIP_FEEDBACKS_STORAGE_KEY = "driver_trip_feedbacks";
+const AUTO_RESEED_REQUESTS = import.meta.env.VITE_AUTO_RESEED_REQUESTS !== "false";
+const REQUEST_RESEED_JOB_TYPES: readonly JobCategory[] = ["ride", "delivery"];
 const DOCUMENT_EXPIRED_API_ERROR =
   "Your documents have expired. Please upload valid documents.";
 
@@ -744,7 +746,7 @@ function readStoredJobs(): Job[] {
     }
 
     const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) {
+    if (!Array.isArray(parsed) || parsed.length === 0) {
       return [...initialJobs];
     }
 
@@ -2609,9 +2611,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }),
     [driverRoleSelection, sharedRidesEnabled]
   );
-  const localhostSeedRequestJobTypes = useMemo(
+  const reseedRequestJobTypes = useMemo(
     () =>
-      (["ride", "delivery"] as const).filter(
+      REQUEST_RESEED_JOB_TYPES.filter(
         (jobType) => assignableJobTypes.includes(jobType)
       ),
     [assignableJobTypes]
@@ -2628,17 +2630,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   );
 
   useEffect(() => {
-    if (typeof window === "undefined") {
+    if (typeof window === "undefined" || !AUTO_RESEED_REQUESTS) {
       return;
     }
-    const host = window.location.hostname;
-    const isLocalhost =
-      host === "localhost" || host === "127.0.0.1" || host === "::1";
-    if (!isLocalhost || localhostSeedRequestJobTypes.length === 0) {
+    if (reseedRequestJobTypes.length === 0) {
       return;
     }
 
-    const missingRequestTypes = localhostSeedRequestJobTypes.filter(
+    const missingRequestTypes = reseedRequestJobTypes.filter(
       (jobType) =>
         !jobs.some((job) => job.jobType === jobType && job.status === "pending")
     );
@@ -2681,7 +2680,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
       return [...seeded, ...restored];
     });
-  }, [activeTrip.stage, activeTrip.status, jobs, localhostSeedRequestJobTypes]);
+  }, [jobs, reseedRequestJobTypes]);
 
   const acceptSpecializedJob = useCallback(
     (jobId: string, jobType: SpecializedJobType) => {
