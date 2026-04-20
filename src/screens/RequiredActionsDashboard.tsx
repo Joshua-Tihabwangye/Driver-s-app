@@ -56,6 +56,24 @@ export default function RequiredActionsDashboard() {
     setDriverOnline,
   } = useStore();
   const blockerCount = onboardingBlockers.length;
+  const handleBlockerOpen = (blocker: {
+    id: OnboardingCheckpointId;
+    route: string;
+  }) => {
+    if (blocker.id !== "documentsVerified") {
+      navigate(blocker.route);
+      return;
+    }
+
+    const decision = resolveGoOnlineAttempt("/driver/dashboard/online");
+    navigate(decision.route, {
+      state: decision.allowed
+        ? undefined
+        : {
+            offlineGuardMessage: decision.message,
+          },
+    });
+  };
   const handleStartGoOnline = () => {
     const decision = resolveGoOnlineAttempt("/driver/dashboard/online");
     if (decision.allowed && !decision.requiresSelfie) {
@@ -144,7 +162,7 @@ export default function RequiredActionsDashboard() {
                 icon={BLOCKER_ICON_MAP[blocker.id]}
                 title={blocker.title}
                 text={blocker.description}
-                onClick={() => navigate(blocker.route)}
+                onClick={() => handleBlockerOpen({ id: blocker.id, route: blocker.route })}
                 type="blocking"
               />
             ))

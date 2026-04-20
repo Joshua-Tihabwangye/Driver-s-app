@@ -4,8 +4,9 @@ import {
   Info,
   WifiOff
 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import OfflineConfirmModal from "../components/OfflineConfirmModal";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
 
@@ -40,6 +41,7 @@ function IssueRow({ title, text, type, onClick }: any) {
 export default function OfflineDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [showGoOnlineModal, setShowGoOnlineModal] = useState(false);
   const {
     canGoOnline,
     onboardingBlockers,
@@ -58,7 +60,24 @@ export default function OfflineDashboard() {
   const hasOfflineGuardMessage =
     typeof routeState.offlineGuardMessage === "string" &&
     routeState.offlineGuardMessage.trim().length > 0;
-  const handleGoOnline = () => {
+  const navigateToBlocker = (blocker: { id: string; route: string }) => {
+    if (blocker.id !== "documentsVerified") {
+      navigate(blocker.route);
+      return;
+    }
+
+    const decision = resolveGoOnlineAttempt("/driver/dashboard/online");
+    navigate(decision.route, {
+      state: decision.allowed
+        ? undefined
+        : {
+            offlineGuardMessage: decision.message,
+            blockedPath: location.pathname,
+          },
+    });
+  };
+  const handleConfirmGoOnline = () => {
+    setShowGoOnlineModal(false);
     const decision = resolveGoOnlineAttempt("/driver/dashboard/online");
     if (decision.allowed && !decision.requiresSelfie) {
       setDriverOnline();
@@ -73,6 +92,19 @@ export default function OfflineDashboard() {
             blockedPath: location.pathname,
           },
     });
+  };
+  const handleGoOnline = () => {
+    const decision = resolveGoOnlineAttempt("/driver/dashboard/online");
+    if (!decision.allowed) {
+      navigate(decision.route, {
+        state: {
+          offlineGuardMessage: decision.message,
+          blockedPath: location.pathname,
+        },
+      });
+      return;
+    }
+    setShowGoOnlineModal(true);
   };
 
   return (
@@ -149,7 +181,12 @@ export default function OfflineDashboard() {
                 title={blocker.title}
                 text={blocker.description}
                 type="blocking"
-                onClick={() => navigate(blocker.route)}
+                onClick={() =>
+                  navigateToBlocker({
+                    id: blocker.id,
+                    route: blocker.route,
+                  })
+                }
               />
             ))
           )}
@@ -170,6 +207,13 @@ export default function OfflineDashboard() {
            </div>
         </section>
       </main>
+
+      <OfflineConfirmModal
+        isOpen={showGoOnlineModal}
+        mode="online"
+        onConfirm={handleConfirmGoOnline}
+        onCancel={() => setShowGoOnlineModal(false)}
+      />
     </div>
   );
 }
