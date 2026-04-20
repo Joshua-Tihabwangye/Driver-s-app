@@ -11,14 +11,19 @@ import { useLocation, useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
 import {
-  areAllRequiredDocumentsUploaded,
+  areAllRequiredDocumentsCompliant,
+  createLocalDocumentFileUrl,
+  getDaysUntilExpiry,
+  getDocumentExpiryStatus,
   getRequiredDocumentSides,
   isAcceptedDocumentFile,
   isDocumentEntryComplete,
   isDocumentEntryRejected,
   persistDocumentState,
   readStoredDocumentState,
+  validateDocumentExpiryDate,
   type DocumentUploadKey,
+  type DocumentExpiryStatus,
   type DocumentUploadSide,
   type DocumentUploadState,
 } from "../utils/documentVerificationState";
@@ -49,22 +54,22 @@ function CopyRow({
       onClick={onClick}
       className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-left shadow-sm transition-all hover:border-orange-300"
     >
-      <div className="flex items-center justify-between">
-        <div className="flex flex-col">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 flex-col">
           <span className="text-[11px] font-black uppercase tracking-tight text-slate-800">
             {label}
           </span>
           {fileName ? (
-            <span className="text-[10px] text-slate-500">Selected: {fileName}</span>
+            <span className="break-all text-[10px] text-slate-500">Selected: {fileName}</span>
           ) : (
             <span className="text-[10px] text-slate-400">No file selected</span>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
           <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${tone}`}>
             {status}
           </span>
-          <span className="inline-flex items-center rounded-full border border-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-700">
+          <span className="ml-auto inline-flex items-center rounded-full border border-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-700 sm:ml-0">
             <Upload className="mr-1 h-3 w-3" />
             Upload
           </span>
@@ -72,6 +77,49 @@ function CopyRow({
       </div>
       {error && <p className="mt-1 text-[10px] font-medium text-red-600">{error}</p>}
     </button>
+  );
+}
+
+function ExpiryStatusBadge({
+  status,
+  daysUntilExpiry,
+}: {
+  status: DocumentExpiryStatus;
+  daysUntilExpiry: number | null;
+}) {
+  const palette =
+    status === "valid"
+      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+      : status === "expiring_soon"
+      ? "border-amber-200 bg-amber-50 text-amber-700"
+      : status === "expired"
+      ? "border-red-200 bg-red-50 text-red-700"
+      : "border-slate-200 bg-slate-100 text-slate-500";
+
+  const label =
+    status === "valid"
+      ? "Valid"
+      : status === "expiring_soon"
+      ? "Expiring Soon"
+      : status === "expired"
+      ? "Expired"
+      : "Expiry Date Required";
+
+  const detail =
+    status === "valid" && typeof daysUntilExpiry === "number"
+      ? `${daysUntilExpiry} days left`
+      : status === "expiring_soon" && typeof daysUntilExpiry === "number"
+      ? `${daysUntilExpiry} days left`
+      : status === "expired"
+      ? "Update required"
+      : "Set expiry date";
+
+  return (
+    <span
+      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold ${palette}`}
+    >
+      {label} · {detail}
+    </span>
   );
 }
 
@@ -87,6 +135,11 @@ function DocumentCard({
   backFileName,
   backError,
   showBackCopy,
+  expiryDate,
+  expiryStatus,
+  expiryError,
+  daysUntilExpiry,
+  onExpiryDateChange,
   onUploadFront,
   onUploadBack,
 }: {
@@ -101,6 +154,11 @@ function DocumentCard({
   backFileName: string;
   backError: string;
   showBackCopy: boolean;
+  expiryDate: string;
+  expiryStatus: DocumentExpiryStatus;
+  expiryError: string;
+  daysUntilExpiry: number | null;
+  onExpiryDateChange: (value: string) => void;
   onUploadFront: () => void;
   onUploadBack?: () => void;
 }) {
@@ -140,6 +198,27 @@ function DocumentCard({
           />
         )}
       </div>
+      <div className="mt-3 rounded-xl border border-slate-200 bg-white px-3 py-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <label className="flex min-w-0 flex-col gap-1">
+            <span className="text-[10px] font-black uppercase tracking-wide text-slate-500">
+              Expiry Date
+            </span>
+            <input
+              type="date"
+              value={expiryDate}
+              onChange={(event) => onExpiryDateChange(event.target.value)}
+              className="h-9 rounded-lg border border-slate-200 px-2 text-[11px] font-semibold text-slate-700 focus:border-orange-300 focus:outline-none"
+            />
+          </label>
+          <div className="w-full sm:w-auto">
+            <ExpiryStatusBadge status={expiryStatus} daysUntilExpiry={daysUntilExpiry} />
+          </div>
+        </div>
+        {expiryError ? (
+          <p className="mt-2 text-[10px] font-medium text-red-600">{expiryError}</p>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -158,15 +237,42 @@ export default function DocumentUpload() {
   }, [location.search]);
 
   const [docs, setDocs] = useState<DocumentUploadState>(() => readStoredDocumentState());
-  const allRequiredUploaded = areAllRequiredDocumentsUploaded(docs);
+  const [expiryErrors, setExpiryErrors] = useState<Record<DocumentUploadKey, string>>({
+    id: "",
+    license: "",
+    police: "",
+  });
+  const allRequiredUploadedWithValidExpiry = areAllRequiredDocumentsCompliant(docs);
   const hasRejectedFiles =
     isDocumentEntryRejected("id", docs.id) ||
     isDocumentEntryRejected("license", docs.license) ||
     isDocumentEntryRejected("police", docs.police);
 
   useEffect(() => {
-    setOnboardingCheckpoint("documentsVerified", allRequiredUploaded);
-  }, [allRequiredUploaded, setOnboardingCheckpoint]);
+    setOnboardingCheckpoint("documentsVerified", allRequiredUploadedWithValidExpiry);
+  }, [allRequiredUploadedWithValidExpiry, setOnboardingCheckpoint]);
+
+  const handleExpiryDateChange = (key: DocumentUploadKey, value: string) => {
+    setDocs((prev) => {
+      const next = {
+        ...prev,
+        [key]: {
+          ...prev[key],
+          expiryDate: value,
+        },
+      };
+      persistDocumentState(next);
+      return next;
+    });
+
+    if (!value) {
+      setExpiryErrors((prev) => ({ ...prev, [key]: "" }));
+      return;
+    }
+
+    const result = validateDocumentExpiryDate(value);
+    setExpiryErrors((prev) => ({ ...prev, [key]: result.error }));
+  };
 
   const handleFileSelected = (
     key: DocumentUploadKey,
@@ -177,18 +283,32 @@ export default function DocumentUpload() {
     if (!file) return;
 
     const accepted = isAcceptedDocumentFile(file);
+    const expiryValidation = validateDocumentExpiryDate(docs[key].expiryDate);
+    setExpiryErrors((prev) => ({
+      ...prev,
+      [key]: expiryValidation.valid ? "" : expiryValidation.error,
+    }));
+    const hasValidExpiry = expiryValidation.valid;
 
     setDocs((prev) => {
       const next = {
         ...prev,
         [key]: {
           ...prev[key],
-          [side]: accepted
-            ? { status: "Uploaded", fileName: file.name, error: "" }
+          [side]: accepted && hasValidExpiry
+            ? {
+                status: "Uploaded",
+                fileName: file.name,
+                fileUrl: createLocalDocumentFileUrl(file.name),
+                error: "",
+              }
             : {
                 status: "Rejected",
                 fileName: file.name,
-                error: "Only PDF and image files are allowed. Re-upload this copy.",
+                fileUrl: "",
+                error: accepted
+                  ? expiryValidation.error
+                  : "Only PDF and image files are allowed. Re-upload this copy.",
               },
         },
       };
@@ -207,7 +327,17 @@ export default function DocumentUpload() {
   };
 
   const handleSubmitDocuments = () => {
-    if (!allRequiredUploaded) {
+    const nextExpiryErrors = (["id", "license", "police"] as const).reduce(
+      (acc, key) => {
+        const validation = validateDocumentExpiryDate(docs[key].expiryDate);
+        acc[key] = validation.error;
+        return acc;
+      },
+      { id: "", license: "", police: "" } as Record<DocumentUploadKey, string>
+    );
+    setExpiryErrors(nextExpiryErrors);
+
+    if (!allRequiredUploadedWithValidExpiry) {
       return;
     }
 
@@ -219,7 +349,7 @@ export default function DocumentUpload() {
     {
       key: "id" as const,
       icon: IdCard,
-      title: "National ID",
+      title: "National ID or Passport",
       subtitle: "Upload both front and back copies",
     },
     {
@@ -260,7 +390,7 @@ export default function DocumentUpload() {
           </p>
           <p className="text-[11px] font-medium leading-relaxed text-slate-500">
             Accepted formats: image files and PDF only. Invalid formats are rejected and
-            must be uploaded again.
+            must be uploaded again. Each document must include a future expiry date.
           </p>
         </section>
 
@@ -280,6 +410,8 @@ export default function DocumentUpload() {
                 requiredSides.length === 2
                   ? "Front and back copies uploaded"
                   : "Required copy uploaded";
+              const expiryStatus = getDocumentExpiryStatus(entry.expiryDate);
+              const daysUntilExpiry = getDaysUntilExpiry(entry.expiryDate);
               return (
                 <DocumentCard
                   key={doc.key}
@@ -293,6 +425,11 @@ export default function DocumentUpload() {
                   backStatus={entry.back.status}
                   backFileName={entry.back.fileName}
                   backError={entry.back.error}
+                  expiryDate={entry.expiryDate}
+                  expiryStatus={expiryStatus}
+                  expiryError={expiryErrors[doc.key]}
+                  daysUntilExpiry={daysUntilExpiry}
+                  onExpiryDateChange={(value) => handleExpiryDateChange(doc.key, value)}
                   showBackCopy={requiredSides.includes("back")}
                   onUploadFront={() => triggerFilePick(doc.key, "front")}
                   onUploadBack={
@@ -348,9 +485,10 @@ export default function DocumentUpload() {
               Upload Rules
             </p>
             <div className="space-y-1 font-medium">
-              <p>- National ID and Driver's License require front and back copies.</p>
+              <p>- National ID or Passport and Driver's License require front and back copies.</p>
               <p>- Conduct Clearance requires one clear copy only.</p>
               <p>- Use image or PDF format only.</p>
+              <p>- Expiry date must be in the future.</p>
               <p>- Rejected files must be re-uploaded with a valid format.</p>
             </div>
           </div>
@@ -365,19 +503,20 @@ export default function DocumentUpload() {
 
           <button
             type="button"
-            disabled={!allRequiredUploaded}
+            disabled={!allRequiredUploadedWithValidExpiry}
+            aria-disabled={!allRequiredUploadedWithValidExpiry}
             onClick={handleSubmitDocuments}
             className={`w-full rounded-2xl py-4 text-sm font-black uppercase tracking-widest shadow-xl transition-all active:scale-[0.98] ${
-              allRequiredUploaded
+              allRequiredUploadedWithValidExpiry
                 ? "bg-brand-secondary text-white shadow-brand-secondary/20 hover:bg-brand-secondary/90"
                 : "cursor-not-allowed bg-slate-200 text-slate-500 shadow-none"
             }`}
           >
             Save Documents & Continue
           </button>
-          {!allRequiredUploaded && (
+          {!allRequiredUploadedWithValidExpiry && (
             <p className="mt-2 text-center text-[10px] font-bold uppercase tracking-tight text-slate-400">
-              Upload all required document copies to proceed.
+              Upload all required copies and add a valid future expiry date.
             </p>
           )}
         </section>

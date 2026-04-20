@@ -4,7 +4,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
 import {
-  areAllRequiredDocumentsUploaded,
+  areAllRequiredDocumentsCompliant,
+  createLocalDocumentFileUrl,
   getRequiredDocumentSides,
   isAcceptedDocumentFile,
   isDocumentSideRequired,
@@ -16,7 +17,7 @@ import {
 } from "../utils/documentVerificationState";
 
 const DOC_LABELS: Record<DocumentUploadKey, string> = {
-  id: "National ID",
+  id: "National ID or Passport",
   license: "Driver's License",
   police: "Conduct Clearance",
 };
@@ -120,7 +121,7 @@ export default function DocumentRejected() {
   }, [docs]);
 
   useEffect(() => {
-    setOnboardingCheckpoint("documentsVerified", areAllRequiredDocumentsUploaded(docs));
+    setOnboardingCheckpoint("documentsVerified", areAllRequiredDocumentsCompliant(docs));
   }, [docs, setOnboardingCheckpoint]);
 
   const handleFileSelected = (
@@ -141,10 +142,16 @@ export default function DocumentRejected() {
         [key]: {
           ...prev[key],
           [side]: accepted
-            ? { status: "Uploaded", fileName: file.name, error: "" }
+            ? {
+                status: "Uploaded",
+                fileName: file.name,
+                fileUrl: createLocalDocumentFileUrl(file.name),
+                error: "",
+              }
             : {
                 status: "Rejected",
                 fileName: file.name,
+                fileUrl: "",
                 error: "Only PDF and image files are allowed. Re-upload this copy.",
               },
         },

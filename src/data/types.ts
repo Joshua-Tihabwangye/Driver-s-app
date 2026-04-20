@@ -49,9 +49,13 @@ export interface Job {
 export interface VehicleDocumentFile {
   url: string;
   fileName: string;
+  documentType?: string;
+  expiryDate?: string;
 }
 
 export interface VehicleDocumentGroup {
+  documentType?: string;
+  expiryDate?: string;
   file?: VehicleDocumentFile;
 }
 

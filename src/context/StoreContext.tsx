@@ -16,6 +16,11 @@ import type {
 import { MOCK_EARNINGS, MOCK_COMPLETED_TRIPS, MOCK_SHARED_TRIPS, MOCK_DASHBOARD_STATS } from "../data/mockData";
 import { SAMPLE_IDS } from "../data/constants";
 import { getAssignableJobTypesFromRoleConfig } from "../utils/taskCategories";
+import {
+  getDocumentExpiryStatus,
+  isDocumentEntryComplete,
+  readStoredDocumentState,
+} from "../utils/documentVerificationState";
 
 export interface DashboardMetrics {
   onlineTime: string;
@@ -244,6 +249,8 @@ interface StoreContextType {
   addEmergencyContact: (contact: Omit<SharedContact, "id" | "createdAt">) => void;
   removeEmergencyContact: (contactId: string) => void;
   updateEmergencyContact: (contact: SharedContact) => void;
+  jobAccessError: string | null;
+  clearJobAccessError: () => void;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -281,6 +288,8 @@ const JOBS_STORAGE_KEY = "driver_jobs";
 const TRIPS_STORAGE_KEY = "driver_trips";
 const REVENUE_EVENTS_STORAGE_KEY = "driver_revenue_events";
 const TRIP_FEEDBACKS_STORAGE_KEY = "driver_trip_feedbacks";
+const DOCUMENT_EXPIRED_API_ERROR =
+  "Your documents have expired. Please upload valid documents.";
 
 const CAR_ACCESSORIES: Record<string, "Available" | "Missing" | "Required"> = {
   "Spare tyre": "Available",
@@ -630,17 +639,52 @@ function readStoredVehicles(): Vehicle[] {
       return undefined;
     }
     const candidate = group as {
-      file?: { url?: string; fileName?: string };
-      front?: { url?: string; fileName?: string };
-      back?: { url?: string; fileName?: string };
+      documentType?: string;
+      expiryDate?: string;
+      file?: {
+        url?: string;
+        fileName?: string;
+        documentType?: string;
+        expiryDate?: string;
+      };
+      front?: { url?: string; fileName?: string; expiryDate?: string };
+      back?: { url?: string; fileName?: string; expiryDate?: string };
     };
     const direct = candidate.file;
     if (direct?.url && direct?.fileName) {
-      return { file: { url: direct.url, fileName: direct.fileName } };
+      return {
+        documentType:
+          typeof candidate.documentType === "string"
+            ? candidate.documentType
+            : direct.documentType || "",
+        expiryDate:
+          typeof candidate.expiryDate === "string"
+            ? candidate.expiryDate
+            : direct.expiryDate || "",
+        file: {
+          url: direct.url,
+          fileName: direct.fileName,
+          documentType: direct.documentType || candidate.documentType || "",
+          expiryDate: direct.expiryDate || candidate.expiryDate || "",
+        },
+      };
     }
     const legacy = candidate.front || candidate.back;
     if (legacy?.url && legacy?.fileName) {
-      return { file: { url: legacy.url, fileName: legacy.fileName } };
+      return {
+        documentType: typeof candidate.documentType === "string" ? candidate.documentType : "",
+        expiryDate:
+          typeof candidate.expiryDate === "string" ? candidate.expiryDate : legacy.expiryDate || "",
+        file: {
+          url: legacy.url,
+          fileName: legacy.fileName,
+          documentType: typeof candidate.documentType === "string" ? candidate.documentType : "",
+          expiryDate:
+            typeof candidate.expiryDate === "string"
+              ? candidate.expiryDate
+              : legacy.expiryDate || "",
+        },
+      };
     }
     return undefined;
   };
@@ -1359,6 +1403,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [driverPresenceStatus, setDriverPresenceStatus] = useState<DriverPresenceStatus>(() =>
     readStoredDriverPresenceStatus()
   );
+  const [jobAccessError, setJobAccessError] = useState<string | null>(null);
   const [selectedVehicleIndex, setSelectedVehicleIndexState] = useState<number | null>(() => {
     if (typeof window === "undefined") return null;
     try {
@@ -1454,6 +1499,46 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       };
     });
   }, [setSelectedVehicleIndex]);
+
+  const clearJobAccessError = useCallback(() => {
+    setJobAccessError(null);
+  }, []);
+
+  const canAccessOrdersWithCurrentDocuments = useCallback(() => {
+    setJobAccessError(null);
+
+    const personalDocs = readStoredDocumentState();
+    const hasExpiredPersonalDoc = (["id", "license", "police"] as const).some((key) => {
+      const entry = personalDocs[key];
+      if (!isDocumentEntryComplete(key, entry)) {
+        return false;
+      }
+      return getDocumentExpiryStatus(entry.expiryDate) === "expired";
+    });
+
+    const activeVehicle =
+      selectedVehicleIndex !== null &&
+      selectedVehicleIndex >= 0 &&
+      selectedVehicleIndex < vehicles.length
+        ? vehicles[selectedVehicleIndex]
+        : null;
+    const requiredVehicleDocs = ["logbook", "insurance", "inspection"] as const;
+    const hasExpiredVehicleDoc = requiredVehicleDocs.some((docKey) => {
+      const group = activeVehicle?.vehicleDocs?.[docKey];
+      if (!group?.file?.url) {
+        return false;
+      }
+      const expiryDate = group.expiryDate || group.file.expiryDate || "";
+      return getDocumentExpiryStatus(expiryDate) === "expired";
+    });
+
+    if (hasExpiredPersonalDoc || hasExpiredVehicleDoc) {
+      setJobAccessError(DOCUMENT_EXPIRED_API_ERROR);
+      return false;
+    }
+
+    return true;
+  }, [selectedVehicleIndex, vehicles]);
 
   const updateDriverProfile = useCallback((patch: Partial<DriverProfile>) => {
     setDriverProfile((prev) => ({
@@ -2264,6 +2349,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   // when the stale trip is in "idle" stage (meaning it was never truly started).
   const acceptRideJob = useCallback(
     (jobId: string) => {
+      if (!canAccessOrdersWithCurrentDocuments()) {
+        return false;
+      }
+
       const targetJob = jobs.find(
         (job) =>
           job.id === jobId &&
@@ -2314,7 +2403,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
       return true;
     },
-    [jobs, activeTrip, completeActiveTrip]
+    [jobs, activeTrip, completeActiveTrip, canAccessOrdersWithCurrentDocuments]
   );
 
   const canTransitionActiveTripStage = useCallback(
@@ -2336,6 +2425,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const acceptDeliveryJob = useCallback(
     (jobId: string) => {
+      if (!canAccessOrdersWithCurrentDocuments()) {
+        return false;
+      }
+
       const targetJob = jobs.find(
         (job) => job.id === jobId && job.jobType === "delivery"
       );
@@ -2372,7 +2465,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
       return true;
     },
-    [jobs, activeTrip, completeActiveTrip]
+    [jobs, activeTrip, completeActiveTrip, canAccessOrdersWithCurrentDocuments]
   );
 
   const confirmDeliveryPickup = useCallback(() => {
@@ -2592,6 +2685,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const acceptSpecializedJob = useCallback(
     (jobId: string, jobType: SpecializedJobType) => {
+      if (!canAccessOrdersWithCurrentDocuments()) {
+        return false;
+      }
+
       if (!canAcceptJobType(jobType)) {
         return false;
       }
@@ -2642,7 +2739,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
       return true;
     },
-    [jobs, canAcceptJobType, activeTrip, completeActiveTrip]
+    [jobs, canAcceptJobType, activeTrip, completeActiveTrip, canAccessOrdersWithCurrentDocuments]
   );
   // acceptSharedJob: Accepts a pending shared ride job.
   // FIX: Previously this required canAcceptJobType("shared") which in turn
@@ -2654,6 +2751,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   // Also applies the same stale-trip guard fix as acceptRideJob.
   const acceptSharedJob = useCallback(
     (jobId: string) => {
+      if (!canAccessOrdersWithCurrentDocuments()) {
+        return false;
+      }
+
       // If the driver is accepting a shared job, they clearly want shared rides.
       // Auto-enable if not already enabled, so canAcceptJobType("shared") passes.
       if (!sharedRidesEnabled) {
@@ -2709,7 +2810,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       });
       return true;
     },
-    [jobs, activeTrip, sharedRidesEnabled, completeActiveTrip]
+    [jobs, activeTrip, sharedRidesEnabled, completeActiveTrip, canAccessOrdersWithCurrentDocuments]
   );
   const completeActiveSharedTrip = useCallback(() => {
     if (!activeSharedTrip || activeSharedTrip.chainStatus !== "completed") {
@@ -2981,6 +3082,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       removeEmergencyContact,
       updateEmergencyContact,
       updateTourSegmentStatus,
+      jobAccessError,
+      clearJobAccessError,
     }),
     [
       periodFilter,
@@ -3050,6 +3153,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       resetVehicleAccessories,
       getDefaultAccessoriesForType,
       emergencyContacts,
+      addEmergencyContact,
+      removeEmergencyContact,
+      updateEmergencyContact,
+      updateTourSegmentStatus,
+      jobAccessError,
+      clearJobAccessError,
     ]
   );
 

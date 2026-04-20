@@ -14,6 +14,7 @@ import PageHeader from "../components/PageHeader";
 import VehicleDocumentCard from "../components/VehicleDocumentCard";
 import VehicleImageUpload from "../components/VehicleImageUpload";
 import { useStore } from "../context/StoreContext";
+import { validateDocumentExpiryDate } from "../utils/documentVerificationState";
 
 // EVzone Driver App – VehicleDetails Vehicles (v1)
 // Redesigned with Green curved header and bottom nav.
@@ -174,10 +175,24 @@ export default function VehicleDetails() {
     const logbookComplete = Boolean(form.vehicleDocs?.logbook?.file);
     const insuranceComplete = Boolean(form.vehicleDocs?.insurance?.file);
     const inspectionComplete = Boolean(form.vehicleDocs?.inspection?.file);
+    const logbookExpiryValid = validateDocumentExpiryDate(
+      form.vehicleDocs?.logbook?.expiryDate || ""
+    ).valid;
+    const insuranceExpiryValid = validateDocumentExpiryDate(
+      form.vehicleDocs?.insurance?.expiryDate || ""
+    ).valid;
+    const inspectionExpiryValid = validateDocumentExpiryDate(
+      form.vehicleDocs?.inspection?.expiryDate || ""
+    ).valid;
 
     if (!logbookComplete) newErrors.push("Vehicle Logbook file is required");
     if (!insuranceComplete) newErrors.push("Proof of Insurance file is required");
     if (!inspectionComplete) newErrors.push("Vehicle Inspection Report file is required");
+    if (!logbookExpiryValid) newErrors.push("Vehicle Logbook expiry date must be in the future");
+    if (!insuranceExpiryValid)
+      newErrors.push("Proof of Insurance expiry date must be in the future");
+    if (!inspectionExpiryValid)
+      newErrors.push("Vehicle Inspection Report expiry date must be in the future");
 
     setErrors(newErrors);
     return newErrors.length === 0;
@@ -228,8 +243,11 @@ export default function VehicleDetails() {
 
   const allDocsUploaded = Boolean(
     form.vehicleDocs?.logbook?.file &&
+    validateDocumentExpiryDate(form.vehicleDocs?.logbook?.expiryDate || "").valid &&
     form.vehicleDocs?.insurance?.file &&
+    validateDocumentExpiryDate(form.vehicleDocs?.insurance?.expiryDate || "").valid &&
     form.vehicleDocs?.inspection?.file
+      && validateDocumentExpiryDate(form.vehicleDocs?.inspection?.expiryDate || "").valid
   );
 
   return (

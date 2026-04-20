@@ -284,8 +284,8 @@ export default function Registration() {
           <div className="rounded-2xl border border-orange-200 bg-orange-50/50 px-4 py-4">
             <p className="text-[11px] font-medium leading-relaxed text-slate-700">
               Document upload is handled on the onboarding profile screen after this step.
-              National ID and Driver's License require front and back copies, while
-              Conduct Clearance requires one clear copy.
+              National ID or Passport and Driver's License require front and back copies, while
+              Conduct Clearance requires one clear copy. All documents must include a future expiry date.
             </p>
           </div>
         </section>

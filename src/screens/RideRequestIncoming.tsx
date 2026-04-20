@@ -125,6 +125,8 @@ export default function RideRequestIncoming() {
     deliveryWorkflow,
     resetDeliveryWorkflow,
     resetActiveTrip,
+    jobAccessError,
+    clearJobAccessError,
   } = useStore();
 
   const requestedJobId = routeState?.jobId;
@@ -252,6 +254,7 @@ export default function RideRequestIncoming() {
   };
 
   const handleAccept = () => {
+    clearJobAccessError();
     if (isShuttle) {
       navigate(buildAcceptedJobRoute("shuttle", requestedJobId || ""));
       return;
@@ -335,7 +338,7 @@ export default function RideRequestIncoming() {
       {acceptError && (
         <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 w-11/12 max-w-sm pointer-events-none">
           <div className="bg-red-500 text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-xl shadow-red-500/20 text-center animate-in slide-in-from-top-4 fade-in">
-            Failed to accept job. Please refresh and try again.
+            {jobAccessError || "Failed to accept job. Please refresh and try again."}
           </div>
         </div>
       )}

@@ -77,7 +77,7 @@ export default function DocumentReview() {
           <div className="space-y-3">
             <DocReviewRow
               icon={IdCard}
-              title="National ID"
+              title="National ID or Passport"
               status="Awaiting final check"
               eta="Typically < 2 hrs"
             />
