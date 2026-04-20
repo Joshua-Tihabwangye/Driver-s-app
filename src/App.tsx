@@ -17,6 +17,10 @@ import { useStore } from "./context/StoreContext";
 import { useTheme } from "./context/ThemeContext";
 import ForgotPassword from "./screens/ForgotPassword";
 import OTPVerification from "./screens/OTPVerification";
+import {
+  OFFLINE_JOB_ACCESS_ERROR,
+  isOfflineRestrictedPath,
+} from "./utils/offlineAccess";
 
 const AUTH_ROUTES_WITHOUT_SHELL = new Set([
   "/auth/forgot-password",
@@ -75,6 +79,35 @@ function RequireAuth({ children }: { children: ReactNode }) {
         to={AUTH_LOGIN_ROUTE}
         replace
         state={{ from }}
+      />
+    );
+  }
+
+  return <>{children}</>;
+}
+
+function RequireOnlineForJobs({
+  children,
+  routePath,
+}: {
+  children: ReactNode;
+  routePath: string;
+}) {
+  const { driverPresenceStatus } = useStore();
+  const location = useLocation();
+
+  if (
+    driverPresenceStatus === "offline" &&
+    isOfflineRestrictedPath(routePath)
+  ) {
+    return (
+      <Navigate
+        to="/driver/dashboard/offline"
+        replace
+        state={{
+          offlineGuardMessage: OFFLINE_JOB_ACCESS_ERROR,
+          blockedPath: `${location.pathname}${location.search}${location.hash}`,
+        }}
       />
     );
   }
@@ -175,6 +208,14 @@ export default function App() {
           const isCurrentlyPublic = 
             PUBLIC_SCREEN_IDS.has(screen.id) || 
             SENSITIVE_ONBOARDING_IDS.has(screen.id);
+          const routeRequiresOnlineForJobs = isOfflineRestrictedPath(screen.path);
+          const onlineProtectedElement = routeRequiresOnlineForJobs ? (
+            <RequireOnlineForJobs routePath={screen.path}>
+              {screenElement}
+            </RequireOnlineForJobs>
+          ) : (
+            screenElement
+          );
 
           return (
             <Route
@@ -182,8 +223,8 @@ export default function App() {
               path={screen.path}
               element={
                 isCurrentlyPublic
-                  ? screenElement
-                  : <RequireAuth>{screenElement}</RequireAuth>
+                  ? onlineProtectedElement
+                  : <RequireAuth>{onlineProtectedElement}</RequireAuth>
               }
             />
           );

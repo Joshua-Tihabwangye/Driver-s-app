@@ -3,6 +3,8 @@ import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
 import { useJobs } from "../context/JobsContext";
+import { useStore } from "../context/StoreContext";
+import { OFFLINE_JOB_ACCESS_ERROR } from "../utils/offlineAccess";
 
 interface BottomNavItemProps {
   icon: React.ElementType;
@@ -11,19 +13,34 @@ interface BottomNavItemProps {
   onClick: () => void;
   isDark: boolean;
   badge?: number;
+  disabled?: boolean;
 }
 
-function BottomNavItem({ icon: Icon, label, active, onClick, isDark, badge }: BottomNavItemProps) {
+function BottomNavItem({
+  icon: Icon,
+  label,
+  active,
+  onClick,
+  isDark,
+  badge,
+  disabled = false,
+}: BottomNavItemProps) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       className={`flex flex-1 flex-col items-center justify-center py-2 transition-colors duration-200 active:scale-95 ${
+        disabled
+          ? "cursor-not-allowed text-slate-300 dark:text-slate-600"
+          : ""
+      } ${
         active
           ? "text-brand-active"
           : "text-brand-inactive hover:text-slate-600 dark:hover:text-slate-300"
       }`}
       aria-label={label}
+      aria-disabled={disabled}
     >
       <div className="relative">
         <Icon
@@ -110,7 +127,9 @@ export default function BottomNav({ isVisible = true }: { isVisible?: boolean })
   const location = useLocation();
   const { isDark } = useTheme();
   const { pendingCount } = useJobs();
+  const { driverPresenceStatus } = useStore();
   const active = getActiveTab(location.pathname);
+  const isOffline = driverPresenceStatus === "offline";
 
   return (
     <nav
@@ -129,7 +148,19 @@ export default function BottomNav({ isVisible = true }: { isVisible?: boolean })
             icon={tab.icon}
             label={tab.label}
             active={active === tab.id}
-            onClick={() => navigate(tab.route)}
+            disabled={isOffline && tab.id === "jobs"}
+            onClick={() => {
+              if (isOffline && tab.id === "jobs") {
+                navigate("/driver/dashboard/offline", {
+                  state: {
+                    offlineGuardMessage: OFFLINE_JOB_ACCESS_ERROR,
+                    blockedPath: location.pathname,
+                  },
+                });
+                return;
+              }
+              navigate(tab.route);
+            }}
             isDark={isDark}
             badge={tab.id === "jobs" ? pendingCount : undefined}
           />
