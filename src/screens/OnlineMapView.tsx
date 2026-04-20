@@ -300,16 +300,18 @@ export default function OnlineMapView({
             </button>
           </div>
 
-          <div className="absolute left-4 bottom-4 flex flex-col gap-2">
-            <button
-              type="button"
-              onClick={() => navigate("/driver/map/searching")}
-              className="inline-flex items-center gap-2 rounded-xl border border-orange-200 bg-orange-50/95 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-orange-700 shadow-lg active:scale-95"
-            >
-              <MapPin className="h-3.5 w-3.5" />
-              Find Riders
-            </button>
-          </div>
+          {!homeMode && (
+            <div className="absolute left-4 bottom-4 flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={() => navigate("/driver/map/searching")}
+                className="inline-flex items-center gap-2 rounded-xl border border-orange-200 bg-orange-50/95 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-orange-700 shadow-lg active:scale-95"
+              >
+                <MapPin className="h-3.5 w-3.5" />
+                Find Riders
+              </button>
+            </div>
+          )}
 
           {locationHint && (
             <div className="absolute bottom-20 left-1/2 max-w-[80%] -translate-x-1/2 rounded-xl border border-white/30 bg-slate-900/85 px-3 py-2 text-[10px] font-black uppercase tracking-tight text-white shadow-lg backdrop-blur">

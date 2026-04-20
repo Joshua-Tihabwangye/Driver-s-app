@@ -1524,7 +1524,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       selectedVehicleIndex < vehicles.length
         ? vehicles[selectedVehicleIndex]
         : null;
-    const requiredVehicleDocs = ["logbook", "insurance", "inspection"] as const;
+    const requiredVehicleDocs = ["insurance", "inspection"] as const;
     const hasExpiredVehicleDoc = requiredVehicleDocs.some((docKey) => {
       const group = activeVehicle?.vehicleDocs?.[docKey];
       if (!group?.file?.url) {

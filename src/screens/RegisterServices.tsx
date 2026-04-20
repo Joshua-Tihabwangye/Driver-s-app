@@ -31,7 +31,7 @@ const SERVICES: Array<{
   { key: "driver", label: "EVzone Driver", icon: Car, color: "#f77f00" },
   { key: "faith", label: "FaithHub", icon: Church, color: "#2196F3" },
   { key: "charging", label: "EVzone Charging", icon: BatteryCharging, color: "#f77f00" },
-  { key: "wallet", label: "Wallet Agent", icon: Wallet2, color: "#2196F3" },
+  { key: "wallet", label: "EVzone Wallet Agent", icon: Wallet2, color: "#2196F3" },
 ];
 
 type AuthMode = "login" | "signup";

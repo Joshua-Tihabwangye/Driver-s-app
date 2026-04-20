@@ -4,7 +4,6 @@ import {
   ChevronRight,
   Info,
   Truck,
-  FileText,
   ShieldCheck,
   FileBadge2
 } from "lucide-react";
@@ -155,12 +154,8 @@ export default function ManageVehicleDetails() {
     if (!form.batterySize.trim()) newErrors.push("Battery (kWh) is required");
     if (!form.range.trim()) newErrors.push("Est. Range (KM) is required");
 
-    const logbookComplete = Boolean(form.vehicleDocs?.logbook?.file);
     const insuranceComplete = Boolean(form.vehicleDocs?.insurance?.file);
     const inspectionComplete = Boolean(form.vehicleDocs?.inspection?.file);
-    const logbookExpiryValid = validateDocumentExpiryDate(
-      form.vehicleDocs?.logbook?.expiryDate || ""
-    ).valid;
     const insuranceExpiryValid = validateDocumentExpiryDate(
       form.vehicleDocs?.insurance?.expiryDate || ""
     ).valid;
@@ -168,10 +163,8 @@ export default function ManageVehicleDetails() {
       form.vehicleDocs?.inspection?.expiryDate || ""
     ).valid;
 
-    if (!logbookComplete) newErrors.push("Vehicle Logbook file is required");
     if (!insuranceComplete) newErrors.push("Proof of Insurance file is required");
     if (!inspectionComplete) newErrors.push("Vehicle Inspection Report file is required");
-    if (!logbookExpiryValid) newErrors.push("Vehicle Logbook expiry date must be in the future");
     if (!insuranceExpiryValid)
       newErrors.push("Proof of Insurance expiry date must be in the future");
     if (!inspectionExpiryValid)
@@ -225,8 +218,6 @@ export default function ManageVehicleDetails() {
   const availableCount = Object.values(resolvedAccessories).filter(v => v === "Available").length;
 
   const allDocsUploaded = Boolean(
-    form.vehicleDocs?.logbook?.file &&
-    validateDocumentExpiryDate(form.vehicleDocs?.logbook?.expiryDate || "").valid &&
     form.vehicleDocs?.insurance?.file &&
     validateDocumentExpiryDate(form.vehicleDocs?.insurance?.expiryDate || "").valid &&
     form.vehicleDocs?.inspection?.file
@@ -356,13 +347,6 @@ export default function ManageVehicleDetails() {
                     <div className="text-[11px] font-medium text-slate-500 mb-2 text-left">
                       Please upload all required vehicle documents. These must be clear and legible.
                     </div>
-                    <VehicleDocumentCard
-                      icon={FileText}
-                      title="Vehicle Logbook"
-                      subtitle="Upload one clear copy"
-                      documentGroup={form.vehicleDocs?.logbook}
-                      onChange={(group) => setForm(f => ({ ...f, vehicleDocs: { ...f.vehicleDocs, logbook: group } }))}
-                    />
                     <VehicleDocumentCard
                       icon={ShieldCheck}
                       title="Proof of Insurance"

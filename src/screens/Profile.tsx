@@ -9,6 +9,7 @@ import {
   Mail,
   MapPin,
   Phone,
+  Smartphone,
   ShieldCheck,
   Star,
   User,
@@ -20,6 +21,10 @@ import {
   areAllRequiredDocumentsCompliant,
   readStoredDocumentState,
 } from "../utils/documentVerificationState";
+import {
+  canUsePhonebookPicker,
+  pickSinglePhonebookContact,
+} from "../utils/phonebook";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -30,6 +35,8 @@ export default function Profile() {
     onboardingCheckpoints,
   } = useStore();
   const [isEditing, setIsEditing] = useState(false);
+  const [isPickingPhone, setIsPickingPhone] = useState(false);
+  const [phonebookMessage, setPhonebookMessage] = useState("");
   const [profile, setProfile] = useState(() => ({
     name: driverProfile.fullName,
     phone: driverProfile.phone,
@@ -69,6 +76,31 @@ export default function Profile() {
       city: profile.city.trim(),
     });
     setIsEditing(false);
+  };
+
+  const handlePickPhoneFromPhonebook = async () => {
+    if (!canUsePhonebookPicker()) {
+      setPhonebookMessage(
+        "Phonebook is unavailable on this browser/device. Enter the number manually."
+      );
+      return;
+    }
+
+    setIsPickingPhone(true);
+    setPhonebookMessage("");
+    try {
+      const picked = await pickSinglePhonebookContact();
+      if (!picked?.phone) {
+        setPhonebookMessage("No phone number selected from phonebook.");
+        return;
+      }
+      setProfile((prev) => ({ ...prev, phone: picked.phone }));
+      setPhonebookMessage("Phone number added from phonebook.");
+    } catch {
+      setPhonebookMessage("Could not open phonebook. Enter the number manually.");
+    } finally {
+      setIsPickingPhone(false);
+    }
   };
 
   return (
@@ -190,13 +222,32 @@ export default function Profile() {
                   </label>
                 </div>
                 {isEditing ? (
-                  <input
-                    type="text"
-                    value={field.value as string}
-                    onChange={(e) => setProfile((p) => ({ ...p, [field.key]: e.target.value }))}
-                    className="w-full text-[13px] font-bold text-slate-900 bg-transparent outline-none focus:ring-0 placeholder:text-slate-300"
-                    autoFocus={field.key === "name"}
-                  />
+                  <div className="space-y-2">
+                    <input
+                      type={field.key === "phone" ? "tel" : "text"}
+                      value={field.value as string}
+                      onChange={(e) => setProfile((p) => ({ ...p, [field.key]: e.target.value }))}
+                      className="w-full text-[13px] font-bold text-slate-900 bg-transparent outline-none focus:ring-0 placeholder:text-slate-300"
+                      autoFocus={field.key === "name"}
+                    />
+                    {field.key === "phone" ? (
+                      <div className="flex items-center justify-between">
+                        <button
+                          type="button"
+                          onClick={handlePickPhoneFromPhonebook}
+                          className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-emerald-700 transition-colors hover:bg-emerald-100"
+                        >
+                          <Smartphone className="h-3 w-3" />
+                          {isPickingPhone ? "Opening..." : "Phonebook"}
+                        </button>
+                        {phonebookMessage ? (
+                          <span className="text-[9px] font-bold uppercase tracking-tight text-slate-500">
+                            {phonebookMessage}
+                          </span>
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </div>
                 ) : (
                   <p className="text-[13px] font-black text-slate-900 tracking-tight">{field.value as string}</p>
                 )}

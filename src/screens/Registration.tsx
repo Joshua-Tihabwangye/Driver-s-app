@@ -1,8 +1,13 @@
+import { Smartphone } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
 import { resetStoredDocumentState } from "../utils/documentVerificationState";
+import {
+  canUsePhonebookPicker,
+  pickSinglePhonebookContact,
+} from "../utils/phonebook";
 import {
   getRegisterServiceLabel,
   readSelectedRegisterService,
@@ -59,6 +64,8 @@ export default function Registration() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [isPickingPhone, setIsPickingPhone] = useState(false);
+  const [phonebookMessage, setPhonebookMessage] = useState("");
 
   useEffect(() => {
     if (!selectedService) {
@@ -149,6 +156,31 @@ export default function Registration() {
     navigate("/driver/register", { state: { selectedService } });
   };
 
+  const handlePickPhoneFromPhonebook = async () => {
+    if (!canUsePhonebookPicker()) {
+      setPhonebookMessage(
+        "Phonebook is unavailable on this browser/device. Enter the number manually."
+      );
+      return;
+    }
+
+    setIsPickingPhone(true);
+    setPhonebookMessage("");
+    try {
+      const picked = await pickSinglePhonebookContact();
+      if (!picked?.phone) {
+        setPhonebookMessage("No phone number selected from phonebook.");
+        return;
+      }
+      setPhone(picked.phone);
+      setPhonebookMessage("Phone number added from phonebook.");
+    } catch {
+      setPhonebookMessage("Could not open phonebook. Enter the number manually.");
+    } finally {
+      setIsPickingPhone(false);
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-full ">
       <PageHeader 
@@ -217,12 +249,29 @@ export default function Registration() {
               onChange={setEmail}
               placeholder="name@example.com"
             />
-            <Input
-              label="Mobile Number"
-              value={phone}
-              onChange={setPhone}
-              placeholder="e.g. +256 700 000000"
-            />
+            <div className="space-y-2">
+              <Input
+                label="Mobile Number"
+                value={phone}
+                onChange={setPhone}
+                placeholder="e.g. +256 700 000000"
+              />
+              <div className="flex items-center justify-between px-1">
+                <button
+                  type="button"
+                  onClick={handlePickPhoneFromPhonebook}
+                  className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-emerald-700 transition-colors hover:bg-emerald-100"
+                >
+                  <Smartphone className="h-3 w-3" />
+                  {isPickingPhone ? "Opening..." : "Phonebook"}
+                </button>
+                {phonebookMessage ? (
+                  <span className="text-[9px] font-bold uppercase tracking-tight text-slate-500">
+                    {phonebookMessage}
+                  </span>
+                ) : null}
+              </div>
+            </div>
             <Input
               label="Street Address"
               value={streetAddress}

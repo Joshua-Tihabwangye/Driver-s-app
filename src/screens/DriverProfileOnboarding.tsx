@@ -354,7 +354,7 @@ export default function DriverProfileOnboarding() {
         detail: onboardingCheckpoints.vehicleReady
           ? "Active vehicle selected and ready."
           : (() => {
-              if (vehicles.length === 0) return "No vehicles added. Logbook and insurance missing.";
+              if (vehicles.length === 0) return "No vehicles added. Insurance and inspection documents missing.";
               if (selectedVehicleIndex === null) return "Vehicle selected but not set as active.";
               return "Vehicle setup incomplete.";
             })(),
