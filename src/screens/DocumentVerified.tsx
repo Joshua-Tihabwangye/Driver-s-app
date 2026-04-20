@@ -42,7 +42,12 @@ function ApprovedRow({ icon: Icon, title, subtitle }) {
 
 export default function DocumentVerified() {
   const navigate = useNavigate();
-  const { onboardingCheckpoints, setOnboardingCheckpoint } = useStore();
+  const {
+    onboardingCheckpoints,
+    resolveGoOnlineAttempt,
+    setDriverOnline,
+    setOnboardingCheckpoint,
+  } = useStore();
   const documentState = useMemo(() => readStoredDocumentState(), []);
   const allDocumentsVerified = areAllRequiredDocumentsCompliant(documentState);
   const trainingCompleted = onboardingCheckpoints.trainingCompleted;
@@ -60,10 +65,27 @@ export default function DocumentVerified() {
     setOnboardingCheckpoint("documentsVerified", true);
   }, [allDocumentsVerified, documentState, navigate, setOnboardingCheckpoint]);
 
-  const primaryCtaRoute = trainingCompleted
-    ? "/driver/preferences/identity/face-capture?mode=go-online&next=/driver/dashboard/online"
-    : "/driver/training/intro";
   const primaryCtaLabel = trainingCompleted ? "Go Online" : "Start Training";
+  const handlePrimaryAction = () => {
+    if (!trainingCompleted) {
+      navigate("/driver/training/intro");
+      return;
+    }
+
+    const decision = resolveGoOnlineAttempt("/driver/dashboard/online");
+    if (decision.allowed && !decision.requiresSelfie) {
+      setDriverOnline();
+      navigate("/driver/dashboard/online", { replace: true });
+      return;
+    }
+    navigate(decision.route, {
+      state: decision.allowed
+        ? undefined
+        : {
+            offlineGuardMessage: decision.message,
+          },
+    });
+  };
 
   return (
     <div className="flex flex-col min-h-full ">
@@ -157,7 +179,7 @@ export default function DocumentVerified() {
         <section className="pt-4 pb-12 flex flex-col gap-3">
           <button
             type="button"
-            onClick={() => navigate(primaryCtaRoute)}
+            onClick={handlePrimaryAction}
             className="w-full rounded-2xl bg-orange-500 py-4 text-sm font-black text-white shadow-xl shadow-orange-500/20 hover:bg-orange-600 active:scale-[0.98] transition-all uppercase tracking-widest"
           >
             {primaryCtaLabel}

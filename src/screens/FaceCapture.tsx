@@ -65,11 +65,17 @@ export default function FaceCapture() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { isLoggedIn, login } = useAuth();
-  const { canGoOnline, setDriverOnline } = useStore();
+  const {
+    completeGoOnlineAfterSelfieVerification,
+    resolveGoOnlineAttempt,
+    setDriverOnline,
+  } = useStore();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const autoAdvanceTimeoutRef = useRef<number | null>(null);
   const [pendingGoOnlineRoute, setPendingGoOnlineRoute] = useState<string | null>(null);
+  const [isVerifyingSelfie, setIsVerifyingSelfie] = useState(false);
+  const [verificationError, setVerificationError] = useState("");
   const isGoOnlineMode = searchParams.get("mode") === "go-online";
   const nextRoute = searchParams.get("next") || "/driver/dashboard/online";
 
@@ -161,12 +167,38 @@ export default function FaceCapture() {
     setPendingGoOnlineRoute(null);
   }, [isLoggedIn, navigate, pendingGoOnlineRoute]);
 
-  const handleCapture = () => {
+  useEffect(() => {
+    if (!isGoOnlineMode) {
+      return;
+    }
+
+    const decision = resolveGoOnlineAttempt(nextRoute);
+    if (decision.allowed && decision.requiresSelfie) {
+      return;
+    }
+
+    if (decision.allowed && !decision.requiresSelfie) {
+      setDriverOnline();
+      navigate(nextRoute, { replace: true });
+      return;
+    }
+
+    stopCameraStream();
+    navigate(decision.route, {
+      replace: true,
+      state: {
+        offlineGuardMessage: decision.message,
+      },
+    });
+  }, [isGoOnlineMode, navigate, nextRoute, resolveGoOnlineAttempt, setDriverOnline]);
+
+  const handleCapture = async () => {
     const videoElement = videoRef.current;
     if (!videoElement || videoElement.videoWidth === 0 || videoElement.videoHeight === 0) {
       setCameraError("Camera feed is not ready. Please hold still and try again.");
       return;
     }
+    setVerificationError("");
 
     const canvas = document.createElement("canvas");
     canvas.width = videoElement.videoWidth;
@@ -200,16 +232,36 @@ export default function FaceCapture() {
 
     stopCameraStream();
     if (isGoOnlineMode) {
-      const targetRoute = canGoOnline ? nextRoute : "/driver/dashboard/required-actions";
-      if (canGoOnline) {
-        setDriverOnline();
+      setIsVerifyingSelfie(true);
+      const verificationResult = await completeGoOnlineAfterSelfieVerification();
+      setIsVerifyingSelfie(false);
+
+      if (!verificationResult.ok) {
+        if (verificationResult.redirectRoute) {
+          navigate(verificationResult.redirectRoute, {
+            replace: true,
+            state: {
+              offlineGuardMessage:
+                verificationResult.error ||
+                "Go-online checks failed. Please review required actions.",
+            },
+          });
+          return;
+        }
+
+        setVerificationError(
+          verificationResult.error ||
+            "Selfie verification failed. Please try again."
+        );
+        return;
       }
+
       if (!isLoggedIn) {
-        setPendingGoOnlineRoute(targetRoute);
+        setPendingGoOnlineRoute(nextRoute);
         login();
         return;
       }
-      navigate(targetRoute, { replace: true });
+      navigate(nextRoute, { replace: true });
       return;
     }
     navigate("/driver/onboarding/profile");
@@ -231,7 +283,11 @@ export default function FaceCapture() {
       ? "Front captured. Keep turning right for the next capture."
       : "Front and right captured. Left capture is final.";
 
-  const ctaDisabled = !isCameraReady || cameraError.length > 0 || isAdvancingStep;
+  const ctaDisabled =
+    !isCameraReady ||
+    cameraError.length > 0 ||
+    isAdvancingStep ||
+    isVerifyingSelfie;
 
   const ctaActionText =
     step === 1
@@ -243,7 +299,7 @@ export default function FaceCapture() {
   const completionText =
     step === 3
       ? isGoOnlineMode
-        ? "After this capture, your status will switch to online."
+        ? "After this capture, verification runs, then your status switches online."
         : "After this capture, you'll continue to the upload page."
       : "We will automatically move to the next side after each capture.";
 
@@ -259,6 +315,8 @@ export default function FaceCapture() {
 
   const cameraStatusText = cameraError
     ? "Camera unavailable"
+    : isVerifyingSelfie
+    ? "Verifying selfie..."
     : isCameraReady
     ? isAdvancingStep
       ? "Captured. Moving to next angle..."
@@ -365,6 +423,11 @@ export default function FaceCapture() {
           <p className="text-center text-[10px] font-black uppercase tracking-widest text-slate-400">
             {cameraStatusText}
           </p>
+          {verificationError ? (
+            <p className="text-center text-[10px] font-black uppercase tracking-tight text-red-600">
+              {verificationError}
+            </p>
+          ) : null}
         </section>
 
         <section className="space-y-3">

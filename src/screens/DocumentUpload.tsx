@@ -162,23 +162,44 @@ function DocumentCard({
   onUploadFront: () => void;
   onUploadBack?: () => void;
 }) {
+  const isExpired = expiryStatus === "expired";
+  const cardToneClass = isExpired
+    ? "border-red-300 bg-red-50/40 shadow-red-100/40"
+    : emphasise
+    ? "border-orange-300 shadow-orange-100/40"
+    : "border-brand-secondary/10 hover:border-brand-secondary/30";
+
   return (
     <div
-      className={`rounded-2xl border-2 bg-cream px-3 py-3 shadow-sm ${
-        emphasise
-          ? "border-orange-300 shadow-orange-100/40"
-          : "border-brand-secondary/10 hover:border-brand-secondary/30"
-      }`}
+      className={`rounded-2xl border-2 px-3 py-3 shadow-sm ${cardToneClass}`}
     >
       <div className="mb-2 flex items-center space-x-3">
         <div className="flex h-9 w-9 items-center justify-center rounded-full border border-orange-100 bg-white">
           <Icon className="h-4 w-4 text-brand-secondary" />
         </div>
         <div className="flex flex-col">
-          <span className="text-xs font-semibold text-slate-900">{title}</span>
-          <span className="text-[11px] text-slate-500">{subtitle}</span>
+          <span
+            className={`text-xs font-semibold ${
+              isExpired ? "text-red-700" : "text-slate-900"
+            }`}
+          >
+            {title}
+          </span>
+          <span
+            className={`text-[11px] ${
+              isExpired ? "text-red-600" : "text-slate-500"
+            }`}
+          >
+            {subtitle}
+          </span>
         </div>
       </div>
+
+      {isExpired ? (
+        <p className="mb-2 rounded-lg border border-red-200 bg-red-50 px-2 py-1 text-[10px] font-bold uppercase tracking-tight text-red-700">
+          Expired document. Upload an updated copy.
+        </p>
+      ) : null}
 
       <div className="space-y-2">
         <CopyRow
@@ -226,7 +247,8 @@ function DocumentCard({
 export default function DocumentUpload() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { setOnboardingCheckpoint } = useStore();
+  const { resolveGoOnlineAttempt, setDriverOnline, setOnboardingCheckpoint } =
+    useStore();
   const focusedDoc = useMemo(() => {
     const query = new URLSearchParams(location.search);
     const focus = query.get("focus");
@@ -234,6 +256,11 @@ export default function DocumentUpload() {
       return focus;
     }
     return null;
+  }, [location.search]);
+  const goOnlineNextRoute = useMemo(() => {
+    const query = new URLSearchParams(location.search);
+    const next = query.get("next");
+    return typeof next === "string" && next.trim().length > 0 ? next : "";
   }, [location.search]);
 
   const [docs, setDocs] = useState<DocumentUploadState>(() => readStoredDocumentState());
@@ -342,6 +369,23 @@ export default function DocumentUpload() {
     }
 
     setOnboardingCheckpoint("documentsVerified", true);
+    if (goOnlineNextRoute) {
+      const decision = resolveGoOnlineAttempt(goOnlineNextRoute);
+      if (decision.allowed && !decision.requiresSelfie) {
+        setDriverOnline();
+        navigate(goOnlineNextRoute, { replace: true });
+        return;
+      }
+      navigate(decision.route, {
+        replace: true,
+        state: decision.allowed
+          ? undefined
+          : {
+              offlineGuardMessage: decision.message,
+            },
+      });
+      return;
+    }
     navigate("/driver/onboarding/profile");
   };
 
@@ -392,6 +436,11 @@ export default function DocumentUpload() {
             Accepted formats: image files and PDF only. Invalid formats are rejected and
             must be uploaded again. Each document must include a future expiry date.
           </p>
+          {goOnlineNextRoute ? (
+            <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[10px] font-black uppercase tracking-tight text-amber-700">
+              Go Online Resume: Update required documents, then continue online.
+            </p>
+          ) : null}
         </section>
 
         <section className="space-y-4">
@@ -512,7 +561,9 @@ export default function DocumentUpload() {
                 : "cursor-not-allowed bg-slate-200 text-slate-500 shadow-none"
             }`}
           >
-            Save Documents & Continue
+            {goOnlineNextRoute
+              ? "Save Documents & Continue Online"
+              : "Save Documents & Continue"}
           </button>
           {!allRequiredUploadedWithValidExpiry && (
             <p className="mt-2 text-center text-[10px] font-bold uppercase tracking-tight text-slate-400">

@@ -376,3 +376,27 @@ export function getFirstNonCompliantDocumentKey(
   }
   return null;
 }
+
+export function hasAnyRequiredDocumentEvidence(state: DocumentUploadState): boolean {
+  for (const key of DOCUMENT_UPLOAD_KEYS) {
+    const entry = state[key];
+    if (entry.expiryDate.trim().length > 0) {
+      return true;
+    }
+
+    const requiredSides = getRequiredDocumentSides(key);
+    for (const side of requiredSides) {
+      const copy = entry[side];
+      if (
+        copy.fileName.trim().length > 0 ||
+        copy.fileUrl.trim().length > 0 ||
+        copy.status === "Uploaded" ||
+        copy.status === "Rejected"
+      ) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}

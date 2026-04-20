@@ -40,12 +40,13 @@ function IssueRow({ title, text, type, onClick }: any) {
 export default function OfflineDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { canGoOnline, onboardingBlockers, setDriverOffline } = useStore();
-  const goOnlineTarget =
-    "/driver/preferences/identity/face-capture?mode=go-online&next=/driver/dashboard/online";
-  const blockersWithoutDocuments = onboardingBlockers.filter(
-    (blocker) => blocker.id !== "documentsVerified"
-  );
+  const {
+    canGoOnline,
+    onboardingBlockers,
+    resolveGoOnlineAttempt,
+    setDriverOnline,
+    setDriverOffline,
+  } = useStore();
 
   useEffect(() => {
     setDriverOffline();
@@ -57,6 +58,22 @@ export default function OfflineDashboard() {
   const hasOfflineGuardMessage =
     typeof routeState.offlineGuardMessage === "string" &&
     routeState.offlineGuardMessage.trim().length > 0;
+  const handleGoOnline = () => {
+    const decision = resolveGoOnlineAttempt("/driver/dashboard/online");
+    if (decision.allowed && !decision.requiresSelfie) {
+      setDriverOnline();
+      navigate("/driver/dashboard/online", { replace: true });
+      return;
+    }
+    navigate(decision.route, {
+      state: decision.allowed
+        ? undefined
+        : {
+            offlineGuardMessage: decision.message,
+            blockedPath: location.pathname,
+          },
+    });
+  };
 
   return (
     <div className="flex flex-col h-full bg-transparent">
@@ -84,7 +101,7 @@ export default function OfflineDashboard() {
 
           <button
             type="button"
-            onClick={() => navigate(goOnlineTarget)}
+            onClick={handleGoOnline}
             className="relative z-10 w-full rounded-2xl bg-brand-active py-4 text-xs font-black text-slate-900 hover:bg-brand-active/90 active:scale-95 transition-all shadow-xl shadow-brand-active/20 uppercase tracking-widest"
           >
             Go Online
@@ -118,17 +135,15 @@ export default function OfflineDashboard() {
           <div className="px-1">
             <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Attention Required</h2>
           </div>
-          {blockersWithoutDocuments.length === 0 ? (
+          {onboardingBlockers.length === 0 ? (
             <IssueRow
               title="All Required Steps Completed"
-              text="Selfie verification is required before you switch to online mode."
+              text="Document checks run first. If valid, selfie verification starts and you go online directly after verification."
               type="info"
-              onClick={() =>
-                navigate("/driver/preferences/identity/face-capture?mode=go-online&next=/driver/dashboard/online")
-              }
+              onClick={handleGoOnline}
             />
           ) : (
-            blockersWithoutDocuments.map((blocker) => (
+            onboardingBlockers.map((blocker) => (
               <IssueRow
                 key={blocker.id}
                 title={blocker.title}

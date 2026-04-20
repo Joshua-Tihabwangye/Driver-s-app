@@ -49,8 +49,28 @@ const BLOCKER_ICON_MAP: Record<OnboardingCheckpointId, any> = {
 
 export default function RequiredActionsDashboard() {
   const navigate = useNavigate();
-  const { onboardingBlockers, canGoOnline } = useStore();
+  const {
+    onboardingBlockers,
+    canGoOnline,
+    resolveGoOnlineAttempt,
+    setDriverOnline,
+  } = useStore();
   const blockerCount = onboardingBlockers.length;
+  const handleStartGoOnline = () => {
+    const decision = resolveGoOnlineAttempt("/driver/dashboard/online");
+    if (decision.allowed && !decision.requiresSelfie) {
+      setDriverOnline();
+      navigate("/driver/dashboard/online", { replace: true });
+      return;
+    }
+    navigate(decision.route, {
+      state: decision.allowed
+        ? undefined
+        : {
+            offlineGuardMessage: decision.message,
+          },
+    });
+  };
 
   return (
     <div className="flex flex-col h-full ">
@@ -111,9 +131,7 @@ export default function RequiredActionsDashboard() {
               </p>
               <button
                 type="button"
-                onClick={() =>
-                  navigate("/driver/preferences/identity/face-capture?mode=go-online&next=/driver/dashboard/online")
-                }
+                onClick={handleStartGoOnline}
                 className="mt-3 w-full rounded-xl bg-emerald-600 py-3 text-[10px] font-black uppercase tracking-widest text-white"
               >
                 Start Identity Check

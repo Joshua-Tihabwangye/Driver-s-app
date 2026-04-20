@@ -169,6 +169,7 @@ export const GENERIC_STATUS_STYLES: Record<string, { bg: string; border: string;
   pending: { bg: "bg-brand-highlight/10", border: "border-brand-highlight/20", text: "text-brand-highlight", label: "Pending" },
   review: { bg: "bg-brand-secondary/10", border: "border-brand-secondary/20", text: "text-brand-secondary", label: "Review" },
   missing: { bg: "bg-red-50", border: "border-red-100", text: "text-red-600", label: "Missing" },
+  expired: { bg: "bg-red-50", border: "border-red-200", text: "text-red-600", label: "Expired" },
   rejected: { bg: "bg-red-50", border: "border-red-200", text: "text-red-600", label: "Rejected" },
 };
 
