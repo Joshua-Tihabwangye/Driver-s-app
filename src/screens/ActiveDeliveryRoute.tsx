@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import SlideToConfirm from "../components/SlideToConfirm";
 import { SAMPLE_IDS } from "../data/constants";
 import { MOCK_DELIVERY_ROUTES } from "../data/mockData";
 import { useStore } from "../context/StoreContext";
@@ -236,17 +237,16 @@ export default function ActiveDeliveryRoute() {
             </div>
           )}
           
-          <button
-            type="button"
-            onClick={() =>
+          <SlideToConfirm
+            instruction="Slide when arrived at drop-off"
+            successLabel="Drop-off reached"
+            onConfirm={() => {
               navigate(
                 `/driver/delivery/route/${routeId || deliveryWorkflow.routeId || SAMPLE_IDS.route}/stop/${activeStopId}/details`
-              )
-            }
-            className="w-full rounded-[2rem] bg-orange-500 px-6 py-4 text-[11px] font-black uppercase tracking-widest text-white active:scale-[0.98] transition-all hover:bg-orange-600 shadow-xl shadow-orange-200/50"
-          >
-            Arrived at Drop-Off Point
-          </button>
+              );
+              return true;
+            }}
+          />
 
           <button
             type="button"

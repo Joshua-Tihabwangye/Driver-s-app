@@ -9,6 +9,7 @@ Wallet
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import SlideToConfirm from "../components/SlideToConfirm";
 import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – PickupConfirmed Pick-Up Confirmed Screen (v1)
@@ -186,15 +187,15 @@ export default function PickupConfirmed() {
              </div>
           </div>
 
-          <button
-            onClick={() => {
+          <SlideToConfirm
+            instruction="Slide to start delivery route"
+            successLabel="Route started"
+            onConfirm={() => {
               startDeliveryRoute();
               navigate(`/driver/delivery/route/${deliveryWorkflow.routeId}/active`);
+              return true;
             }}
-            className="w-full rounded-[2rem] bg-slate-900 px-6 py-5 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-slate-200 active:scale-[0.98] transition-all"
-          >
-            Continue to Active Route
-          </button>
+          />
         </section>
       </main>
     </div>

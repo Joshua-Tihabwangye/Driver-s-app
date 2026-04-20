@@ -10,6 +10,7 @@ Share2
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import SlideToConfirm from "../components/SlideToConfirm";
 import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – RideInProgress Driver App – Ride in Progress (v2)
@@ -221,13 +222,14 @@ export default function RideInProgress() {
           </div>
 
           {tripState === "reached" ? (
-            <button
-               type="button"
-               onClick={handleEndTrip}
-               className="w-full rounded-[2rem] bg-orange-500 py-4 text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-orange-500/20 active:scale-95 transition-transform"
-            >
-               End Trip
-            </button>
+            <SlideToConfirm
+              instruction="Slide to end trip"
+              successLabel="Trip completed"
+              onConfirm={() => {
+                handleEndTrip();
+                return true;
+              }}
+            />
           ) : (
             <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-[#f0fff4]/50 p-6 flex flex-col space-y-4 shadow-sm hover:border-orange-500/30 transition-all">
               <div className="flex items-center space-x-3">
