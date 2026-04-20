@@ -54,6 +54,7 @@ export default function AmbulanceJobStatus() {
     completeActiveTrip,
     completeTrip,
     updateJobStatus,
+    jobAccessError,
   } = useStore();
   const ambulanceJob = useMemo(
     () =>
@@ -88,6 +89,9 @@ export default function AmbulanceJobStatus() {
     }
     if (acceptSpecializedJob(jobId, "ambulance")) {
       return jobId;
+    }
+    if (jobAccessError) {
+      window.alert(jobAccessError);
     }
     // Keep CTA progression alive even when role or active-session guards reject activation.
     return jobId;

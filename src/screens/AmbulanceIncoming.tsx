@@ -27,7 +27,7 @@ export default function AmbulanceIncoming() {
   const [code] = useState("Code 1");
   const [timeLeft, setTimeLeft] = useState(20);
   const navigate = useNavigate();
-  const { jobs, acceptSpecializedJob } = useStore();
+  const { jobs, acceptSpecializedJob, jobAccessError, clearJobAccessError } = useStore();
   const pendingAmbulanceJob = useMemo(
     () =>
       jobs.find(
@@ -45,12 +45,16 @@ export default function AmbulanceIncoming() {
   }, [timeLeft]);
 
   const handleAccept = () => {
+    clearJobAccessError();
     if (!pendingAmbulanceJob) {
       navigate("/driver/jobs/list");
       return;
     }
     const accepted = acceptSpecializedJob(pendingAmbulanceJob.id, "ambulance");
     if (!accepted) {
+      if (jobAccessError) {
+        window.alert(jobAccessError);
+      }
       navigate("/driver/jobs/list");
       return;
     }

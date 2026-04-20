@@ -138,41 +138,43 @@ export default function DocumentCenter() {
             {docs.map((doc) => (
               <div
                 key={doc.id}
-                className="bg-cream rounded-[2.5rem] border-2 border-orange-500/10 p-6 flex items-center space-x-4 shadow-sm active:scale-[0.98] hover:scale-[1.01] hover:border-orange-500/30 transition-all duration-300"
+                className="bg-cream rounded-[2.5rem] border-2 border-orange-500/10 p-6 shadow-sm active:scale-[0.98] hover:scale-[1.01] hover:border-orange-500/30 transition-all duration-300"
               >
-                <div className="h-12 w-12 bg-white rounded-2xl flex items-center justify-center shrink-0 border border-orange-50">
-                  <FileText className="h-6 w-6 text-slate-400" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight mb-1">{doc.name}</h3>
-                  <div className="flex items-center space-x-2">
-                    <div className={`px-2 py-0.5 rounded-full ${doc.statusBg} flex items-center space-x-1`}>
-                      <doc.icon className={`h-3 w-3 ${doc.statusColor}`} />
-                      <span className={`text-[9px] font-black uppercase tracking-widest ${doc.statusColor}`}>{doc.status}</span>
-                    </div>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <div className="h-12 w-12 bg-white rounded-2xl flex items-center justify-center shrink-0 border border-orange-50">
+                    <FileText className="h-6 w-6 text-slate-400" />
                   </div>
-                  <p className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-tight">{doc.expiry}</p>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight mb-1">{doc.name}</h3>
+                    <div className="flex items-center space-x-2">
+                      <div className={`px-2 py-0.5 rounded-full ${doc.statusBg} flex items-center space-x-1`}>
+                        <doc.icon className={`h-3 w-3 ${doc.statusColor}`} />
+                        <span className={`text-[9px] font-black uppercase tracking-widest ${doc.statusColor}`}>{doc.status}</span>
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-tight break-words">{doc.expiry}</p>
+                  </div>
+                  {doc.status !== "verified" ? (
+                    <div className="flex justify-end sm:justify-start">
+                      <input
+                        id={`doc-upload-${doc.id}`}
+                        type="file"
+                        accept="image/*,application/pdf"
+                        className="hidden"
+                        onChange={(event) => handleUpload(doc.id, event)}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => triggerUpload(doc.id)}
+                        className="h-10 w-10 bg-emerald-50 rounded-xl flex items-center justify-center border border-emerald-100 active:scale-95 transition-all group"
+                      >
+                      <Upload className="h-4 w-4 text-[#03cd8c] group-hover:scale-110 transition-transform" />
+                      </button>
+                    </div>
+                  ) : (
+                    <ChevronRight className="h-5 w-5 text-slate-200 self-end sm:self-center" />
+                  )}
                 </div>
-                {doc.status !== "verified" ? (
-                  <>
-                    <input
-                      id={`doc-upload-${doc.id}`}
-                      type="file"
-                      accept="image/*,application/pdf"
-                      className="hidden"
-                      onChange={(event) => handleUpload(doc.id, event)}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => triggerUpload(doc.id)}
-                      className="h-10 w-10 bg-emerald-50 rounded-xl flex items-center justify-center border border-emerald-100 active:scale-95 transition-all group"
-                    >
-                    <Upload className="h-4 w-4 text-[#03cd8c] group-hover:scale-110 transition-transform" />
-                    </button>
-                  </>
-                ) : (
-                  <ChevronRight className="h-5 w-5 text-slate-200" />
-                )}
               </div>
             ))}
           </div>

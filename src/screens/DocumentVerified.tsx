@@ -10,8 +10,8 @@ import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
 import {
-  areAllRequiredDocumentsUploaded,
-  getFirstMissingDocumentKey,
+  areAllRequiredDocumentsCompliant,
+  getFirstNonCompliantDocumentKey,
   readStoredDocumentState,
 } from "../utils/documentVerificationState";
 
@@ -44,13 +44,13 @@ export default function DocumentVerified() {
   const navigate = useNavigate();
   const { onboardingCheckpoints, setOnboardingCheckpoint } = useStore();
   const documentState = useMemo(() => readStoredDocumentState(), []);
-  const allDocumentsVerified = areAllRequiredDocumentsUploaded(documentState);
+  const allDocumentsVerified = areAllRequiredDocumentsCompliant(documentState);
   const trainingCompleted = onboardingCheckpoints.trainingCompleted;
 
   useEffect(() => {
     if (!allDocumentsVerified) {
       setOnboardingCheckpoint("documentsVerified", false);
-      const firstMissing = getFirstMissingDocumentKey(documentState) ?? "id";
+      const firstMissing = getFirstNonCompliantDocumentKey(documentState) ?? "id";
       navigate(`/driver/onboarding/profile/documents/upload?focus=${firstMissing}`, {
         replace: true,
       });
@@ -107,7 +107,7 @@ export default function DocumentVerified() {
           <div className="space-y-3">
             <ApprovedRow
               icon={IdCard}
-              title="National ID"
+              title="National ID or Passport"
               subtitle={
                 documentState.id.front.fileName && documentState.id.back.fileName
                   ? `Front: ${documentState.id.front.fileName} | Back: ${documentState.id.back.fileName}`

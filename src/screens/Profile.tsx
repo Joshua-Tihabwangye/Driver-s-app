@@ -17,7 +17,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useStore } from "../context/StoreContext";
 import {
-  areAllRequiredDocumentsUploaded,
+  areAllRequiredDocumentsCompliant,
   readStoredDocumentState,
 } from "../utils/documentVerificationState";
 
@@ -45,7 +45,7 @@ export default function Profile() {
       .slice(0, 2)
       .map((part) => part[0]?.toUpperCase() || "")
       .join("") || "DR";
-  const documentsComplete = areAllRequiredDocumentsUploaded(readStoredDocumentState());
+  const documentsComplete = areAllRequiredDocumentsCompliant(readStoredDocumentState());
   const identityVerified = onboardingCheckpoints.identityVerified;
 
   useEffect(() => {

@@ -22,7 +22,7 @@ import PageHeader from "../components/PageHeader";
 import StatusChip from "../components/StatusChip";
 import { useStore } from "../context/StoreContext";
 import {
-  areAllRequiredDocumentsUploaded,
+  areAllRequiredDocumentsCompliant,
   getRequiredDocumentSides,
   isDocumentEntryComplete,
   isDocumentEntryRejected,
@@ -128,7 +128,7 @@ export default function DriverProfileOnboarding() {
   } = useStore();
   const documentState = useMemo(() => readStoredDocumentState(), []);
   const blockerCount = onboardingBlockers.length;
-  const documentsComplete = areAllRequiredDocumentsUploaded(documentState);
+  const documentsComplete = areAllRequiredDocumentsCompliant(documentState);
   const trainingComplete = onboardingCheckpoints.trainingCompleted;
   const onboardingPrerequisitesComplete =
     onboardingCheckpoints.roleSelected &&
@@ -243,13 +243,13 @@ export default function DriverProfileOnboarding() {
       },
       {
         id: "id-front",
-        label: "National ID (Front)",
+        label: "National ID or Passport (Front)",
         copy: documentState.id.front,
         uploadRoute: "/driver/onboarding/profile/documents/upload?focus=id",
       },
       {
         id: "id-back",
-        label: "National ID (Back)",
+        label: "National ID or Passport (Back)",
         copy: documentState.id.back,
         uploadRoute: "/driver/onboarding/profile/documents/upload?focus=id",
       },
@@ -639,7 +639,7 @@ export default function DriverProfileOnboarding() {
             </div>
             <h3 className="text-base font-black text-slate-900 tracking-tight uppercase">Personal Documents</h3>
             <p className="text-[11px] text-slate-400 font-medium px-8 leading-relaxed">
-              Upload National IDs, Passport, or Driving Permits for verification.
+              Upload National IDs or Passports, plus Driving Permits, for verification.
             </p>
           </div>
 
@@ -659,7 +659,7 @@ export default function DriverProfileOnboarding() {
             />
             <DocRow
               icon={CreditCard}
-              title="National ID"
+              title="National ID or Passport"
               description={getDocumentDescription("id")}
               statusLabel={getDocumentStatusLabel("id")}
               onClick={() =>
@@ -940,7 +940,7 @@ export default function DriverProfileOnboarding() {
                 return;
               }
               if (!documentsComplete) {
-                alert("Please upload all required documents (Driving Permit, National ID, and Conduct Cert) before proceeding.");
+                alert("Please upload all required documents (Driving Permit, National ID or Passport, and Conduct Cert) before proceeding.");
                 return;
               }
               const identityVerified = onboardingCheckpoints.identityVerified;

@@ -56,6 +56,7 @@ export default function RentalJobOverview() {
     completeActiveTrip,
     completeTrip,
     updateJobStatus,
+    jobAccessError,
   } = useStore();
   const rentalJob = useMemo(
     () =>
@@ -90,6 +91,9 @@ export default function RentalJobOverview() {
     }
     if (acceptSpecializedJob(jobId, "rental")) {
       return jobId;
+    }
+    if (jobAccessError) {
+      window.alert(jobAccessError);
     }
     // Keep CTA progression alive even when role or active-session guards reject activation.
     return jobId;

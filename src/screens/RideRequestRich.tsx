@@ -101,6 +101,8 @@ export default function RideRequestRich() {
     acceptSharedJob,
     resetDeliveryWorkflow,
     deliveryWorkflow,
+    jobAccessError,
+    clearJobAccessError,
   } = useStore();
   const [timeLeft, setTimeLeft] = useState(20);
   // Preview-only job type toggle so you can see all states in the canvas
@@ -218,6 +220,7 @@ export default function RideRequestRich() {
   };
 
   const handleAccept = () => {
+    clearJobAccessError();
     if (isShuttle) {
       navigate(buildAcceptedJobRoute("shuttle", requestedJobId || ""));
       return;
@@ -234,6 +237,9 @@ export default function RideRequestRich() {
       const accepted = acceptSharedJob(nextSharedJobId);
       // Shared route canonical target: /driver/trip/${nextSharedJobId}/active
       if (!accepted) {
+        if (jobAccessError) {
+          window.alert(jobAccessError);
+        }
         navigate("/driver/jobs/list");
         return;
       }
@@ -262,6 +268,9 @@ export default function RideRequestRich() {
     }
 
     if (!accepted) {
+      if (jobAccessError) {
+        window.alert(jobAccessError);
+      }
       navigate("/driver/jobs/list");
       return;
     }
