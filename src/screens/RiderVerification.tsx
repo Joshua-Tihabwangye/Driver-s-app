@@ -1,36 +1,88 @@
 import { buildPrivateTripRoute } from "../data/constants";
 import {
-MessageCircle,
-Phone,
-QrCode,
-User
+  Clock,
+  Copy,
+  MessageCircle,
+  Phone,
+  QrCode,
+  Send,
+  Share2,
+  User,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
-
-// EVzone Driver App – RiderVerification Rider Verification Code Entry (v1)
-// Screen for entering a 4-digit rider verification code at pickup.
-// 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
-
+import {
+  buildTripVerificationPayload,
+  isTripVerificationExpired,
+} from "../utils/tripVerification";
 
 const CODE_LENGTH = 4;
+
+function sanitizePhoneNumber(value?: string): string {
+  return (value || "").replace(/[^\d+]/g, "");
+}
+
+function formatRemainingTime(expiresAt: number, now: number): string {
+  const remainingSeconds = Math.max(0, Math.floor((expiresAt - now) / 1000));
+  const minutes = String(Math.floor(remainingSeconds / 60)).padStart(2, "0");
+  const seconds = String(remainingSeconds % 60).padStart(2, "0");
+  return `${minutes}:${seconds}`;
+}
 
 export default function RiderVerification() {
   const navigate = useNavigate();
   const { tripId: routeTripId } = useParams();
-  const { activeTrip, transitionActiveTripStage } = useStore();
-  const [code, setCode] = useState(Array(CODE_LENGTH).fill(""));
+  const { activeTrip, jobs, transitionActiveTripStage } = useStore();
+  const [code, setCode] = useState<string[]>(Array(CODE_LENGTH).fill(""));
   const [verificationMethod, setVerificationMethod] = useState<"otp" | "qr">("otp");
   const [qrConfirmed, setQrConfirmed] = useState(false);
   const [cameraError, setCameraError] = useState("");
+  const [otpError, setOtpError] = useState("");
   const [isCameraReady, setIsCameraReady] = useState(false);
-  const inputsRef = useRef([]);
+  const [shareFeedback, setShareFeedback] = useState("");
+  const [now, setNow] = useState(() => Date.now());
+  const inputsRef = useRef<HTMLInputElement[]>([]);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const hasAutoSubmittedRef = useRef(false);
   const tripId = routeTripId || activeTrip.tripId;
+
+  const targetJob = useMemo(
+    () => (tripId ? jobs.find((job) => job.id === tripId) || null : null),
+    [jobs, tripId]
+  );
+  const passengerContact = targetJob?.sharedContacts?.[0] || null;
+  const isBookedForSomeoneElse = Boolean(passengerContact);
+
+  const verificationPayload = useMemo(() => {
+    if (!tripId) return null;
+    return buildTripVerificationPayload(
+      tripId,
+      activeTrip.timestamps.acceptedAt || targetJob?.requestedAt
+    );
+  }, [activeTrip.timestamps.acceptedAt, targetJob?.requestedAt, tripId]);
+
+  const expectedOtp = verificationPayload?.otp || "";
+  const enteredOtp = code.join("");
+  const isOtpComplete = code.every((digit) => digit !== "");
+  const otpMatches = !verificationPayload || enteredOtp === expectedOtp;
+  const tokenExpired = verificationPayload
+    ? isTripVerificationExpired(verificationPayload, now)
+    : false;
+
+  const tripNoLongerActive =
+    !tripId ||
+    activeTrip.status === "cancelled" ||
+    activeTrip.status === "completed" ||
+    (activeTrip.tripId !== null && activeTrip.tripId !== tripId);
+  const verificationLocked = tokenExpired || tripNoLongerActive;
+  const qrImageSrc = verificationPayload
+    ? `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
+        verificationPayload.qrPayload
+      )}`
+    : "";
 
   const stopCameraStream = () => {
     setIsCameraReady(false);
@@ -43,33 +95,39 @@ export default function RiderVerification() {
     }
   };
 
-  const handleChange = (index, value) => {
+  const handleChange = (index: number, value: string) => {
     if (!/^[0-9]?$/.test(value)) return;
     const next = [...code];
     next[index] = value;
     setCode(next);
+    setOtpError("");
     if (value && index < CODE_LENGTH - 1) {
       inputsRef.current[index + 1]?.focus();
     }
   };
 
-  const handleKeyDown = (index, e) => {
-    if (e.key === "Backspace" && !code[index] && index > 0) {
+  const handleKeyDown = (index: number, event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Backspace" && !code[index] && index > 0) {
       inputsRef.current[index - 1]?.focus();
     }
   };
-
-  const isOtpComplete = code.every((c) => c !== "");
 
   const handleProceedToStartDrive = () => {
     if (!tripId) {
       navigate("/driver/jobs/list");
       return;
     }
+    if (verificationLocked) {
+      setOtpError("Verification token expired or trip is no longer active.");
+      return;
+    }
+    if (verificationMethod === "otp" && !otpMatches) {
+      setOtpError("OTP mismatch. Ask the passenger to share the current trip OTP.");
+      return;
+    }
 
     stopCameraStream();
 
-    // Transition state machine for ALL job types, not just rides
     if (activeTrip.tripId === tripId) {
       transitionActiveTripStage("rider_verified");
     }
@@ -78,8 +136,28 @@ export default function RiderVerification() {
   };
 
   useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    if (verificationMethod !== "otp" || !isOtpComplete) {
+      setOtpError("");
+      return;
+    }
+    if (!otpMatches) {
+      setOtpError("OTP mismatch. Ask the passenger to share the current trip OTP.");
+    } else {
+      setOtpError("");
+    }
+  }, [verificationMethod, isOtpComplete, otpMatches]);
+
+  useEffect(() => {
     const canAutoProceed =
-      verificationMethod === "otp" ? isOtpComplete : qrConfirmed;
+      !verificationLocked &&
+      (verificationMethod === "otp"
+        ? isOtpComplete && otpMatches
+        : qrConfirmed);
 
     if (!canAutoProceed) {
       hasAutoSubmittedRef.current = false;
@@ -92,7 +170,7 @@ export default function RiderVerification() {
 
     hasAutoSubmittedRef.current = true;
     handleProceedToStartDrive();
-  }, [verificationMethod, isOtpComplete, qrConfirmed]);
+  }, [verificationMethod, isOtpComplete, otpMatches, qrConfirmed, verificationLocked]);
 
   useEffect(() => {
     if (verificationMethod !== "qr") {
@@ -140,6 +218,12 @@ export default function RiderVerification() {
     };
   }, [verificationMethod]);
 
+  useEffect(() => {
+    if (!shareFeedback) return;
+    const timer = window.setTimeout(() => setShareFeedback(""), 2400);
+    return () => window.clearTimeout(timer);
+  }, [shareFeedback]);
+
   const handleCancel = () => {
     if (!tripId) {
       navigate("/driver/jobs/list");
@@ -150,6 +234,56 @@ export default function RiderVerification() {
     navigate(buildPrivateTripRoute("cancel_reason", tripId));
   };
 
+  const shareBody =
+    verificationPayload && tripId
+      ? `Trip ${tripId} verification for ${
+          passengerContact?.name || "passenger"
+        }: OTP ${verificationPayload.otp}. Expires in ${formatRemainingTime(
+          verificationPayload.expiresAt,
+          now
+        )}. Present OTP or QR at pickup.`
+      : "";
+
+  const handleCopyVerification = async () => {
+    if (!shareBody) return;
+    try {
+      await navigator.clipboard.writeText(shareBody);
+      setShareFeedback("Verification copied.");
+    } catch {
+      setShareFeedback("Copy failed. Share manually.");
+    }
+  };
+
+  const handleNativeShare = async () => {
+    if (!shareBody) return;
+    if (!navigator.share) {
+      handleCopyVerification();
+      return;
+    }
+    try {
+      await navigator.share({
+        title: "Trip Verification",
+        text: shareBody,
+      });
+      setShareFeedback("Verification shared.");
+    } catch {
+      setShareFeedback("Share cancelled.");
+    }
+  };
+
+  const handleSmsShare = () => {
+    const phone = sanitizePhoneNumber(passengerContact?.phone);
+    if (!phone || !shareBody) {
+      setShareFeedback("Missing passenger phone number.");
+      return;
+    }
+    window.open(`sms:${phone}?body=${encodeURIComponent(shareBody)}`, "_self");
+  };
+
+  const handleSupportCall = () => {
+    window.open("tel:+256700000111", "_self");
+  };
+
   return (
     <div className="flex flex-col h-full ">
       <style>{`
@@ -157,29 +291,114 @@ export default function RiderVerification() {
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <PageHeader 
-        title="Customer Verification" 
-        subtitle="Safety" 
-        onBack={() => navigate(-1)} 
-      />
+      <PageHeader title="Customer Verification" subtitle="Safety" onBack={() => navigate(-1)} />
 
-      {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
-        {/* Info block */}
         <section className="rounded-[2.5rem] bg-cream border-2 border-orange-500/10 p-6 space-y-4 shadow-sm hover:border-orange-500/30 transition-all">
           <div className="flex items-center space-x-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-orange-50 text-orange-500 shadow-sm">
               <User className="h-6 w-6" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-500">ACTION REQUIRED</span>
-              <p className="text-sm font-black uppercase tracking-tight text-slate-900">Verification</p>
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-500">
+                ACTION REQUIRED
+              </span>
+              <p className="text-sm font-black uppercase tracking-tight text-slate-900">
+                Verification
+              </p>
             </div>
           </div>
           <p className="text-[11px] text-slate-500 font-bold uppercase tracking-tight leading-relaxed">
-            Ask the customer for their OTP or scan their QR code. Use whichever method is faster at pickup.
+            Ask the passenger to present the active trip OTP or QR. Tokens are trip-bound and
+            expire automatically.
           </p>
+          {verificationPayload ? (
+            <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                  Active Token
+                </p>
+                <p className="text-[11px] font-black text-slate-700">
+                  OTP {verificationPayload.otp} · Trip {tripId}
+                </p>
+              </div>
+              <span
+                className={`inline-flex items-center rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest ${
+                  verificationLocked
+                    ? "bg-red-50 text-red-600 border border-red-200"
+                    : "bg-emerald-50 text-emerald-600 border border-emerald-200"
+                }`}
+              >
+                <Clock className="h-3 w-3 mr-1" />
+                {verificationLocked
+                  ? "Expired"
+                  : formatRemainingTime(verificationPayload.expiresAt, now)}
+              </span>
+            </div>
+          ) : null}
         </section>
+
+        {isBookedForSomeoneElse && verificationPayload ? (
+          <section className="rounded-[2rem] border border-orange-200 bg-orange-50/60 p-4 space-y-3">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-orange-600">
+                  Booked For Someone Else
+                </p>
+                <p className="text-[11px] font-black text-slate-800">
+                  Passenger: {passengerContact?.name} · {passengerContact?.phone}
+                </p>
+                <p className="text-[10px] text-slate-500 font-semibold">
+                  Share this OTP/QR with the passenger before pickup.
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={handleCopyVerification}
+                className="rounded-xl border border-slate-200 bg-white py-2 text-[10px] font-black uppercase tracking-widest text-slate-600"
+              >
+                <span className="inline-flex items-center justify-center gap-1">
+                  <Copy className="h-3.5 w-3.5" />
+                  Copy
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={handleSmsShare}
+                className="rounded-xl border border-slate-200 bg-white py-2 text-[10px] font-black uppercase tracking-widest text-slate-600"
+              >
+                <span className="inline-flex items-center justify-center gap-1">
+                  <Send className="h-3.5 w-3.5" />
+                  SMS
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={handleNativeShare}
+                className="rounded-xl border border-slate-200 bg-white py-2 text-[10px] font-black uppercase tracking-widest text-slate-600"
+              >
+                <span className="inline-flex items-center justify-center gap-1">
+                  <Share2 className="h-3.5 w-3.5" />
+                  Share
+                </span>
+              </button>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-white p-3">
+              <img
+                src={qrImageSrc}
+                alt="Trip verification QR"
+                className="mx-auto h-28 w-28 rounded-xl border border-slate-100 bg-white p-1"
+              />
+            </div>
+            {shareFeedback ? (
+              <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600">
+                {shareFeedback}
+              </p>
+            ) : null}
+          </section>
+        ) : null}
 
         <section className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
@@ -216,20 +435,28 @@ export default function RiderVerification() {
                 {code.map((digit, index) => (
                   <input
                     key={index}
-                    ref={(el) => (inputsRef.current[index] = el)}
+                    ref={(element) => {
+                      if (element) inputsRef.current[index] = element;
+                    }}
                     type="text"
                     maxLength={1}
                     value={digit}
-                    onChange={(e) => handleChange(index, e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(index, e)}
+                    onChange={(event) => handleChange(index, event.target.value)}
+                    onKeyDown={(event) => handleKeyDown(index, event)}
                     className="h-14 w-14 rounded-2xl border-2 border-orange-500/10 bg-white text-center text-xl font-black text-slate-900 focus:border-orange-500 focus:outline-none transition-all shadow-sm"
                   />
                 ))}
               </div>
+              {otpError ? (
+                <p className="text-center text-[10px] font-black uppercase tracking-tight text-red-600">
+                  {otpError}
+                </p>
+              ) : null}
               <div className="bg-[#f0fff4]/50 rounded-3xl p-4 text-center border-2 border-orange-500/10">
-                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight leading-relaxed max-w-[240px] mx-auto">
-                   Ensure you are at the correct pickup point before verifying the code.
-                 </p>
+                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight leading-relaxed max-w-[260px] mx-auto">
+                  Confirm with the passenger who will board this trip. Old OTP values fail after
+                  expiry or cancellation.
+                </p>
               </div>
             </section>
           ) : (
@@ -265,7 +492,7 @@ export default function RiderVerification() {
                 </div>
                 <div className="absolute inset-x-0 top-5 text-center">
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50">
-                    Align customer QR in frame
+                    Align passenger QR in frame
                   </span>
                 </div>
                 <div className="absolute inset-x-0 bottom-4 text-center">
@@ -281,51 +508,70 @@ export default function RiderVerification() {
 
               <button
                 type="button"
+                disabled={verificationLocked}
                 onClick={() => setQrConfirmed(true)}
                 className={`w-full rounded-full py-4 text-[11px] font-black uppercase tracking-widest transition-all ${
-                  qrConfirmed
+                  verificationLocked
+                    ? "bg-slate-200 text-slate-500 cursor-not-allowed"
+                    : qrConfirmed
                     ? "bg-emerald-500 text-white shadow-xl shadow-emerald-500/20"
                     : "bg-orange-500 text-white shadow-xl shadow-orange-500/20 hover:scale-[1.02] active:scale-[0.98]"
                 }`}
               >
-                {qrConfirmed ? "QR Code Confirmed" : "I Have Scanned Customer QR"}
+                {qrConfirmed ? "QR Code Confirmed" : "I Have Scanned Passenger QR"}
               </button>
               <div className="bg-[#f0fff4]/50 rounded-3xl p-4 text-center border-2 border-orange-500/10">
-                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight leading-relaxed max-w-[260px] mx-auto">
-                   If scanning fails, switch back to OTP and verify with the 4-digit code.
-                 </p>
+                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight leading-relaxed max-w-[260px] mx-auto">
+                  If scanning fails, switch back to OTP and verify with the active 4-digit trip
+                  code.
+                </p>
               </div>
             </section>
           )}
         </section>
 
-        {/* Contact & help */}
         <section className="space-y-4">
           <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-cream p-6 flex flex-col space-y-4 shadow-sm hover:border-orange-500/30 transition-all">
-             <div className="flex items-center justify-between">
-                <div className="flex flex-col space-y-1">
-                   <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-500">Support</span>
-                   <p className="text-xs font-black text-slate-900 uppercase tracking-tight leading-tight">Code not working?</p>
-                </div>
-                <div className="flex items-center space-x-2">
-                   <button className="h-10 w-10 flex items-center justify-center rounded-2xl bg-white border border-orange-50 text-orange-500 shadow-sm hover:bg-orange-50 transition-colors">
-                     <MessageCircle className="h-4 w-4" />
-                   </button>
-                   <button className="h-10 w-10 flex items-center justify-center rounded-2xl bg-orange-500 text-white shadow-xl shadow-orange-500/20 hover:scale-110 transition-all">
-                     <Phone className="h-4 w-4" />
-                   </button>
-                </div>
-             </div>
-             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed">
-               If the code doesn't match, ask the customer to check their app. Contact support if the issue persists.
-             </p>
+            <div className="flex items-center justify-between">
+              <div className="flex flex-col space-y-1">
+                <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-500">
+                  Support
+                </span>
+                <p className="text-xs font-black text-slate-900 uppercase tracking-tight leading-tight">
+                  Code not working?
+                </p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <button className="h-10 w-10 flex items-center justify-center rounded-2xl bg-white border border-orange-50 text-orange-500 shadow-sm hover:bg-orange-50 transition-colors">
+                  <MessageCircle className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSupportCall}
+                  className="h-10 w-10 flex items-center justify-center rounded-2xl bg-orange-500 text-white shadow-xl shadow-orange-500/20 hover:scale-110 transition-all"
+                >
+                  <Phone className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed">
+              If the verification token fails, ask the passenger to refresh their trip and resend
+              OTP/QR.
+            </p>
           </div>
 
-          {/* Actions */}
           <div className="flex flex-col space-y-3">
-            <p className="w-full rounded-full py-4 text-center text-[10px] font-black uppercase tracking-widest border border-emerald-200 bg-emerald-50 text-emerald-700">
-              {verificationMethod === "otp"
-                ? "Auto-start enabled after full OTP"
+            <p
+              className={`w-full rounded-full py-4 text-center text-[10px] font-black uppercase tracking-widest border ${
+                verificationLocked
+                  ? "border-red-200 bg-red-50 text-red-600"
+                  : "border-emerald-200 bg-emerald-50 text-emerald-700"
+              }`}
+            >
+              {verificationLocked
+                ? "Verification locked until a new active trip token is available"
+                : verificationMethod === "otp"
+                ? "Auto-start enabled after valid OTP"
                 : "Auto-start enabled after QR confirmation"}
             </p>
             <button

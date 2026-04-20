@@ -5,7 +5,7 @@ import {
   WifiOff
 } from "lucide-react";
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
 
@@ -39,14 +39,24 @@ function IssueRow({ title, text, type, onClick }: any) {
 
 export default function OfflineDashboard() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { canGoOnline, onboardingBlockers, setDriverOffline } = useStore();
-  const goOnlineTarget = canGoOnline
-    ? "/driver/preferences/identity/face-capture?mode=go-online&next=/driver/dashboard/online"
-    : "/driver/dashboard/required-actions";
+  const goOnlineTarget =
+    "/driver/preferences/identity/face-capture?mode=go-online&next=/driver/dashboard/online";
+  const blockersWithoutDocuments = onboardingBlockers.filter(
+    (blocker) => blocker.id !== "documentsVerified"
+  );
 
   useEffect(() => {
     setDriverOffline();
   }, [setDriverOffline]);
+
+  const routeState = (location.state as
+    | { offlineGuardMessage?: string; blockedPath?: string }
+    | null) || { offlineGuardMessage: "", blockedPath: "" };
+  const hasOfflineGuardMessage =
+    typeof routeState.offlineGuardMessage === "string" &&
+    routeState.offlineGuardMessage.trim().length > 0;
 
   return (
     <div className="flex flex-col h-full bg-transparent">
@@ -77,32 +87,48 @@ export default function OfflineDashboard() {
             onClick={() => navigate(goOnlineTarget)}
             className="relative z-10 w-full rounded-2xl bg-brand-active py-4 text-xs font-black text-slate-900 hover:bg-brand-active/90 active:scale-95 transition-all shadow-xl shadow-brand-active/20 uppercase tracking-widest"
           >
-            {canGoOnline ? "Go Online" : "View Required Actions"}
+            Go Online
           </button>
           
           <p className="relative z-10 text-[11px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed">
             {canGoOnline
-              ? "All onboarding checks are complete. You can start receiving requests."
-              : "Complete required onboarding steps before receiving requests."}
+              ? "Selfie verification runs first before you start receiving requests."
+              : "Selfie verification runs first. Missing checks are enforced after capture."}
           </p>
         </section>
+
+        {hasOfflineGuardMessage ? (
+          <section className="rounded-3xl border border-orange-200 bg-orange-50 p-4 space-y-2">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-600">
+              Access Restricted
+            </p>
+            <p className="text-[11px] font-bold text-orange-700 leading-relaxed">
+              {routeState.offlineGuardMessage}
+            </p>
+            {routeState.blockedPath ? (
+              <p className="text-[10px] font-semibold text-orange-500">
+                Blocked route: {routeState.blockedPath}
+              </p>
+            ) : null}
+          </section>
+        ) : null}
 
         {/* Issues */}
         <section className="space-y-4">
           <div className="px-1">
             <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Attention Required</h2>
           </div>
-          {onboardingBlockers.length === 0 ? (
+          {blockersWithoutDocuments.length === 0 ? (
             <IssueRow
               title="All Required Steps Completed"
-              text="No blockers found. You can now switch to online mode."
+              text="Selfie verification is required before you switch to online mode."
               type="info"
               onClick={() =>
                 navigate("/driver/preferences/identity/face-capture?mode=go-online&next=/driver/dashboard/online")
               }
             />
           ) : (
-            onboardingBlockers.map((blocker) => (
+            blockersWithoutDocuments.map((blocker) => (
               <IssueRow
                 key={blocker.id}
                 title={blocker.title}

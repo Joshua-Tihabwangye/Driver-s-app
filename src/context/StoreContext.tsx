@@ -21,6 +21,7 @@ import {
   isDocumentEntryComplete,
   readStoredDocumentState,
 } from "../utils/documentVerificationState";
+import { OFFLINE_JOB_ACCESS_ERROR } from "../utils/offlineAccess";
 
 export interface DashboardMetrics {
   onlineTime: string;
@@ -1319,7 +1320,26 @@ export const isWithinPeriod = (timestampOrDate: number | string, period: PeriodF
 
 // Extracted from original mock
 const initialJobs: Job[] = [
-  { id: "3244", from: "Kampala Serena", to: "Entebbe Airport", distance: "38 km", duration: "45 min", fare: "85.00", jobType: "ride", status: "pending", requestedAt: Date.now() - 0.02 * 3600000 },
+  {
+    id: "3244",
+    from: "Kampala Serena",
+    to: "Entebbe Airport",
+    distance: "38 km",
+    duration: "45 min",
+    fare: "85.00",
+    jobType: "ride",
+    status: "pending",
+    requestedAt: Date.now() - 0.02 * 3600000,
+    sharedContacts: [
+      {
+        id: "passenger-3244",
+        name: "Aisha N.",
+        phone: "+256700123456",
+        relationship: "Booked for someone else",
+        createdAt: Date.now() - 0.02 * 3600000,
+      },
+    ],
+  },
   { id: "3245", from: "Village Mall", to: "Kyambogo", distance: "5.2 km", duration: "16 min", fare: "12.50", jobType: "ride", status: "pending", requestedAt: Date.now() - 0.05 * 3600000 },
   { id: "3250", from: "Sheraton Hotel", to: "Speke Resort", distance: "26 km", duration: "4h booking", fare: "Rental", jobType: "rental", status: "pending", requestedAt: Date.now() - 0.06 * 3600000 },
   { id: "3246", from: "Airport", to: "Safari Lodge", distance: "42 km", duration: "Day 2 of 5", fare: "Tour", jobType: "tour", status: "pending", requestedAt: Date.now() - 3 * 3600000,    segments: [
@@ -1478,6 +1498,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const setDriverOnline = useCallback(() => {
     setDriverPresenceStatus("online");
+    setJobAccessError(null);
   }, []);
 
   const setDriverOffline = useCallback(() => {
@@ -1508,6 +1529,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const canAccessOrdersWithCurrentDocuments = useCallback(() => {
     setJobAccessError(null);
+
+    if (driverPresenceStatus !== "online") {
+      setJobAccessError(OFFLINE_JOB_ACCESS_ERROR);
+      return false;
+    }
 
     const personalDocs = readStoredDocumentState();
     const hasExpiredPersonalDoc = (["id", "license", "police"] as const).some((key) => {
@@ -1540,7 +1566,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
 
     return true;
-  }, [selectedVehicleIndex, vehicles]);
+  }, [driverPresenceStatus, selectedVehicleIndex, vehicles]);
 
   const updateDriverProfile = useCallback((patch: Partial<DriverProfile>) => {
     setDriverProfile((prev) => ({
@@ -1835,6 +1861,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const transitionActiveTripStage = useCallback(
     (nextStage: TripWorkflowStage) => {
+      if (driverPresenceStatus !== "online") {
+        setJobAccessError(OFFLINE_JOB_ACCESS_ERROR);
+        return false;
+      }
       if (!activeTrip.tripId || activeTrip.stage === "idle") {
         return false;
       }
@@ -1871,10 +1901,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
       return true;
     },
-    [activeTrip]
+    [activeTrip, driverPresenceStatus]
   );
 
   const completeActiveTrip = useCallback(() => {
+    if (driverPresenceStatus !== "online") {
+      setJobAccessError(OFFLINE_JOB_ACCESS_ERROR);
+      return null;
+    }
     if (!activeTrip.tripId || activeTrip.status === "completed") {
       return null;
     }
@@ -1988,11 +2022,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
 
     return tripId;
-  }, [activeTrip, jobs]);
+  }, [activeTrip, driverPresenceStatus, jobs]);
 
   const cancelActiveTrip = useCallback((
     reasonStage: "cancel_reason" | "cancel_no_show" = "cancel_reason"
   ) => {
+    if (driverPresenceStatus !== "online") {
+      setJobAccessError(OFFLINE_JOB_ACCESS_ERROR);
+      return null;
+    }
     if (
       !activeTrip.tripId ||
       activeTrip.status === "cancelled" ||
@@ -2047,7 +2085,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     );
 
     return tripId;
-  }, [activeTrip]);
+  }, [activeTrip, driverPresenceStatus]);
 
   const clearActiveTrip = useCallback(() => {
     setActiveTrip(DEFAULT_ACTIVE_TRIP);
@@ -2471,6 +2509,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   );
 
   const confirmDeliveryPickup = useCallback(() => {
+    if (driverPresenceStatus !== "online") {
+      setJobAccessError(OFFLINE_JOB_ACCESS_ERROR);
+      return;
+    }
     setDeliveryWorkflow((prev) => {
       if (
         DELIVERY_WORKFLOW_STAGE_ORDER[prev.stage] <
@@ -2484,9 +2526,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         stage: "pickup_confirmed",
       };
     });
-  }, []);
+  }, [driverPresenceStatus]);
 
   const verifyDeliveryQr = useCallback(() => {
+    if (driverPresenceStatus !== "online") {
+      setJobAccessError(OFFLINE_JOB_ACCESS_ERROR);
+      return;
+    }
     setDeliveryWorkflow((prev) => {
       if (
         DELIVERY_WORKFLOW_STAGE_ORDER[prev.stage] <
@@ -2500,9 +2546,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         stage: "qr_verified",
       };
     });
-  }, []);
+  }, [driverPresenceStatus]);
 
   const startDeliveryRoute = useCallback(() => {
+    if (driverPresenceStatus !== "online") {
+      setJobAccessError(OFFLINE_JOB_ACCESS_ERROR);
+      return;
+    }
     setDeliveryWorkflow((prev) => {
       if (
         DELIVERY_WORKFLOW_STAGE_ORDER[prev.stage] <
@@ -2516,9 +2566,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         stage: "in_delivery",
       };
     });
-  }, []);
+  }, [driverPresenceStatus]);
 
   const confirmDeliveryDropoff = useCallback(() => {
+    if (driverPresenceStatus !== "online") {
+      setJobAccessError(OFFLINE_JOB_ACCESS_ERROR);
+      return;
+    }
     if (
       DELIVERY_WORKFLOW_STAGE_ORDER[deliveryWorkflow.stage] <
       DELIVERY_WORKFLOW_STAGE_ORDER.in_delivery
@@ -2596,7 +2650,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         });
       }
     }
-  }, [deliveryWorkflow.activeJobId, deliveryWorkflow.stage, jobs]);
+  }, [deliveryWorkflow.activeJobId, deliveryWorkflow.stage, driverPresenceStatus, jobs]);
 
   const resetDeliveryWorkflow = useCallback(() => {
     setDeliveryWorkflow(DEFAULT_DELIVERY_WORKFLOW);
@@ -2812,6 +2866,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [jobs, activeTrip, sharedRidesEnabled, completeActiveTrip, canAccessOrdersWithCurrentDocuments]
   );
   const completeActiveSharedTrip = useCallback(() => {
+    if (driverPresenceStatus !== "online") {
+      setJobAccessError(OFFLINE_JOB_ACCESS_ERROR);
+      return null;
+    }
     if (!activeSharedTrip || activeSharedTrip.chainStatus !== "completed") {
       return null;
     }
@@ -2912,7 +2970,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     });
 
     return activeSharedTrip.id;
-  }, [activeSharedTrip, jobs]);
+  }, [activeSharedTrip, driverPresenceStatus, jobs]);
   const filteredTrips = useMemo(
     () => trips.filter((trip) => assignableJobTypes.includes(trip.jobType)),
     [trips, assignableJobTypes]

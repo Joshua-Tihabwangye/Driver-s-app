@@ -55,6 +55,7 @@ export default function FaceCapture() {
   const [step, setStep] = useState<1 | 2 | 3>(1); // 1: front, 2: right, 3: left
   const [cameraError, setCameraError] = useState("");
   const [isCameraReady, setIsCameraReady] = useState(false);
+  const [isAdvancingStep, setIsAdvancingStep] = useState(false);
   const [isTipsOpen, setIsTipsOpen] = useState(false);
   const [capturedSteps, setCapturedSteps] = useState<Record<1 | 2 | 3, boolean>>({
     1: false,
@@ -67,19 +68,24 @@ export default function FaceCapture() {
   const { canGoOnline, setDriverOnline } = useStore();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const autoAdvanceTimeoutRef = useRef<number | null>(null);
   const [pendingGoOnlineRoute, setPendingGoOnlineRoute] = useState<string | null>(null);
   const isGoOnlineMode = searchParams.get("mode") === "go-online";
   const nextRoute = searchParams.get("next") || "/driver/dashboard/online";
 
   const stepTitle =
-    step === 1 ? "Look straight" : step === 2 ? "Turn your head right" : "Turn your head left";
+    step === 1
+      ? "Look straight ahead"
+      : step === 2
+      ? "Turn your face to the right"
+      : "Turn your face to the left";
 
   const overlayText =
     step === 1
-      ? "Look straight into the camera"
+      ? "Look straight ahead"
       : step === 2
-        ? "Slowly turn your head to the right"
-        : "Now slowly turn your head to the left";
+      ? "Turn your face to the right"
+      : "Turn your face to the left";
 
   const subtitleText =
     step === 1
@@ -140,6 +146,14 @@ export default function FaceCapture() {
   }, []);
 
   useEffect(() => {
+    return () => {
+      if (autoAdvanceTimeoutRef.current) {
+        window.clearTimeout(autoAdvanceTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     if (!pendingGoOnlineRoute || !isLoggedIn) {
       return;
     }
@@ -167,12 +181,20 @@ export default function FaceCapture() {
     setCapturedSteps((prev) => ({ ...prev, [step]: true }));
 
     if (step === 1) {
-      setStep(2);
+      setIsAdvancingStep(true);
+      autoAdvanceTimeoutRef.current = window.setTimeout(() => {
+        setStep(2);
+        setIsAdvancingStep(false);
+      }, 320);
       return;
     }
 
     if (step === 2) {
-      setStep(3);
+      setIsAdvancingStep(true);
+      autoAdvanceTimeoutRef.current = window.setTimeout(() => {
+        setStep(3);
+        setIsAdvancingStep(false);
+      }, 320);
       return;
     }
 
@@ -204,15 +226,19 @@ export default function FaceCapture() {
 
   const progressHint =
     step === 1
-      ? "Front captured first, then right and left."
+      ? "Start with front view, then right, then left."
       : step === 2
-        ? "Front captured. Next is right side, then left side."
-        : "Front and right captured. Final capture is left side.";
+      ? "Front captured. Keep turning right for the next capture."
+      : "Front and right captured. Left capture is final.";
 
-  const ctaDisabled = !isCameraReady || cameraError.length > 0;
+  const ctaDisabled = !isCameraReady || cameraError.length > 0 || isAdvancingStep;
 
   const ctaActionText =
-    step === 1 ? "Capture front" : step === 2 ? "Capture right side" : "Capture left side";
+    step === 1
+      ? "Capture front view"
+      : step === 2
+      ? "Capture right view"
+      : "Capture left view";
 
   const completionText =
     step === 3
@@ -226,16 +252,18 @@ export default function FaceCapture() {
 
   const captureGuideText =
     step === 1
-      ? "Front view required"
+      ? "Hold still and center your face"
       : step === 2
-        ? "Turn right and keep your face visible"
-        : "Turn left and keep your face visible";
+      ? "Turn your face right and keep eyes visible"
+      : "Turn your face left and keep eyes visible";
 
   const cameraStatusText = cameraError
     ? "Camera unavailable"
     : isCameraReady
-      ? "Camera ready"
-      : "Starting camera...";
+    ? isAdvancingStep
+      ? "Captured. Moving to next angle..."
+      : "Camera ready"
+    : "Starting camera...";
 
   return (
     <div className="flex min-h-full flex-col">
