@@ -2,7 +2,6 @@ import {
   AlertTriangle,
   BookOpenCheck,
   Car,
-  ChevronLeft,
   ClipboardCheck,
   FileBadge2,
   FileText,
@@ -225,8 +224,6 @@ export default function RequiredActionsDashboard() {
   const {
     onboardingBlockers,
     canGoOnline,
-    resolveGoOnlineAttempt,
-    setDriverOnline,
     setOnboardingCheckpoint,
     vehicles,
     selectedVehicleIndex,
@@ -278,23 +275,6 @@ export default function RequiredActionsDashboard() {
     }
 
     navigate(blocker.route);
-  };
-
-  const handleStartGoOnline = () => {
-    const decision = resolveGoOnlineAttempt("/driver/dashboard/online");
-    if (decision.allowed && !decision.requiresSelfie) {
-      setDriverOnline();
-      navigate("/driver/dashboard/online", { replace: true });
-      return;
-    }
-
-    navigate(decision.route, {
-      state: decision.allowed
-        ? undefined
-        : {
-            offlineGuardMessage: decision.message,
-          },
-    });
   };
 
   const triggerPersonalUpload = (key: DocumentUploadKey, side: DocumentUploadSide) => {
@@ -420,12 +400,6 @@ export default function RequiredActionsDashboard() {
           <div className="absolute right-0 top-0 -mr-16 -mt-16 h-32 w-32 rounded-full bg-orange-500/10 transition-transform group-hover:scale-110" />
 
           <div className="flex items-center space-x-4">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/30 bg-white/20 shadow-lg backdrop-blur-md transition-transform active:scale-95"
-            >
-              <ChevronLeft className="h-5 w-5 text-white" />
-            </button>
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500 text-white shadow-xl shadow-orange-500/20">
               <AlertTriangle className="h-6 w-6" />
             </div>
@@ -457,13 +431,6 @@ export default function RequiredActionsDashboard() {
             <div className="rounded-2xl border-2 border-emerald-500/20 bg-emerald-50 px-4 py-4 text-[11px] text-emerald-900">
               <p className="text-xs font-black uppercase tracking-widest">No blockers remaining</p>
               <p className="mt-1 font-medium">Your onboarding requirements are complete.</p>
-              <button
-                type="button"
-                onClick={handleStartGoOnline}
-                className="mt-3 w-full rounded-xl bg-emerald-600 py-3 text-[10px] font-black uppercase tracking-widest text-white"
-              >
-                Start Identity Check
-              </button>
             </div>
           ) : (
             onboardingBlockers.map((blocker) => (
@@ -481,9 +448,9 @@ export default function RequiredActionsDashboard() {
 
         <section
           ref={personalDocumentsRef}
-          className="space-y-4 rounded-[2rem] border-2 border-brand-active/10 bg-cream p-5 shadow-sm"
+          className="space-y-4"
         >
-          <div className="space-y-1">
+          <div className="space-y-1 rounded-2xl border border-brand-active/10 bg-white px-4 py-3 shadow-sm">
             <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">
               Personal Documents
             </h2>
@@ -572,9 +539,9 @@ export default function RequiredActionsDashboard() {
 
         <section
           ref={vehicleDocumentsRef}
-          className="space-y-4 rounded-[2rem] border-2 border-blue-500/10 bg-blue-50/20 p-5 shadow-sm"
+          className="space-y-4"
         >
-          <div className="space-y-1">
+          <div className="space-y-1 rounded-2xl border border-blue-500/10 bg-white px-4 py-3 shadow-sm">
             <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">
               Vehicle Documents
             </h2>
