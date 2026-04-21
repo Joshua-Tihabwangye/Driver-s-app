@@ -237,8 +237,8 @@ export function validateDocumentExpiryDate(
 
   const expiryDay = startOfDay(parsedExpiry).getTime();
   const today = startOfDay(now).getTime();
-  if (expiryDay <= today) {
-    return { valid: false, error: "Expiry date must be in the future." };
+  if (expiryDay < today) {
+    return { valid: false, error: "Expiry date cannot be in the past." };
   }
 
   return { valid: true, error: "" };
