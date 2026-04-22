@@ -20,7 +20,6 @@ import {
   areAllRequiredDocumentsCompliant,
   getFirstNonCompliantDocumentKey,
   hasAnyRequiredDocumentEvidence,
-  getDocumentExpiryStatus,
   readStoredDocumentState,
   validateDocumentExpiryDate,
 } from "../utils/documentVerificationState";
@@ -172,6 +171,13 @@ export interface GoOnlineCompletionResult {
   redirectRoute?: string;
 }
 
+export interface JobAccessDecision {
+  allowed: boolean;
+  reason: "none" | "offline" | "documents";
+  route: string;
+  message: string;
+}
+
 interface StoreContextType {
   // Config
   periodFilter: PeriodFilter;
@@ -268,6 +274,7 @@ interface StoreContextType {
   updateEmergencyContact: (contact: SharedContact) => void;
   jobAccessError: string | null;
   clearJobAccessError: () => void;
+  resolveJobAccessAttempt: (nextRoute?: string) => JobAccessDecision;
   resolveGoOnlineAttempt: (nextRoute?: string) => GoOnlineDecision;
   completeGoOnlineAfterSelfieVerification: () => Promise<GoOnlineCompletionResult>;
 }
@@ -310,13 +317,7 @@ const TRIP_FEEDBACKS_STORAGE_KEY = "driver_trip_feedbacks";
 const AUTO_RESEED_REQUESTS = import.meta.env.VITE_AUTO_RESEED_REQUESTS !== "false";
 const REQUEST_RESEED_JOB_TYPES: readonly JobCategory[] = ["ride", "delivery"];
 const DOCUMENT_EXPIRED_API_ERROR =
-  "Your documents have expired. Please upload valid documents.";
-const PERSONAL_DOCUMENTS_REQUIRED_MESSAGE =
-  "Required personal documents are missing, invalid, or expired. Please update them before going online.";
-const VEHICLE_DOCUMENTS_REQUIRED_MESSAGE =
-  "Vehicle insurance and inspection must be valid before you can go online.";
-const VEHICLE_SELECTION_REQUIRED_MESSAGE =
-  "Select an active vehicle before going online.";
+  "Some of your documents have expired. You won't be able to receive job requests until you upload valid documents.";
 const SELFIE_REQUIRED_MESSAGE =
   "Selfie verification is required before you can go online.";
 const SELFIE_NOT_REQUIRED_MESSAGE =
@@ -1591,60 +1592,66 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setJobAccessError(null);
   }, []);
 
+  const getActiveVehicle = useCallback(() => {
+    return selectedVehicleIndex !== null &&
+      selectedVehicleIndex >= 0 &&
+      selectedVehicleIndex < vehicles.length
+      ? vehicles[selectedVehicleIndex]
+      : null;
+  }, [selectedVehicleIndex, vehicles]);
+
+  const hasNonCompliantVehicleDocuments = useCallback(() => {
+    const activeVehicle = getActiveVehicle();
+    if (!activeVehicle) {
+      return false;
+    }
+
+    const requiredVehicleDocs = ["insurance", "inspection"] as const;
+    return requiredVehicleDocs.some((docKey) => {
+      const group = activeVehicle.vehicleDocs?.[docKey];
+      const hasFile = Boolean(group?.file?.url && group.file.fileName);
+      const expiryDate = group?.expiryDate || group?.file?.expiryDate || "";
+      const hasValidExpiry = validateDocumentExpiryDate(expiryDate).valid;
+      return !hasFile || !hasValidExpiry;
+    });
+  }, [getActiveVehicle]);
+
+  const resolveJobAccessAttempt = useCallback(
+    (nextRoute = "/driver/jobs/list"): JobAccessDecision => {
+      if (driverPresenceStatus !== "online") {
+        return {
+          allowed: false,
+          reason: "offline",
+          route: "/driver/dashboard/offline",
+          message: OFFLINE_JOB_ACCESS_ERROR,
+        };
+      }
+
+      const personalDocs = readStoredDocumentState();
+      const hasNonCompliantPersonalDocs =
+        Boolean(getFirstNonCompliantDocumentKey(personalDocs));
+
+      if (hasNonCompliantPersonalDocs || hasNonCompliantVehicleDocuments()) {
+        return {
+          allowed: false,
+          reason: "documents",
+          route: "/driver/dashboard/online",
+          message: DOCUMENT_EXPIRED_API_ERROR,
+        };
+      }
+
+      return {
+        allowed: true,
+        reason: "none",
+        route: nextRoute,
+        message: "",
+      };
+    },
+    [driverPresenceStatus, hasNonCompliantVehicleDocuments]
+  );
+
   const resolveGoOnlineAttempt = useCallback(
     (nextRoute = "/driver/dashboard/online"): GoOnlineDecision => {
-      const personalDocuments = readStoredDocumentState();
-      const hasLocalDocumentEvidence =
-        hasAnyRequiredDocumentEvidence(personalDocuments);
-      const firstNonCompliantPersonalDoc =
-        getFirstNonCompliantDocumentKey(personalDocuments);
-      const shouldBlockForPersonalDocuments =
-        Boolean(firstNonCompliantPersonalDoc) &&
-        (hasLocalDocumentEvidence || !onboardingCheckpoints.documentsVerified);
-      if (shouldBlockForPersonalDocuments && firstNonCompliantPersonalDoc) {
-        return {
-          allowed: false,
-          requiresSelfie: false,
-          route: `/driver/onboarding/profile/documents/upload?focus=${firstNonCompliantPersonalDoc}&next=${encodeURIComponent(
-            nextRoute
-          )}`,
-          message: PERSONAL_DOCUMENTS_REQUIRED_MESSAGE,
-        };
-      }
-
-      const activeVehicle =
-        selectedVehicleIndex !== null &&
-        selectedVehicleIndex >= 0 &&
-        selectedVehicleIndex < vehicles.length
-          ? vehicles[selectedVehicleIndex]
-          : null;
-
-      if (!activeVehicle) {
-        return {
-          allowed: false,
-          requiresSelfie: false,
-          route: "/driver/vehicles",
-          message: VEHICLE_SELECTION_REQUIRED_MESSAGE,
-        };
-      }
-
-      const requiredVehicleDocs = ["insurance", "inspection"] as const;
-      for (const docKey of requiredVehicleDocs) {
-        const group = activeVehicle.vehicleDocs?.[docKey];
-        const hasFile = Boolean(group?.file?.url && group.file.fileName);
-        const expiryDate = group?.expiryDate || group?.file?.expiryDate || "";
-        const hasValidExpiry = validateDocumentExpiryDate(expiryDate).valid;
-
-        if (!hasFile || !hasValidExpiry) {
-          return {
-            allowed: false,
-            requiresSelfie: false,
-            route: `/driver/vehicles/${activeVehicle.id}`,
-            message: VEHICLE_DOCUMENTS_REQUIRED_MESSAGE,
-          };
-        }
-      }
-
       const nonDocumentBlockerId = ONBOARDING_CHECKPOINT_ORDER.find(
         (checkpointId) =>
           checkpointId !== "documentsVerified" &&
@@ -1679,7 +1686,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         message: SELFIE_REQUIRED_MESSAGE,
       };
     },
-    [onboardingCheckpoints, selectedVehicleIndex, vehicles]
+    [onboardingCheckpoints]
   );
 
   const completeGoOnlineAfterSelfieVerification = useCallback(
@@ -1708,43 +1715,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   );
 
   const canAccessOrdersWithCurrentDocuments = useCallback(() => {
+    const decision = resolveJobAccessAttempt("/driver/jobs/list");
+    if (!decision.allowed) {
+      setJobAccessError(decision.message);
+      return false;
+    }
     setJobAccessError(null);
-
-    if (driverPresenceStatus !== "online") {
-      setJobAccessError(OFFLINE_JOB_ACCESS_ERROR);
-      return false;
-    }
-
-    const personalDocs = readStoredDocumentState();
-    const firstNonCompliantPersonalDoc = getFirstNonCompliantDocumentKey(personalDocs);
-    if (firstNonCompliantPersonalDoc) {
-      setJobAccessError(DOCUMENT_EXPIRED_API_ERROR);
-      return false;
-    }
-
-    const activeVehicle =
-      selectedVehicleIndex !== null &&
-      selectedVehicleIndex >= 0 &&
-      selectedVehicleIndex < vehicles.length
-        ? vehicles[selectedVehicleIndex]
-        : null;
-    const requiredVehicleDocs = ["insurance", "inspection"] as const;
-    const hasExpiredVehicleDoc = requiredVehicleDocs.some((docKey) => {
-      const group = activeVehicle?.vehicleDocs?.[docKey];
-      if (!group?.file?.url) {
-        return false;
-      }
-      const expiryDate = group.expiryDate || group.file.expiryDate || "";
-      return getDocumentExpiryStatus(expiryDate) === "expired";
-    });
-
-    if (hasExpiredVehicleDoc) {
-      setJobAccessError(DOCUMENT_EXPIRED_API_ERROR);
-      return false;
-    }
-
     return true;
-  }, [driverPresenceStatus, selectedVehicleIndex, vehicles]);
+  }, [resolveJobAccessAttempt]);
 
   const updateDriverProfile = useCallback((patch: Partial<DriverProfile>) => {
     setDriverProfile((prev) => ({
@@ -3319,6 +3297,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       updateTourSegmentStatus,
       jobAccessError,
       clearJobAccessError,
+      resolveJobAccessAttempt,
       resolveGoOnlineAttempt,
       completeGoOnlineAfterSelfieVerification,
     }),
@@ -3396,6 +3375,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       updateTourSegmentStatus,
       jobAccessError,
       clearJobAccessError,
+      resolveJobAccessAttempt,
       resolveGoOnlineAttempt,
       completeGoOnlineAfterSelfieVerification,
     ]

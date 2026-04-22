@@ -234,7 +234,11 @@ export default function RegisterServices() {
       selectedService,
     });
 
-    navigate("/driver/dashboard/online", {
+    const verificationRoute = `/driver/preferences/identity/face-capture?mode=go-online&next=${encodeURIComponent(
+      "/driver/dashboard/online"
+    )}`;
+
+    navigate(verificationRoute, {
       replace: true,
       state: {
         selectedService,
