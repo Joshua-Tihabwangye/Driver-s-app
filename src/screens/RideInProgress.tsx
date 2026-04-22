@@ -147,6 +147,11 @@ export default function RideInProgress() {
     });
   };
 
+  const handleEmergencySos = () => {
+    respondToSafetyCheck("driver", "sos");
+    navigate("/driver/safety/sos/sending");
+  };
+
   return (
     <div className="flex flex-col min-h-full">
       <style>{`
@@ -189,7 +194,7 @@ export default function RideInProgress() {
         {/* Floating SOS Button over Map */}
         <button
           type="button"
-          onClick={() => navigate(`/driver/safety/emergency/${tripId}`)}
+          onClick={handleEmergencySos}
           className="absolute top-4 right-4 z-20 flex px-4 py-2 items-center justify-center rounded-full bg-red-600 text-white text-[11px] font-black uppercase tracking-widest shadow-xl shadow-red-600/30 active:scale-95 transition-all"
         >
           SOS

@@ -79,7 +79,7 @@ export default function OnlineMapView({
   const [isLocating, setIsLocating] = useState(false);
   const [locationHint, setLocationHint] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { driverPresenceStatus, setDriverOffline } = useStore();
+  const { driverPresenceStatus, setDriverOffline, respondToSafetyCheck } = useStore();
 
   useEffect(() => {
     if (driverPresenceStatus !== "online") {
@@ -127,6 +127,11 @@ export default function OnlineMapView({
         maximumAge: 30000,
       }
     );
+  };
+
+  const handleEmergencySos = () => {
+    respondToSafetyCheck("driver", "sos");
+    navigate("/driver/safety/sos/sending");
   };
 
   const handleZoomIn = () => {
@@ -361,7 +366,7 @@ export default function OnlineMapView({
                 label="SOS"
                 sub="Emergency"
                 tone="danger"
-                onClick={() => navigate("/driver/safety/sos/sending")}
+                onClick={handleEmergencySos}
               />
               <QuickAction
                 icon={ShieldCheck}

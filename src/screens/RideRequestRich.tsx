@@ -103,6 +103,7 @@ export default function RideRequestRich() {
     deliveryWorkflow,
     jobAccessError,
     clearJobAccessError,
+    respondToSafetyCheck,
   } = useStore();
   const [timeLeft, setTimeLeft] = useState(20);
   // Preview-only job type toggle so you can see all states in the canvas
@@ -217,6 +218,11 @@ export default function RideRequestRich() {
     }
 
     window.location.href = "tel:+256700000111";
+  };
+
+  const handleEmergencySos = () => {
+    respondToSafetyCheck("driver", "sos");
+    navigate("/driver/safety/sos/sending");
   };
 
   const handleAccept = () => {
@@ -341,7 +347,7 @@ export default function RideRequestRich() {
           {/* Floating SOS Button */}
           <button
             type="button"
-            onClick={() => navigate("/driver/safety/emergency")}
+            onClick={handleEmergencySos}
             className="absolute top-4 right-4 z-20 flex px-4 py-2 items-center justify-center rounded-full bg-red-600 text-white text-[11px] font-black uppercase tracking-widest shadow-xl shadow-red-600/30 active:scale-95 transition-all"
           >
             SOS

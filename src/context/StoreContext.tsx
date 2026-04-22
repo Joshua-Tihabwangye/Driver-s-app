@@ -482,6 +482,20 @@ const DEFAULT_ACTIVE_RIDE_RUNTIME: ActiveRideRuntimeState = {
   lastEmergencyDispatch: null,
 };
 
+function createDefaultActiveRideRuntime(tripId: string | null): ActiveRideRuntimeState {
+  return {
+    tripId,
+    temporaryStop: {
+      ...DEFAULT_ACTIVE_RIDE_TEMPORARY_STOP,
+    },
+    safetyCheck: {
+      ...DEFAULT_ACTIVE_RIDE_SAFETY_CHECK,
+    },
+    lastKnownLocation: null,
+    lastEmergencyDispatch: null,
+  };
+}
+
 const DEFAULT_ACTIVE_TRIP: ActiveTripState = {
   tripId: null,
   jobType: null,
@@ -1535,6 +1549,41 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   }, [activeRideRuntime]);
 
+  useEffect(() => {
+    if (!activeTrip.tripId || activeTrip.stage !== "in_progress") {
+      const hasRuntimeState =
+        activeRideRuntime.tripId !== null ||
+        activeRideRuntime.temporaryStop.status !== "idle" ||
+        activeRideRuntime.safetyCheck.status !== "idle" ||
+        activeRideRuntime.lastKnownLocation !== null ||
+        activeRideRuntime.lastEmergencyDispatch !== null;
+
+      if (hasRuntimeState) {
+        setActiveRideRuntime(createDefaultActiveRideRuntime(null));
+      }
+      return;
+    }
+
+    const hasTripMismatch =
+      activeRideRuntime.tripId !== null &&
+      activeRideRuntime.tripId !== activeTrip.tripId;
+    const hasLegacyPausedStateWithoutTripId =
+      activeRideRuntime.tripId === null &&
+      activeRideRuntime.temporaryStop.status !== "idle";
+
+    if (hasTripMismatch || hasLegacyPausedStateWithoutTripId) {
+      setActiveRideRuntime(createDefaultActiveRideRuntime(activeTrip.tripId));
+    }
+  }, [
+    activeTrip.stage,
+    activeTrip.tripId,
+    activeRideRuntime.tripId,
+    activeRideRuntime.temporaryStop.status,
+    activeRideRuntime.safetyCheck.status,
+    activeRideRuntime.lastKnownLocation,
+    activeRideRuntime.lastEmergencyDispatch,
+  ]);
+
   const [driverRoleSelection, setDriverRoleSelection] = useState<DriverRoleUpdateInput>(() =>
     readStoredDriverRoleSelection()
   );
@@ -2145,6 +2194,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
     setActiveRideRuntime(prev => ({
       ...prev,
+      tripId: activeTrip.tripId,
       temporaryStop: {
         ...prev.temporaryStop,
         status: "stop_requested",
@@ -2170,6 +2220,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         if (decision === "confirm") {
             return {
                 ...prev,
+                tripId: activeTrip.tripId,
                 temporaryStop: {
                     ...prev.temporaryStop,
                     status: "temporarily_stopped",
@@ -2181,6 +2232,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         } else {
             return {
                 ...prev,
+                tripId: activeTrip.tripId,
                 temporaryStop: {
                     ...prev.temporaryStop,
                     status: "idle",
@@ -2204,6 +2256,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         
         return {
             ...prev,
+            tripId: activeTrip.tripId,
             temporaryStop: {
                 ...prev.temporaryStop,
                 status: "idle",
@@ -2282,11 +2335,35 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const respondToSafetyCheck = useCallback((actor: RideSafetyActor, action: RideSafetyAction): boolean => {
     
     setActiveRideRuntime(prev => {
-        if (prev.safetyCheck.status === "idle") return prev;
-        
-        let newCheckState = { ...prev.safetyCheck };
         const now = Date.now();
-        
+        const resolvedTripId = activeTrip.tripId || prev.tripId || "unknown-trip";
+        let newCheckState = { ...prev.safetyCheck };
+
+        if (action === "sos") {
+            if (actor === "driver") {
+                newCheckState.driverAction = "sos";
+            } else {
+                newCheckState.passengerAction = "sos";
+            }
+            newCheckState.status = "sos_triggered";
+            newCheckState.sosTriggeredAt = now;
+            return {
+                ...prev,
+                tripId: resolvedTripId,
+                lastEmergencyDispatch: {
+                    id: `sos-${now}`,
+                    tripId: resolvedTripId,
+                    triggeredBy: actor,
+                    triggeredAt: now,
+                    contactsNotified: [],
+                    location: prev.lastKnownLocation
+                },
+                safetyCheck: newCheckState
+            };
+        }
+
+        if (prev.safetyCheck.status === "idle") return prev;
+
         if (actor === "driver") {
             newCheckState.driverAction = action;
             if (action === "okay") {
@@ -2297,24 +2374,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         } else {
             newCheckState.passengerAction = action;
         }
-        
-        if (action === "sos") {
-            newCheckState.status = "sos_triggered";
-            newCheckState.sosTriggeredAt = now;
-            return {
-                ...prev,
-                lastEmergencyDispatch: {
-                    id: `sos-${now}`,
-                    tripId: prev.tripId || '',
-                    triggeredBy: actor,
-                    triggeredAt: now,
-                    contactsNotified: [],
-                    location: prev.lastKnownLocation
-                },
-                safetyCheck: newCheckState
-            };
-        }
-        
+
         if (newCheckState.driverAction === "okay" && newCheckState.passengerAction === "okay") {
             newCheckState.status = "resolved";
             newCheckState.resolvedAt = now;
@@ -2355,6 +2415,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       };
 
       setActiveTrip(nextActiveTrip);
+      if (nextStage === "in_progress") {
+        setActiveRideRuntime(createDefaultActiveRideRuntime(activeTrip.tripId));
+      } else if (nextStatus === "completed" || nextStatus === "cancelled") {
+        setActiveRideRuntime(createDefaultActiveRideRuntime(null));
+      }
 
       if (nextStatus === "completed") {
         setJobs((prev) =>
@@ -2406,6 +2471,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         job.id === tripId ? { ...job, status: "completed" } : job
       )
     );
+    setActiveRideRuntime(createDefaultActiveRideRuntime(null));
 
     if (
       relatedJob &&
@@ -2556,12 +2622,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         job.id === tripId ? { ...job, status: "cancelled" } : job
       )
     );
+    setActiveRideRuntime(createDefaultActiveRideRuntime(null));
 
     return tripId;
   }, [activeTrip, driverPresenceStatus]);
 
   const clearActiveTrip = useCallback(() => {
     setActiveTrip(DEFAULT_ACTIVE_TRIP);
+    setActiveRideRuntime(createDefaultActiveRideRuntime(null));
   }, []);
 
   const updateVehicle = useCallback((id: string, patch: Partial<Vehicle>) => {
@@ -2913,6 +2981,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           updatedAt: now,
         },
       });
+      setActiveRideRuntime(createDefaultActiveRideRuntime(null));
 
       return true;
     },
@@ -3262,6 +3331,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           updatedAt: now,
         },
       });
+      setActiveRideRuntime(createDefaultActiveRideRuntime(jobId));
 
       return true;
     },
@@ -3334,6 +3404,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           updatedAt: now,
         },
       });
+      setActiveRideRuntime(createDefaultActiveRideRuntime(null));
       return true;
     },
     [jobs, activeTrip, sharedRidesEnabled, completeActiveTrip, canAccessOrdersWithCurrentDocuments]
@@ -3520,6 +3591,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   //   - Shared ride "Unavailable" because no shared trip state was created
   const resetActiveTrip = useCallback(() => {
     setActiveTrip(DEFAULT_ACTIVE_TRIP);
+    setActiveRideRuntime(createDefaultActiveRideRuntime(null));
   }, []);
 
   useEffect(() => {

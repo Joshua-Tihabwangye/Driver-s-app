@@ -27,7 +27,7 @@ export default function ArrivedAtPickup() {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const navigate = useNavigate();
   const { tripId: routeTripId } = useParams();
-  const { activeTrip, transitionActiveTripStage } = useStore();
+  const { activeTrip, transitionActiveTripStage, respondToSafetyCheck } = useStore();
   const tripId = routeTripId || activeTrip.tripId;
   // Use the REAL job type from activeTrip, not a local preview toggle
   const jobType = activeTrip.jobType || "ride";
@@ -70,6 +70,10 @@ export default function ArrivedAtPickup() {
   const handleMessage = (phone) => {
     const target = sanitizePhone(phone);
     if (target) window.open(`sms:${target}`);
+  };
+  const handleEmergencySos = () => {
+    respondToSafetyCheck("driver", "sos");
+    navigate("/driver/safety/sos/sending");
   };
 
   const isRental = jobType === "rental";
@@ -134,7 +138,7 @@ export default function ArrivedAtPickup() {
           {/* Floating SOS Button inside map area */}
           <button
             type="button"
-            onClick={() => navigate(`/driver/safety/emergency/${tripId}`)}
+            onClick={handleEmergencySos}
             className="absolute top-4 right-4 z-20 flex px-4 py-2 items-center justify-center rounded-full bg-red-600 text-white text-[11px] font-black uppercase tracking-widest shadow-xl shadow-red-600/30 active:scale-95 transition-all"
           >
             SOS

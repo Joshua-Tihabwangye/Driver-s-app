@@ -10,6 +10,7 @@ X
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – EmergencyAssistanceMap Driver – Emergency Assistance Screen (v3)
 // Redesigned to match the high-fidelity layout with green header, map, and grid categories.
@@ -22,7 +23,13 @@ const callNumber = (phone) => {
 
 export default function EmergencyAssistanceMap() {
   const navigate = useNavigate();
+  const { respondToSafetyCheck } = useStore();
   const [selectedCategory, setSelectedCategory] = useState(null);
+
+  const handleEmergencySos = () => {
+    respondToSafetyCheck("driver", "sos");
+    navigate("/driver/safety/sos/sending");
+  };
 
   const categories = [
     { label: 'Medical', icon: Stethoscope },
@@ -142,7 +149,7 @@ export default function EmergencyAssistanceMap() {
             Submit Report
           </button>
           <button
-            onClick={() => navigate('/driver/safety/sos/sending')}
+            onClick={handleEmergencySos}
             className="w-full py-5 rounded-full bg-red-600 text-white font-black text-[13px] uppercase tracking-[0.2em] shadow-2xl shadow-red-900/40 active:scale-95 transition-all"
           >
             SOS SIGNAL

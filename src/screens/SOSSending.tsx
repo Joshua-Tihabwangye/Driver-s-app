@@ -14,8 +14,12 @@ import { useStore } from "../context/StoreContext";
 
 export default function SOSSending() {
   const navigate = useNavigate();
-  const { emergencyContacts } = useStore();
+  const { emergencyContacts, respondToSafetyCheck } = useStore();
   const [sosTimer, setSosTimer] = useState(10);
+
+  useEffect(() => {
+    respondToSafetyCheck("driver", "sos");
+  }, [respondToSafetyCheck]);
 
   // SOS Countdown Timer
   useEffect(() => {
