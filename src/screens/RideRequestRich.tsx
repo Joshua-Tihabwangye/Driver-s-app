@@ -373,9 +373,10 @@ export default function RideRequestRich() {
           <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110" />
           
           <div className="flex items-start justify-between relative z-10">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500 text-slate-900 shadow-xl shadow-orange-500/20">
-              <User className="h-6 w-6" />
-            </div>
+            <div className="flex items-start space-x-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500 text-slate-900 shadow-xl shadow-orange-500/20">
+                <User className="h-6 w-6" />
+              </div>
               <div className="flex flex-col">
                 <span className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-500">
                   ENTITY DATA

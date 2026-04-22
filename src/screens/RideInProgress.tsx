@@ -29,8 +29,19 @@ import { useStore } from "../context/StoreContext";
 export default function RideInProgress() {
   const navigate = useNavigate();
   const [tripState, setTripState] = useState<"active" | "reached">("active");
+  const [nowMs, setNowMs] = useState(Date.now());
+  const [resumeConfirmationRequestedAt, setResumeConfirmationRequestedAt] = useState<number | null>(null);
   const { tripId: routeTripId } = useParams();
-  const { activeTrip, activeRideRuntime, getActiveRideElapsedSeconds, requestTemporaryStopDuringActiveRide, respondToSafetyCheck, resumeTemporaryStopDuringActiveRide, completeActiveTrip } = useStore();
+  const {
+    activeTrip,
+    activeRideRuntime,
+    getActiveRideElapsedSeconds,
+    requestTemporaryStopDuringActiveRide,
+    respondToTemporaryStopRequest,
+    respondToSafetyCheck,
+    resumeTemporaryStopDuringActiveRide,
+    completeActiveTrip,
+  } = useStore();
   const tripId = routeTripId || activeTrip.tripId;
 
   // Use the REAL job type from activeTrip, not a local preview toggle
@@ -45,6 +56,40 @@ export default function RideInProgress() {
     }
   }, [tripState]);
 
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setNowMs(Date.now());
+    }, 1000);
+
+    return () => window.clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (activeRideRuntime.temporaryStop.status !== "stop_requested") return;
+
+    const confirmationTimer = window.setTimeout(() => {
+      respondToTemporaryStopRequest("confirm");
+    }, 5000);
+
+    return () => window.clearTimeout(confirmationTimer);
+  }, [activeRideRuntime.temporaryStop.status, respondToTemporaryStopRequest]);
+
+  useEffect(() => {
+    if (!resumeConfirmationRequestedAt) return;
+
+    const confirmationTimer = window.setTimeout(() => {
+      resumeTemporaryStopDuringActiveRide();
+    }, 6000);
+
+    return () => window.clearTimeout(confirmationTimer);
+  }, [resumeConfirmationRequestedAt, resumeTemporaryStopDuringActiveRide]);
+
+  useEffect(() => {
+    if (activeRideRuntime.temporaryStop.status !== "temporarily_stopped") {
+      setResumeConfirmationRequestedAt(null);
+    }
+  }, [activeRideRuntime.temporaryStop.status]);
+
   const jobTypeLabelMap = {
     ride: "Ride",
     delivery: "Delivery",
@@ -55,11 +100,27 @@ export default function RideInProgress() {
     shuttle: "Shuttle",
   };
 
+  const formatElapsedTime = (totalSeconds: number): string => {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+  };
+
+  const elapsedInTripSeconds = getActiveRideElapsedSeconds(nowMs);
+  const stopRequestedAt = activeRideRuntime.temporaryStop.requestedAt || nowMs;
+  const stopConfirmRemainingSec = Math.max(
+    0,
+    5 - Math.floor((nowMs - stopRequestedAt) / 1000)
+  );
+  const resumeConfirmRemainingSec = resumeConfirmationRequestedAt
+    ? Math.max(0, 6 - Math.floor((nowMs - resumeConfirmationRequestedAt) / 1000))
+    : 0;
+
   // Base values from original Ride flow
   let titleText = "To · Bugolobi";
   let subtitleText = "6.2 km · 13 min remaining";
   let rightLine1 = "7.20 (est.)";
-  let rightLine2 = "Time in trip: 03:45";
+  let rightLine2 = `Time in trip: ${formatElapsedTime(elapsedInTripSeconds)}`;
 
   if (tripState === "reached") {
     titleText = "Destination Reached";
@@ -230,14 +291,29 @@ export default function RideInProgress() {
                     </div>
                     <div className="flex flex-col">
                       <span className="text-[11px] font-black text-slate-900 uppercase">Trip Paused</span>
-                      <span className="text-[9px] font-bold text-blue-600">Waiting for you to resume</span>
+                      <span className="text-[9px] font-bold text-blue-600">
+                        {resumeConfirmationRequestedAt
+                          ? `Waiting for rider confirmation to resume... ${resumeConfirmRemainingSec}s`
+                          : "Waiting for you to resume"}
+                      </span>
                     </div>
                   </div>
-                  <button onClick={() => resumeTemporaryStopDuringActiveRide()} className="bg-blue-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase">Resume</button>
+                  <button
+                    onClick={() => {
+                      if (resumeConfirmationRequestedAt) return;
+                      setResumeConfirmationRequestedAt(Date.now());
+                    }}
+                    disabled={Boolean(resumeConfirmationRequestedAt)}
+                    className="bg-blue-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {resumeConfirmationRequestedAt ? "Confirming..." : "Resume"}
+                  </button>
                 </div>
               ) : activeRideRuntime?.temporaryStop?.status === 'stop_requested' ? (
                  <div className="w-full p-4 rounded-2xl bg-yellow-50 border border-yellow-200">
-                   <p className="text-xs text-yellow-800 font-bold">Waiting for rider confirmation...</p>
+                   <p className="text-xs text-yellow-800 font-bold">
+                     Waiting for rider confirmation... {stopConfirmRemainingSec}s
+                   </p>
                  </div>
               ) : (
                 <button
