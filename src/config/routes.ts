@@ -7,6 +7,7 @@ import { SAMPLE_IDS } from "../data/constants";
 // ── Screen Imports ──────────────────────────────────────
 import AboutScreen from "../screens/About";
 import CashOutScreen from "../screens/CashOut";
+import CashOutMethodFlow from "../screens/CashOutMethodFlow";
 import RegisterServices from "../screens/RegisterServices";
 import Registration from "../screens/Registration";
 import DriverRegistration from "../screens/DriverRegistration";
@@ -275,6 +276,7 @@ export const SCREENS: ScreenConfig[] = [
   { id: "Help", label: "Help & Support", path: "/driver/help", Component: HelpScreen },
   { id: "About", label: "About EVzone", path: "/driver/about", Component: AboutScreen },
   { id: "CashOut", label: "Cash Out – Payment Gateway", path: "/driver/earnings/cashout", Component: CashOutScreen },
+  { id: "CashOutMethodFlow", label: "Cash Out Method Flow", path: "/driver/earnings/cashout/:methodId/:step", previewPath: "/driver/earnings/cashout/mobile_money/details", Component: CashOutMethodFlow },
   { id: "ForgotPassword", label: "Forgot Password", path: "/auth/forgot-password", Component: ForgotPassword },
   { id: "OTPVerification", label: "OTP Verification", path: "/auth/verify-otp", Component: OTPVerification },
   { id: "NotificationsCenter", label: "Notifications", path: "/driver/notifications", Component: NotificationsCenter },
