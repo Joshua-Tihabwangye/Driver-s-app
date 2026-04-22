@@ -328,16 +328,41 @@ export default function RideRequestRich() {
         <section className="relative rounded-[2.5rem] overflow-hidden border border-slate-100 bg-slate-200 h-[320px] shadow-2xl">
           <div className="absolute inset-0 bg-slate-200" style={{ backgroundImage: 'radial-gradient(#94a3b8 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
 
+          {/* Floating Back Button */}
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="absolute top-4 left-4 z-20 flex h-10 w-10 items-center justify-center rounded-2xl border border-white/50 bg-white/95 text-slate-900 shadow-xl active:scale-95 transition-all"
+            aria-label="Go back"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </button>
+
+          {/* Floating SOS Button */}
+          <button
+            type="button"
+            onClick={() => navigate("/driver/safety/emergency")}
+            className="absolute top-4 right-4 z-20 flex px-4 py-2 items-center justify-center rounded-full bg-red-600 text-white text-[11px] font-black uppercase tracking-widest shadow-xl shadow-red-600/30 active:scale-95 transition-all"
+          >
+            SOS
+          </button>
+
           {/* Pickup marker */}
           <div className="absolute left-10 top-12 flex flex-col items-center">
-<span className="mt-2 rounded-full bg-slate-900 px-3 py-1 text-[10px] font-black text-white uppercase tracking-widest shadow-xl">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 border-2 border-white shadow-2xl">
+              <MapPin className="h-5 w-5 text-orange-500" />
+            </div>
+            <span className="mt-2 rounded-full bg-slate-900 px-3 py-1 text-[10px] font-black text-white uppercase tracking-widest shadow-xl">
               Pickup
             </span>
           </div>
 
           {/* Drop-off marker */}
           <div className="absolute right-12 bottom-12 flex flex-col items-center">
-<span className="mt-2 rounded-full bg-white px-3 py-1 text-[10px] font-black text-slate-900 uppercase tracking-widest shadow-xl">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 border-2 border-white shadow-2xl">
+              <MapPin className="h-5 w-5 text-orange-500" />
+            </div>
+            <span className="mt-2 rounded-full bg-white px-3 py-1 text-[10px] font-black text-slate-900 uppercase tracking-widest shadow-xl">
               Final
             </span>
           </div>
@@ -348,13 +373,7 @@ export default function RideRequestRich() {
           <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110" />
           
           <div className="flex items-start justify-between relative z-10">
-            <div className="flex items-center space-x-4">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="h-5 w-5 text-white" />
-            </button>
+            <div className="flex items-start space-x-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500 text-slate-900 shadow-xl shadow-orange-500/20">
                 <User className="h-6 w-6" />
               </div>

@@ -118,14 +118,33 @@ export default function ArrivedAtPickup() {
       <main className="flex-1 px-6 pt-4 pb-16 overflow-y-auto scrollbar-hide space-y-6">
 
         {/* Map container (static view) */}
-        <section className="relative rounded-[2.5rem] overflow-hidden border border-slate-100 bg-slate-200 h-[260px] shadow-2xl">
+        <section className="relative rounded-[2.5rem] overflow-hidden border border-slate-100 bg-slate-200 h-[280px] shadow-2xl">
           <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
+
+          {/* Floating Back Button */}
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="absolute top-4 left-4 z-20 flex h-10 w-10 items-center justify-center rounded-2xl border border-white/50 bg-white/95 text-slate-900 shadow-xl active:scale-95 transition-all"
+            aria-label="Go back"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </button>
+
+          {/* Floating SOS Button inside map area */}
+          <button
+            type="button"
+            onClick={() => navigate(`/driver/safety/emergency/${tripId}`)}
+            className="absolute top-4 right-4 z-20 flex px-4 py-2 items-center justify-center rounded-full bg-red-600 text-white text-[11px] font-black uppercase tracking-widest shadow-xl shadow-red-600/30 active:scale-95 transition-all"
+          >
+            SOS
+          </button>
 
           {/* Pickup marker at current location */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="relative flex flex-col items-center">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 shadow-xl border-2 border-white">
-                <MapPin className="h-4 w-4 text-orange-500" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 shadow-2xl border-2 border-white">
+                <MapPin className="h-5 w-5 text-orange-500" />
               </div>
               <span className="mt-3 rounded-full bg-slate-900/80 px-3 py-1 text-[9px] font-black text-white uppercase tracking-widest backdrop-blur-sm border border-white/10">
                 Docking Point
@@ -133,9 +152,9 @@ export default function ArrivedAtPickup() {
             </div>
           </div>
 
-          <div className="absolute top-4 left-4">
-             <div className="bg-cream/90 backdrop-blur-md rounded-full px-3 py-1 flex items-center space-x-2 border-2 border-orange-500/20">
-                <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 transition-all">
+             <div className="bg-cream/95 backdrop-blur-md rounded-full px-4 py-2 flex items-center space-x-2 border-2 border-orange-500/30 shadow-lg">
+                <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse border border-white" />
                 <span className="text-[9px] font-black text-slate-900 uppercase tracking-widest">Arrived at Pickup</span>
              </div>
           </div>

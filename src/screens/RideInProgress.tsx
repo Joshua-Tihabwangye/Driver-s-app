@@ -1,14 +1,17 @@
 import { buildPrivateTripRoute } from "../data/constants";
 import {
-ChevronLeft,
-Clock,
-DollarSign,
-MapPin,
-Navigation,
-ShieldCheck,
-Share2
+  ChevronLeft,
+  Clock,
+  DollarSign,
+  MapPin,
+  Navigation,
+  PauseCircle,
+  Share2,
+  ShieldCheck,
+  AlertTriangle
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import SlideToConfirm from "../components/SlideToConfirm";
 import { useStore } from "../context/StoreContext";
@@ -26,8 +29,19 @@ import { useStore } from "../context/StoreContext";
 export default function RideInProgress() {
   const navigate = useNavigate();
   const [tripState, setTripState] = useState<"active" | "reached">("active");
+  const [nowMs, setNowMs] = useState(Date.now());
+  const [resumeConfirmationRequestedAt, setResumeConfirmationRequestedAt] = useState<number | null>(null);
   const { tripId: routeTripId } = useParams();
-  const { activeTrip, completeActiveTrip } = useStore();
+  const {
+    activeTrip,
+    activeRideRuntime,
+    getActiveRideElapsedSeconds,
+    requestTemporaryStopDuringActiveRide,
+    respondToTemporaryStopRequest,
+    respondToSafetyCheck,
+    resumeTemporaryStopDuringActiveRide,
+    completeActiveTrip,
+  } = useStore();
   const tripId = routeTripId || activeTrip.tripId;
 
   // Use the REAL job type from activeTrip, not a local preview toggle
@@ -37,10 +51,44 @@ export default function RideInProgress() {
     if (tripState === "active") {
       const timer = setTimeout(() => {
         setTripState("reached");
-      }, 5000); // 5 sec sim
+      }, 15000); // 15 sec sim
       return () => clearTimeout(timer);
     }
   }, [tripState]);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setNowMs(Date.now());
+    }, 1000);
+
+    return () => window.clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (activeRideRuntime.temporaryStop.status !== "stop_requested") return;
+
+    const confirmationTimer = window.setTimeout(() => {
+      respondToTemporaryStopRequest("confirm");
+    }, 5000);
+
+    return () => window.clearTimeout(confirmationTimer);
+  }, [activeRideRuntime.temporaryStop.status, respondToTemporaryStopRequest]);
+
+  useEffect(() => {
+    if (!resumeConfirmationRequestedAt) return;
+
+    const confirmationTimer = window.setTimeout(() => {
+      resumeTemporaryStopDuringActiveRide();
+    }, 6000);
+
+    return () => window.clearTimeout(confirmationTimer);
+  }, [resumeConfirmationRequestedAt, resumeTemporaryStopDuringActiveRide]);
+
+  useEffect(() => {
+    if (activeRideRuntime.temporaryStop.status !== "temporarily_stopped") {
+      setResumeConfirmationRequestedAt(null);
+    }
+  }, [activeRideRuntime.temporaryStop.status]);
 
   const jobTypeLabelMap = {
     ride: "Ride",
@@ -52,42 +100,32 @@ export default function RideInProgress() {
     shuttle: "Shuttle",
   };
 
-  const isRental = jobType === "rental";
-  const isTour = jobType === "tour";
-  const isAmbulance = jobType === "ambulance";
+  const formatElapsedTime = (totalSeconds: number): string => {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+  };
+
+  const elapsedInTripSeconds = getActiveRideElapsedSeconds(nowMs);
+  const stopRequestedAt = activeRideRuntime.temporaryStop.requestedAt || nowMs;
+  const stopConfirmRemainingSec = Math.max(
+    0,
+    5 - Math.floor((nowMs - stopRequestedAt) / 1000)
+  );
+  const resumeConfirmRemainingSec = resumeConfirmationRequestedAt
+    ? Math.max(0, 6 - Math.floor((nowMs - resumeConfirmationRequestedAt) / 1000))
+    : 0;
 
   // Base values from original Ride flow
   let titleText = "To · Bugolobi";
   let subtitleText = "6.2 km · 13 min remaining";
   let rightLine1 = "7.20 (est.)";
-  let rightLine2 = "Time in trip: 03:45";
-
-  if (jobType === "delivery") {
-    titleText = "Food delivery · To · Kira Road";
-    subtitleText = "3.2 km · 15–20 min remaining";
-    rightLine1 = "3.80 (est.)";
-    rightLine2 = "Time in trip: 02:10";
-  } else if (isRental) {
-    titleText = "On rental · 3h 20m elapsed · ends at 18:00";
-    subtitleText = "Current status: On rental · Waiting at hotel";
-    rightLine1 = "Rental · 09:00–18:00";
-    rightLine2 = "Hotel → City / On-call";
-  } else if (isTour) {
-    titleText = "Segment: City tour · Day 2 of 5";
-    subtitleText = "To · Bugolobi · 6.2 km · 13 min remaining";
-    rightLine1 = "Tour · Day 2 of 5";
-    rightLine2 = "Segment: City tour";
-  } else if (isAmbulance) {
-    titleText = "To · City Hospital";
-    subtitleText = "Current status: En route to hospital";
-    rightLine1 = "Time since pickup: 05:20";
-    rightLine2 = "Distance to hospital: 3.2 km";
-  }
+  let rightLine2 = `Time in trip: ${formatElapsedTime(elapsedInTripSeconds)}`;
 
   if (tripState === "reached") {
     titleText = "Destination Reached";
     subtitleText = "Ready to drop off";
-    rightLine1 = "Time in trip: 04:02";
+    rightLine1 = "7.20 (total)";
     rightLine2 = "Arrived at location";
   }
 
@@ -138,33 +176,43 @@ export default function RideInProgress() {
           </svg>
         </div>
 
+        {/* Floating Back Button */}
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-slate-900/65 text-white backdrop-blur-sm active:scale-95 transition-transform"
+          className="absolute top-4 left-4 z-20 flex h-10 w-10 items-center justify-center rounded-2xl border border-white/50 bg-white/95 text-slate-900 shadow-xl active:scale-95 transition-all"
           aria-label="Go back"
         >
-          <ChevronLeft className="h-5 w-5" />
+          <ChevronLeft className="h-6 w-6" />
         </button>
 
-        <div className="absolute top-4 right-4 z-10">
-           <div className="bg-cream/90 backdrop-blur-md rounded-full px-3 py-1 flex items-center space-x-2 border-2 border-orange-500/20">
-              <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+        {/* Floating SOS Button over Map */}
+        <button
+          type="button"
+          onClick={() => navigate(`/driver/safety/emergency/${tripId}`)}
+          className="absolute top-4 right-4 z-20 flex px-4 py-2 items-center justify-center rounded-full bg-red-600 text-white text-[11px] font-black uppercase tracking-widest shadow-xl shadow-red-600/30 active:scale-95 transition-all"
+        >
+          SOS
+        </button>
+
+        <div className="absolute top-16 right-4 z-10 transition-all">
+           <div className="bg-cream/95 backdrop-blur-md rounded-full px-3 py-1.5 flex items-center space-x-2 border-2 border-orange-500/30 shadow-lg">
+              <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse border border-white" />
               <span className="text-[9px] font-black text-slate-900 uppercase tracking-widest">Navigation Active</span>
            </div>
         </div>
 
         {/* Driver marker */}
         <div className="absolute left-16 bottom-16 flex flex-col items-center">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 border border-white shadow-lg">
-            <Navigation className="h-4 w-4 text-orange-500" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 border-2 border-white shadow-2xl">
+            <Navigation className="h-5 w-5 text-orange-500" />
           </div>
         </div>
 
         {/* Drop-off marker */}
-        <div className="absolute right-10 top-16 flex flex-col items-center">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 border border-white shadow-lg">
-            <MapPin className="h-4 w-4 text-orange-500" />
+        <div className="absolute right-10 top-24 flex flex-col items-center">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 border-2 border-white shadow-2xl">
+            <MapPin className="h-5 w-5 text-orange-500" />
           </div>
         </div>
       </section>
@@ -192,17 +240,10 @@ export default function RideInProgress() {
                 <p className="text-[11px] text-slate-500 font-bold uppercase tracking-tight">{subtitleText}</p>
               </div>
               <div className="flex flex-col items-end space-y-2">
-                {!isAmbulance && (
-                  <span className="inline-flex items-center text-sm font-black text-slate-900">
-                    <DollarSign className="h-4 w-4 mr-0.5 text-orange-500" />
-                    {rightLine1}
-                  </span>
-                )}
-                {isAmbulance && (
-                  <span className="inline-flex items-center text-xs font-black text-orange-600 uppercase tracking-widest">
-                    {rightLine1}
-                  </span>
-                )}
+                <span className="inline-flex items-center text-sm font-black text-slate-900">
+                  <DollarSign className="h-4 w-4 mr-0.5 text-orange-500" />
+                  {rightLine1}
+                </span>
                 <div className="flex flex-col items-end">
                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">{rightLine2}</span>
                 </div>
@@ -241,6 +282,57 @@ export default function RideInProgress() {
               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed">
                 SOS, position tracking, and incident reporting are available in the options menu.
               </p>
+
+              {activeRideRuntime?.temporaryStop?.status === 'temporarily_stopped' ? (
+                <div className="w-full flex items-center justify-between p-4 rounded-2xl bg-blue-50 border-2 border-blue-100 shadow-sm transition-all text-left">
+                  <div className="flex items-center space-x-3">
+                    <div className="h-8 w-8 rounded-xl bg-blue-500 flex items-center justify-center shadow-md">
+                      <PauseCircle className="h-4 w-4 text-white" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[11px] font-black text-slate-900 uppercase">Trip Paused</span>
+                      <span className="text-[9px] font-bold text-blue-600">
+                        {resumeConfirmationRequestedAt
+                          ? `Waiting for rider confirmation to resume... ${resumeConfirmRemainingSec}s`
+                          : "Waiting for you to resume"}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (resumeConfirmationRequestedAt) return;
+                      setResumeConfirmationRequestedAt(Date.now());
+                    }}
+                    disabled={Boolean(resumeConfirmationRequestedAt)}
+                    className="bg-blue-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {resumeConfirmationRequestedAt ? "Confirming..." : "Resume"}
+                  </button>
+                </div>
+              ) : activeRideRuntime?.temporaryStop?.status === 'stop_requested' ? (
+                 <div className="w-full p-4 rounded-2xl bg-yellow-50 border border-yellow-200">
+                   <p className="text-xs text-yellow-800 font-bold">
+                     Waiting for rider confirmation... {stopConfirmRemainingSec}s
+                   </p>
+                 </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => requestTemporaryStopDuringActiveRide("Need a quick break")}
+                  className="w-full flex items-center justify-between p-4 rounded-2xl bg-orange-50 border-2 border-orange-100/50 shadow-sm active:scale-95 transition-all text-left"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="h-8 w-8 rounded-xl bg-orange-500 flex items-center justify-center shadow-md shadow-orange-500/20">
+                      <PauseCircle className="h-4 w-4 text-white" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[9px] font-black uppercase tracking-[0.15em] text-orange-600">Action</span>
+                      <span className="text-[11px] font-black text-slate-900 uppercase">Add Stop</span>
+                    </div>
+                  </div>
+                </button>
+              )}
+
               <button
                 type="button"
                 onClick={() => navigate(`/driver/safety/share-my-ride/${tripId}`)}
@@ -265,6 +357,21 @@ export default function RideInProgress() {
           )}
         </section>
       </main>
+
+      <Dialog open={activeRideRuntime?.safetyCheck?.status === "safety_check_pending"}>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <AlertTriangle color="#ef4444" width={24} height={24} />
+          <Typography variant="h6" fontWeight="bold">Are you okay?</Typography>
+        </DialogTitle>
+        <DialogContent>
+          <Typography>The vehicle has been stationary for over 20 minutes. Please confirm your safety.</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => { respondToSafetyCheck('driver', 'sos'); navigate('/driver/safety/emergency/contacts'); }} color="error">SOS</Button>
+          <Button onClick={() => respondToSafetyCheck('driver', 'okay')} variant="contained">I'm Okay</Button>
+        </DialogActions>
+      </Dialog>
+
     </div>
   );
 }
