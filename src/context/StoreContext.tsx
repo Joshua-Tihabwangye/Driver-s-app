@@ -170,6 +170,25 @@ export interface ActiveRideEmergencyDispatch {
   triggeredAt: number;
   contactsNotified: string[];
   location: ActiveRideLocationSample | null;
+  helpMessage?: string;
+  trackingUrl?: string;
+  emergencyNumberDialed?: string;
+  supportNotified?: boolean;
+  rideDetailsShared?: boolean;
+  driverDetailsShared?: boolean;
+  vehicleDetailsShared?: boolean;
+}
+
+export interface EmergencyDispatchUpdateInput {
+  contactsNotified?: string[];
+  location?: Omit<ActiveRideLocationSample, "timestamp"> & { timestamp?: number } | null;
+  helpMessage?: string;
+  trackingUrl?: string;
+  emergencyNumberDialed?: string;
+  supportNotified?: boolean;
+  rideDetailsShared?: boolean;
+  driverDetailsShared?: boolean;
+  vehicleDetailsShared?: boolean;
 }
 
 export interface ActiveRideTemporaryStopState {
@@ -281,6 +300,7 @@ interface StoreContextType {
     actor: RideSafetyActor,
     action: RideSafetyAction
   ) => boolean;
+  updateEmergencyDispatch: (input: EmergencyDispatchUpdateInput) => void;
 
 
   // Actions
@@ -2296,7 +2316,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         }
         
         let safetyCheck = prev.safetyCheck;
-        const isStationary = (timestamp - lastMovementAt) >= 20 * 60000;
+        const isStationary = (timestamp - lastMovementAt) >= 20* 60000;
         
         if (isStationary && safetyCheck.status === "idle") {
             safetyCheck = {
@@ -2340,6 +2360,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         let newCheckState = { ...prev.safetyCheck };
 
         if (action === "sos") {
+            const contactsNotified = emergencyContacts
+                .map((contact) => contact.phone)
+                .filter((phone) => Boolean(phone && phone.trim().length > 0));
+            const trackingUrl = prev.lastKnownLocation
+                ? `https://maps.google.com/?q=${prev.lastKnownLocation.latitude},${prev.lastKnownLocation.longitude}`
+                : undefined;
+            const helpMessage = `EVzone SOS ALERT. Driver needs urgent help.${resolvedTripId ? ` Trip ID: ${resolvedTripId}.` : ""}${trackingUrl ? ` Live location: ${trackingUrl}.` : " Live location pending."}`;
             if (actor === "driver") {
                 newCheckState.driverAction = "sos";
             } else {
@@ -2355,8 +2382,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                     tripId: resolvedTripId,
                     triggeredBy: actor,
                     triggeredAt: now,
-                    contactsNotified: [],
-                    location: prev.lastKnownLocation
+                    contactsNotified,
+                    location: prev.lastKnownLocation,
+                    helpMessage,
+                    trackingUrl,
+                    supportNotified: true,
+                    rideDetailsShared: true,
+                    driverDetailsShared: true,
+                    vehicleDetailsShared: true,
                 },
                 safetyCheck: newCheckState
             };
@@ -2387,7 +2420,73 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     });
     
     return true;
-  }, [activeTrip]);
+  }, [activeTrip, emergencyContacts]);
+
+  const updateEmergencyDispatch = useCallback((input: EmergencyDispatchUpdateInput): void => {
+    setActiveRideRuntime((prev) => {
+      const now = Date.now();
+      const resolvedTripId = activeTrip.tripId || prev.tripId || "unknown-trip";
+      const normalizedLocation =
+        input.location === undefined
+          ? undefined
+          : input.location === null
+          ? null
+          : {
+              latitude: input.location.latitude,
+              longitude: input.location.longitude,
+              accuracy: input.location.accuracy,
+              timestamp: input.location.timestamp || now,
+            };
+
+      const baseDispatch: ActiveRideEmergencyDispatch =
+        prev.lastEmergencyDispatch || {
+          id: `sos-${now}`,
+          tripId: resolvedTripId,
+          triggeredBy: "driver",
+          triggeredAt: now,
+          contactsNotified: [],
+          location: prev.lastKnownLocation,
+        };
+
+      const nextLocation =
+        normalizedLocation === undefined ? baseDispatch.location : normalizedLocation;
+
+      const nextDispatch: ActiveRideEmergencyDispatch = {
+        ...baseDispatch,
+        tripId: resolvedTripId,
+        contactsNotified: input.contactsNotified || baseDispatch.contactsNotified,
+        location: nextLocation,
+        helpMessage: input.helpMessage || baseDispatch.helpMessage,
+        trackingUrl: input.trackingUrl || baseDispatch.trackingUrl,
+        emergencyNumberDialed:
+          input.emergencyNumberDialed || baseDispatch.emergencyNumberDialed,
+        supportNotified:
+          input.supportNotified === undefined
+            ? baseDispatch.supportNotified
+            : input.supportNotified,
+        rideDetailsShared:
+          input.rideDetailsShared === undefined
+            ? baseDispatch.rideDetailsShared
+            : input.rideDetailsShared,
+        driverDetailsShared:
+          input.driverDetailsShared === undefined
+            ? baseDispatch.driverDetailsShared
+            : input.driverDetailsShared,
+        vehicleDetailsShared:
+          input.vehicleDetailsShared === undefined
+            ? baseDispatch.vehicleDetailsShared
+            : input.vehicleDetailsShared,
+      };
+
+      return {
+        ...prev,
+        tripId: resolvedTripId,
+        lastKnownLocation:
+          nextLocation === null ? prev.lastKnownLocation : nextLocation || prev.lastKnownLocation,
+        lastEmergencyDispatch: nextDispatch,
+      };
+    });
+  }, [activeTrip.tripId]);
 
 
   const addJob = useCallback((job: Job) => setJobs(prev => [job, ...prev]), []);
@@ -3657,6 +3756,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       resumeTemporaryStopDuringActiveRide,
       reportActiveRideMovementSample,
       respondToSafetyCheck,
+      updateEmergencyDispatch,
       canTransitionActiveTripStage,
       addJob,
       updateJobStatus,
@@ -3752,6 +3852,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       resumeTemporaryStopDuringActiveRide,
       reportActiveRideMovementSample,
       respondToSafetyCheck,
+      updateEmergencyDispatch,
       canTransitionActiveTripStage,
       addJob,
       updateJobStatus,

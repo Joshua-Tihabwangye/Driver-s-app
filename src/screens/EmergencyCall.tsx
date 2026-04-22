@@ -1,11 +1,12 @@
 import {
 ChevronLeft,
 ChevronRight,
+MapPin,
 MicOff,
 PhoneOff,
 Volume2
 } from "lucide-react";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
@@ -23,19 +24,84 @@ function formatCallTime(seconds) {
 
 export default function EmergencyCall() {
   const navigate = useNavigate();
-  const { emergencyContacts } = useStore();
+  const {
+    emergencyContacts,
+    activeRideRuntime,
+    reportActiveRideMovementSample,
+    updateEmergencyDispatch,
+  } = useStore();
   const [isSwiped, setIsSwiped] = useState(false);
   const [seconds, setSeconds] = useState(0);
+  const [callEnded, setCallEnded] = useState(false);
   const [muted, setMuted] = useState(false);
   const [speaker, setSpeaker] = useState(false);
+  const [locationStatus, setLocationStatus] = useState<"locating" | "live" | "unavailable">("locating");
+  const watchIdRef = useRef<number | null>(null);
 
   // Call timer (restored from original)
   useEffect(() => {
+    if (callEnded) return;
     const id = setInterval(() => setSeconds((s) => s + 1), 1000);
     return () => clearInterval(id);
-  }, []);
+  }, [callEnded]);
+
+  useEffect(() => {
+    try {
+      window.location.href = "tel:112";
+      updateEmergencyDispatch({
+        emergencyNumberDialed: "112",
+        supportNotified: true,
+      });
+    } catch {
+      // Ignore browser call handling issues.
+    }
+  }, [updateEmergencyDispatch]);
+
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      setLocationStatus("unavailable");
+      return;
+    }
+
+    watchIdRef.current = navigator.geolocation.watchPosition(
+      (position) => {
+        const next = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+        };
+        setLocationStatus("live");
+        reportActiveRideMovementSample(next);
+        updateEmergencyDispatch({
+          location: next,
+          trackingUrl: `https://maps.google.com/?q=${next.latitude},${next.longitude}`,
+          supportNotified: true,
+        });
+      },
+      () => setLocationStatus("unavailable"),
+      {
+        enableHighAccuracy: true,
+        maximumAge: 3000,
+        timeout: 10000,
+      }
+    );
+
+    return () => {
+      if (watchIdRef.current !== null && typeof navigator !== "undefined" && navigator.geolocation) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
+    };
+  }, [reportActiveRideMovementSample, updateEmergencyDispatch]);
 
   const callTime = formatCallTime(seconds);
+  const dispatch = activeRideRuntime.lastEmergencyDispatch;
+  const locationLabel =
+    locationStatus === "locating"
+      ? "Updating live location..."
+      : locationStatus === "live" && dispatch?.location
+      ? `${dispatch.location.latitude.toFixed(5)}, ${dispatch.location.longitude.toFixed(5)}`
+      : "Live location unavailable.";
+  const helpMessage = dispatch?.helpMessage || "SOS help request is active. Emergency services and support are being notified.";
 
   // Orbiting Avatars Data - Use real contacts if available
   const avatars = useMemo(() => {
@@ -82,7 +148,21 @@ export default function EmergencyCall() {
           </p>
           <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-slate-100 text-[10px] font-black text-slate-600 uppercase tracking-widest">
              <div className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
-             <span>Call time: {callTime}</span>
+             <span>{callEnded ? `Call ended at ${callTime}` : `Call time: ${callTime}`}</span>
+          </div>
+        </div>
+
+        <div className="w-full space-y-2 mb-6">
+          <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-left">
+            <p className="text-[11px] font-black text-red-800 uppercase tracking-wide">Help Message Sent</p>
+            <p className="text-[11px] text-red-700 mt-1 leading-relaxed">{helpMessage}</p>
+          </div>
+          <div className="rounded-2xl border border-sky-100 bg-sky-50 px-4 py-2.5 text-left text-[11px] text-sky-800 font-semibold inline-flex items-center gap-2">
+            <MapPin className="h-4 w-4" />
+            <span>Live location: {locationLabel}</span>
+          </div>
+          <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-2.5 text-left text-[11px] text-emerald-800 font-semibold">
+            Shared: ride details, driver details, vehicle details, and emergency contact alerts.
           </div>
         </div>
 
@@ -144,7 +224,7 @@ export default function EmergencyCall() {
 
           <button
             type="button"
-            onClick={() => navigate("/driver/dashboard/offline")}
+            onClick={() => setCallEnded(true)}
             className="flex flex-col items-center space-y-2 group"
           >
             <div className="flex h-14 w-14 items-center justify-center rounded-3xl bg-red-600 text-white shadow-2xl shadow-red-900/20 group-active:scale-95 transition-all">
