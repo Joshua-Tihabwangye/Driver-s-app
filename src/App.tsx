@@ -93,7 +93,7 @@ function RequireOnlineForJobs({
   children: ReactNode;
   routePath: string;
 }) {
-  const { driverPresenceStatus } = useStore();
+  const { driverPresenceStatus, resolveJobAccessAttempt } = useStore();
   const location = useLocation();
 
   if (
@@ -110,6 +110,23 @@ function RequireOnlineForJobs({
         }}
       />
     );
+  }
+
+  const isJobRequestsRoute = routePath.startsWith("/driver/jobs");
+  if (isJobRequestsRoute) {
+    const jobAccessDecision = resolveJobAccessAttempt(routePath);
+    if (!jobAccessDecision.allowed && jobAccessDecision.reason === "documents") {
+      return (
+        <Navigate
+          to="/driver/dashboard/online"
+          replace
+          state={{
+            documentGuardMessage: jobAccessDecision.message,
+            blockedPath: `${location.pathname}${location.search}${location.hash}`,
+          }}
+        />
+      );
+    }
   }
 
   return <>{children}</>;
