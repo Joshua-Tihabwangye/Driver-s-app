@@ -150,6 +150,61 @@ export interface ActiveTripState {
   timestamps: ActiveTripTimestamps;
 }
 
+
+export type ActiveRideStopStatus = "idle" | "stop_requested" | "temporarily_stopped";
+export type ActiveRideSafetyStatus = "idle" | "safety_check_pending" | "resolved" | "sos_triggered";
+export type RideSafetyActor = "driver" | "passenger";
+export type RideSafetyAction = "okay" | "sos";
+
+export interface ActiveRideLocationSample {
+  latitude: number;
+  longitude: number;
+  accuracy?: number;
+  timestamp: number;
+}
+
+export interface ActiveRideEmergencyDispatch {
+  id: string;
+  tripId: string;
+  triggeredBy: RideSafetyActor;
+  triggeredAt: number;
+  contactsNotified: string[];
+  location: ActiveRideLocationSample | null;
+}
+
+export interface ActiveRideTemporaryStopState {
+  status: ActiveRideStopStatus;
+  requestNote: string;
+  requestedAt?: number;
+  notifiedPassengerAt?: number;
+  confirmedAt?: number;
+  declinedAt?: number;
+  resumedAt?: number;
+  pauseStartedAt?: number;
+  totalPausedMs: number;
+  lastPassengerDecision: "none" | "confirmed" | "declined";
+}
+
+export interface ActiveRideSafetyCheckState {
+  status: ActiveRideSafetyStatus;
+  stationarySince?: number;
+  triggeredAt?: number;
+  resolvedAt?: number;
+  sosTriggeredAt?: number;
+  driverAction: RideSafetyAction | null;
+  passengerAction: RideSafetyAction | null;
+  triggeredByStationary: boolean;
+}
+
+export interface ActiveRideRuntimeState {
+  tripId: string | null;
+  temporaryStop: ActiveRideTemporaryStopState;
+  safetyCheck: ActiveRideSafetyCheckState;
+  lastMovementAt?: number;
+  lastKnownLocation: ActiveRideLocationSample | null;
+  lastEmergencyDispatch: ActiveRideEmergencyDispatch | null;
+}
+
 export interface TripFeedback {
   tripId: string;
   rating: number;
@@ -214,6 +269,19 @@ interface StoreContextType {
   deliveryStageAtLeast: (stage: DeliveryWorkflowStage) => boolean;
   activeTrip: ActiveTripState;
   canTransitionActiveTripStage: (nextStage: TripWorkflowStage) => boolean;
+  activeRideRuntime: ActiveRideRuntimeState;
+  getActiveRideElapsedSeconds: (atMs?: number) => number;
+  requestTemporaryStopDuringActiveRide: (note?: string) => boolean;
+  respondToTemporaryStopRequest: (decision: "confirm" | "decline") => boolean;
+  resumeTemporaryStopDuringActiveRide: () => boolean;
+  reportActiveRideMovementSample: (
+    sample: Omit<ActiveRideLocationSample, "timestamp"> & { timestamp?: number }
+  ) => void;
+  respondToSafetyCheck: (
+    actor: RideSafetyActor,
+    action: RideSafetyAction
+  ) => boolean;
+
 
   // Actions
   addJob: (job: Job) => void;
@@ -390,6 +458,28 @@ const DEFAULT_DELIVERY_WORKFLOW: DeliveryWorkflowState = {
 
 const EMPTY_ACTIVE_TRIP_TIMESTAMPS: ActiveTripTimestamps = {
   updatedAt: 0,
+};
+
+
+const ACTIVE_RIDE_RUNTIME_STORAGE_KEY = "driver_active_ride_runtime_state";
+const DEFAULT_ACTIVE_RIDE_TEMPORARY_STOP: ActiveRideTemporaryStopState = {
+  status: "idle",
+  requestNote: "",
+  totalPausedMs: 0,
+  lastPassengerDecision: "none",
+};
+const DEFAULT_ACTIVE_RIDE_SAFETY_CHECK: ActiveRideSafetyCheckState = {
+  status: "idle",
+  driverAction: null,
+  passengerAction: null,
+  triggeredByStationary: false,
+};
+const DEFAULT_ACTIVE_RIDE_RUNTIME: ActiveRideRuntimeState = {
+  tripId: null,
+  temporaryStop: DEFAULT_ACTIVE_RIDE_TEMPORARY_STOP,
+  safetyCheck: DEFAULT_ACTIVE_RIDE_SAFETY_CHECK,
+  lastKnownLocation: null,
+  lastEmergencyDispatch: null,
 };
 
 const DEFAULT_ACTIVE_TRIP: ActiveTripState = {
@@ -1048,6 +1138,18 @@ function isJobCategory(value: unknown): value is JobCategory {
   );
 }
 
+
+function readStoredActiveRideRuntime(): ActiveRideRuntimeState {
+  if (typeof window === "undefined") return DEFAULT_ACTIVE_RIDE_RUNTIME;
+  try {
+    const raw = window.localStorage.getItem(ACTIVE_RIDE_RUNTIME_STORAGE_KEY);
+    if (!raw) return DEFAULT_ACTIVE_RIDE_RUNTIME;
+    return { ...DEFAULT_ACTIVE_RIDE_RUNTIME, ...JSON.parse(raw) };
+  } catch {
+    return DEFAULT_ACTIVE_RIDE_RUNTIME;
+  }
+}
+
 function readStoredActiveTrip(): ActiveTripState {
   if (typeof window === "undefined") {
     return DEFAULT_ACTIVE_TRIP;
@@ -1361,15 +1463,7 @@ const initialJobs: Job[] = [
     jobType: "ride",
     status: "pending",
     requestedAt: Date.now() - 0.02 * 3600000,
-    sharedContacts: [
-      {
-        id: "passenger-3244",
-        name: "Aisha N.",
-        phone: "+256700123456",
-        relationship: "Booked for someone else",
-        createdAt: Date.now() - 0.02 * 3600000,
-      },
-    ],
+    sharedContacts: [],
   },
   { id: "3245", from: "Village Mall", to: "Kyambogo", distance: "5.2 km", duration: "16 min", fare: "12.50", jobType: "ride", status: "pending", requestedAt: Date.now() - 0.05 * 3600000 },
   { id: "3250", from: "Sheraton Hotel", to: "Speke Resort", distance: "26 km", duration: "4h booking", fare: "Rental", jobType: "rental", status: "pending", requestedAt: Date.now() - 0.06 * 3600000 },
@@ -1429,6 +1523,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [activeTrip, setActiveTrip] = useState<ActiveTripState>(() =>
     readStoredActiveTrip()
   );
+
+  const [activeRideRuntime, setActiveRideRuntime] = useState<ActiveRideRuntimeState>(() => readStoredActiveRideRuntime());
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(ACTIVE_RIDE_RUNTIME_STORAGE_KEY, JSON.stringify(activeRideRuntime));
+    } catch (e) {
+      console.warn("Failed to save active ride runtime to localStorage:", e);
+    }
+  }, [activeRideRuntime]);
+
   const [driverRoleSelection, setDriverRoleSelection] = useState<DriverRoleUpdateInput>(() =>
     readStoredDriverRoleSelection()
   );
@@ -2003,6 +2109,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     });
   }, [driverProfilePhoto]);
 
+
+
+
   const driverRoleConfig = useMemo<DriverRoleConfig>(
     () => ({
       coreRole: driverRoleSelection.coreRole,
@@ -2013,6 +2122,214 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   );
 
   // Actions
+
+
+  const getActiveRideElapsedSeconds = useCallback((atMs?: number): number => {
+    if (activeTrip.stage !== "in_progress" || !activeTrip.timestamps.startedAt) return 0;
+    const now = atMs || Date.now();
+    const start = activeTrip.timestamps.startedAt;
+    const { status, totalPausedMs, pauseStartedAt } = activeRideRuntime.temporaryStop;
+    
+    let activePauseDuration = 0;
+    if (status === "temporarily_stopped" && pauseStartedAt) {
+      activePauseDuration = now - pauseStartedAt;
+    }
+    
+    const elapsedMs = Math.max(0, now - start - totalPausedMs - activePauseDuration);
+    return Math.floor(elapsedMs / 1000);
+  }, [activeTrip, activeRideRuntime.temporaryStop]);
+
+  const requestTemporaryStopDuringActiveRide = useCallback((note?: string): boolean => {
+    if (activeTrip.stage !== "in_progress") return false;
+    if (activeRideRuntime.temporaryStop.status !== "idle") return false;
+
+    setActiveRideRuntime(prev => ({
+      ...prev,
+      temporaryStop: {
+        ...prev.temporaryStop,
+        status: "stop_requested",
+        requestNote: note || "",
+        requestedAt: Date.now(),
+        lastPassengerDecision: "none"
+      }
+    }));
+    
+    setTimeout(() => {
+        window.localStorage.setItem('evzone_active_ride_stop_request', JSON.stringify({ tripId: activeTrip.tripId, ts: Date.now() }));
+    }, 50);
+
+    return true;
+  }, [activeTrip, activeRideRuntime]);
+
+  const respondToTemporaryStopRequest = useCallback((decision: "confirm" | "decline"): boolean => {
+    if (activeTrip.stage !== "in_progress") return false;
+    
+    setActiveRideRuntime(prev => {
+        if (prev.temporaryStop.status !== "stop_requested") return prev;
+        const now = Date.now();
+        if (decision === "confirm") {
+            return {
+                ...prev,
+                temporaryStop: {
+                    ...prev.temporaryStop,
+                    status: "temporarily_stopped",
+                    confirmedAt: now,
+                    pauseStartedAt: now,
+                    lastPassengerDecision: "confirmed"
+                }
+            };
+        } else {
+            return {
+                ...prev,
+                temporaryStop: {
+                    ...prev.temporaryStop,
+                    status: "idle",
+                    declinedAt: now,
+                    lastPassengerDecision: "declined"
+                }
+            };
+        }
+    });
+    return true;
+  }, [activeTrip]);
+
+  const resumeTemporaryStopDuringActiveRide = useCallback((): boolean => {
+    if (activeTrip.stage !== "in_progress") return false;
+    
+    setActiveRideRuntime(prev => {
+        if (prev.temporaryStop.status !== "temporarily_stopped") return prev;
+        const now = Date.now();
+        const pauseStartedAt = prev.temporaryStop.pauseStartedAt || now;
+        const pausedMsThisSession = now - pauseStartedAt;
+        
+        return {
+            ...prev,
+            temporaryStop: {
+                ...prev.temporaryStop,
+                status: "idle",
+                resumedAt: now,
+                totalPausedMs: prev.temporaryStop.totalPausedMs + pausedMsThisSession,
+                pauseStartedAt: undefined,
+                lastPassengerDecision: "none"
+            }
+        };
+    });
+    
+    setTimeout(() => {
+        window.localStorage.setItem('evzone_active_ride_stop_resume', JSON.stringify({ tripId: activeTrip.tripId, ts: Date.now() }));
+    }, 50);
+
+    return true;
+  }, [activeTrip]);
+
+  const reportActiveRideMovementSample = useCallback((sample: Omit<ActiveRideLocationSample, "timestamp"> & { timestamp?: number }): void => {
+    if (activeTrip.stage !== "in_progress") return;
+    
+    setActiveRideRuntime((prev) => {
+        const timestamp = sample.timestamp || Date.now();
+        const newLocation: ActiveRideLocationSample = { ...sample, timestamp };
+        
+        let lastMovementAt = prev.lastMovementAt;
+        if (!prev.lastKnownLocation || !lastMovementAt) {
+            lastMovementAt = timestamp;
+        } else {
+            const dx = prev.lastKnownLocation.latitude - newLocation.latitude;
+            const dy = prev.lastKnownLocation.longitude - newLocation.longitude;
+            const dist = Math.sqrt(dx*dx + dy*dy) * 111000; 
+            
+            if (dist > 50) { 
+                lastMovementAt = timestamp;
+            }
+        }
+        
+        let safetyCheck = prev.safetyCheck;
+        const isStationary = (timestamp - lastMovementAt) >= 20 * 60000;
+        
+        if (isStationary && safetyCheck.status === "idle") {
+            safetyCheck = {
+                ...safetyCheck,
+                status: "safety_check_pending",
+                stationarySince: lastMovementAt,
+                triggeredAt: timestamp,
+                triggeredByStationary: true,
+            };
+            
+            setTimeout(() => {
+                window.localStorage.setItem('evzone_active_ride_safety_check', JSON.stringify({ tripId: activeTrip.tripId, ts: Date.now() }));
+            }, 50);
+        } else if (!isStationary && safetyCheck.status !== "idle" && safetyCheck.triggeredByStationary && safetyCheck.status !== "sos_triggered") {
+            safetyCheck = {
+                ...safetyCheck,
+                status: "idle",
+                driverAction: null,
+                passengerAction: null,
+            };
+            setTimeout(() => {
+                window.localStorage.setItem('evzone_active_ride_safety_resume', JSON.stringify({ tripId: activeTrip.tripId, ts: Date.now() }));
+            }, 50);
+        }
+
+        return {
+            ...prev,
+            tripId: activeTrip.tripId,
+            lastKnownLocation: newLocation,
+            lastMovementAt,
+            safetyCheck
+        };
+    });
+  }, [activeTrip]);
+
+  const respondToSafetyCheck = useCallback((actor: RideSafetyActor, action: RideSafetyAction): boolean => {
+    
+    setActiveRideRuntime(prev => {
+        if (prev.safetyCheck.status === "idle") return prev;
+        
+        let newCheckState = { ...prev.safetyCheck };
+        const now = Date.now();
+        
+        if (actor === "driver") {
+            newCheckState.driverAction = action;
+            if (action === "okay") {
+                setTimeout(() => {
+                    window.localStorage.setItem('evzone_active_ride_safety_driver_okay', JSON.stringify({ tripId: activeTrip.tripId, ts: now }));
+                }, 50);
+            }
+        } else {
+            newCheckState.passengerAction = action;
+        }
+        
+        if (action === "sos") {
+            newCheckState.status = "sos_triggered";
+            newCheckState.sosTriggeredAt = now;
+            return {
+                ...prev,
+                lastEmergencyDispatch: {
+                    id: `sos-${now}`,
+                    tripId: prev.tripId || '',
+                    triggeredBy: actor,
+                    triggeredAt: now,
+                    contactsNotified: [],
+                    location: prev.lastKnownLocation
+                },
+                safetyCheck: newCheckState
+            };
+        }
+        
+        if (newCheckState.driverAction === "okay" && newCheckState.passengerAction === "okay") {
+            newCheckState.status = "resolved";
+            newCheckState.resolvedAt = now;
+        }
+        
+        return {
+            ...prev,
+            safetyCheck: newCheckState
+        };
+    });
+    
+    return true;
+  }, [activeTrip]);
+
+
   const addJob = useCallback((job: Job) => setJobs(prev => [job, ...prev]), []);
 
   const transitionActiveTripStage = useCallback(
@@ -3205,6 +3522,25 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setActiveTrip(DEFAULT_ACTIVE_TRIP);
   }, []);
 
+  useEffect(() => {
+    const handleStorageEvent = (e: StorageEvent) => {
+      if (!e.newValue) return;
+      if (e.key === "evzone_active_ride_stop_response") {
+        const parsed = JSON.parse(e.newValue);
+        if (parsed.tripId === activeTrip.tripId) {
+            respondToTemporaryStopRequest(parsed.decision);
+        }
+      } else if (e.key === "evzone_active_ride_safety_passenger_action") {
+        const parsed = JSON.parse(e.newValue);
+        if (parsed.tripId === activeTrip.tripId) {
+            respondToSafetyCheck("passenger", parsed.action);
+        }
+      }
+    };
+    window.addEventListener("storage", handleStorageEvent);
+    return () => window.removeEventListener("storage", handleStorageEvent);
+  }, [activeTrip.tripId, respondToTemporaryStopRequest, respondToSafetyCheck]);
+
   const value = useMemo<StoreContextType>(
     () => ({
       periodFilter,
@@ -3241,6 +3577,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       activeDeliveryJob,
       deliveryStageAtLeast,
       activeTrip,
+
+      activeRideRuntime,
+      getActiveRideElapsedSeconds,
+      requestTemporaryStopDuringActiveRide,
+      respondToTemporaryStopRequest,
+      resumeTemporaryStopDuringActiveRide,
+      reportActiveRideMovementSample,
+      respondToSafetyCheck,
       canTransitionActiveTripStage,
       addJob,
       updateJobStatus,
@@ -3328,6 +3672,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       activeDeliveryJob,
       deliveryStageAtLeast,
       activeTrip,
+
+      activeRideRuntime,
+      getActiveRideElapsedSeconds,
+      requestTemporaryStopDuringActiveRide,
+      respondToTemporaryStopRequest,
+      resumeTemporaryStopDuringActiveRide,
+      reportActiveRideMovementSample,
+      respondToSafetyCheck,
       canTransitionActiveTripStage,
       addJob,
       updateJobStatus,
