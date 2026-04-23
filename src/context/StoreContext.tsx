@@ -59,6 +59,11 @@ export interface DriverPreferences {
   requirementIds: string[];
 }
 
+export interface DriverMapPreferences {
+  alertsOn: boolean;
+  stationsOn: boolean;
+}
+
 export type OnboardingCheckpointId =
   | "roleSelected"
   | "documentsVerified"
@@ -267,6 +272,9 @@ interface StoreContextType {
   sharedRidesEnabled: boolean;
   setSharedRidesEnabled: (enabled: boolean) => void;
   activeSharedTrip: SharedTrip | null;
+  driverMapPreferences: DriverMapPreferences;
+  setMapAlertsEnabled: (enabled: boolean) => void;
+  setMapStationsEnabled: (enabled: boolean) => void;
 
   // Metrics (Derived)
   dashboardMetrics: DashboardMetrics;
@@ -398,6 +406,7 @@ const VEHICLES_STORAGE_KEY = "driver_vehicles";
 const EMERGENCY_CONTACTS_STORAGE_KEY = "driver_emergency_contacts";
 const DRAFT_VEHICLE_STORAGE_KEY = "driver_draft_vehicle";
 const DRIVER_PRESENCE_STORAGE_KEY = "driver_presence_status";
+const DRIVER_MAP_PREFERENCES_STORAGE_KEY = "driver_map_preferences";
 const JOBS_STORAGE_KEY = "driver_jobs";
 const TRIPS_STORAGE_KEY = "driver_trips";
 const REVENUE_EVENTS_STORAGE_KEY = "driver_revenue_events";
@@ -412,6 +421,11 @@ const SELFIE_NOT_REQUIRED_MESSAGE =
   "All compliance checks are complete. You can go online now.";
 const REQUIRE_GO_ONLINE_SELFIE =
   import.meta.env.VITE_REQUIRE_GO_ONLINE_SELFIE !== "false";
+
+const DEFAULT_DRIVER_MAP_PREFERENCES: DriverMapPreferences = {
+  alertsOn: true,
+  stationsOn: false,
+};
 
 const CAR_ACCESSORIES: Record<string, "Available" | "Missing" | "Required"> = {
   "Spare tyre": "Available",
@@ -1133,6 +1147,27 @@ function readStoredDriverPresenceStatus(): DriverPresenceStatus {
   }
 }
 
+function readStoredDriverMapPreferences(): DriverMapPreferences {
+  if (typeof window === "undefined") {
+    return DEFAULT_DRIVER_MAP_PREFERENCES;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(DRIVER_MAP_PREFERENCES_STORAGE_KEY);
+    if (!raw) {
+      return DEFAULT_DRIVER_MAP_PREFERENCES;
+    }
+
+    const parsed = JSON.parse(raw) as Partial<DriverMapPreferences>;
+    return {
+      ...DEFAULT_DRIVER_MAP_PREFERENCES,
+      ...parsed,
+    };
+  } catch {
+    return DEFAULT_DRIVER_MAP_PREFERENCES;
+  }
+}
+
 function isTripWorkflowStage(value: unknown): value is TripWorkflowStage {
   return (
     value === "idle" ||
@@ -1631,6 +1666,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [driverPresenceStatus, setDriverPresenceStatus] = useState<DriverPresenceStatus>(() =>
     readStoredDriverPresenceStatus()
   );
+  const [driverMapPreferences, setDriverMapPreferences] = useState<DriverMapPreferences>(() =>
+    readStoredDriverMapPreferences()
+  );
   const [jobAccessError, setJobAccessError] = useState<string | null>(null);
   const [selectedVehicleIndex, setSelectedVehicleIndexState] = useState<number | null>(() => {
     if (typeof window === "undefined") return null;
@@ -1653,6 +1691,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         window.localStorage.removeItem(SELECTED_VEHICLE_STORAGE_KEY);
       }
     }
+  }, []);
+
+  const setMapAlertsEnabled = useCallback((enabled: boolean) => {
+    setDriverMapPreferences((prev) =>
+      prev.alertsOn === enabled ? prev : { ...prev, alertsOn: enabled }
+    );
+  }, []);
+
+  const setMapStationsEnabled = useCallback((enabled: boolean) => {
+    setDriverMapPreferences((prev) =>
+      prev.stationsOn === enabled ? prev : { ...prev, stationsOn: enabled }
+    );
   }, []);
 
   // Keep selection valid when vehicles change.
@@ -1719,6 +1769,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       window.removeEventListener("focus", syncDocumentCheckpoint);
     };
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(
+        DRIVER_MAP_PREFERENCES_STORAGE_KEY,
+        JSON.stringify(driverMapPreferences)
+      );
+    } catch (error) {
+      console.warn("Failed to save driver map preferences:", error);
+    }
+  }, [driverMapPreferences]);
 
   const setOnboardingCheckpoint = useCallback(
     (checkpoint: OnboardingCheckpointId, isComplete = true) => {
@@ -3726,6 +3788,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       sharedRidesEnabled,
       setSharedRidesEnabled,
       activeSharedTrip,
+      driverMapPreferences,
+      setMapAlertsEnabled,
+      setMapStationsEnabled,
       // Use the real computed dashboard metrics (derived from actual trip/revenue data)
       dashboardMetrics,
       // Use the real period-adjusted earnings (not static MOCK_EARNINGS)
@@ -3827,6 +3892,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       filteredRevenueEvents,
       sharedRidesEnabled,
       activeSharedTrip,
+      driverMapPreferences,
       dashboardMetrics,
       recentEarnings,
       driverRoleConfig,
@@ -3862,6 +3928,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       completeActiveSharedTrip,
       completeTrip,
       addRevenueEvent,
+      setMapAlertsEnabled,
+      setMapStationsEnabled,
       updateDriverRoleConfig,
       updateDriverProfile,
       updateDriverPreferences,
