@@ -1,6 +1,7 @@
-import { Activity,Clock,Map,MapPin,Navigation,Wifi } from "lucide-react";
+import { Activity, MapPin, Navigation, Wifi } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import DriverMapSurface from "../components/DriverMapSurface";
 import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – OnlineMapVariant Driver App – Map View (Online State, v2)
@@ -43,56 +44,45 @@ export default function OnlineMapVariant() {
           </div>
         </section>
 
-        {/* Map container */}
-        <section className="relative rounded-[2.5rem] overflow-hidden border border-slate-100 bg-slate-200 h-[520px] shadow-2xl shadow-slate-200">
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
-
-          {/* Route polyline placeholder */}
-          <div className="absolute inset-0">
-            <svg
-              className="w-full h-full"
-              viewBox="0 0 100 100"
-              preserveAspectRatio="none"
-            >
-              <path
-                d="M16 82 C 30 74, 40 66, 54 54 S 76 34, 86 22"
-                fill="none"
-                stroke="#f97316"
-                strokeWidth="2.4"
-                strokeLinecap="round"
-                strokeDasharray="5 3"
-              />
-            </svg>
-          </div>
-
-          {/* Driver marker */}
-          <div className="absolute left-16 bottom-16 flex flex-col items-center group">
-<span className="mt-2 rounded-lg bg-[#0b1e3a]/90 backdrop-blur-sm px-2 py-0.5 text-[8px] font-black text-white uppercase tracking-[0.2em]">
-              LOCATION
-            </span>
-          </div>
-
-          {/* Example nearby point */}
-          <div className="absolute right-12 top-16 flex flex-col items-center group">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-orange-500 border-2 border-white shadow-xl group-hover:scale-110 transition-transform">
-              <MapPin className="h-3.5 w-3.5 text-white" />
+        <DriverMapSurface
+          heightClass="h-[520px]"
+          routePath="M16 82 C 30 74, 40 66, 54 54 S 76 34, 86 22"
+          routeColor="#15b79e"
+          routeStrokeWidth={2.6}
+          routeDasharray="5 3"
+          defaultZoom={13}
+          defaultTrafficOn
+          defaultAlertsOn
+          infoCard={(
+            <div className="rounded-[1.6rem] border border-white/70 bg-white/92 p-4 shadow-xl backdrop-blur-sm">
+              <div className="flex items-center space-x-2">
+                <div className="h-2 w-2 rounded-full bg-[#15b79e] animate-pulse" />
+                <span className="text-[11px] font-black uppercase tracking-widest text-[#0f766e]">
+                  Live Navigation Active
+                </span>
+              </div>
+              <p className="mt-2 text-[11px] font-medium leading-relaxed text-slate-600">
+                Stay within high-demand areas. Incoming requests will appear instantly on your screen.
+              </p>
             </div>
-            <span className="mt-2 rounded-lg bg-orange-500/90 backdrop-blur-sm px-2 py-0.5 text-[8px] font-black text-white uppercase tracking-[0.2em]">
-              HOTSPOT
-            </span>
-          </div>
-
-          {/* Overlay hint */}
-          <div className="absolute left-4 right-4 bottom-4 rounded-[2.5rem] bg-cream/95 backdrop-blur-md px-5 py-5 text-slate-800 shadow-2xl space-y-2 border-2 border-orange-500/20">
-            <div className="flex items-center space-x-2">
-               <div className="h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
-               <span className="font-black text-[11px] uppercase tracking-widest text-orange-500">Live Navigation Active</span>
-            </div>
-            <p className="text-[11px] font-medium leading-relaxed text-slate-600">
-               Stay within high-demand areas. Incoming requests (Ride, Delivery, Medical) will appear instantly on your screen.
-            </p>
-          </div>
-        </section>
+          )}
+          markers={[
+            {
+              id: "driver",
+              positionClass: "left-[24%] bottom-[24%]",
+              tone: "driver",
+              label: "Location",
+              icon: Navigation,
+            },
+            {
+              id: "hotspot",
+              positionClass: "right-[24%] top-[24%]",
+              tone: "warning",
+              label: "Hotspot",
+              icon: MapPin,
+            },
+          ]}
+        />
       </main>
     </div>
   );

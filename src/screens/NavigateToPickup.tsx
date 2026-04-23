@@ -1,12 +1,12 @@
 import { buildPrivateTripRoute } from "../data/constants";
 import {
-ChevronLeft,
 Clock,
 MapPin,
 Navigation,
 Phone
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
+import DriverMapSurface from "../components/DriverMapSurface";
 import SlideToConfirm from "../components/SlideToConfirm";
 import { useStore } from "../context/StoreContext";
 
@@ -95,58 +95,46 @@ export default function NavigateToPickup() {
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* Full-width top map */}
-      <section className="relative w-full h-[460px] overflow-hidden bg-slate-200">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
-
-        {/* Route polyline */}
-        <div className="absolute inset-0">
-          <svg
-            className="w-full h-full"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-          >
-            <path
-              d="M20 80 C 30 70, 45 60, 65 40 S 80 25, 85 20"
-              fill="none"
-              stroke="#12c98c"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeDasharray="4 2"
-            />
-          </svg>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-slate-900/65 text-white backdrop-blur-sm active:scale-95 transition-transform"
-          aria-label="Go back"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-
-        {/* Driver marker (bottom) */}
-        <div className="absolute left-7 bottom-10 flex flex-col items-center">
-          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/90 border border-white">
-            <Navigation className="h-3.5 w-3.5 text-brand-active" />
+      <DriverMapSurface
+        heightClass="h-[460px]"
+        onBack={() => navigate(-1)}
+        routePath="M20 80 C 30 70, 45 60, 65 40 S 80 25, 85 20"
+        routeColor="#15b79e"
+        routeStrokeWidth={2.4}
+        routeDasharray="4 2"
+        defaultTrafficOn
+        defaultAlertsOn
+        topRightSlot={(
+          <div className="rounded-full border border-emerald-200 bg-white/94 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-[#0f766e] shadow-lg">
+            Tracking Customer
           </div>
-        </div>
-
-        {/* Pickup marker (top) */}
-        <div className="absolute right-9 top-9 flex flex-col items-center">
-          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/90 border border-white shadow-lg">
-            <MapPin className="h-3.5 w-3.5 text-brand-active" />
+        )}
+        infoCard={(
+          <div className="rounded-[1.5rem] border border-white/70 bg-white/92 p-4 shadow-xl backdrop-blur-sm">
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
+              Live Route
+            </p>
+            <p className="mt-1 text-[11px] font-bold uppercase tracking-tight text-slate-700">
+              Keep the pickup pin centered as you approach the meeting point.
+            </p>
           </div>
-        </div>
-
-        <div className="absolute top-4 right-4 z-10">
-           <div className="bg-cream/90 backdrop-blur-md rounded-full px-3 py-1 flex items-center space-x-2 border-2 border-brand-active/20">
-              <div className="w-1.5 h-1.5 rounded-full bg-brand-active animate-pulse" />
-              <span className="text-[9px] font-black text-slate-900 uppercase tracking-widest">Tracking Customer</span>
-           </div>
-        </div>
-      </section>
+        )}
+        markers={[
+          {
+            id: "driver",
+            positionClass: "left-[16%] bottom-[20%]",
+            tone: "driver",
+            icon: Navigation,
+          },
+          {
+            id: "pickup",
+            positionClass: "right-[16%] top-[18%]",
+            tone: isAmbulance ? "danger" : "warning",
+            label: isAmbulance ? "Patient" : "Pickup",
+            icon: MapPin,
+          },
+        ]}
+      />
 
       {/* Content */}
       <main className="flex-1 px-6 pt-5 pb-16 overflow-y-auto scrollbar-hide space-y-6">

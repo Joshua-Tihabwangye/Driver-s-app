@@ -1,6 +1,5 @@
 import { buildPrivateTripRoute } from "../data/constants";
 import {
-  ChevronLeft,
   Clock,
   DollarSign,
   MapPin,
@@ -13,6 +12,7 @@ import {
 import { useState, useEffect } from "react";
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
+import DriverMapSurface from "../components/DriverMapSurface";
 import SlideToConfirm from "../components/SlideToConfirm";
 import { useStore } from "../context/StoreContext";
 
@@ -138,68 +138,47 @@ export default function RideInProgress() {
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* Full-width top map */}
-      <section className="relative w-full h-[460px] overflow-hidden bg-slate-200">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
-
-        {/* Route polyline */}
-        <div className="absolute inset-0">
-          <svg
-            className="w-full h-full"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-          >
-            <path
-              d="M16 80 C 30 70, 42 60, 56 48 S 78 30, 86 22"
-              fill="none"
-              stroke="#f97316"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              strokeDasharray="5 3"
-            />
-          </svg>
-        </div>
-
-        {/* Floating Back Button */}
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 z-20 flex h-10 w-10 items-center justify-center rounded-2xl border border-white/50 bg-white/95 text-slate-900 shadow-xl active:scale-95 transition-all"
-          aria-label="Go back"
-        >
-          <ChevronLeft className="h-6 w-6" />
-        </button>
-
-        {/* Floating SOS Button over Map */}
-        <button
-          type="button"
-          onClick={handleEmergencySos}
-          className="absolute top-4 right-4 z-20 flex px-4 py-2 items-center justify-center rounded-full bg-red-600 text-white text-[11px] font-black uppercase tracking-widest shadow-xl shadow-red-600/30 active:scale-95 transition-all"
-        >
-          SOS
-        </button>
-
-        <div className="absolute top-16 right-4 z-10 transition-all">
-           <div className="bg-cream/95 backdrop-blur-md rounded-full px-3 py-1.5 flex items-center space-x-2 border-2 border-orange-500/30 shadow-lg">
-              <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse border border-white" />
-              <span className="text-[9px] font-black text-slate-900 uppercase tracking-widest">Navigation Active</span>
-           </div>
-        </div>
-
-        {/* Driver marker */}
-        <div className="absolute left-16 bottom-16 flex flex-col items-center">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 border-2 border-white shadow-2xl">
-            <Navigation className="h-5 w-5 text-orange-500" />
+      <DriverMapSurface
+        heightClass="h-[460px]"
+        onBack={() => navigate(-1)}
+        onSos={handleEmergencySos}
+        routePath="M16 80 C 30 70, 42 60, 56 48 S 78 30, 86 22"
+        routeColor={jobType === "ambulance" ? "#dc4d46" : "#15b79e"}
+        routeStrokeWidth={2.6}
+        routeDasharray="5 3"
+        defaultTrafficOn
+        defaultAlertsOn
+        topRightSlot={(
+          <div className="rounded-full border border-emerald-200 bg-white/94 px-4 py-2 text-[9px] font-black uppercase tracking-[0.16em] text-[#0f766e] shadow-lg">
+            Navigation Active
           </div>
-        </div>
-
-        {/* Drop-off marker */}
-        <div className="absolute right-10 top-24 flex flex-col items-center">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 border-2 border-white shadow-2xl">
-            <MapPin className="h-5 w-5 text-orange-500" />
+        )}
+        infoCard={(
+          <div className="rounded-[1.5rem] border border-white/70 bg-white/92 p-4 shadow-xl backdrop-blur-sm">
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
+              Route Monitor
+            </p>
+            <p className="mt-1 text-[11px] font-bold uppercase tracking-tight text-slate-700">
+              Live navigation, alerts, and support tools stay active during the trip.
+            </p>
           </div>
-        </div>
-      </section>
+        )}
+        markers={[
+          {
+            id: "driver",
+            positionClass: "left-[18%] bottom-[20%]",
+            tone: "driver",
+            icon: Navigation,
+          },
+          {
+            id: "destination",
+            positionClass: "right-[16%] top-[28%]",
+            tone: jobType === "ambulance" ? "danger" : "warning",
+            label: tripState === "reached" ? "Arrived" : "Destination",
+            icon: MapPin,
+          },
+        ]}
+      />
 
       {/* Content */}
       <main className="flex-1 px-6 pt-5 pb-16 overflow-y-auto scrollbar-hide space-y-6">

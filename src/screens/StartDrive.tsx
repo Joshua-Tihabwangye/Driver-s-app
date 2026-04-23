@@ -1,6 +1,5 @@
 import { buildPrivateTripRoute } from "../data/constants";
 import {
-ChevronLeft,
 Clock,
 MapPin,
 Navigation,
@@ -8,6 +7,7 @@ ShieldCheck,
 User
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
+import DriverMapSurface from "../components/DriverMapSurface";
 import SlideToConfirm from "../components/SlideToConfirm";
 import { useStore } from "../context/StoreContext";
 
@@ -114,52 +114,35 @@ export default function StartDrive() {
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* Full-width top map */}
-      <section className="relative w-full h-[460px] overflow-hidden bg-slate-200">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
-        <div className="absolute inset-0">
-          <svg
-            className="w-full h-full"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-          >
-            <path
-              d="M20 80 C 35 70, 45 60, 60 45 S 80 30, 88 22"
-              fill="none"
-              stroke="#f97316"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeDasharray="5 3"
-            />
-          </svg>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-slate-900/65 text-white backdrop-blur-sm active:scale-95 transition-transform"
-          aria-label="Go back"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-
-        <div className="absolute left-8 bottom-10">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 border border-white shadow-lg">
-            <Navigation className="h-4 w-4 text-orange-500" />
+      <DriverMapSurface
+        heightClass="h-[460px]"
+        onBack={() => navigate(-1)}
+        routePath="M20 80 C 35 70, 45 60, 60 45 S 80 30, 88 22"
+        routeColor={isAmbulance ? "#dc4d46" : "#15b79e"}
+        routeStrokeWidth={2.4}
+        routeDasharray="5 3"
+        defaultTrafficOn
+        defaultAlertsOn
+        topRightSlot={(
+          <div className="rounded-full border border-slate-200 bg-white/94 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-700 shadow-lg">
+            Path Locked
           </div>
-        </div>
-        <div className="absolute right-9 top-12">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 border border-white shadow-lg">
-            <MapPin className="h-4 w-4 text-orange-500" />
+        )}
+        infoCard={(
+          <div className="rounded-[1.5rem] border border-white/70 bg-white/92 p-4 shadow-xl backdrop-blur-sm">
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
+              Start Vector
+            </p>
+            <p className="mt-1 text-[11px] font-bold uppercase tracking-tight text-slate-700">
+              Route checks are complete and the first leg is ready.
+            </p>
           </div>
-        </div>
-        <div className="absolute right-8 top-8">
-           <div className="bg-cream/90 backdrop-blur-md rounded-full px-3 py-1 flex items-center space-x-2 border-2 border-orange-500/20">
-              <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
-              <span className="text-[9px] font-black text-slate-900 uppercase tracking-widest">Path Locked</span>
-           </div>
-        </div>
-      </section>
+        )}
+        markers={[
+          { id: "driver", positionClass: "left-[16%] bottom-[20%]", tone: "driver", icon: Navigation },
+          { id: "destination", positionClass: "right-[16%] top-[22%]", tone: isAmbulance ? "danger" : "warning", label: "Start", icon: MapPin },
+        ]}
+      />
 
       {/* Content */}
       <main className="flex-1 px-6 pt-5 pb-16 overflow-y-auto scrollbar-hide space-y-6">

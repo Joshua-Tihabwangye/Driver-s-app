@@ -4,6 +4,7 @@ ChevronLeft,
 Zap
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import DriverMapSurface from "../components/DriverMapSurface";
 import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – SurgePricing Surge Pricing (v1)
@@ -71,34 +72,27 @@ export default function SurgePricing() {
           </p>
         </section>
 
-        {/* Map heatmap preview */}
-        <section className="relative rounded-[2.5rem] overflow-hidden border border-slate-200 bg-slate-200 h-[280px] shadow-lg">
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
-
-          {/* Fake heat circles */}
-          <div className="absolute left-10 top-10 h-32 w-32 rounded-full bg-amber-400/30 blur-2xl animate-pulse" />
-          <div className="absolute right-8 top-16 h-24 w-24 rounded-full bg-amber-500/40 blur-xl" />
-          <div className="absolute left-16 bottom-10 h-28 w-28 rounded-full bg-amber-300/25 blur-lg" />
-
-          {/* Current location marker */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="relative flex items-center justify-center">
-              <div className="h-16 w-16 rounded-full bg-orange-500/10 animate-ping" />
-              <div className="absolute h-8 w-8 rounded-full bg-orange-500/30" />
-              <div className="absolute h-4 w-4 rounded-full bg-orange-500 border-2 border-white shadow-lg" />
+        <DriverMapSurface
+          heightClass="h-[280px]"
+          compact
+          defaultTrafficOn
+          defaultAlertsOn
+          infoCard={(
+            <div className="rounded-[1.5rem] border border-white/70 bg-white/92 p-4 shadow-xl backdrop-blur-sm">
+              <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
+                Surge View
+              </p>
+              <p className="mt-1 text-[11px] font-bold uppercase tracking-tight text-slate-700">
+                Compare nearby bonus areas before relocating.
+              </p>
             </div>
-          </div>
-
-          {/* Surge labels */}
-          <div className="absolute left-6 top-6 rounded-xl bg-slate-900/90 backdrop-blur-md px-3 py-1.5 text-[9px] font-black text-white uppercase tracking-widest border border-white/20 shadow-xl flex items-center">
-            <Zap className="h-3.5 w-3.5 mr-2 text-amber-400" />
-            City Centre x2.0
-          </div>
-          <div className="absolute right-6 top-32 rounded-xl bg-slate-900/90 backdrop-blur-md px-3 py-1.5 text-[9px] font-black text-white uppercase tracking-widest border border-white/20 shadow-xl flex items-center">
-            <Zap className="h-3.5 w-3.5 mr-2 text-amber-400" />
-            Ntinda x1.6
-          </div>
-        </section>
+          )}
+          markers={[
+            { id: "driver", positionClass: "left-[30%] top-[52%]", tone: "driver", label: "You" },
+            { id: "city-centre", positionClass: "left-[18%] top-[18%]", tone: "warning", label: "City Centre x2.0", icon: Zap },
+            { id: "ntinda", positionClass: "right-[18%] top-[38%]", tone: "warning", label: "Ntinda x1.6", icon: Zap },
+          ]}
+        />
 
         {/* Surge zones list */}
         <section className="space-y-4 pb-12">

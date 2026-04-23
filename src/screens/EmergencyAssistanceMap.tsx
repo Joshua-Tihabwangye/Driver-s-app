@@ -1,6 +1,5 @@
 import {
 Car,
-ChevronLeft,
 Flame,
 Home as HomeIcon,
 Phone,
@@ -9,7 +8,7 @@ X
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import PageHeader from "../components/PageHeader";
+import DriverMapSurface from "../components/DriverMapSurface";
 import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – EmergencyAssistanceMap Driver – Emergency Assistance Screen (v3)
@@ -40,30 +39,34 @@ export default function EmergencyAssistanceMap() {
 
   return (
     <div className="flex flex-col h-full ">
-      {/* Map Explorer / Location Preview */}
-      <section className="relative w-full h-[460px] overflow-hidden bg-slate-200 shrink-0">
-        <img
-          src="https://images.unsplash.com/photo-1524661135-423995f22d0b?w=1200&h=800&fit=crop"
-          alt="Location Map"
-          className="w-full h-full object-cover"
-        />
-
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-slate-900/65 text-white backdrop-blur-sm active:scale-95 transition-transform"
-          aria-label="Go back"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-
-        {/* Address Overlay */}
-        <div className="absolute inset-x-4 bottom-4">
-          <div className="bg-slate-900/90 backdrop-blur-md p-4 rounded-3xl text-white text-[10px] font-bold text-center leading-relaxed shadow-2xl border border-white/10 uppercase tracking-tight">
-            123 Maplewood Crescent, Greenfield Heights, Springfield, IL 62704
+      <DriverMapSurface
+        heightClass="h-[460px]"
+        className="shrink-0"
+        onBack={() => navigate(-1)}
+        onSos={handleEmergencySos}
+        routePath="M18 78 C 30 64, 40 56, 50 46 S 70 28, 84 18"
+        routeColor="#dc4d46"
+        routeStrokeWidth={3}
+        routeDasharray="5 3"
+        defaultTrafficOn
+        defaultAlertsOn
+        infoCard={(
+          <div className="rounded-[1.5rem] border border-red-200 bg-white/94 p-4 text-center shadow-xl backdrop-blur-sm">
+            <p className="text-[10px] font-black uppercase tracking-tight text-red-600 leading-relaxed">
+              123 Maplewood Crescent, Greenfield Heights, Springfield, IL 62704
+            </p>
           </div>
-        </div>
-      </section>
+        )}
+        markers={[
+          {
+            id: "incident",
+            positionClass: "left-[28%] top-[36%]",
+            tone: "danger",
+            label: "Emergency",
+            icon: Phone,
+          },
+        ]}
+      />
 
       {/* Content Area */}
       <main className="flex-1 flex flex-col px-6 pt-5 pb-16 relative overflow-y-auto scrollbar-hide space-y-8">

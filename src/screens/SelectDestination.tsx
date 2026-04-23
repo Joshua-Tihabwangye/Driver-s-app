@@ -1,11 +1,11 @@
 import {
-ChevronLeft,
 Clock,
 MapPin,
 Search
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import DriverMapSurface from "../components/DriverMapSurface";
 import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – SelectDestination Pick Your Destination (v1)
@@ -46,28 +46,28 @@ export default function SelectDestination() {
 
   return (
     <div className="flex flex-col h-full ">
-      {/* Map Preview / Destination Picker */}
-      <section className="relative w-full h-[460px] overflow-hidden bg-slate-200 shrink-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
-
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-slate-900/65 text-white backdrop-blur-sm active:scale-95 transition-transform"
-          aria-label="Go back"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-
-        {/* Current location marker */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="relative flex items-center justify-center">
-            <div className="h-20 w-20 rounded-full bg-orange-500/10 animate-ping" />
-            <div className="absolute h-12 w-12 rounded-full bg-orange-500/20" />
-            <div className="absolute h-5 w-5 rounded-full bg-orange-500 border-4 border-white shadow-lg" />
+      <DriverMapSurface
+        heightClass="h-[460px]"
+        className="shrink-0"
+        onBack={() => navigate(-1)}
+        defaultTrafficOn
+        defaultAlertsOn
+        infoCard={(
+          <div className="rounded-[1.5rem] border border-white/70 bg-white/92 p-4 shadow-xl backdrop-blur-sm">
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
+              Destination Picker
+            </p>
+            <p className="mt-1 text-[11px] font-bold uppercase tracking-tight text-slate-700">
+              Search or tap a pin to preview travel time and distance.
+            </p>
           </div>
-        </div>
-      </section>
+        )}
+        markers={[
+          { id: "current", positionClass: "left-[30%] top-[48%]", tone: "driver", label: "Current" },
+          { id: "candidate-1", positionClass: "left-[20%] top-[26%]", tone: "warning" },
+          { id: "candidate-2", positionClass: "right-[18%] top-[42%]", tone: "danger" },
+        ]}
+      />
 
       <main className="flex-1 px-6 pt-5 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         <section className="space-y-1">

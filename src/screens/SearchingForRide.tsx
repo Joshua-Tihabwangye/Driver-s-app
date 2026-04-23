@@ -1,10 +1,10 @@
 import {
 Clock,
-ChevronLeft,
 Loader2,
 XCircle
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import DriverMapSurface from "../components/DriverMapSurface";
 import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – SearchingForRide Driver App – Searching for Ride (v1)
@@ -22,36 +22,40 @@ export default function SearchingForRide() {
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* Map Explorer / Searching State */}
-      <section className="relative w-full h-[460px] overflow-hidden bg-slate-200 shrink-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
-        
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-slate-900/65 text-white backdrop-blur-sm active:scale-95 transition-transform"
-          aria-label="Go back"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-
-        {/* Center marker */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="relative flex items-center justify-center">
-            <div className="h-20 w-20 rounded-full bg-orange-500/10 animate-ping" />
-            <div className="absolute h-12 w-12 rounded-full bg-orange-500/20" />
-            <div className="absolute h-4 w-4 rounded-full bg-orange-500 border-4 border-white shadow-xl" />
+      <DriverMapSurface
+        heightClass="h-[460px]"
+        className="shrink-0"
+        onBack={() => navigate(-1)}
+        defaultTrafficOn
+        defaultAlertsOn
+        routeColor="#15b79e"
+        infoCard={(
+          <div className="rounded-[1.5rem] border border-slate-800/10 bg-[#0b1e3a]/92 px-4 py-4 text-[11px] font-black uppercase tracking-widest text-emerald-300 shadow-2xl backdrop-blur-md">
+            <div className="flex items-center justify-center">
+              <Loader2 className="mr-3 h-5 w-5 animate-spin" />
+              Searching for nearby riders...
+            </div>
           </div>
-        </div>
-
-        {/* Animated loader */}
-        <div className="absolute inset-x-6 bottom-6 flex items-center justify-center">
-          <div className="w-full inline-flex items-center justify-center rounded-2xl bg-[#0b1e3a]/90 backdrop-blur-md px-4 py-4 text-[11px] font-black uppercase tracking-widest text-emerald-400 border border-white/10 shadow-2xl">
-            <Loader2 className="mr-3 h-5 w-5 animate-spin" />
-            Searching for nearby riders...
-          </div>
-        </div>
-      </section>
+        )}
+        markers={[
+          {
+            id: "search-center",
+            positionClass: "left-[30%] top-[52%]",
+            tone: "driver",
+            label: "Searching",
+          },
+          {
+            id: "candidate-1",
+            positionClass: "left-[22%] top-[30%]",
+            tone: "danger",
+          },
+          {
+            id: "candidate-2",
+            positionClass: "right-[22%] top-[46%]",
+            tone: "warning",
+          },
+        ]}
+      />
 
       {/* Content */}
       <main className="flex-1 px-6 pt-5 pb-16 space-y-6 overflow-y-auto scrollbar-hide">

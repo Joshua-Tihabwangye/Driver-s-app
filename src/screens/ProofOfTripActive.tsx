@@ -1,13 +1,12 @@
 import {
 Camera,
 CheckCircle2,
-ChevronLeft,
 FileText,
-Map,
-Navigation
+MapPin,
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import DriverMapSurface from "../components/DriverMapSurface";
 import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – ProofOfTripActive Proof of Trip Status – Active Trip View (v2)
@@ -80,38 +79,22 @@ export default function ProofOfTripActive() {
           </div>
         </section>
 
-        {/* Map preview */}
-        <section className="relative rounded-[2.5rem] overflow-hidden border border-slate-200 bg-slate-200 h-[220px] shadow-lg">
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
-          
-          {/* Route polyline */}
-          <div className="absolute inset-0">
-            <svg
-              className="w-full h-full"
-              viewBox="0 0 100 100"
-              preserveAspectRatio="none"
-            >
-              <path
-                d="M18 80 C 30 68, 42 58, 55 48 S 72 32, 84 22"
-                fill="none"
-                stroke="#f97316"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeDasharray="6 4"
-              />
-            </svg>
-          </div>
-
-          {/* Driver marker */}
-          <div className="absolute left-[20%] bottom-[20%] flex flex-col items-center">
-</div>
-
-          {/* Snapshot label */}
-          <div className="absolute left-4 top-4 rounded-xl bg-slate-900/90 backdrop-blur-md px-3 py-1.5 text-[9px] font-black text-white uppercase tracking-widest border border-white/20 shadow-xl flex items-center">
-            <div className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse mr-2" />
-            Snapshot Taken
-          </div>
-        </section>
+        <DriverMapSurface
+          heightClass="h-[220px]"
+          compact
+          routePath="M18 80 C 30 68, 42 58, 55 48 S 72 32, 84 22"
+          routeColor="#15b79e"
+          routeStrokeWidth={2.4}
+          routeDasharray="6 4"
+          infoCard={(
+            <div className="rounded-full border border-slate-200 bg-white/94 px-4 py-2 text-[9px] font-black uppercase tracking-[0.16em] text-slate-700 shadow-lg">
+              Snapshot Taken
+            </div>
+          )}
+          markers={[
+            { id: "proof-point", positionClass: "left-[22%] top-[48%]", tone: "warning", label: "Logged", icon: MapPin },
+          ]}
+        />
 
         {/* Capture controls */}
         <section className="space-y-4">

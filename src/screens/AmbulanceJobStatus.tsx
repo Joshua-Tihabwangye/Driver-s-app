@@ -7,6 +7,7 @@ ShieldCheck
 } from "lucide-react";
 import { useEffect,useMemo,useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import DriverMapSurface from "../components/DriverMapSurface";
 import PageHeader from "../components/PageHeader";
 import { buildPrivateTripRoute } from "../data/constants";
 import { useStore } from "../context/StoreContext";
@@ -244,26 +245,30 @@ export default function AmbulanceJobStatus() {
       />
 
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6">
-        {/* Map area */}
-        <section className="relative rounded-[2.5rem] overflow-hidden border border-slate-100 bg-slate-200 h-[220px] shadow-xl shadow-slate-200/50">
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
-          <div className="absolute inset-0">
-             <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                <path d="M18 80 C 32 70, 48 60, 60 50 S 78 35, 86 22" fill="none" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="6 4" />
-             </svg>
-          </div>
-          {/* Markers */}
-          <div className="absolute left-14 bottom-10 flex flex-col items-center">
-             <div className="h-8 w-8 rounded-full bg-slate-900 border-2 border-white flex items-center justify-center shadow-lg">
-                <Ambulance className="h-4 w-4 text-white" />
-             </div>
-          </div>
-          <div className="absolute right-8 top-8 flex flex-col items-center">
-             <div className="h-8 w-8 rounded-full bg-slate-900 border-2 border-white flex items-center justify-center shadow-lg text-white">
-                <Hospital className="h-4 w-4" />
-             </div>
-          </div>
-        </section>
+        <DriverMapSurface
+          heightClass="h-[220px]"
+          compact
+          routePath="M18 80 C 32 70, 48 60, 60 50 S 78 35, 86 22"
+          routeColor="#dc4d46"
+          routeStrokeWidth={2.8}
+          routeDasharray="6 4"
+          defaultTrafficOn
+          defaultAlertsOn
+          infoCard={(
+            <div className="rounded-[1.4rem] border border-red-200 bg-white/94 px-4 py-3 shadow-lg">
+              <p className="text-[10px] font-black uppercase tracking-[0.16em] text-red-600">
+                Mission Route
+              </p>
+              <p className="mt-1 text-[10px] font-bold uppercase tracking-tight text-slate-700">
+                Ambulance corridor guidance active.
+              </p>
+            </div>
+          )}
+          markers={[
+            { id: "ambulance", positionClass: "left-[18%] bottom-[18%]", tone: "danger", icon: Ambulance },
+            { id: "hospital", positionClass: "right-[14%] top-[18%]", tone: "station", label: "Hospital", icon: Hospital },
+          ]}
+        />
 
         {/* Timers & Status */}
         <section className="space-y-4">

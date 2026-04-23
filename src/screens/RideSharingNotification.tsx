@@ -1,12 +1,11 @@
 import {
 AlertTriangle,
 Car,
-ChevronLeft,
-Map,
 Users,
 X
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import DriverMapSurface from "../components/DriverMapSurface";
 import PageHeader from "../components/PageHeader";
 import { useSharedTrips } from "../context/SharedTripsContext";
 import { useStore } from "../context/StoreContext";
@@ -49,21 +48,15 @@ export default function RideSharingNotification() {
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
-        {/* Map container */}
-        <section className="relative rounded-[2.5rem] overflow-hidden border border-slate-100 bg-slate-200 h-[460px] shadow-2xl">
-          <div className="absolute inset-0 bg-slate-200" style={{ backgroundImage: 'radial-gradient(#94a3b8 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
-
-          {/* Current location marker */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="relative flex items-center justify-center">
-              <div className="h-16 w-16 rounded-full bg-orange-500/20 animate-ping" />
-              <div className="absolute h-8 w-8 rounded-full bg-orange-500/40" />
-              <div className="absolute h-4 w-4 rounded-full bg-orange-500 border-2 border-white shadow-lg" />
-            </div>
-          </div>
-
-          {/* Ride sharing notification popup */}
-          <div className="absolute inset-x-6 bottom-6">
+        <DriverMapSurface
+          heightClass="h-[460px]"
+          markers={[
+            { id: "current", positionClass: "left-[30%] top-[48%]", tone: "driver", label: "You" },
+            { id: "match-1", positionClass: "left-[22%] top-[28%]", tone: "danger" },
+            { id: "match-2", positionClass: "right-[22%] top-[42%]", tone: "warning" },
+          ]}
+        >
+          <div className="absolute inset-x-6 bottom-6 z-30">
             <div className="rounded-[2.5rem] bg-cream/95 backdrop-blur-xl shadow-2xl border-2 border-orange-500/20 p-6 space-y-4">
               <div className="flex items-start space-x-4">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white border border-orange-50 text-orange-500 shadow-sm">
@@ -123,7 +116,7 @@ export default function RideSharingNotification() {
               </div>
             </div>
           </div>
-        </section>
+        </DriverMapSurface>
       </main>
     </div>
   );

@@ -1,9 +1,6 @@
 import {
   Activity,
   AlertTriangle,
-  ChevronLeft,
-  Compass,
-  Layers,
   MapPin,
   Navigation,
   Settings2,
@@ -13,11 +10,9 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import PageHeader from "../components/PageHeader";
+import DriverMapSurface from "../components/DriverMapSurface";
 import OfflineConfirmModal from "../components/OfflineConfirmModal";
 import { useStore } from "../context/StoreContext";
-
-type MapLayerMode = "standard" | "traffic";
 
 function QuickAction({
   icon: Icon,
@@ -66,9 +61,6 @@ export default function OnlineMapView({
   homeMode?: boolean;
   showQuickActions?: boolean;
 }) {
-  const [zoom, setZoom] = useState(12);
-  const [mapLayer, setMapLayer] = useState<MapLayerMode>("standard");
-  const [bearing, setBearing] = useState(18);
   const [showOfflineModal, setShowOfflineModal] = useState(false);
   const [showTip, setShowTip] = useState<boolean>(() => {
     if (typeof window === "undefined") {
@@ -76,8 +68,6 @@ export default function OnlineMapView({
     }
     return window.sessionStorage.getItem("driver_online_map_tip_hidden") !== "1";
   });
-  const [isLocating, setIsLocating] = useState(false);
-  const [locationHint, setLocationHint] = useState<string | null>(null);
   const navigate = useNavigate();
   const { driverPresenceStatus, setDriverOffline, respondToSafetyCheck } = useStore();
 
@@ -87,14 +77,6 @@ export default function OnlineMapView({
     }
   }, [driverPresenceStatus, navigate]);
 
-  useEffect(() => {
-    if (!locationHint) {
-      return;
-    }
-    const timer = window.setTimeout(() => setLocationHint(null), 3200);
-    return () => window.clearTimeout(timer);
-  }, [locationHint]);
-
   const handleDismissTip = () => {
     setShowTip(false);
     if (typeof window !== "undefined") {
@@ -102,141 +84,43 @@ export default function OnlineMapView({
     }
   };
 
-  const handleRecenterMap = () => {
-    setBearing(0);
-    setZoom((current) => Math.max(current, 14));
-
-    if (typeof navigator === "undefined" || !navigator.geolocation) {
-      setLocationHint("Location services unavailable. Map centered to default view.");
-      return;
-    }
-
-    setIsLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      () => {
-        setIsLocating(false);
-        setLocationHint("Centered on your current location.");
-      },
-      () => {
-        setIsLocating(false);
-        setLocationHint("Unable to fetch location. Check GPS permission.");
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 30000,
-      }
-    );
-  };
-
   const handleEmergencySos = () => {
     respondToSafetyCheck("driver", "sos");
     navigate("/driver/safety/sos/sending");
   };
 
-  const handleZoomIn = () => {
-    setZoom((value) => Math.min(value + 1, 18));
-  };
-
-  const handleZoomOut = () => {
-    setZoom((value) => Math.max(value - 1, 8));
-  };
-
-  const handleToggleLayer = () => {
-    setMapLayer((prev) => (prev === "standard" ? "traffic" : "standard"));
-  };
-
-  const handleResetBearing = () => {
-    setBearing(0);
-    setLocationHint("Map orientation reset to north.");
-  };
-
   return (
     <div className="flex flex-col h-full bg-transparent">
-      {/* Map Explorer / Dashboard Map View */}
-      <section className={`relative w-full overflow-hidden bg-slate-200 dark:bg-slate-900 shadow-2xl ${
-        showQuickActions
-          ? "h-[460px]"
-          : "h-[540px]"
-      }`}>
-        {!homeMode && (
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="absolute top-4 left-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-slate-900/65 text-white backdrop-blur-sm active:scale-95 transition-transform"
-            aria-label="Go back"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-        )}
-
-        <div className={`absolute top-4 ${homeMode ? 'left-4' : 'left-16'} z-20 flex items-center space-x-2`}>
-          <button
-            type="button"
-            onClick={() => setShowOfflineModal(true)}
-            className="inline-flex items-center rounded-full bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border border-white dark:border-slate-700 px-3 py-1.5 text-[10px] font-black text-slate-900 dark:text-slate-200 uppercase tracking-widest shrink-0 shadow-xl active:scale-95 transition-transform"
-          >
-            <Wifi className="h-3 w-3 mr-1.5 animate-pulse text-brand-active" />
-            Online
-          </button>
-        </div>
-          <div
-            className={`absolute inset-0 ${
-              mapLayer === "traffic"
-                ? "bg-gradient-to-br from-slate-300 via-slate-200 to-orange-100 dark:from-slate-800 dark:via-slate-900 dark:to-slate-800"
-                : "bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200 dark:from-slate-800 dark:via-slate-900 dark:to-slate-800"
-            } opacity-70`}
-          />
-          <div
-            className="absolute inset-0 opacity-35"
-            style={{
-              backgroundImage:
-                mapLayer === "traffic"
-                  ? "radial-gradient(#f97316 1px, transparent 1px)"
-                  : "radial-gradient(#334155 1px, transparent 1px)",
-              backgroundSize: "22px 22px",
-            }}
-          />
-
-          <div
-            className="absolute inset-0"
-            style={{ transform: `rotate(${bearing}deg)`, transition: "transform 250ms ease" }}
-          >
-            <svg className="h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-              <path
-                d="M12 78 C 28 62, 38 58, 48 45 S 69 25, 84 18"
-                fill="none"
-                stroke="#10b981"
-                strokeWidth="2.4"
-                strokeLinecap="round"
-                strokeDasharray="6 4"
-              />
-            </svg>
-          </div>
-
-          <div className="absolute left-12 top-20 flex flex-col items-center">
-            <div className="rounded-full border border-white/20 bg-slate-900/90 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-white backdrop-blur-sm">
+      <DriverMapSurface
+        heightClass={showQuickActions ? "h-[460px]" : "h-[540px]"}
+        routePath="M12 78 C 28 62, 38 58, 48 45 S 69 25, 84 18"
+        routeColor="#15b79e"
+        routeStrokeWidth={2.8}
+        routeDasharray="6 4"
+        onBack={!homeMode ? () => navigate(-1) : undefined}
+        onSos={handleEmergencySos}
+        defaultZoom={12}
+        defaultTrafficOn
+        defaultAlertsOn
+        defaultStationsOn
+        topBadge={(
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowOfflineModal(true)}
+              className="inline-flex items-center rounded-full border border-slate-200 bg-white/96 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-800 shadow-lg backdrop-blur-sm"
+            >
+              <Wifi className="mr-2 h-3.5 w-3.5 animate-pulse text-[#15b79e]" />
+              Online
+            </button>
+            <div className="rounded-full border border-emerald-200 bg-emerald-50/95 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-emerald-700 shadow-md">
               High Demand
             </div>
           </div>
-
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="relative flex items-center justify-center">
-              <div className="h-16 w-16 rounded-full bg-orange-500/10 animate-ping" />
-              <div className="absolute h-10 w-10 rounded-full bg-orange-500/20" />
-              <div className="absolute flex h-4 w-4 items-center justify-center rounded-full border-4 border-white bg-orange-500 shadow-lg dark:border-slate-900">
-                <Navigation className="h-2.5 w-2.5 text-white" />
-              </div>
-            </div>
-          </div>
-
-          <div className="absolute top-4 right-4 rounded-xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-md px-3 py-2 text-[10px] font-black uppercase tracking-widest text-brand-active border border-white dark:border-slate-700 shadow-lg space-y-0.5">
-            <p>{isLocating ? "Locating..." : `${zoom}x Zoom`}</p>
-            <p>{mapLayer === "traffic" ? "Traffic Layer" : "Standard Layer"}</p>
-          </div>
-
-          {showTip && (
-            <div className="absolute left-4 right-20 top-4 rounded-2xl border border-emerald-200 bg-emerald-50/95 p-3 shadow-xl backdrop-blur-sm">
+        )}
+        infoCard={
+          showTip ? (
+            <div className="rounded-[1.5rem] border border-emerald-200 bg-emerald-50/96 p-4 shadow-xl backdrop-blur-sm">
               <div className="flex items-start justify-between gap-3">
                 <p className="text-[10px] font-black uppercase tracking-tight text-emerald-800 leading-relaxed">
                   <span className="mr-1">Tip:</span>
@@ -245,85 +129,58 @@ export default function OnlineMapView({
                 <button
                   type="button"
                   onClick={handleDismissTip}
-                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-emerald-200 bg-white text-emerald-700 active:scale-95"
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-emerald-200 bg-white text-emerald-700 active:scale-95"
                   aria-label="Dismiss tip"
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <X className="h-4 w-4" />
                 </button>
               </div>
             </div>
-          )}
-
-          <div className="absolute bottom-4 right-4 flex flex-col space-y-2">
-            <button
-              type="button"
-              onClick={handleZoomIn}
-              className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 shadow-2xl border border-slate-100 dark:border-slate-700 active:scale-90 transition-all text-slate-900 dark:text-white font-black text-lg"
-              aria-label="Zoom in"
-            >
-              +
-            </button>
-            <button
-              type="button"
-              onClick={handleZoomOut}
-              className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 shadow-2xl border border-slate-100 dark:border-slate-700 active:scale-90 transition-all text-slate-900 dark:text-white font-black text-lg"
-              aria-label="Zoom out"
-            >
-              -
-            </button>
-            <button
-              type="button"
-              onClick={handleRecenterMap}
-              className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900 text-orange-500 shadow-2xl border border-orange-500/20 active:scale-90 transition-all"
-              aria-label="Center map on my location"
-            >
-              <Navigation className="h-5 w-5" />
-            </button>
-            <button
-              type="button"
-              onClick={handleResetBearing}
-              className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 shadow-2xl border border-slate-100 dark:border-slate-700 active:scale-90 transition-all"
-              aria-label="Reset map bearing"
-            >
-              <Compass className="h-5 w-5" />
-            </button>
-            <button
-              type="button"
-              onClick={handleToggleLayer}
-              className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 shadow-2xl border border-slate-100 dark:border-slate-700 active:scale-90 transition-all"
-              aria-label="Toggle map layer"
-            >
-              <Layers className="h-5 w-5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate("/driver/map/settings")}
-              className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 shadow-2xl border border-slate-100 dark:border-slate-700 active:scale-90 transition-all"
-              aria-label="Open map settings"
-            >
-              <Settings2 className="h-5 w-5" />
-            </button>
+          ) : (
+            <div className="rounded-[1.5rem] border border-white/70 bg-white/92 p-4 shadow-xl backdrop-blur-sm">
+              <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
+                Demand Tip
+              </p>
+              <p className="mt-1 text-[11px] font-bold uppercase tracking-tight text-slate-700">
+                Stay near hotspots and keep traffic plus alerts enabled.
+              </p>
+            </div>
+          )
+        }
+        markers={[
+          {
+            id: "driver-location",
+            positionClass: "left-[22%] top-[48%]",
+            tone: "driver",
+            label: "You",
+            icon: Navigation,
+          },
+          {
+            id: "hot-zone",
+            positionClass: "left-[18%] top-[24%]",
+            tone: "danger",
+          },
+          {
+            id: "earnings-zone",
+            positionClass: "right-[22%] top-[42%]",
+            tone: "warning",
+          },
+        ]}
+        extraControls={[
+          {
+            id: "settings",
+            icon: Settings2,
+            ariaLabel: "Open map settings",
+            onClick: () => navigate("/driver/map/settings"),
+          },
+        ]}
+      >
+        {!homeMode && (
+          <div className="absolute left-4 top-[96px] z-20 rounded-full border border-emerald-200 bg-white/92 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-emerald-700 shadow-lg backdrop-blur-sm">
+            Requests scanning active
           </div>
-
-          {!homeMode && (
-            <div className="absolute left-4 bottom-4 flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={() => navigate("/driver/map/searching")}
-                className="inline-flex items-center gap-2 rounded-xl border border-orange-200 bg-orange-50/95 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-orange-700 shadow-lg active:scale-95"
-              >
-                <MapPin className="h-3.5 w-3.5" />
-                Find Riders
-              </button>
-            </div>
-          )}
-
-          {locationHint && (
-            <div className="absolute bottom-20 left-1/2 max-w-[80%] -translate-x-1/2 rounded-xl border border-white/30 bg-slate-900/85 px-3 py-2 text-[10px] font-black uppercase tracking-tight text-white shadow-lg backdrop-blur">
-              {locationHint}
-            </div>
-          )}
-      </section>
+        )}
+      </DriverMapSurface>
 
       <main className="flex-1 px-6 pt-5 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         <section className="space-y-1">

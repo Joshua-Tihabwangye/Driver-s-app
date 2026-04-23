@@ -1,6 +1,5 @@
 import { SAMPLE_IDS } from "../data/constants";
 import {
-ChevronLeft,
 Clock,
 MapPin,
 MessageCircle,
@@ -8,6 +7,7 @@ Package,
 Phone
 } from "lucide-react";
 import { useNavigate,useParams } from "react-router-dom";
+import DriverMapSurface from "../components/DriverMapSurface";
 
 // EVzone Driver App – DeliveryStopContact Active Route with Stop Contact Screen (v1)
 // Active route view with per-stop contact details and quick actions.
@@ -115,49 +115,39 @@ export default function DeliveryStopContact() {
 
   return (
     <div className="flex flex-col min-h-full ">
-      <section className="relative w-full h-[460px] overflow-hidden bg-slate-200">
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
-
-          {/* Route polyline (simplified SVG) */}
-          <div className="absolute inset-0">
-            <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-              <path
-                d="M14 82 C 28 70, 40 64, 52 52 S 72 34, 86 20"
-                fill="none"
-                stroke="#f97316"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeDasharray="6 4"
-              />
-            </svg>
-          </div>
-
-          {/* Driver marker */}
-          <div className="absolute left-14 bottom-14 flex flex-col items-center">
-</div>
-
-          {/* Pickup marker */}
-          <div className="absolute left-10 top-18 flex flex-col items-center">
-            <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-white border-2 border-orange-500 shadow-lg">
-              <Package className="h-4 w-4 text-orange-500" />
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="absolute left-4 top-6 z-20 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/90 text-slate-900 shadow-xl border border-white/70 backdrop-blur active:scale-95 transition-transform"
-            aria-label="Go back"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
+      <DriverMapSurface
+        heightClass="h-[460px]"
+        onBack={() => navigate(-1)}
+        routePath="M14 82 C 28 70, 40 64, 52 52 S 72 34, 86 20"
+        routeColor="#15b79e"
+        routeStrokeWidth={2.8}
+        routeDasharray="6 4"
+        defaultTrafficOn
+        defaultAlertsOn
+        topRightSlot={(
           <button
             type="button"
             onClick={() => navigate(`/driver/delivery/route/${SAMPLE_IDS.route}/map`)}
-            className="absolute right-4 top-6 z-20 rounded-full bg-slate-900/85 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white border border-white/20 shadow-lg active:scale-95 transition-transform"
+            className="rounded-full border border-slate-200 bg-white/94 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-700 shadow-lg"
           >
             Open map
           </button>
-      </section>
+        )}
+        infoCard={(
+          <div className="rounded-[1.5rem] border border-white/70 bg-white/92 p-4 shadow-xl backdrop-blur-sm">
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
+              Contact View
+            </p>
+            <p className="mt-1 text-[11px] font-bold uppercase tracking-tight text-slate-700">
+              Keep the recipient pin visible while calling or messaging.
+            </p>
+          </div>
+        )}
+        markers={[
+          { id: "depot", positionClass: "left-[14%] top-[20%]", tone: "station", label: "Depot", icon: Package },
+          { id: "recipient", positionClass: "right-[16%] top-[20%]", tone: "warning", label: "Recipient", icon: MapPin },
+        ]}
+      />
 
       <main className="flex-1 px-6 pt-5 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         <section className="space-y-1">

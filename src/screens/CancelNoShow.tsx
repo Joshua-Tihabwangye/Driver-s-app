@@ -1,6 +1,5 @@
 import { buildPrivateTripRoute } from "../data/constants";
 import {
-ChevronLeft,
 Clock,
 Map,
 MapPin,
@@ -8,6 +7,7 @@ MessageCircle,
 Phone
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
+import DriverMapSurface from "../components/DriverMapSurface";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
 
@@ -52,20 +52,20 @@ export default function CancelNoShow() {
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-6">
-        {/* Map + pickup context */}
-        <section className="relative rounded-[2.5rem] overflow-hidden border border-slate-100 bg-slate-200 h-[220px] shadow-2xl">
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="relative flex flex-col items-center">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 shadow-xl border-2 border-white">
-                <MapPin className="h-4 w-4 text-[#ef4444]" />
-              </div>
-              <span className="mt-3 rounded-full bg-slate-900/80 px-3 py-1 text-[9px] font-black text-white uppercase tracking-widest backdrop-blur-sm border border-white/10">
-                Acacia Mall
-              </span>
+        <DriverMapSurface
+          heightClass="h-[220px]"
+          compact
+          defaultTrafficOn
+          defaultAlertsOn
+          infoCard={(
+            <div className="rounded-full border border-red-200 bg-white/94 px-4 py-2 text-[9px] font-black uppercase tracking-[0.16em] text-red-600 shadow-lg">
+              Acacia Mall
             </div>
-          </div>
-        </section>
+          )}
+          markers={[
+            { id: "pickup", positionClass: "left-[34%] top-[42%]", tone: "danger", label: "Pickup", icon: MapPin },
+          ]}
+        />
 
         {/* Alert card */}
         <section className="space-y-4">

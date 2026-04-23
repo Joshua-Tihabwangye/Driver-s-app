@@ -1,8 +1,6 @@
 import { buildAcceptedJobRoute } from "../data/constants";
 import {
-ChevronLeft,
 Clock,
-Map,
 MapPin,
 Phone,
 User,
@@ -10,6 +8,7 @@ Users
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import DriverMapSurface from "../components/DriverMapSurface";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
 import type { JobCategory } from "../data/types";
@@ -330,49 +329,41 @@ export default function RideRequestRich() {
           </div>
         </section>
 
-        {/* Map */}
-        <section className="relative rounded-[2.5rem] overflow-hidden border border-slate-100 bg-slate-200 h-[320px] shadow-2xl">
-          <div className="absolute inset-0 bg-slate-200" style={{ backgroundImage: 'radial-gradient(#94a3b8 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
-
-          {/* Floating Back Button */}
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="absolute top-4 left-4 z-20 flex h-10 w-10 items-center justify-center rounded-2xl border border-white/50 bg-white/95 text-slate-900 shadow-xl active:scale-95 transition-all"
-            aria-label="Go back"
-          >
-            <ChevronLeft className="h-6 w-6" />
-          </button>
-
-          {/* Floating SOS Button */}
-          <button
-            type="button"
-            onClick={handleEmergencySos}
-            className="absolute top-4 right-4 z-20 flex px-4 py-2 items-center justify-center rounded-full bg-red-600 text-white text-[11px] font-black uppercase tracking-widest shadow-xl shadow-red-600/30 active:scale-95 transition-all"
-          >
-            SOS
-          </button>
-
-          {/* Pickup marker */}
-          <div className="absolute left-10 top-12 flex flex-col items-center">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 border-2 border-white shadow-2xl">
-              <MapPin className="h-5 w-5 text-orange-500" />
+        <DriverMapSurface
+          heightClass="h-[320px]"
+          compact
+          onBack={() => navigate(-1)}
+          onSos={handleEmergencySos}
+          routeColor={isAmbulance ? "#dc4d46" : "#15b79e"}
+          routeStrokeWidth={2.6}
+          routeDasharray="5 4"
+          infoCard={(
+            <div className="rounded-[1.4rem] border border-white/70 bg-white/92 p-3 shadow-xl backdrop-blur-sm">
+              <p className={`text-[10px] font-black uppercase tracking-[0.16em] ${isAmbulance ? "text-red-600" : "text-[#0f766e]"}`}>
+                Incoming Match
+              </p>
+              <p className="mt-1 text-[10px] font-bold uppercase tracking-tight text-slate-700">
+                Preview pickup and final route before accepting.
+              </p>
             </div>
-            <span className="mt-2 rounded-full bg-slate-900 px-3 py-1 text-[10px] font-black text-white uppercase tracking-widest shadow-xl">
-              Pickup
-            </span>
-          </div>
-
-          {/* Drop-off marker */}
-          <div className="absolute right-12 bottom-12 flex flex-col items-center">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 border-2 border-white shadow-2xl">
-              <MapPin className="h-5 w-5 text-orange-500" />
-            </div>
-            <span className="mt-2 rounded-full bg-white px-3 py-1 text-[10px] font-black text-slate-900 uppercase tracking-widest shadow-xl">
-              Final
-            </span>
-          </div>
-        </section>
+          )}
+          markers={[
+            {
+              id: "pickup",
+              positionClass: "left-[20%] top-[22%]",
+              tone: isAmbulance ? "danger" : "driver",
+              label: "Pickup",
+              icon: MapPin,
+            },
+            {
+              id: "destination",
+              positionClass: "right-[18%] bottom-[24%]",
+              tone: "warning",
+              label: "Final",
+              icon: MapPin,
+            },
+          ]}
+        />
 
         {/* Bottom sheet-style card */}
         <section className="rounded-[2.5rem] bg-slate-900 text-white p-6 space-y-6 shadow-2xl relative overflow-hidden group">
