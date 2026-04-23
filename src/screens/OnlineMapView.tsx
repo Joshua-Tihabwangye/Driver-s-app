@@ -3,10 +3,8 @@ import {
   AlertTriangle,
   MapPin,
   Navigation,
-  Settings2,
   ShieldCheck,
   Wifi,
-  X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -62,12 +60,6 @@ export default function OnlineMapView({
   showQuickActions?: boolean;
 }) {
   const [showOfflineModal, setShowOfflineModal] = useState(false);
-  const [showTip, setShowTip] = useState<boolean>(() => {
-    if (typeof window === "undefined") {
-      return true;
-    }
-    return window.sessionStorage.getItem("driver_online_map_tip_hidden") !== "1";
-  });
   const navigate = useNavigate();
   const { driverPresenceStatus, setDriverOffline, respondToSafetyCheck } = useStore();
 
@@ -76,13 +68,6 @@ export default function OnlineMapView({
       navigate("/driver/dashboard/offline", { replace: true });
     }
   }, [driverPresenceStatus, navigate]);
-
-  const handleDismissTip = () => {
-    setShowTip(false);
-    if (typeof window !== "undefined") {
-      window.sessionStorage.setItem("driver_online_map_tip_hidden", "1");
-    }
-  };
 
   const handleEmergencySos = () => {
     respondToSafetyCheck("driver", "sos");
@@ -104,49 +89,15 @@ export default function OnlineMapView({
         defaultAlertsOn
         defaultStationsOn
         topBadge={(
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setShowOfflineModal(true)}
-              className="inline-flex items-center rounded-full border border-slate-200 bg-white/96 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-800 shadow-lg backdrop-blur-sm"
-            >
-              <Wifi className="mr-2 h-3.5 w-3.5 animate-pulse text-[#15b79e]" />
-              Online
-            </button>
-            <div className="rounded-full border border-emerald-200 bg-emerald-50/95 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-emerald-700 shadow-md">
-              High Demand
-            </div>
-          </div>
+          <button
+            type="button"
+            onClick={() => setShowOfflineModal(true)}
+            className="inline-flex items-center rounded-full border border-slate-200 bg-white/96 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-800 shadow-lg backdrop-blur-sm"
+          >
+            <Wifi className="mr-2 h-3.5 w-3.5 animate-pulse text-[#15b79e]" />
+            Online
+          </button>
         )}
-        infoCard={
-          showTip ? (
-            <div className="rounded-[1.5rem] border border-emerald-200 bg-emerald-50/96 p-4 shadow-xl backdrop-blur-sm">
-              <div className="flex items-start justify-between gap-3">
-                <p className="text-[10px] font-black uppercase tracking-tight text-emerald-800 leading-relaxed">
-                  <span className="mr-1">Tip:</span>
-                  Move toward highlighted demand zones to increase request frequency.
-                </p>
-                <button
-                  type="button"
-                  onClick={handleDismissTip}
-                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-emerald-200 bg-white text-emerald-700 active:scale-95"
-                  aria-label="Dismiss tip"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="rounded-[1.5rem] border border-white/70 bg-white/92 p-4 shadow-xl backdrop-blur-sm">
-              <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
-                Demand Tip
-              </p>
-              <p className="mt-1 text-[11px] font-bold uppercase tracking-tight text-slate-700">
-                Stay near hotspots and keep traffic plus alerts enabled.
-              </p>
-            </div>
-          )
-        }
         markers={[
           {
             id: "driver-location",
@@ -164,14 +115,6 @@ export default function OnlineMapView({
             id: "earnings-zone",
             positionClass: "right-[22%] top-[42%]",
             tone: "warning",
-          },
-        ]}
-        extraControls={[
-          {
-            id: "settings",
-            icon: Settings2,
-            ariaLabel: "Open map settings",
-            onClick: () => navigate("/driver/map/settings"),
           },
         ]}
       >

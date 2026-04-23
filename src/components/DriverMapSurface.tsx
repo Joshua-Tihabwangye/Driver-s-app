@@ -2,17 +2,17 @@ import {
   AlertTriangle,
   BatteryCharging,
   ChevronLeft,
-  Compass,
   Layers3,
-  LocateFixed,
   MapPin,
   Minus,
   Navigation,
   Plus,
+  X,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
+import { useStore } from "../context/StoreContext";
 
 type MapLayerMode = "default" | "terrain" | "night";
 
@@ -62,7 +62,7 @@ type DriverMapSurfaceProps = {
   infoCard?: ReactNode;
   bottomRightSlot?: ReactNode;
   markers?: DriverMapMarker[];
-  extraControls?: DriverMapControl[];
+  stationMarkers?: DriverMapMarker[];
   compact?: boolean;
   children?: ReactNode;
 };
@@ -147,7 +147,7 @@ function MapMarker({
           </div>
           {label ? (
             <span
-              className={`mt-2 rounded-full border px-3 py-1 text-[9px] font-black uppercase tracking-[0.16em] shadow-lg ${palette.label} ${labelClassName}`}
+              className={`mt-2 inline-flex items-center rounded-full border px-3 py-1 text-[8px] font-black uppercase tracking-[0.16em] shadow-lg ${palette.label} ${labelClassName}`}
             >
               {label}
             </span>
@@ -170,12 +170,12 @@ function MapControlButton({
       type="button"
       aria-label={ariaLabel}
       onClick={onClick}
-      className={`flex h-10 w-10 items-center justify-center rounded-xl border shadow-lg backdrop-blur-sm transition-all active:scale-95 ${getControlClasses(
+      className={`flex h-9 w-9 items-center justify-center rounded-xl border shadow-lg backdrop-blur-sm transition-all active:scale-95 ${getControlClasses(
         tone,
         active
       )}`}
     >
-      <Icon className="h-4.5 w-4.5" />
+      <Icon className="h-4 w-4" />
     </button>
   );
 }
@@ -195,17 +195,55 @@ function ChipButton({
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center rounded-full border px-4 py-2 text-[10px] font-black tracking-[0.08em] shadow-md transition-all active:scale-95 ${
+      className={`inline-flex shrink-0 items-center rounded-full border px-3.5 py-1.5 text-[9px] font-black tracking-[0.08em] shadow-md transition-all active:scale-95 ${
         active
           ? "border-[#63d6c6] bg-[#b8f0e9]/95 text-[#126f63]"
           : "border-slate-200 bg-white/95 text-slate-600"
       }`}
     >
-      <Icon className="mr-2 h-4 w-4" />
+      <Icon className="mr-1.5 h-3.5 w-3.5" />
       {label}
     </button>
   );
 }
+
+const DEFAULT_EV_STATION_MARKERS: DriverMapMarker[] = [
+  {
+    id: "evzone-hub-west",
+    positionClass: "left-[14%] top-[32%]",
+    tone: "station",
+    label: "EVzone Hub",
+    icon: BatteryCharging,
+  },
+  {
+    id: "evzone-fastcharge-north",
+    positionClass: "left-[34%] top-[18%]",
+    tone: "station",
+    label: "Fast Charge",
+    icon: BatteryCharging,
+  },
+  {
+    id: "evzone-central",
+    positionClass: "left-[52%] top-[52%]",
+    tone: "station",
+    label: "EVzone Central",
+    icon: BatteryCharging,
+  },
+  {
+    id: "evzone-east",
+    positionClass: "right-[24%] top-[28%]",
+    tone: "station",
+    label: "EVzone East",
+    icon: BatteryCharging,
+  },
+  {
+    id: "evzone-south",
+    positionClass: "right-[18%] bottom-[22%]",
+    tone: "station",
+    label: "Charge Point",
+    icon: BatteryCharging,
+  },
+];
 
 export default function DriverMapSurface({
   heightClass = "h-[460px]",
@@ -220,24 +258,23 @@ export default function DriverMapSurface({
   defaultBearing = 0,
   defaultLayer = "default",
   defaultTrafficOn = true,
-  defaultAlertsOn = true,
-  defaultStationsOn = false,
   floatingHint = null,
   topBadge,
   topRightSlot,
   infoCard,
   bottomRightSlot,
   markers = [],
-  extraControls = [],
-  compact = false,
+  stationMarkers = DEFAULT_EV_STATION_MARKERS,
   children,
 }: DriverMapSurfaceProps) {
+  const { driverMapPreferences, setMapAlertsEnabled, setMapStationsEnabled } = useStore();
   const [zoom, setZoom] = useState(defaultZoom);
   const [bearing, setBearing] = useState(defaultBearing);
   const [layer, setLayer] = useState<MapLayerMode>(defaultLayer);
   const [trafficOn, setTrafficOn] = useState(defaultTrafficOn);
-  const [alertsOn, setAlertsOn] = useState(defaultAlertsOn);
-  const [stationsOn, setStationsOn] = useState(defaultStationsOn);
+  const alertsOn = driverMapPreferences.alertsOn;
+  const stationsOn = driverMapPreferences.stationsOn;
+  const [alertCardVisible, setAlertCardVisible] = useState(driverMapPreferences.alertsOn);
   const [isLocating, setIsLocating] = useState(false);
   const [hint, setHint] = useState<string | null>(floatingHint);
 
@@ -251,6 +288,12 @@ export default function DriverMapSurface({
     return () => window.clearTimeout(timeout);
   }, [hint]);
 
+  useEffect(() => {
+    if (alertsOn) {
+      setAlertCardVisible(true);
+    }
+  }, [alertsOn]);
+
   const layerLabel = useMemo(() => {
     if (layer === "terrain") return "terrain";
     if (layer === "night") return "night";
@@ -263,30 +306,6 @@ export default function DriverMapSurface({
       if (current === "terrain") return "night";
       return "default";
     });
-  };
-
-  const handleLocate = () => {
-    setZoom((current) => Math.min(current + 1, 18));
-    if (typeof navigator === "undefined" || !navigator.geolocation) {
-      setHint("Location services unavailable.");
-      return;
-    }
-    setIsLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      () => {
-        setIsLocating(false);
-        setHint("Centered on your live location.");
-      },
-      () => {
-        setIsLocating(false);
-        setHint("Unable to refresh GPS.");
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 30000,
-      }
-    );
   };
 
   const baseControls: DriverMapControl[] = [
@@ -308,44 +327,12 @@ export default function DriverMapSurface({
       ariaLabel: "Cycle map layer",
       onClick: cycleLayer,
     },
-    {
-      id: "traffic",
-      icon: Navigation,
-      ariaLabel: "Toggle traffic",
-      onClick: () => setTrafficOn((current) => !current),
-      tone: "accent",
-      active: trafficOn,
-    },
-    {
-      id: "alerts",
-      icon: AlertTriangle,
-      ariaLabel: "Toggle alerts",
-      onClick: () => setAlertsOn((current) => !current),
-      tone: "accent",
-      active: alertsOn,
-    },
-    {
-      id: "bearing",
-      icon: Compass,
-      ariaLabel: "Reset bearing",
-      onClick: () => {
-        setBearing(0);
-        setHint("Bearing reset to north.");
-      },
-    },
-    {
-      id: "locate",
-      icon: LocateFixed,
-      ariaLabel: "Locate me",
-      onClick: handleLocate,
-    },
   ];
-
-  const controls = baseControls.concat(extraControls);
-
-  const rightRailClassName = compact
-    ? "grid grid-cols-2 gap-2 rounded-2xl border border-white/70 bg-white/40 p-2 backdrop-blur-md"
-    : "flex flex-col gap-2 rounded-2xl border border-white/70 bg-white/40 p-2 backdrop-blur-md";
+  const controls = baseControls;
+  const visibleMarkers = useMemo(
+    () => (stationsOn ? [...markers, ...stationMarkers] : markers),
+    [markers, stationMarkers, stationsOn]
+  );
 
   return (
     <section
@@ -394,23 +381,21 @@ export default function DriverMapSurface({
           <button
             type="button"
             onClick={onSos}
-            className="inline-flex items-center rounded-full border border-red-300/30 bg-[#ef3b2d] px-5 py-3 text-[11px] font-black uppercase tracking-[0.16em] text-white shadow-xl shadow-red-500/25 transition-all active:scale-95"
+            className="inline-flex items-center rounded-full border border-red-300/30 bg-[#ef3b2d] px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.16em] text-white shadow-xl shadow-red-500/25 transition-all active:scale-95"
           >
-            <AlertTriangle className="mr-2 h-4 w-4" />
+            <AlertTriangle className="mr-1.5 h-3.5 w-3.5" />
             SOS
           </button>
         ) : null}
       </div>
 
-      <div className="absolute right-3 top-[78px] z-30 sm:right-4 sm:top-[86px]">
-        <div className={rightRailClassName}>
-          {controls.map((control) => (
-            <MapControlButton key={control.id} {...control} />
-          ))}
-        </div>
+      <div className="absolute right-3 top-[78px] z-30 flex flex-col gap-2 sm:right-4 sm:top-[86px]">
+        {controls.map((control) => (
+          <MapControlButton key={control.id} {...control} />
+        ))}
       </div>
 
-      {markers.map((marker) => (
+      {visibleMarkers.map((marker) => (
         <MapMarker key={marker.id} {...marker} />
       ))}
 
@@ -422,10 +407,22 @@ export default function DriverMapSurface({
         </div>
       ) : null}
 
-      <div className="absolute bottom-3 left-3 right-3 z-30 flex items-end justify-between gap-3 sm:bottom-4 sm:left-4 sm:right-4">
+      <div className="absolute bottom-3 left-3 right-3 z-30 flex flex-col items-start gap-3 sm:bottom-4 sm:left-4 sm:right-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="flex min-w-0 flex-1 flex-col gap-3">
-          {infoCard ? <div className="max-w-full sm:max-w-sm">{infoCard}</div> : null}
-          <div className="flex flex-wrap gap-2">
+          {infoCard && alertsOn && alertCardVisible ? (
+            <div className="relative max-w-full sm:max-w-sm">
+              <div className="pr-8">{infoCard}</div>
+              <button
+                type="button"
+                aria-label="Close alert"
+                onClick={() => setAlertCardVisible(false)}
+                className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full border border-slate-200/80 bg-white/92 text-slate-500 shadow-sm transition-all active:scale-95"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          ) : null}
+          <div className="flex w-full flex-nowrap gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:w-auto">
             <ChipButton
               icon={Navigation}
               label="Traffic"
@@ -436,19 +433,25 @@ export default function DriverMapSurface({
               icon={AlertTriangle}
               label="Alerts"
               active={alertsOn}
-              onClick={() => setAlertsOn((current) => !current)}
+              onClick={() => {
+                const next = !alertsOn;
+                if (next) {
+                  setAlertCardVisible(true);
+                }
+                setMapAlertsEnabled(next);
+              }}
             />
             <ChipButton
               icon={BatteryCharging}
-              label="EV Stations"
+              label="EVzone"
               active={stationsOn}
-              onClick={() => setStationsOn((current) => !current)}
+              onClick={() => setMapStationsEnabled(!stationsOn)}
             />
           </div>
         </div>
 
         {bottomRightSlot || (
-          <div className="shrink-0 rounded-xl border border-slate-200 bg-white/95 px-4 py-3 text-right shadow-lg backdrop-blur-sm">
+          <div className="shrink-0 self-start rounded-xl border border-slate-200 bg-white/95 px-3 py-2.5 text-right shadow-lg backdrop-blur-sm sm:self-auto">
             <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-600">
               Z{zoom} · {layerLabel.toUpperCase()} · T:{trafficOn ? "ON" : "OFF"} · A:{alertsOn ? "ON" : "OFF"} · {bearing}DEG
             </p>

@@ -193,16 +193,17 @@ export default function NavigateToPickup() {
               </div>
             </div>
 
-            <div className="flex space-x-3 pt-2">
+            <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center">
               <button
                 type="button"
                 onClick={() => navigateToTripStage("cancel_reason")}
-                className="flex-1 rounded-full py-4 text-[11px] font-black uppercase tracking-widest border-2 border-orange-500/10 text-slate-400 hover:bg-orange-50 hover:border-orange-500/30 transition-all flex items-center justify-center"
+                className="w-full rounded-full py-3.5 text-[11px] font-black uppercase tracking-[0.24em] border-2 border-orange-500/10 text-slate-400 hover:bg-orange-50 hover:border-orange-500/30 transition-all flex items-center justify-center sm:flex-1 sm:py-4"
               >
                 Cancel
               </button>
-              <div className="flex-[2]">
+              <div className="w-full sm:flex-[2]">
                 <SlideToConfirm
+                  className="w-full"
                   instruction="Slide to confirm arrival"
                   successLabel="Arrival confirmed"
                   onConfirm={() => {

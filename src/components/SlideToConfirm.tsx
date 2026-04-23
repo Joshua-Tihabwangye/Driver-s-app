@@ -163,7 +163,7 @@ export default function SlideToConfirm({
     <div className={`space-y-1 ${className}`}>
       <div
         ref={trackRef}
-        className={`relative h-16 overflow-hidden rounded-full border p-2 transition-colors ${
+        className={`relative h-[72px] overflow-hidden rounded-[2rem] border p-2 transition-colors sm:h-16 sm:rounded-full ${
           disabled
             ? "border-slate-200 bg-slate-100"
             : isSuccess
@@ -186,7 +186,7 @@ export default function SlideToConfirm({
         />
 
         <div
-          className={`relative flex h-full select-none items-center justify-center px-16 text-center text-[10px] font-black uppercase tracking-[0.18em] ${
+          className={`relative flex h-full select-none items-center justify-center px-12 text-center text-[9px] font-black uppercase leading-[1.15] tracking-[0.12em] sm:px-16 sm:text-[10px] sm:leading-none sm:tracking-[0.18em] ${
             isSuccess
               ? "text-emerald-700"
               : disabled

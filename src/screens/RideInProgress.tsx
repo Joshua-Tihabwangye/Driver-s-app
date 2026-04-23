@@ -1,5 +1,6 @@
 import { buildPrivateTripRoute } from "../data/constants";
 import {
+  ChevronLeft,
   Clock,
   DollarSign,
   MapPin,
