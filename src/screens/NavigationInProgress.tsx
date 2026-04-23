@@ -4,14 +4,13 @@ import {
   SAMPLE_IDS,
 } from "../data/constants";
 import {
-ChevronLeft,
 Clock,
-Map,
 MapPin,
 Navigation
 } from "lucide-react";
 import { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import DriverMapSurface from "../components/DriverMapSurface";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
 import type { JobCategory } from "../data/types";
@@ -198,63 +197,51 @@ export default function NavigationInProgress() {
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* Map Explorer / Trip Progress View */}
-      <section className="relative w-full h-[460px] overflow-hidden bg-slate-200 shadow-2xl shrink-0">
-        <button
-          type="button"
-          onClick={() => navigate("/driver/map/online")}
-          className="absolute inset-0 w-full text-left"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
-
-          {/* Route polyline */}
-          <div className="absolute inset-0">
-            <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-              <path
-                d="M15 80 C 30 70, 45 60, 55 50 S 75 30, 85 20"
-                fill="none"
-                stroke="var(--brand-active)"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeDasharray="5 3"
-              />
-            </svg>
+      <DriverMapSurface
+        heightClass="h-[460px]"
+        className="shrink-0"
+        onBack={() => navigate(-1)}
+        routePath="M15 80 C 30 70, 45 60, 55 50 S 75 30, 85 20"
+        routeColor="var(--brand-active)"
+        routeStrokeWidth={2.3}
+        routeDasharray="5 3"
+        defaultTrafficOn
+        defaultAlertsOn
+        topBadge={(
+          <button
+            type="button"
+            onClick={() => navigate("/driver/map/online")}
+            className="rounded-full border border-slate-200 bg-white/94 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-700 shadow-lg"
+          >
+            Active Trajectory
+          </button>
+        )}
+        infoCard={(
+          <div className="rounded-[1.5rem] border border-white/70 bg-white/92 p-4 shadow-xl backdrop-blur-sm">
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
+              Guidance
+            </p>
+            <p className="mt-1 text-[11px] font-bold uppercase tracking-tight text-slate-700">
+              Route sync is live and the next stop stays pinned while navigating.
+            </p>
           </div>
-
-          <div className="absolute top-4 left-16">
-             <div className="bg-slate-900/40 backdrop-blur-md rounded-full px-4 py-2 flex items-center space-x-2 border border-white/10">
-                <div className="w-2 h-2 rounded-full bg-brand-active animate-pulse" />
-                <span className="text-[10px] font-black text-white uppercase tracking-widest">Active Trajectory</span>
-             </div>
-          </div>
-
-          {/* Driver marker (moving) */}
-          <div className="absolute left-16 bottom-22 flex flex-col items-center">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900/90 border border-white shadow-lg">
-              <Navigation className="h-4 w-4 text-brand-active" />
-            </div>
-          </div>
-
-          {/* Drop-off marker */}
-          <div className="absolute right-9 top-9 flex flex-col items-center">
-            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/90 border border-white shadow-lg">
-              <MapPin className="h-3.5 w-3.5 text-brand-active" />
-            </div>
-            <span className="mt-2 rounded-full bg-slate-900/80 px-3 py-1 text-[9px] font-black text-white uppercase tracking-widest backdrop-blur-sm border border-white/10">
-              {isRental ? "Drop-off" : "Terminal"}
-            </span>
-          </div>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-slate-900/65 text-white backdrop-blur-sm active:scale-95 transition-transform"
-          aria-label="Go back"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-      </section>
+        )}
+        markers={[
+          {
+            id: "driver",
+            positionClass: "left-[20%] bottom-[22%]",
+            tone: "driver",
+            icon: Navigation,
+          },
+          {
+            id: "terminal",
+            positionClass: "right-[16%] top-[18%]",
+            tone: isAmbulance ? "danger" : "warning",
+            label: isRental ? "Drop-off" : "Terminal",
+            icon: MapPin,
+          },
+        ]}
+      />
 
       {/* Content */}
       <main className="flex-1 px-6 pt-5 pb-16 overflow-y-auto scrollbar-hide">

@@ -1,6 +1,5 @@
 import {
 Camera,
-ChevronLeft,
 Clock,
 MessageCircle,
 Package,
@@ -8,6 +7,7 @@ Phone
 } from "lucide-react";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import DriverMapSurface from "../components/DriverMapSurface";
 import SlideToConfirm from "../components/SlideToConfirm";
 import { SAMPLE_IDS } from "../data/constants";
 import { useStore } from "../context/StoreContext";
@@ -165,42 +165,29 @@ export default function DeliveryStopDetails() {
 
   return (
     <div className="flex flex-col h-full ">
-      <section className="relative w-full h-[460px] overflow-hidden bg-slate-200">
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
-
-          {/* Route polyline (simplified SVG) */}
-          <div className="absolute inset-0">
-            <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-              <path
-                d="M14 82 C 28 70, 40 64, 52 52 S 72 34, 86 20"
-                fill="none"
-                stroke="#f97316"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeDasharray="6 4"
-              />
-            </svg>
+      <DriverMapSurface
+        heightClass="h-[460px]"
+        onBack={() => navigate(-1)}
+        routePath="M14 82 C 28 70, 40 64, 52 52 S 72 34, 86 20"
+        routeColor="#15b79e"
+        routeStrokeWidth={2.8}
+        routeDasharray="6 4"
+        defaultTrafficOn
+        defaultAlertsOn
+        infoCard={(
+          <div className="rounded-[1.5rem] border border-white/70 bg-white/92 p-4 shadow-xl backdrop-blur-sm">
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
+              Drop-off Check
+            </p>
+            <p className="mt-1 text-[11px] font-bold uppercase tracking-tight text-slate-700">
+              Confirm the pinned stop before capturing proof of delivery.
+            </p>
           </div>
-
-          {/* Driver marker */}
-          <div className="absolute left-14 bottom-14 flex flex-col items-center">
-</div>
-
-          {/* Next stop marker */}
-          <div className="absolute right-12 top-16 flex flex-col items-center">
-            <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-white border-2 border-orange-500 shadow-lg">
-              <Package className="h-4 w-4 text-orange-500" />
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="absolute left-4 top-6 z-20 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/90 text-slate-900 shadow-xl border border-white/70 backdrop-blur active:scale-95 transition-transform"
-            aria-label="Go back"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-      </section>
+        )}
+        markers={[
+          { id: "dropoff", positionClass: "right-[16%] top-[20%]", tone: "warning", label: "Drop-off", icon: Package },
+        ]}
+      />
 
       <main className="flex-1 px-6 pt-5 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         <section className="space-y-1">

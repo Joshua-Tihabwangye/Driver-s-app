@@ -1,11 +1,11 @@
 import {
   AlertTriangle,
-  ChevronLeft,
   Package,
   X,
 } from "lucide-react";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import DriverMapSurface from "../components/DriverMapSurface";
 import SlideToConfirm from "../components/SlideToConfirm";
 import { useStore } from "../context/StoreContext";
 
@@ -29,22 +29,20 @@ export default function PickupConfirmation() {
 
   return (
     <div className="flex flex-col h-full ">
-      <section className="relative w-full h-[460px] overflow-hidden bg-slate-200">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="rounded-full bg-slate-900 px-3 py-1 text-[9px] font-black text-white uppercase tracking-widest border border-white/20">
+      <DriverMapSurface
+        heightClass="h-[460px]"
+        onBack={() => navigate(-1)}
+        defaultTrafficOn
+        defaultAlertsOn
+        infoCard={(
+          <div className="rounded-full border border-slate-200 bg-white/94 px-4 py-2 text-[9px] font-black uppercase tracking-[0.16em] text-slate-700 shadow-lg">
             Burger Hub · Acacia Mall
-          </span>
-        </div>
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="absolute left-4 top-6 z-20 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/90 text-slate-900 shadow-xl border border-white/70 backdrop-blur active:scale-95 transition-transform"
-          aria-label="Go back"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-      </section>
+          </div>
+        )}
+        markers={[
+          { id: "pickup", positionClass: "left-[34%] top-[44%]", tone: "warning", label: "Pickup" },
+        ]}
+      />
 
       <main className="flex-1 px-6 pt-5 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         <section className="space-y-1">

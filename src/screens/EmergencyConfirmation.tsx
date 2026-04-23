@@ -1,6 +1,5 @@
 import {
 Check,
-ChevronLeft,
 Link2,
 Plus,
 Search,
@@ -9,6 +8,7 @@ X
 } from "lucide-react";
 import React,{ useState } from "react";
 import { useNavigate } from "react-router-dom";
+import DriverMapSurface from "../components/DriverMapSurface";
 import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – EmergencyConfirmation Driver – Follow My Ride Selection (v3)
@@ -40,42 +40,31 @@ export default function EmergencyConfirmation() {
         onBack={() => navigate(-1)} 
       />
 
-      {/* Map Background (Simulated) */}
-      <div className="flex-1 relative bg-[#e5e5e5] overflow-hidden">
-        <img
-          src="https://images.unsplash.com/photo-1524661135-423995f22d0b?w=800&h=1200&fit=crop"
-          alt="Map"
-          className="w-full h-full object-cover opacity-60 grayscale"
-        />
-
-        {/* Top Header Mock Interface */}
-        <div className="absolute top-6 inset-x-6 flex items-center justify-between pointer-events-none">
-          <div className="h-12 w-12 bg-white/90 backdrop-blur-md rounded-2xl shadow-xl flex items-center justify-center border border-white">
-             <div className="h-6 w-6 bg-slate-100 rounded-lg animate-pulse" />
-          </div>
-          <div className="h-12 px-6 bg-slate-900 rounded-full shadow-2xl flex items-center space-x-3 border border-slate-800">
-            <div className="h-3 w-3 bg-orange-500 rounded-full animate-pulse" />
-            <span className="text-white text-[10px] font-black uppercase tracking-[0.2em]">UGX 0.00</span>
-          </div>
-          <div className="h-12 w-12 bg-white/90 backdrop-blur-md rounded-2xl shadow-xl flex items-center justify-center border border-white">
-             <div className="h-6 w-6 bg-slate-100 rounded-lg animate-pulse" />
-          </div>
-        </div>
-
-        {/* Vehicle Marker */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-          <div className="h-32 w-32 rounded-full bg-orange-500/10 flex items-center justify-center animate-pulse">
-            <div className="h-24 w-24 rounded-full bg-orange-500/20 flex items-center justify-center">
-              <div className="h-16 w-16 bg-slate-900 rounded-full border-4 border-white flex items-center justify-center shadow-2xl">
-                <div className="h-8 w-4 bg-orange-500 rounded-sm relative">
-                  <div className="absolute inset-x-0 top-0 h-2 bg-white/50 rounded-t-sm" />
-                  <div className="absolute inset-x-0 bottom-0 h-1.5 bg-red-400 rounded-b-xs" />
+      <DriverMapSurface
+        heightClass="flex-1"
+        className="rounded-none border-0"
+        defaultLayer="night"
+        defaultTrafficOn
+        defaultAlertsOn
+        markers={[
+          {
+            id: "vehicle",
+            positionClass: "left-1/2 top-[46%] -translate-x-1/2",
+            content: (
+              <div className="h-32 w-32 rounded-full bg-orange-500/10 flex items-center justify-center animate-pulse">
+                <div className="h-24 w-24 rounded-full bg-orange-500/20 flex items-center justify-center">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full border-4 border-white bg-slate-900 shadow-2xl">
+                    <div className="relative h-8 w-4 rounded-sm bg-orange-500">
+                      <div className="absolute inset-x-0 top-0 h-2 rounded-t-sm bg-white/50" />
+                      <div className="absolute inset-x-0 bottom-0 h-1.5 bg-red-400" />
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
+            ),
+          },
+        ]}
+      />
 
       {/* Modal Overlay Background */}
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-30" />

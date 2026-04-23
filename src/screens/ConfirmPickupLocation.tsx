@@ -1,12 +1,12 @@
 import {
   AlertTriangle,
-  ChevronLeft,
   MapPin,
   Target,
   X,
 } from "lucide-react";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import DriverMapSurface from "../components/DriverMapSurface";
 import SlideToConfirm from "../components/SlideToConfirm";
 import { useStore } from "../context/StoreContext";
 
@@ -30,45 +30,30 @@ export default function ConfirmPickupLocation() {
 
   return (
     <div className="flex flex-col h-full ">
-      <section className="relative w-full h-[460px] overflow-hidden bg-slate-200">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
-        <div className="absolute inset-0">
-          <svg className="h-full w-full opacity-70" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <path
-              d="M12 78 C 28 64, 38 58, 48 48 S 72 30, 88 24"
-              fill="none"
-              stroke="#0f172a"
-              strokeWidth="2.5"
-              strokeDasharray="6 5"
-              strokeLinecap="round"
-            />
-          </svg>
-        </div>
-        <div className="absolute left-10 top-24 flex flex-col items-center">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white border-2 border-slate-400 shadow-lg">
-            <MapPin className="h-4 w-4 text-slate-500" />
+      <DriverMapSurface
+        heightClass="h-[460px]"
+        onBack={() => navigate("/driver/delivery/pickup/confirm")}
+        routePath="M12 78 C 28 64, 38 58, 48 48 S 72 30, 88 24"
+        routeColor="#45556f"
+        routeStrokeWidth={2.5}
+        routeDasharray="6 5"
+        defaultTrafficOn
+        defaultAlertsOn
+        infoCard={(
+          <div className="rounded-[1.5rem] border border-white/70 bg-white/92 p-4 shadow-xl backdrop-blur-sm">
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
+              GPS Mismatch
+            </p>
+            <p className="mt-1 text-[11px] font-bold uppercase tracking-tight text-slate-700">
+              Compare the expected pin against your current location before confirming.
+            </p>
           </div>
-          <span className="mt-1.5 rounded-full bg-slate-900 px-2 py-0.5 text-[8px] font-black uppercase tracking-widest text-white">
-            Expected
-          </span>
-        </div>
-        <div className="absolute right-12 bottom-20 flex flex-col items-center">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white border-2 border-orange-500 shadow-lg">
-            <Target className="h-4 w-4 text-orange-500" />
-          </div>
-          <span className="mt-1.5 rounded-full bg-orange-500 px-2 py-0.5 text-[8px] font-black uppercase tracking-widest text-white">
-            Current
-          </span>
-        </div>
-        <button
-          type="button"
-          onClick={() => navigate("/driver/delivery/pickup/confirm")}
-          className="absolute left-4 top-6 z-20 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/90 text-slate-900 shadow-xl border border-white/70 backdrop-blur active:scale-95 transition-transform"
-          aria-label="Go back"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-      </section>
+        )}
+        markers={[
+          { id: "expected", positionClass: "left-[16%] top-[24%]", tone: "neutral", label: "Expected", icon: MapPin },
+          { id: "current", positionClass: "right-[16%] bottom-[26%]", tone: "warning", label: "Current", icon: Target },
+        ]}
+      />
 
       <main className="flex-1 px-6 pt-5 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         <section className="space-y-1">

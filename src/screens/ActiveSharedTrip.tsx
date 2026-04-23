@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import DriverMapSurface from "../components/DriverMapSurface";
 import PageHeader from "../components/PageHeader";
 
 import { useSharedTrips } from "../context/SharedTripsContext";
@@ -287,39 +288,51 @@ export default function ActiveSharedTrip() {
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* Full-width top map */}
-      <section className="relative w-full h-[460px] overflow-hidden bg-slate-200 shrink-0">
-        <div className="absolute inset-0 bg-slate-200" style={{ backgroundImage: 'radial-gradient(#f97316 1px, transparent 1px)', backgroundSize: '24px 24px', opacity: 0.3 }} />
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 border-2 border-white shadow-xl">
-            <Navigation className="h-5 w-5 text-orange-500" />
+      <DriverMapSurface
+        heightClass="h-[460px]"
+        className="shrink-0"
+        onBack={() => navigate(-1)}
+        routeColor="#15b79e"
+        routeStrokeWidth={3}
+        routeDasharray="6 4"
+        defaultTrafficOn
+        defaultAlertsOn
+        topRightSlot={(
+          <div className="flex flex-col items-end gap-2">
+            <div className="rounded-full border border-amber-300/40 bg-[#f2a72f] px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-white shadow-lg">
+              {activeSharedTrip.occupiedSeats}/{activeSharedTrip.seatCapacity} Seats
+            </div>
+            <div className="rounded-full border border-slate-200 bg-white/94 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-700 shadow-lg">
+              ${activeSharedTrip.estimatedTotalEarnings.toFixed(2)}
+            </div>
+            <button
+              onClick={toggleAllowMatches}
+              className={`rounded-full px-4 py-2 text-[9px] font-black uppercase tracking-[0.16em] shadow-lg transition-all ${
+                activeSharedTrip.allowAdditionalMatches
+                  ? "border border-amber-300/40 bg-[#f2a72f] text-white"
+                  : "border border-slate-200 bg-white/94 text-slate-600"
+              }`}
+            >
+              {activeSharedTrip.allowAdditionalMatches ? "Taking Matches" : "Vehicle Full"}
+            </button>
           </div>
-          <div className="w-16 h-16 bg-orange-500/20 rounded-full absolute animate-ping" />
-        </div>
-        
-        <div className="absolute top-4 left-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-slate-900/65 text-white backdrop-blur-sm active:scale-95 transition-transform" onClick={() => navigate(-1)}>
-          <ChevronLeft className="h-5 w-5" />
-        </div>
-
-        <div className="absolute top-4 right-14 bg-orange-500/90 text-white px-3 py-1.5 rounded-full flex items-center shadow-lg border border-orange-400">
-           <Users className="h-3 w-3 mr-1.5" />
-           <span className="text-[10px] font-black uppercase tracking-widest">{activeSharedTrip.occupiedSeats}/{activeSharedTrip.seatCapacity} Seats</span>
-        </div>
-        
-        <div className="absolute top-4 right-4 flex flex-col items-end space-y-2">
-            <div className="bg-slate-900/80 backdrop-blur-md text-white px-3 py-1.5 rounded-full flex flex-col items-end shadow-lg border border-white/10">
-               <span className="text-[8px] text-emerald-400 font-bold uppercase tracking-widest">Revenue</span>
-               <span className="text-[12px] font-black uppercase tracking-widest">${activeSharedTrip.estimatedTotalEarnings.toFixed(2)}</span>
-            </div>
-            
-             <button
-                onClick={toggleAllowMatches}
-                className={`text-[9px] font-black uppercase px-3 py-1.5 rounded-full tracking-widest transition-all shadow-lg ${activeSharedTrip.allowAdditionalMatches ? "bg-orange-500 text-white border border-orange-400" : "bg-slate-100/90 backdrop-blur text-slate-500 border border-white"}`}
-              >
-                {activeSharedTrip.allowAdditionalMatches ? "Taking Matches" : "Vehicle Full"}
-              </button>
-            </div>
-      </section>
+        )}
+        infoCard={(
+          <div className="rounded-[1.5rem] border border-white/70 bg-white/92 p-4 shadow-xl backdrop-blur-sm">
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
+              Shared Route
+            </p>
+            <p className="mt-1 text-[11px] font-bold uppercase tracking-tight text-slate-700">
+              Match-friendly routing stays active while seats remain open.
+            </p>
+          </div>
+        )}
+        markers={[
+          { id: "driver", positionClass: "left-[30%] top-[50%]", tone: "driver", icon: Navigation, label: "You" },
+          { id: "shared-1", positionClass: "left-[18%] top-[28%]", tone: "danger", icon: MapPin },
+          { id: "shared-2", positionClass: "right-[18%] top-[42%]", tone: "warning", icon: MapPin },
+        ]}
+      />
 
       {/* New Match Modal Overlay */}
       {showMatchPrompt && (

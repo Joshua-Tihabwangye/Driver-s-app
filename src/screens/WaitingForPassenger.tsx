@@ -1,6 +1,5 @@
 import { buildPrivateTripRoute } from "../data/constants";
 import {
-  ChevronLeft,
   Clock,
   MapPin,
   MessageCircle,
@@ -8,6 +7,7 @@ import {
 } from "lucide-react";
 import { useEffect,useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import DriverMapSurface from "../components/DriverMapSurface";
 import SlideToConfirm from "../components/SlideToConfirm";
 import { useStore } from "../context/StoreContext";
 
@@ -113,31 +113,31 @@ export default function WaitingForPassenger() {
 
   return (
     <div className="flex flex-col min-h-full ">
-      {/* Full-width top map */}
-      <section className="relative w-full h-[460px] overflow-hidden bg-slate-200">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
-
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-slate-900/65 text-white backdrop-blur-sm"
-          aria-label="Go back"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-
-        {/* Pickup marker */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="relative flex flex-col items-center">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 shadow-xl border-2 border-white">
-              <MapPin className="h-4 w-4 text-orange-500" />
-            </div>
-            <span className="mt-3 rounded-full bg-slate-900/80 px-3 py-1 text-[9px] font-black text-white uppercase tracking-widest backdrop-blur-sm border border-white/10">
-              Docking Point
-            </span>
+      <DriverMapSurface
+        heightClass="h-[460px]"
+        onBack={() => navigate(-1)}
+        defaultTrafficOn
+        defaultAlertsOn
+        infoCard={(
+          <div className="rounded-[1.5rem] border border-white/70 bg-white/92 p-4 shadow-xl backdrop-blur-sm">
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
+              Waiting Zone
+            </p>
+            <p className="mt-1 text-[11px] font-bold uppercase tracking-tight text-slate-700">
+              Keep your pickup point visible while contacting the rider.
+            </p>
           </div>
-        </div>
-      </section>
+        )}
+        markers={[
+          {
+            id: "pickup",
+            positionClass: "left-[32%] top-[48%]",
+            tone: isAmbulance ? "danger" : "warning",
+            label: "Docking Point",
+            icon: MapPin,
+          },
+        ]}
+      />
 
       {/* Content */}
       <main className="flex-1 px-6 pt-5 pb-16 space-y-6">

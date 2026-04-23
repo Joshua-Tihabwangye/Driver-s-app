@@ -1,9 +1,11 @@
 import {
-ChevronLeft,
 Clock,
-Navigation
+MapPin,
+Navigation,
+Package
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import DriverMapSurface from "../components/DriverMapSurface";
 
 // EVzone Driver App – DeliveryRouteMap Route Details Screen (v1)
 // Variant of route details with a stronger focus on high-level summary + compact stop list.
@@ -56,31 +58,31 @@ export default function DeliveryRouteMap() {
 
   return (
     <div className="flex flex-col h-full ">
-      <section className="relative w-full h-[460px] overflow-hidden bg-slate-200">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200" />
-
-        <div className="absolute inset-0">
-          <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <path
-              d="M12 82 C 26 70, 40 64, 52 52 S 72 34, 86 20"
-              fill="none"
-              stroke="#f97316"
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeDasharray="6 4"
-            />
-          </svg>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="absolute left-4 top-6 z-20 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/90 text-slate-900 shadow-xl border border-white/70 backdrop-blur active:scale-95 transition-transform"
-          aria-label="Go back"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-      </section>
+      <DriverMapSurface
+        heightClass="h-[460px]"
+        onBack={() => navigate(-1)}
+        routePath="M12 82 C 26 70, 40 64, 52 52 S 72 34, 86 20"
+        routeColor="#15b79e"
+        routeStrokeWidth={2.8}
+        routeDasharray="6 4"
+        defaultTrafficOn
+        defaultAlertsOn
+        infoCard={(
+          <div className="rounded-[1.5rem] border border-white/70 bg-white/92 p-4 shadow-xl backdrop-blur-sm">
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
+              Route Summary
+            </p>
+            <p className="mt-1 text-[11px] font-bold uppercase tracking-tight text-slate-700">
+              Four stops grouped for the fastest delivery sequence.
+            </p>
+          </div>
+        )}
+        markers={[
+          { id: "start", positionClass: "left-[14%] top-[20%]", tone: "station", label: "Start", icon: Package },
+          { id: "driver", positionClass: "left-[18%] bottom-[22%]", tone: "driver", icon: Navigation },
+          { id: "stop-4", positionClass: "right-[16%] top-[22%]", tone: "warning", label: "Stop 4", icon: MapPin },
+        ]}
+      />
 
       <main className="flex-1 px-6 pt-5 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         <section className="space-y-1">
