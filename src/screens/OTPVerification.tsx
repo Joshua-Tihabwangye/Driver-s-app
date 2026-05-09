@@ -1,9 +1,15 @@
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import {
+  canUseBackendEmailIdentity,
+  isBackendAuthEnabled,
+  verifyOtpViaBackend,
+} from "../services/api/authApi";
 
 export default function OTPVerification() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [otp, setOtp] = useState(["", "", "", ""]);
   const [timer, setTimer] = useState(30);
 
@@ -35,9 +41,22 @@ export default function OTPVerification() {
     }
   };
 
-  const handleVerify = () => {
+  const handleVerify = async () => {
     if (otp.every((digit) => digit !== "")) {
-      // In a real app, verify OTP here
+      const identity =
+        (location.state as { identity?: string } | null)?.identity?.trim() || "";
+
+      if (isBackendAuthEnabled() && canUseBackendEmailIdentity(identity)) {
+        try {
+          await verifyOtpViaBackend({
+            email: identity.toLowerCase(),
+            otp: otp.join(""),
+          });
+        } catch (error) {
+          console.warn("Backend OTP verification failed. Continuing with local flow.", error);
+        }
+      }
+
       navigate("/app/register-services");
     }
   };
