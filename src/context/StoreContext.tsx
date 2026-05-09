@@ -24,6 +24,16 @@ import {
   validateDocumentExpiryDate,
 } from "../utils/documentVerificationState";
 import { OFFLINE_JOB_ACCESS_ERROR } from "../utils/offlineAccess";
+import {
+  createDriverVehicle,
+  deleteDriverVehicle,
+  patchDriverPreferences,
+  patchDriverProfile,
+  patchDriverVehicle,
+  setDriverPresenceOffline,
+  setDriverPresenceOnline,
+  shouldUseDriverBackendWrites,
+} from "../services/api/driverApi";
 
 export interface DashboardMetrics {
   onlineTime: string;
@@ -1801,10 +1811,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const setDriverOnline = useCallback(() => {
     setDriverPresenceStatus("online");
     setJobAccessError(null);
+    if (shouldUseDriverBackendWrites()) {
+      void setDriverPresenceOnline().catch((error) => {
+        console.warn("Driver backend online presence update failed. Keeping local state.", error);
+      });
+    }
   }, []);
 
   const setDriverOffline = useCallback(() => {
     setDriverPresenceStatus("offline");
+    if (shouldUseDriverBackendWrites()) {
+      void setDriverPresenceOffline().catch((error) => {
+        console.warn("Driver backend offline presence update failed. Keeping local state.", error);
+      });
+    }
   }, []);
 
   const resetOnboardingVehicleSetup = useCallback(() => {
@@ -1966,6 +1986,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       ...prev,
       ...patch,
     }));
+    if (shouldUseDriverBackendWrites()) {
+      void patchDriverProfile({
+        fullName: patch.fullName,
+        phone: patch.phone,
+        city: patch.city,
+        country: patch.country,
+      }).catch((error) => {
+        console.warn("Driver backend profile update failed. Keeping local state.", error);
+      });
+    }
   }, []);
 
   const updateDriverPreferences = useCallback((patch: Partial<DriverPreferences>) => {
@@ -1973,6 +2003,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       ...prev,
       ...patch,
     }));
+    if (shouldUseDriverBackendWrites()) {
+      void patchDriverPreferences({
+        areaIds: patch.areaIds,
+        serviceIds: patch.serviceIds,
+        requirementIds: patch.requirementIds,
+      }).catch((error) => {
+        console.warn("Driver backend preferences update failed. Keeping local state.", error);
+      });
+    }
   }, []);
 
   const addEmergencyContact = useCallback((contact: Omit<SharedContact, "id" | "createdAt">) => {
@@ -2795,6 +2834,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const updateVehicle = useCallback((id: string, patch: Partial<Vehicle>) => {
     setVehicles((prev) => prev.map((v) => (v.id === id ? { ...v, ...patch } : v)));
+    if (shouldUseDriverBackendWrites()) {
+      void patchDriverVehicle(id, {
+        make: patch.make,
+        model: patch.model,
+        year: patch.year,
+        plate: patch.plate,
+        type: patch.type,
+        status: patch.status as "active" | "inactive" | "maintenance" | undefined,
+        accessories: patch.accessories,
+      }).catch((error) => {
+        console.warn("Driver backend vehicle update failed. Keeping local state.", error);
+      });
+    }
   }, []);
 
   const addVehicle = useCallback((vehicle: Vehicle) => {
@@ -2802,10 +2854,28 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       ...vehicle,
       accessories: resolveAccessoriesForVehicle(vehicle.type, vehicle.accessories),
     }]);
+    if (shouldUseDriverBackendWrites()) {
+      void createDriverVehicle({
+        make: vehicle.make,
+        model: vehicle.model,
+        year: vehicle.year,
+        plate: vehicle.plate,
+        type: vehicle.type,
+        status: vehicle.status as "active" | "inactive" | "maintenance" | undefined,
+        accessories: resolveAccessoriesForVehicle(vehicle.type, vehicle.accessories),
+      }).catch((error) => {
+        console.warn("Driver backend vehicle create failed. Keeping local state.", error);
+      });
+    }
   }, []);
 
   const deleteVehicle = useCallback((id: string) => {
     setVehicles((prev) => prev.filter((v) => v.id !== id));
+    if (shouldUseDriverBackendWrites()) {
+      void deleteDriverVehicle(id).catch((error) => {
+        console.warn("Driver backend vehicle delete failed. Keeping local state.", error);
+      });
+    }
   }, []);
 
   const toggleVehicleAccessory = useCallback((vehicleId: string, accessoryName: string) => {

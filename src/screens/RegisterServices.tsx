@@ -12,6 +12,12 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useStore } from "../context/StoreContext";
 import {
+  canUseBackendEmailIdentity,
+  isBackendAuthEnabled,
+  loginDriverViaBackend,
+} from "../services/api/authApi";
+import { saveDriverBackendTokens } from "../services/api/driverApi";
+import {
   DRIVER_SERVICE_KEY,
   getRegisterServiceLabel,
   readDriverAuthAccount,
@@ -184,7 +190,7 @@ export default function RegisterServices() {
     });
   };
 
-  const handleLoginSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleLoginSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!selectedService) {
@@ -197,42 +203,78 @@ export default function RegisterServices() {
       return;
     }
 
-    const savedAccount = readDriverAuthAccount();
-    if (!savedAccount) {
-      setLoginError("No signup record found. Create an account first.");
-      return;
-    }
-
     const normalizedIdentity = identity.trim().toLowerCase();
-    const normalizedPhone = normalizePhone(identity);
-    const accountEmail = savedAccount.email.trim().toLowerCase();
-    const accountPhone = normalizePhone(savedAccount.phone);
-
-    const identityMatches =
-      normalizedIdentity.length > 0 &&
-      (normalizedIdentity === accountEmail ||
-        (normalizedPhone.length > 0 && normalizedPhone === accountPhone));
-
-    if (!identityMatches || password !== savedAccount.password) {
-      setLoginError("Invalid login details. Use your signup email/phone and password.");
-      return;
-    }
-
     setIsSubmittingLogin(true);
     setLoginError("");
 
-    saveSelectedRegisterService(selectedService);
-    updateDriverProfile({
-      fullName: savedAccount.fullName,
-      email: savedAccount.email,
-      phone: savedAccount.phone,
-    });
-    login({
-      name: savedAccount.fullName,
-      email: savedAccount.email,
-      phone: savedAccount.phone,
-      selectedService,
-    });
+    const completeLogin = (userData: { fullName: string; email: string; phone: string }) => {
+      saveSelectedRegisterService(selectedService);
+      updateDriverProfile({
+        fullName: userData.fullName,
+        email: userData.email,
+        phone: userData.phone,
+      });
+      login({
+        name: userData.fullName,
+        email: userData.email,
+        phone: userData.phone,
+        selectedService,
+      });
+    };
+
+    const savedAccount = readDriverAuthAccount();
+    let signedIn = false;
+
+    if (isBackendAuthEnabled() && canUseBackendEmailIdentity(normalizedIdentity)) {
+      try {
+        const backendAuth = await loginDriverViaBackend({
+          email: normalizedIdentity,
+          password,
+        });
+        saveDriverBackendTokens(backendAuth.accessToken, backendAuth.refreshToken);
+        const fallbackName =
+          savedAccount?.fullName ||
+          backendAuth.user.email.split("@")[0] ||
+          "EVzone Driver";
+        completeLogin({
+          fullName: fallbackName,
+          email: backendAuth.user.email,
+          phone: savedAccount?.phone || "",
+        });
+        signedIn = true;
+      } catch (error) {
+        console.warn("Backend login failed. Falling back to local auth logic.", error);
+      }
+    }
+
+    if (!signedIn) {
+      if (!savedAccount) {
+        setLoginError("No signup record found. Create an account first.");
+        setIsSubmittingLogin(false);
+        return;
+      }
+
+      const normalizedPhone = normalizePhone(identity);
+      const accountEmail = savedAccount.email.trim().toLowerCase();
+      const accountPhone = normalizePhone(savedAccount.phone);
+
+      const identityMatches =
+        normalizedIdentity.length > 0 &&
+        (normalizedIdentity === accountEmail ||
+          (normalizedPhone.length > 0 && normalizedPhone === accountPhone));
+
+      if (!identityMatches || password !== savedAccount.password) {
+        setLoginError("Invalid login details. Use your signup email/phone and password.");
+        setIsSubmittingLogin(false);
+        return;
+      }
+
+      completeLogin({
+        fullName: savedAccount.fullName,
+        email: savedAccount.email,
+        phone: savedAccount.phone,
+      });
+    }
 
     const verificationRoute = `/driver/preferences/identity/face-capture?mode=go-online&next=${encodeURIComponent(
       "/driver/dashboard/online"

@@ -21,8 +21,9 @@ export function requireValidDocuments(repository: DriverDocumentRepository) {
     next: NextFunction
   ) {
     try {
-      const driverId =
+      const rawDriverId =
         (req as Request & { user?: { driverId?: string } }).user?.driverId || req.params.driverId;
+      const driverId = Array.isArray(rawDriverId) ? rawDriverId[0] : rawDriverId;
 
       if (!driverId) {
         return res.status(401).json({ error: "Unauthorized" });

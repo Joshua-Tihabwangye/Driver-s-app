@@ -3,6 +3,12 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
+import {
+  canUseBackendEmailIdentity,
+  isBackendAuthEnabled,
+  registerDriverViaBackend,
+} from "../services/api/authApi";
+import { saveDriverBackendTokens } from "../services/api/driverApi";
 import { resetStoredDocumentState } from "../utils/documentVerificationState";
 import {
   canUsePhonebookPicker,
@@ -98,7 +104,7 @@ export default function Registration() {
     hasConfirmPassword &&
     passwordsMatch;
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (!selectedService) {
       setErrorMessage("Select a service first from Register Services.");
       return;
@@ -139,6 +145,20 @@ export default function Registration() {
       postalCode: postalCode.trim(),
       landmark: landmark.trim(),
     });
+
+    if (isBackendAuthEnabled() && canUseBackendEmailIdentity(email.trim())) {
+      try {
+        const backendAuth = await registerDriverViaBackend({
+          fullName: fullName.trim(),
+          email: email.trim().toLowerCase(),
+          phone: phone.trim(),
+          password,
+        });
+        saveDriverBackendTokens(backendAuth.accessToken, backendAuth.refreshToken);
+      } catch (error) {
+        console.warn("Backend registration failed. Falling back to local registration.", error);
+      }
+    }
 
     saveDriverAuthAccount({
       fullName: fullName.trim(),

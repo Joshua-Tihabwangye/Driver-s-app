@@ -1,0 +1,10 @@
+{
+  "repos": [
+    { "id": "rider", "name": "Rider", "path": "/home/developer/Projects/rider", "type": "rider-app" },
+    { "id": "driver", "name": "Driver-s-app", "path": "/home/developer/Projects/Driver-s-app", "type": "driver-app" },
+    { "id": "fleet", "name": "FleetPartnerAPP", "path": "/home/developer/Projects/FleetPartnerAPP", "type": "fleet-app" },
+    { "id": "admin", "name": "Rides-Admin", "path": "/home/developer/Projects/Rides-Admin", "type": "admin-app" },
+    { "id": "corporate-pay", "name": "Corporate-Pay", "path": "/home/developer/Projects/Corporate-Pay", "type": "payment-support" },
+    { "id": "go-electric", "name": "Go-Electric", "path": "/home/developer/Projects/Go-Electric", "type": "support-app" }
+  ]
+}

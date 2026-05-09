@@ -1,4 +1,5 @@
 import React,{ createContext,useContext,useEffect,useState } from "react";
+import { clearDriverBackendTokens } from "../services/api/driverApi";
 
 export const AUTH_STORAGE_KEY = "isLoggedIn";
 const AUTH_USER_STORAGE_KEY = "evz_auth_user";
@@ -103,6 +104,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoggedIn(false);
     localStorage.removeItem(AUTH_STORAGE_KEY);
     localStorage.removeItem(AUTH_USER_STORAGE_KEY);
+    clearDriverBackendTokens();
   };
 
   return (

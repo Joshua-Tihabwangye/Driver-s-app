@@ -1,15 +1,34 @@
 import { ArrowLeft, Mail, ChevronRight } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  canUseBackendEmailIdentity,
+  forgotPasswordViaBackend,
+  isBackendAuthEnabled,
+} from "../services/api/authApi";
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (email) {
-      navigate("/auth/verify-otp");
+      const identity = email.trim();
+
+      if (isBackendAuthEnabled() && canUseBackendEmailIdentity(identity)) {
+        try {
+          await forgotPasswordViaBackend({ email: identity.toLowerCase() });
+        } catch (error) {
+          console.warn("Backend forgot-password failed. Continuing with local flow.", error);
+        }
+      }
+
+      navigate("/auth/verify-otp", {
+        state: {
+          identity,
+        },
+      });
     }
   };
 
