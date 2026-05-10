@@ -1,4 +1,4 @@
-import { USE_BACKEND } from "./config";
+import { getBackendEnabled } from "./config";
 import { request } from "./httpClient";
 
 interface BackendAuthUser {
@@ -38,7 +38,7 @@ export interface DriverBackendVerifyOtpInput {
 }
 
 export function isBackendAuthEnabled(): boolean {
-  return USE_BACKEND;
+  return getBackendEnabled();
 }
 
 export function canUseBackendEmailIdentity(identity: string): boolean {
@@ -53,6 +53,7 @@ export async function registerDriverViaBackend(input: DriverBackendRegisterInput
       password: input.password,
       phone: input.phone,
       fullName: input.fullName,
+      roles: ["driver"],
     },
   });
 }
