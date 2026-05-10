@@ -2,7 +2,7 @@ import React,{ createContext,useContext,useEffect,useState } from "react";
 import { clearDriverBackendTokens } from "../services/api/driverApi";
 
 export const AUTH_STORAGE_KEY = "isLoggedIn";
-const AUTH_USER_STORAGE_KEY = "evz_auth_user";
+export const AUTH_USER_STORAGE_KEY = "evz_auth_user";
 export const AUTH_LOGIN_ROUTE = "/app/register-services";
 export const AUTHENTICATED_HOME_ROUTE = "/driver/dashboard/offline";
 

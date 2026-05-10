@@ -15,6 +15,7 @@ import type {
 } from "../data/types";
 import { MOCK_EARNINGS, MOCK_COMPLETED_TRIPS, MOCK_SHARED_TRIPS, MOCK_DASHBOARD_STATS } from "../data/mockData";
 import { SAMPLE_IDS } from "../data/constants";
+import { BACKEND_FLAG_EVENT } from "../services/api/config";
 import { getAssignableJobTypesFromRoleConfig } from "../utils/taskCategories";
 import {
   areAllRequiredDocumentsCompliant,
@@ -25,6 +26,14 @@ import {
 } from "../utils/documentVerificationState";
 import { OFFLINE_JOB_ACCESS_ERROR } from "../utils/offlineAccess";
 import {
+  getDriverActiveTrip,
+  getDriverOnboardingCheckpoints,
+  getDriverPreferences,
+  getDriverProfile,
+  listDriverEmergencyContacts,
+  listDriverJobs,
+  listDriverTrips,
+  listDriverVehicles,
   createDriverVehicle,
   deleteDriverVehicle,
   patchDriverPreferences,
@@ -34,6 +43,7 @@ import {
   setDriverPresenceOnline,
   shouldUseDriverBackendWrites,
 } from "../services/api/driverApi";
+import { createDriverSocket } from "../services/driverSocket";
 
 export interface DashboardMetrics {
   onlineTime: string;
@@ -570,6 +580,66 @@ function createDefaultDriverPreferences(): DriverPreferences {
     serviceIds: ["airport-rides", "ambulance-driver"],
     requirementIds: ["shopping", "partner"],
   };
+}
+
+function mapBackendJobType(type: string): JobCategory {
+  switch (type) {
+    case "delivery":
+    case "rental":
+    case "shuttle":
+    case "tour":
+    case "ambulance":
+    case "shared":
+      return type;
+    default:
+      return "ride";
+  }
+}
+
+function mapBackendJobStatus(status: string): JobStatus {
+  switch (status) {
+    case "accepted":
+      return "attended";
+    case "in_progress":
+      return "in-progress";
+    case "completed":
+      return "completed";
+    case "rejected":
+    case "cancelled":
+      return "cancelled";
+    default:
+      return "pending";
+  }
+}
+
+function mapBackendTripStatus(status: string): TripStatus {
+  switch (status) {
+    case "arrived":
+      return "waiting";
+    case "in_progress":
+      return "in-progress";
+    case "completed":
+      return "completed";
+    case "cancelled":
+      return "cancelled";
+    default:
+      return "navigating";
+  }
+}
+
+function mapBackendTripStage(status: string): TripWorkflowStage {
+  switch (status) {
+    case "arrived":
+      return "waiting_for_passenger";
+    case "in_progress":
+      return "in_progress";
+    case "completed":
+      return "completed";
+    case "cancelled":
+      return "cancelled";
+    default:
+      return "navigate_to_pickup";
+  }
 }
 
 const PRIVATE_TRIP_TRANSITIONS: Record<
@@ -1691,6 +1761,261 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return null;
     }
   });
+  const [driverBackendEnabled, setDriverBackendEnabled] = useState(() => shouldUseDriverBackendWrites());
+
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+
+    const syncBackendFlag = () => {
+      setDriverBackendEnabled(shouldUseDriverBackendWrites());
+    };
+
+    window.addEventListener(BACKEND_FLAG_EVENT, syncBackendFlag as EventListener);
+    syncBackendFlag();
+
+    return () => {
+      window.removeEventListener(BACKEND_FLAG_EVENT, syncBackendFlag as EventListener);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!driverBackendEnabled) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const hydrateDriverBackendState = async () => {
+      try {
+        const [profile, preferences, checkpoints, backendVehicles, backendJobs, backendTrips, backendActiveTrip, backendContacts] =
+          await Promise.all([
+            getDriverProfile(),
+            getDriverPreferences(),
+            getDriverOnboardingCheckpoints(),
+            listDriverVehicles(),
+            listDriverJobs(),
+            listDriverTrips(),
+            getDriverActiveTrip(),
+            listDriverEmergencyContacts(),
+          ]);
+
+        if (cancelled) {
+          return;
+        }
+
+        if (profile) {
+          setDriverProfile((prev) => ({
+            ...prev,
+            fullName: profile.fullName || prev.fullName,
+            email: profile.email || prev.email,
+            phone: profile.phone || prev.phone,
+            city: profile.city || prev.city,
+            country: profile.country || prev.country,
+          }));
+        }
+
+        if (preferences) {
+          setDriverPreferences({
+            areaIds: preferences.areaIds ?? [],
+            serviceIds: preferences.serviceIds ?? [],
+            requirementIds: preferences.requirementIds ?? [],
+          });
+        }
+
+        if (checkpoints) {
+          setOnboardingCheckpoints({
+            roleSelected: checkpoints.roleSelected,
+            documentsVerified: checkpoints.documentsVerified,
+            identityVerified: checkpoints.identityVerified,
+            vehicleReady: checkpoints.vehicleReady,
+            emergencyContactReady: checkpoints.emergencyContactReady,
+            trainingCompleted: checkpoints.trainingCompleted,
+          });
+        }
+
+        setVehicles(
+          backendVehicles.map((vehicle) => ({
+            id: vehicle.id,
+            make: vehicle.make,
+            model: vehicle.model,
+            year: vehicle.year,
+            plate: vehicle.plate,
+            type: vehicle.type,
+            status: vehicle.status ?? "inactive",
+            accessories: resolveAccessoriesForVehicle(vehicle.type, vehicle.accessories),
+          })),
+        );
+
+        setJobs(
+          backendJobs.map((job) => ({
+            id: job.id,
+            from: job.pickup,
+            to: job.dropoff,
+            distance: "TBD",
+            duration: "TBD",
+            fare: "TBD",
+            jobType: mapBackendJobType(job.type),
+            status: mapBackendJobStatus(job.status),
+            requestedAt: job.requestedAt,
+          })),
+        );
+
+        setTrips(
+          backendTrips.items.map((trip) => ({
+            id: trip.id,
+            from: trip.pickup,
+            to: trip.dropoff,
+            date: new Date(trip.requestedAt).toLocaleDateString(),
+            time: new Date(trip.requestedAt).toLocaleTimeString(),
+            amount: 0,
+            jobType: mapBackendJobType(trip.type),
+            status: mapBackendTripStatus(trip.status),
+            pickup: trip.pickup,
+            dropoff: trip.dropoff,
+            startedAt: trip.startedAt,
+            completedAt: trip.completedAt,
+          })),
+        );
+
+        if (backendContacts.length > 0) {
+          setEmergencyContacts(
+            backendContacts.map((contact) => ({
+              id: contact.id,
+              name: contact.name,
+              phone: contact.phone,
+              relationship: contact.relationship,
+              createdAt: Date.now(),
+            })),
+          );
+        }
+
+        if (backendActiveTrip) {
+          setActiveTrip({
+            tripId: backendActiveTrip.id,
+            jobType: mapBackendJobType(backendActiveTrip.type),
+            stage: mapBackendTripStage(backendActiveTrip.status),
+            status:
+              backendActiveTrip.status === "completed"
+                ? "completed"
+                : backendActiveTrip.status === "cancelled"
+                  ? "cancelled"
+                  : "in_progress",
+            timestamps: {
+              acceptedAt: backendActiveTrip.requestedAt,
+              startedAt: backendActiveTrip.startedAt,
+              completedAt: backendActiveTrip.completedAt,
+              updatedAt: backendActiveTrip.updatedAt,
+            },
+          });
+        }
+      } catch (error) {
+        console.warn("Driver backend bootstrap failed. Keeping local state.", error);
+      }
+    };
+
+    void hydrateDriverBackendState();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [driverBackendEnabled]);
+
+  useEffect(() => {
+    if (!driverBackendEnabled) {
+      return;
+    }
+
+    const socket = createDriverSocket();
+
+    socket.on("job.offer.new", (payload: { jobId: string; pickup: string; dropoff: string; type: string; requestedAt: number }) => {
+      setJobs((prev) => {
+        const existingIndex = prev.findIndex((job) => job.id === payload.jobId);
+        const nextJob: Job = {
+          id: payload.jobId,
+          from: payload.pickup,
+          to: payload.dropoff,
+          distance: "TBD",
+          duration: "TBD",
+          fare: "TBD",
+          jobType: mapBackendJobType(payload.type),
+          status: "pending",
+          requestedAt: payload.requestedAt,
+        };
+
+        if (existingIndex >= 0) {
+          const next = [...prev];
+          next[existingIndex] = nextJob;
+          return next;
+        }
+
+        return [nextJob, ...prev];
+      });
+    });
+
+    socket.on("job.offer.updated", (payload: { jobId: string; status: string }) => {
+      setJobs((prev) =>
+        prev.map((job) =>
+          job.id === payload.jobId
+            ? {
+                ...job,
+                status: mapBackendJobStatus(payload.status),
+              }
+            : job,
+        ),
+      );
+    });
+
+    socket.onAny((eventName, payload: { tripId?: string; status?: string; updatedAt?: number }) => {
+      if (!payload?.tripId || !payload.status || !eventName.startsWith("trip.")) {
+        return;
+      }
+
+      setTrips((prev) =>
+        prev.map((trip) =>
+          trip.id === payload.tripId
+            ? {
+                ...trip,
+                status: mapBackendTripStatus(payload.status),
+              }
+            : trip,
+        ),
+      );
+
+      setActiveTrip((prev) => {
+        if (prev.tripId !== payload.tripId) {
+          return prev;
+        }
+
+        return {
+          ...prev,
+          stage: mapBackendTripStage(payload.status),
+          status:
+            payload.status === "completed"
+              ? "completed"
+              : payload.status === "cancelled"
+                ? "cancelled"
+                : "in_progress",
+          timestamps: {
+            ...prev.timestamps,
+            updatedAt: payload.updatedAt ?? Date.now(),
+            arrivedAt: payload.status === "arrived" ? payload.updatedAt ?? Date.now() : prev.timestamps.arrivedAt,
+            startedAt:
+              payload.status === "in_progress" ? payload.updatedAt ?? Date.now() : prev.timestamps.startedAt,
+            completedAt:
+              payload.status === "completed" ? payload.updatedAt ?? Date.now() : prev.timestamps.completedAt,
+            cancelledAt:
+              payload.status === "cancelled" ? payload.updatedAt ?? Date.now() : prev.timestamps.cancelledAt,
+          },
+        };
+      });
+    });
+
+    socket.connect();
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [driverBackendEnabled]);
 
   const setSelectedVehicleIndex = useCallback((index: number | null) => {
     setSelectedVehicleIndexState(index);
