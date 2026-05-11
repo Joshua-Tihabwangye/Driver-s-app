@@ -66,8 +66,6 @@ interface SocialLinkEntry {
   url: string;
 }
 
-const SOCIAL_LINKS_STORAGE_KEY = "driver_social_links";
-
 function createSocialLinkEntry(): SocialLinkEntry {
   return {
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -75,43 +73,6 @@ function createSocialLinkEntry(): SocialLinkEntry {
     username: "",
     url: "",
   };
-}
-
-function readStoredSocialLinks(): SocialLinkEntry[] {
-  if (typeof window === "undefined") {
-    return [createSocialLinkEntry()];
-  }
-
-  try {
-    const raw = window.localStorage.getItem(SOCIAL_LINKS_STORAGE_KEY);
-    if (!raw) {
-      return [createSocialLinkEntry()];
-    }
-
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) {
-      return [createSocialLinkEntry()];
-    }
-
-    const sanitized = parsed
-      .filter((item) => item && typeof item === "object")
-      .map((item) => {
-        const candidate = item as Partial<SocialLinkEntry>;
-        return {
-          id:
-            typeof candidate.id === "string" && candidate.id.trim()
-              ? candidate.id
-              : createSocialLinkEntry().id,
-          platform: typeof candidate.platform === "string" ? candidate.platform : "",
-          username: typeof candidate.username === "string" ? candidate.username : "",
-          url: typeof candidate.url === "string" ? candidate.url : "",
-        };
-      });
-
-    return sanitized.length > 0 ? sanitized : [createSocialLinkEntry()];
-  } catch {
-    return [createSocialLinkEntry()];
-  }
 }
 
 export default function DriverProfileOnboarding() {
@@ -140,11 +101,11 @@ export default function DriverProfileOnboarding() {
     onboardingCheckpoints.identityVerified &&
     onboardingCheckpoints.vehicleReady &&
     onboardingCheckpoints.emergencyContactReady;
-  const [isSocialEditorOpen, setIsSocialEditorOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isInfoBreakdownsOpen, setIsInfoBreakdownsOpen] = useState(false);
-  const [socialLinks, setSocialLinks] = useState<SocialLinkEntry[]>(() => readStoredSocialLinks());
-  const driverDisplayName =
+   const [isSocialEditorOpen, setIsSocialEditorOpen] = useState(false);
+   const [isSubmitting, setIsSubmitting] = useState(false);
+   const [isInfoBreakdownsOpen, setIsInfoBreakdownsOpen] = useState(false);
+   const [socialLinks, setSocialLinks] = useState<SocialLinkEntry[]>([createSocialLinkEntry()]);
+   const driverDisplayName =
     driverProfile.fullName.trim().length > 0 ? driverProfile.fullName.trim() : "Driver";
   const driverCityLabel =
     driverProfile.city.trim().length > 0 ? driverProfile.city.trim() : "City Not Set";
@@ -200,16 +161,11 @@ export default function DriverProfileOnboarding() {
       : "Upload one clear copy.";
   };
 
-  useEffect(() => {
-    setOnboardingCheckpoint("documentsVerified", documentsComplete);
-  }, [documentsComplete, setOnboardingCheckpoint]);
+   useEffect(() => {
+     setOnboardingCheckpoint("documentsVerified", documentsComplete);
+   }, [documentsComplete, setOnboardingCheckpoint]);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem(SOCIAL_LINKS_STORAGE_KEY, JSON.stringify(socialLinks));
-  }, [socialLinks]);
-
-  const vehicleReady = onboardingCheckpoints.vehicleReady;
+   const vehicleReady = onboardingCheckpoints.vehicleReady;
 
   const gatewayAction = useMemo(() => {
     if (!onboardingPrerequisitesComplete) {

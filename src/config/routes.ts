@@ -125,6 +125,7 @@ import MoreMenuScreen from "../screens/MoreMenu";
 import ProfileScreen from "../screens/Profile";
 import ForgotPassword from "../screens/ForgotPassword";
 import OTPVerification from "../screens/OTPVerification";
+import ResetPassword from "../screens/ResetPassword";
 import NotificationsCenter from "../screens/NotificationsCenter";
 import RatingsAndFeedback from "../screens/RatingsAndFeedback";
 import Settings from "../screens/Settings";
@@ -279,6 +280,7 @@ export const SCREENS: ScreenConfig[] = [
   { id: "CashOutMethodFlow", label: "Cash Out Method Flow", path: "/driver/earnings/cashout/:methodId/:step", previewPath: "/driver/earnings/cashout/mobile_money/details", Component: CashOutMethodFlow },
   { id: "ForgotPassword", label: "Forgot Password", path: "/auth/forgot-password", Component: ForgotPassword },
   { id: "OTPVerification", label: "OTP Verification", path: "/auth/verify-otp", Component: OTPVerification },
+  { id: "ResetPassword", label: "Reset Password", path: "/auth/reset-password", Component: ResetPassword },
   { id: "NotificationsCenter", label: "Notifications", path: "/driver/notifications", Component: NotificationsCenter },
   { id: "Ratings", label: "Ratings & Reviews", path: "/driver/ratings", Component: RatingsAndFeedback },
   { id: "Settings", label: "Settings", path: "/driver/settings", Component: Settings },

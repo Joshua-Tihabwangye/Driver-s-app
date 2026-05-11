@@ -34,7 +34,44 @@ export interface DriverBackendForgotPasswordInput {
 export interface DriverBackendVerifyOtpInput {
   email: string;
   otp: string;
-  newPassword?: string;
+}
+
+export interface DriverBackendResetPasswordInput {
+  email: string;
+  otp: string;
+  newPassword: string;
+}
+
+export interface DriverBackendVerifyOtpResult {
+  verified: boolean;
+  resetRequired?: boolean;
+}
+
+export interface DriverBackendForgotPasswordResult {
+  sent: boolean;
+}
+
+export interface DriverBackendResetPasswordResult {
+  reset: boolean;
+}
+
+function normalizeIdentity(identity: string): string {
+  return identity.trim().toLowerCase();
+}
+
+export function shouldUseBackendAuthIdentity(identity: string): boolean {
+  return isBackendAuthEnabled() && canUseBackendEmailIdentity(identity.trim());
+}
+
+async function runCanonicalBackendAuthRequest<T>(
+  identity: string,
+  requestFn: (normalizedIdentity: string) => Promise<T>,
+): Promise<T | null> {
+  if (!shouldUseBackendAuthIdentity(identity)) {
+    return null;
+  }
+
+  return requestFn(normalizeIdentity(identity));
 }
 
 export function isBackendAuthEnabled(): boolean {
@@ -58,6 +95,19 @@ export async function registerDriverViaBackend(input: DriverBackendRegisterInput
   });
 }
 
+export async function registerDriverWithCanonicalBackendFlow(
+  input: DriverBackendRegisterInput,
+): Promise<BackendAuthTokens | null> {
+  if (!isBackendAuthEnabled()) {
+    return null;
+  }
+
+  return registerDriverViaBackend({
+    ...input,
+    email: normalizeIdentity(input.email),
+  });
+}
+
 export async function loginDriverViaBackend(input: DriverBackendLoginInput): Promise<BackendAuthTokens> {
   return request<BackendAuthTokens>("/auth/login", {
     method: "POST",
@@ -65,16 +115,71 @@ export async function loginDriverViaBackend(input: DriverBackendLoginInput): Pro
   });
 }
 
-export async function forgotPasswordViaBackend(input: DriverBackendForgotPasswordInput): Promise<{ sent: boolean }> {
-  return request<{ sent: boolean }>("/auth/forgot-password", {
+export async function forgotPasswordViaBackend(
+  input: DriverBackendForgotPasswordInput,
+): Promise<DriverBackendForgotPasswordResult> {
+  return request<DriverBackendForgotPasswordResult>("/auth/forgot-password", {
     method: "POST",
     body: input,
   });
 }
 
-export async function verifyOtpViaBackend(input: DriverBackendVerifyOtpInput): Promise<{ verified: boolean }> {
-  return request<{ verified: boolean }>("/auth/verify-otp", {
+export async function verifyOtpViaBackend(
+  input: DriverBackendVerifyOtpInput,
+): Promise<DriverBackendVerifyOtpResult> {
+  return request<DriverBackendVerifyOtpResult>("/auth/verify-otp", {
     method: "POST",
     body: input,
   });
+}
+
+export async function resetPasswordViaBackend(
+  input: DriverBackendResetPasswordInput,
+): Promise<DriverBackendResetPasswordResult> {
+  return request<DriverBackendResetPasswordResult>("/auth/reset-password", {
+    method: "POST",
+    body: input,
+  });
+}
+
+export async function loginDriverWithCanonicalBackendFlow(
+  input: DriverBackendLoginInput,
+): Promise<BackendAuthTokens | null> {
+  return runCanonicalBackendAuthRequest(input.email, (email) =>
+    loginDriverViaBackend({
+      email,
+      password: input.password,
+    }),
+  );
+}
+
+export async function forgotPasswordWithCanonicalBackendFlow(
+  identity: string,
+): Promise<DriverBackendForgotPasswordResult | null> {
+  return runCanonicalBackendAuthRequest(identity, (email) =>
+    forgotPasswordViaBackend({ email }),
+  );
+}
+
+export async function verifyOtpWithCanonicalBackendFlow(
+  identity: string,
+  otp: string,
+): Promise<DriverBackendVerifyOtpResult | null> {
+  return runCanonicalBackendAuthRequest(identity, (email) =>
+    verifyOtpViaBackend({ email, otp }),
+  );
+}
+
+export async function resetPasswordWithCanonicalBackendFlow(
+  identity: string,
+  otp: string,
+  newPassword: string,
+): Promise<DriverBackendResetPasswordResult | null> {
+  return runCanonicalBackendAuthRequest(identity, (email) =>
+    resetPasswordViaBackend({
+      email,
+      otp,
+      newPassword,
+    }),
+  );
 }

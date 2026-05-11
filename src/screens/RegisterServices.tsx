@@ -12,9 +12,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useStore } from "../context/StoreContext";
 import {
-  canUseBackendEmailIdentity,
   isBackendAuthEnabled,
-  loginDriverViaBackend,
+  loginDriverWithCanonicalBackendFlow,
 } from "../services/api/authApi";
 import { saveDriverBackendTokens } from "../services/api/driverApi";
 import {
@@ -222,58 +221,50 @@ export default function RegisterServices() {
       });
     };
 
-    const savedAccount = readDriverAuthAccount();
-    let signedIn = false;
-
-    if (isBackendAuthEnabled() && canUseBackendEmailIdentity(normalizedIdentity)) {
-      try {
-        const backendAuth = await loginDriverViaBackend({
-          email: normalizedIdentity,
-          password,
-        });
-        saveDriverBackendTokens(backendAuth.accessToken, backendAuth.refreshToken);
-        const fallbackName =
-          savedAccount?.fullName ||
-          backendAuth.user.email.split("@")[0] ||
-          "EVzone Driver";
-        completeLogin({
-          fullName: fallbackName,
-          email: backendAuth.user.email,
-          phone: savedAccount?.phone || "",
-        });
-        signedIn = true;
-      } catch (error) {
-        console.warn("Backend login failed. Falling back to local auth logic.", error);
-      }
+    if (!isBackendAuthEnabled()) {
+      setLoginError("Authentication service is unavailable. Please try again later.");
+      setIsSubmittingLogin(false);
+      return;
     }
 
-    if (!signedIn) {
-      if (!savedAccount) {
-        setLoginError("No signup record found. Create an account first.");
-        setIsSubmittingLogin(false);
-        return;
-      }
-
-      const normalizedPhone = normalizePhone(identity);
-      const accountEmail = savedAccount.email.trim().toLowerCase();
-      const accountPhone = normalizePhone(savedAccount.phone);
-
-      const identityMatches =
-        normalizedIdentity.length > 0 &&
-        (normalizedIdentity === accountEmail ||
-          (normalizedPhone.length > 0 && normalizedPhone === accountPhone));
-
-      if (!identityMatches || password !== savedAccount.password) {
-        setLoginError("Invalid login details. Use your signup email/phone and password.");
-        setIsSubmittingLogin(false);
-        return;
-      }
-
-      completeLogin({
-        fullName: savedAccount.fullName,
-        email: savedAccount.email,
-        phone: savedAccount.phone,
+    let signedIn = false;
+    try {
+      const backendAuth = await loginDriverWithCanonicalBackendFlow({
+        email: normalizedIdentity,
+        password,
       });
+      if (!backendAuth) {
+        setLoginError("Enter your account email to sign in.");
+        setIsSubmittingLogin(false);
+        return;
+      }
+      saveDriverBackendTokens(backendAuth.accessToken, backendAuth.refreshToken);
+      const fallbackName =
+        savedAccount?.fullName ||
+        backendAuth.user.email.split("@")[0] ||
+        "EVzone Driver";
+      completeLogin({
+        fullName: fallbackName,
+        email: backendAuth.user.email,
+        phone: savedAccount?.phone || "",
+      });
+      signedIn = true;
+    } catch (error) {
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : "Login failed. Please try again.";
+      setLoginError(message);
+      setIsSubmittingLogin(false);
+      return;
+    }
+
+    // No local fallback; if backend login fails we show error
+    if (!signedIn) {
+      // Should not reach here, but just in case
+      setLoginError("Login failed. Please try again.");
+      setIsSubmittingLogin(false);
+      return;
     }
 
     const verificationRoute = `/driver/preferences/identity/face-capture?mode=go-online&next=${encodeURIComponent(

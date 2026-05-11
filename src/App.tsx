@@ -17,6 +17,7 @@ import { useStore } from "./context/StoreContext";
 import { useTheme } from "./context/ThemeContext";
 import ForgotPassword from "./screens/ForgotPassword";
 import OTPVerification from "./screens/OTPVerification";
+import ResetPassword from "./screens/ResetPassword";
 import {
   OFFLINE_JOB_ACCESS_ERROR,
   isOfflineRestrictedPath,
@@ -25,6 +26,7 @@ import {
 const AUTH_ROUTES_WITHOUT_SHELL = new Set([
   "/auth/forgot-password",
   "/auth/verify-otp",
+  "/auth/reset-password",
 ]);
 
 const PUBLIC_SCREEN_IDS = new Set([
@@ -200,6 +202,14 @@ export default function App() {
           element={
             <GuestOnlyRoute>
               <OTPVerification />
+            </GuestOnlyRoute>
+          }
+        />
+        <Route
+          path="/auth/reset-password"
+          element={
+            <GuestOnlyRoute>
+              <ResetPassword />
             </GuestOnlyRoute>
           }
         />

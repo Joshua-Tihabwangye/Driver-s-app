@@ -136,7 +136,6 @@ export default function SOSSending() {
         : null,
     };
 
-    window.localStorage.setItem("evzone_sos_help_message_payload", JSON.stringify(payload));
     updateEmergencyDispatch({
       contactsNotified: recipients.map((entry) => entry.phone),
       helpMessage,
