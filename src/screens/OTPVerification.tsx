@@ -2,9 +2,8 @@ import { ArrowLeft, ChevronRight } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
-  canUseBackendEmailIdentity,
   isBackendAuthEnabled,
-  verifyOtpViaBackend,
+  verifyOtpWithCanonicalBackendFlow,
 } from "../services/api/authApi";
 
 export default function OTPVerification() {
@@ -12,6 +11,8 @@ export default function OTPVerification() {
   const location = useLocation();
   const [otp, setOtp] = useState(["", "", "", ""]);
   const [timer, setTimer] = useState(30);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -42,23 +43,56 @@ export default function OTPVerification() {
   };
 
   const handleVerify = async () => {
-    if (otp.every((digit) => digit !== "")) {
-      const identity =
-        (location.state as { identity?: string } | null)?.identity?.trim() || "";
-
-      if (isBackendAuthEnabled() && canUseBackendEmailIdentity(identity)) {
-        try {
-          await verifyOtpViaBackend({
-            email: identity.toLowerCase(),
-            otp: otp.join(""),
-          });
-        } catch (error) {
-          console.warn("Backend OTP verification failed. Continuing with local flow.", error);
-        }
-      }
-
-      navigate("/app/register-services");
+    if (!otp.every((digit) => digit !== "")) {
+      setErrorMessage("Enter the full OTP code.");
+      return;
     }
+
+    const identity =
+      (location.state as { identity?: string } | null)?.identity?.trim() || "";
+    const otpCode = otp.join("");
+    setErrorMessage("");
+    setIsSubmitting(true);
+
+    if (!isBackendAuthEnabled()) {
+      setErrorMessage("Authentication service is unavailable. Please try again later.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      const result = await verifyOtpWithCanonicalBackendFlow(identity, otpCode);
+      if (!result) {
+        setErrorMessage("Enter your account email to continue.");
+        setIsSubmitting(false);
+        return;
+      }
+      if (!result.verified) {
+        setErrorMessage("Invalid OTP. Please try again.");
+        setIsSubmitting(false);
+        return;
+      }
+      const resetRequired = result.resetRequired !== false;
+      if (!resetRequired) {
+        navigate("/app/register-services");
+        return;
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : "OTP verification failed. Please try again.";
+      setErrorMessage(message);
+      setIsSubmitting(false);
+      return;
+    }
+
+    navigate("/auth/reset-password", {
+      state: {
+        identity,
+        otp: otpCode,
+      },
+    });
   };
 
   return (
@@ -109,12 +143,16 @@ export default function OTPVerification() {
             </button>
           )}
         </div>
+        {errorMessage ? (
+          <p className="mb-4 text-center text-xs font-semibold text-red-600">{errorMessage}</p>
+        ) : null}
 
         <button
+          disabled={isSubmitting}
           onClick={handleVerify}
           className="w-full bg-[#03cd8c] text-white font-black py-5 rounded-2xl shadow-xl shadow-emerald-200 flex items-center justify-center group active:scale-[0.98] transition-all"
         >
-          <span>VERIFY & CONTINUE</span>
+          <span>{isSubmitting ? "VERIFYING..." : "VERIFY & CONTINUE"}</span>
           <ChevronRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
         </button>
       </div>

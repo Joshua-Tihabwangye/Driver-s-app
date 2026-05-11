@@ -6,9 +6,11 @@ import type {
   RevenueEvent,
   PeriodFilter,
   JobCategory,
+  JobStatus,
   SharedContact,
   DriverCoreRole,
   DriverProgramFlags,
+  TripStatus,
   Vehicle,
   TourSegment,
   TourSegmentStatus,
@@ -26,22 +28,40 @@ import {
 } from "../utils/documentVerificationState";
 import { OFFLINE_JOB_ACCESS_ERROR } from "../utils/offlineAccess";
 import {
+  acceptDriverJob,
+  createDriverEmergencyContact,
   getDriverActiveTrip,
   getDriverOnboardingCheckpoints,
   getDriverPreferences,
   getDriverProfile,
+  getDriverTripSafetyState,
+  DriverBackendTripSafetyState,
   listDriverEmergencyContacts,
   listDriverJobs,
   listDriverTrips,
   listDriverVehicles,
   createDriverVehicle,
+  DRIVER_BACKEND_AUTH_EVENT,
+  deleteDriverEmergencyContact,
   deleteDriverVehicle,
   patchDriverPreferences,
   patchDriverProfile,
   patchDriverVehicle,
+  rejectDriverJob,
+  requestTemporaryStop,
+  respondTemporaryStop,
+  resumeTemporaryStop,
+  saveDriverTripSafetyState,
+  sendDriverLocationHeartbeat,
   setDriverPresenceOffline,
   setDriverPresenceOnline,
   shouldUseDriverBackendWrites,
+  triggerTripSos,
+  tripArrive,
+  tripCancel,
+  tripComplete,
+  tripStart,
+  updateDriverEmergencyContact as patchDriverEmergencyContact,
 } from "../services/api/driverApi";
 import { createDriverSocket } from "../services/driverSocket";
 
@@ -640,6 +660,84 @@ function mapBackendTripStage(status: string): TripWorkflowStage {
     default:
       return "navigate_to_pickup";
   }
+}
+
+function mapBackendSafetyStateToRuntime(
+  backendState: DriverBackendTripSafetyState,
+): ActiveRideRuntimeState {
+  return {
+    tripId: backendState.tripId,
+    temporaryStop: {
+      status: backendState.temporaryStop.status,
+      requestNote: backendState.temporaryStop.requestNote || "",
+      requestedAt: backendState.temporaryStop.requestedAt,
+      confirmedAt: backendState.temporaryStop.confirmedAt,
+      declinedAt: backendState.temporaryStop.declinedAt,
+      resumedAt: backendState.temporaryStop.resumedAt,
+      pauseStartedAt: backendState.temporaryStop.pauseStartedAt,
+      totalPausedMs: backendState.temporaryStop.totalPausedMs || 0,
+      lastPassengerDecision: backendState.temporaryStop.lastPassengerDecision || "none",
+    },
+    safetyCheck: {
+      status: backendState.safetyCheck.status,
+      stationarySince: backendState.safetyCheck.stationarySince,
+      triggeredAt: backendState.safetyCheck.triggeredAt,
+      resolvedAt: backendState.safetyCheck.resolvedAt,
+      sosTriggeredAt: backendState.safetyCheck.sosTriggeredAt,
+      driverAction: backendState.safetyCheck.driverAction || null,
+      passengerAction: backendState.safetyCheck.passengerAction || null,
+      triggeredByStationary: Boolean(backendState.safetyCheck.triggeredByStationary),
+    },
+    lastMovementAt: backendState.lastMovementAt,
+    lastKnownLocation: backendState.lastKnownLocation || null,
+    lastEmergencyDispatch: backendState.lastEmergencyDispatch
+      ? {
+          ...backendState.lastEmergencyDispatch,
+          location: backendState.lastEmergencyDispatch.location || null,
+        }
+      : null,
+  };
+}
+
+function mapRuntimeToBackendSafetyState(
+  runtime: ActiveRideRuntimeState,
+): DriverBackendTripSafetyState | null {
+  if (!runtime.tripId) {
+    return null;
+  }
+
+  return {
+    tripId: runtime.tripId,
+    temporaryStop: {
+      status: runtime.temporaryStop.status,
+      requestNote: runtime.temporaryStop.requestNote,
+      requestedAt: runtime.temporaryStop.requestedAt,
+      confirmedAt: runtime.temporaryStop.confirmedAt,
+      declinedAt: runtime.temporaryStop.declinedAt,
+      resumedAt: runtime.temporaryStop.resumedAt,
+      pauseStartedAt: runtime.temporaryStop.pauseStartedAt,
+      totalPausedMs: runtime.temporaryStop.totalPausedMs,
+      lastPassengerDecision: runtime.temporaryStop.lastPassengerDecision,
+    },
+    safetyCheck: {
+      status: runtime.safetyCheck.status,
+      stationarySince: runtime.safetyCheck.stationarySince,
+      triggeredAt: runtime.safetyCheck.triggeredAt,
+      resolvedAt: runtime.safetyCheck.resolvedAt,
+      sosTriggeredAt: runtime.safetyCheck.sosTriggeredAt,
+      driverAction: runtime.safetyCheck.driverAction,
+      passengerAction: runtime.safetyCheck.passengerAction,
+      triggeredByStationary: runtime.safetyCheck.triggeredByStationary,
+    },
+    lastMovementAt: runtime.lastMovementAt,
+    lastKnownLocation: runtime.lastKnownLocation,
+    lastEmergencyDispatch: runtime.lastEmergencyDispatch
+      ? {
+          ...runtime.lastEmergencyDispatch,
+          location: runtime.lastEmergencyDispatch.location || null,
+        }
+      : null,
+  };
 }
 
 const PRIVATE_TRIP_TRANSITIONS: Record<
@@ -1676,7 +1774,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [activeRideRuntime, setActiveRideRuntime] = useState<ActiveRideRuntimeState>(() => readStoredActiveRideRuntime());
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || shouldUseDriverBackendWrites()) return;
     try {
       window.localStorage.setItem(ACTIVE_RIDE_RUNTIME_STORAGE_KEY, JSON.stringify(activeRideRuntime));
     } catch (e) {
@@ -1771,10 +1869,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     };
 
     window.addEventListener(BACKEND_FLAG_EVENT, syncBackendFlag as EventListener);
+    window.addEventListener(DRIVER_BACKEND_AUTH_EVENT, syncBackendFlag as EventListener);
     syncBackendFlag();
 
     return () => {
       window.removeEventListener(BACKEND_FLAG_EVENT, syncBackendFlag as EventListener);
+      window.removeEventListener(DRIVER_BACKEND_AUTH_EVENT, syncBackendFlag as EventListener);
     };
   }, []);
 
@@ -1877,17 +1977,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           })),
         );
 
-        if (backendContacts.length > 0) {
-          setEmergencyContacts(
-            backendContacts.map((contact) => ({
-              id: contact.id,
-              name: contact.name,
-              phone: contact.phone,
-              relationship: contact.relationship,
-              createdAt: Date.now(),
-            })),
-          );
-        }
+        setEmergencyContacts(
+          backendContacts.map((contact) => ({
+            id: contact.id,
+            name: contact.name,
+            phone: contact.phone,
+            relationship: contact.relationship,
+            createdAt: Date.now(),
+          })),
+        );
 
         if (backendActiveTrip) {
           setActiveTrip({
@@ -1907,6 +2005,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
               updatedAt: backendActiveTrip.updatedAt,
             },
           });
+
+          const safetyState = await getDriverTripSafetyState(backendActiveTrip.id);
+          if (!cancelled && safetyState) {
+            setActiveRideRuntime(mapBackendSafetyStateToRuntime(safetyState));
+          }
+        } else {
+          setActiveRideRuntime(createDefaultActiveRideRuntime(null));
         }
       } catch (error) {
         console.warn("Driver backend bootstrap failed. Keeping local state.", error);
@@ -1917,6 +2022,81 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
     return () => {
       cancelled = true;
+    };
+  }, [driverBackendEnabled]);
+
+  useEffect(() => {
+    if (!driverBackendEnabled) {
+      return;
+    }
+
+    let cancelled = false;
+    const syncFromBackend = async () => {
+      try {
+        const backendActiveTrip = await getDriverActiveTrip();
+        if (cancelled) return;
+
+        if (!backendActiveTrip) {
+          setActiveTrip((prev) => (prev.stage === "idle" ? prev : DEFAULT_ACTIVE_TRIP));
+          setActiveRideRuntime((prev) =>
+            prev.tripId === null &&
+            prev.temporaryStop.status === "idle" &&
+            prev.safetyCheck.status === "idle"
+              ? prev
+              : createDefaultActiveRideRuntime(null),
+          );
+          return;
+        }
+
+        setActiveTrip((prev) => {
+          const next: ActiveTripState = {
+            tripId: backendActiveTrip.id,
+            jobType: mapBackendJobType(backendActiveTrip.type),
+            stage: mapBackendTripStage(backendActiveTrip.status),
+            status:
+              backendActiveTrip.status === "completed"
+                ? "completed"
+                : backendActiveTrip.status === "cancelled"
+                  ? "cancelled"
+                  : "in_progress",
+            timestamps: {
+              ...prev.timestamps,
+              acceptedAt: backendActiveTrip.requestedAt,
+              startedAt: backendActiveTrip.startedAt,
+              completedAt: backendActiveTrip.completedAt,
+              updatedAt: backendActiveTrip.updatedAt,
+            },
+          };
+
+          if (
+            prev.tripId === next.tripId &&
+            prev.stage === next.stage &&
+            prev.status === next.status &&
+            prev.timestamps.updatedAt === next.timestamps.updatedAt
+          ) {
+            return prev;
+          }
+
+          return next;
+        });
+
+        const safetyState = await getDriverTripSafetyState(backendActiveTrip.id);
+        if (!cancelled && safetyState) {
+          setActiveRideRuntime(mapBackendSafetyStateToRuntime(safetyState));
+        }
+      } catch (error) {
+        console.warn("Failed to sync active trip safety state from backend.", error);
+      }
+    };
+
+    void syncFromBackend();
+    const timer = window.setInterval(() => {
+      void syncFromBackend();
+    }, 15000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
     };
   }, [driverBackendEnabled]);
 
@@ -2073,7 +2253,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   // Keep document readiness aligned with stored document state on load/focus.
   useEffect(() => {
-    if (typeof window === "undefined") {
+    if (typeof window === "undefined" || driverBackendEnabled) {
       return;
     }
 
@@ -2340,24 +2520,67 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const addEmergencyContact = useCallback((contact: Omit<SharedContact, "id" | "createdAt">) => {
+    const tempId = `ec-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+    const createdAt = Date.now();
     setEmergencyContacts((prev) => [
       ...prev,
       {
         ...contact,
-        id: `ec-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        createdAt: Date.now(),
+        id: tempId,
+        createdAt,
       },
     ]);
+
+    if (shouldUseDriverBackendWrites()) {
+      void createDriverEmergencyContact({
+        name: contact.name,
+        phone: contact.phone,
+        relationship: contact.relationship,
+      })
+        .then((backendContact) => {
+          if (!backendContact) return;
+          setEmergencyContacts((prev) =>
+            prev.map((entry) =>
+              entry.id === tempId
+                ? {
+                    ...entry,
+                    id: backendContact.id,
+                    name: backendContact.name,
+                    phone: backendContact.phone,
+                    relationship: backendContact.relationship,
+                  }
+                : entry,
+            ),
+          );
+        })
+        .catch((error) => {
+          console.warn("Driver backend emergency contact create failed. Keeping local state.", error);
+        });
+    }
   }, []);
 
   const removeEmergencyContact = useCallback((id: string) => {
     setEmergencyContacts((prev) => prev.filter((c) => c.id !== id));
+    if (shouldUseDriverBackendWrites()) {
+      void deleteDriverEmergencyContact(id).catch((error) => {
+        console.warn("Driver backend emergency contact delete failed. Keeping local state.", error);
+      });
+    }
   }, []);
 
   const updateEmergencyContact = useCallback((updated: SharedContact) => {
     setEmergencyContacts((prev) =>
       prev.map((c) => (c.id === updated.id ? updated : c))
     );
+    if (shouldUseDriverBackendWrites()) {
+      void patchDriverEmergencyContact(updated.id, {
+        name: updated.name,
+        phone: updated.phone,
+        relationship: updated.relationship,
+      }).catch((error) => {
+        console.warn("Driver backend emergency contact update failed. Keeping local state.", error);
+      });
+    }
   }, []);
 
   const onboardingBlockers = useMemo<OnboardingBlocker[]>(
@@ -2448,7 +2671,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     } catch (e) {
       console.warn("Failed to save active trip to localStorage:", e);
     }
-  }, [activeTrip]);
+  }, [activeTrip, driverBackendEnabled]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -2592,6 +2815,21 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [trips]);
 
   useEffect(() => {
+    if (!driverBackendEnabled) {
+      return;
+    }
+
+    const payload = mapRuntimeToBackendSafetyState(activeRideRuntime);
+    if (!payload) {
+      return;
+    }
+
+    void saveDriverTripSafetyState(payload.tripId, payload).catch((error) => {
+      console.warn("Failed to persist active safety state to backend.", error);
+    });
+  }, [activeRideRuntime, driverBackendEnabled]);
+
+  useEffect(() => {
     const hasProfilePhoto = Boolean(driverProfilePhoto && driverProfilePhoto.trim().length > 0);
     setOnboardingCheckpoints((prev) => {
       if (prev.identityVerified === hasProfilePhoto) {
@@ -2637,6 +2875,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const requestTemporaryStopDuringActiveRide = useCallback((note?: string): boolean => {
     if (activeTrip.stage !== "in_progress") return false;
     if (activeRideRuntime.temporaryStop.status !== "idle") return false;
+    if (!activeTrip.tripId) return false;
 
     setActiveRideRuntime(prev => ({
       ...prev,
@@ -2649,16 +2888,31 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         lastPassengerDecision: "none"
       }
     }));
-    
-    setTimeout(() => {
-        window.localStorage.setItem('evzone_active_ride_stop_request', JSON.stringify({ tripId: activeTrip.tripId, ts: Date.now() }));
-    }, 50);
+
+    if (shouldUseDriverBackendWrites()) {
+      void requestTemporaryStop(activeTrip.tripId, note)
+        .then((state) => {
+          if (!state) return;
+          setActiveRideRuntime(mapBackendSafetyStateToRuntime(state));
+        })
+        .catch((error) => {
+          console.warn("Driver backend temporary stop request failed. Keeping local state.", error);
+        });
+    } else {
+      setTimeout(() => {
+        window.localStorage.setItem(
+          "evzone_active_ride_stop_request",
+          JSON.stringify({ tripId: activeTrip.tripId, ts: Date.now() }),
+        );
+      }, 50);
+    }
 
     return true;
   }, [activeTrip, activeRideRuntime]);
 
   const respondToTemporaryStopRequest = useCallback((decision: "confirm" | "decline"): boolean => {
     if (activeTrip.stage !== "in_progress") return false;
+    if (!activeTrip.tripId) return false;
     
     setActiveRideRuntime(prev => {
         if (prev.temporaryStop.status !== "stop_requested") return prev;
@@ -2688,11 +2942,23 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             };
         }
     });
+
+    if (shouldUseDriverBackendWrites()) {
+      void respondTemporaryStop(activeTrip.tripId, decision)
+        .then((state) => {
+          if (!state) return;
+          setActiveRideRuntime(mapBackendSafetyStateToRuntime(state));
+        })
+        .catch((error) => {
+          console.warn("Driver backend temporary stop response failed. Keeping local state.", error);
+        });
+    }
     return true;
   }, [activeTrip]);
 
   const resumeTemporaryStopDuringActiveRide = useCallback((): boolean => {
     if (activeTrip.stage !== "in_progress") return false;
+    if (!activeTrip.tripId) return false;
     
     setActiveRideRuntime(prev => {
         if (prev.temporaryStop.status !== "temporarily_stopped") return prev;
@@ -2713,10 +2979,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             }
         };
     });
-    
-    setTimeout(() => {
-        window.localStorage.setItem('evzone_active_ride_stop_resume', JSON.stringify({ tripId: activeTrip.tripId, ts: Date.now() }));
-    }, 50);
+
+    if (shouldUseDriverBackendWrites()) {
+      void resumeTemporaryStop(activeTrip.tripId)
+        .then((state) => {
+          if (!state) return;
+          setActiveRideRuntime(mapBackendSafetyStateToRuntime(state));
+        })
+        .catch((error) => {
+          console.warn("Driver backend temporary stop resume failed. Keeping local state.", error);
+        });
+    } else {
+      setTimeout(() => {
+        window.localStorage.setItem(
+          "evzone_active_ride_stop_resume",
+          JSON.stringify({ tripId: activeTrip.tripId, ts: Date.now() }),
+        );
+      }, 50);
+    }
 
     return true;
   }, [activeTrip]);
@@ -2752,10 +3032,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                 triggeredAt: timestamp,
                 triggeredByStationary: true,
             };
-            
-            setTimeout(() => {
+            if (!shouldUseDriverBackendWrites()) {
+              setTimeout(() => {
                 window.localStorage.setItem('evzone_active_ride_safety_check', JSON.stringify({ tripId: activeTrip.tripId, ts: Date.now() }));
-            }, 50);
+              }, 50);
+            }
         } else if (!isStationary && safetyCheck.status !== "idle" && safetyCheck.triggeredByStationary && safetyCheck.status !== "sos_triggered") {
             safetyCheck = {
                 ...safetyCheck,
@@ -2763,9 +3044,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                 driverAction: null,
                 passengerAction: null,
             };
-            setTimeout(() => {
+            if (!shouldUseDriverBackendWrites()) {
+              setTimeout(() => {
                 window.localStorage.setItem('evzone_active_ride_safety_resume', JSON.stringify({ tripId: activeTrip.tripId, ts: Date.now() }));
-            }, 50);
+              }, 50);
+            }
         }
 
         return {
@@ -2776,6 +3059,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             safetyCheck
         };
     });
+    if (shouldUseDriverBackendWrites()) {
+      void sendDriverLocationHeartbeat({
+        latitude: sample.latitude,
+        longitude: sample.longitude,
+        accuracy: sample.accuracy,
+        timestamp: sample.timestamp || Date.now(),
+      }).catch((error) => {
+        console.warn("Driver location heartbeat failed.", error);
+      });
+    }
   }, [activeTrip]);
 
   const respondToSafetyCheck = useCallback((actor: RideSafetyActor, action: RideSafetyAction): boolean => {
@@ -2826,9 +3119,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         if (actor === "driver") {
             newCheckState.driverAction = action;
             if (action === "okay") {
-                setTimeout(() => {
+                if (!shouldUseDriverBackendWrites()) {
+                  setTimeout(() => {
                     window.localStorage.setItem('evzone_active_ride_safety_driver_okay', JSON.stringify({ tripId: activeTrip.tripId, ts: now }));
-                }, 50);
+                  }, 50);
+                }
             }
         } else {
             newCheckState.passengerAction = action;
@@ -2844,9 +3139,27 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             safetyCheck: newCheckState
         };
     });
+
+    if (shouldUseDriverBackendWrites() && action === "sos" && activeTrip.tripId) {
+      void triggerTripSos(activeTrip.tripId, {
+        actor,
+        message: "Driver initiated SOS from active trip flow.",
+        latitude: activeRideRuntime.lastKnownLocation?.latitude,
+        longitude: activeRideRuntime.lastKnownLocation?.longitude,
+        accuracy: activeRideRuntime.lastKnownLocation?.accuracy,
+        timestamp: activeRideRuntime.lastKnownLocation?.timestamp,
+      })
+        .then((state) => {
+          if (!state) return;
+          setActiveRideRuntime(mapBackendSafetyStateToRuntime(state));
+        })
+        .catch((error) => {
+          console.warn("Driver backend SOS dispatch failed. Keeping local state.", error);
+        });
+    }
     
     return true;
-  }, [activeTrip, emergencyContacts]);
+  }, [activeTrip, activeRideRuntime.lastKnownLocation, emergencyContacts]);
 
   const updateEmergencyDispatch = useCallback((input: EmergencyDispatchUpdateInput): void => {
     setActiveRideRuntime((prev) => {
@@ -2962,9 +3275,40 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         );
       }
 
+      if (shouldUseDriverBackendWrites() && activeTrip.tripId) {
+        const tripId = activeTrip.tripId;
+        if (nextStage === "arrived_pickup" || nextStage === "waiting_for_passenger") {
+          void tripArrive(tripId).catch((error) => {
+            console.warn("Driver backend trip arrive failed. Keeping local state.", error);
+          });
+        } else if (nextStage === "start_drive" || nextStage === "in_progress") {
+          void tripStart(tripId).catch((error) => {
+            console.warn("Driver backend trip start failed. Keeping local state.", error);
+          });
+        } else if (nextStage === "completed") {
+          void tripComplete(tripId).catch((error) => {
+            console.warn("Driver backend trip complete failed. Keeping local state.", error);
+          });
+        } else if (
+          nextStage === "cancel_reason" ||
+          nextStage === "cancel_no_show" ||
+          nextStage === "cancelled"
+        ) {
+          const reason =
+            nextStage === "cancel_no_show"
+              ? "passenger_no_show"
+              : nextStage === "cancel_reason"
+                ? "driver_cancelled"
+                : "cancelled";
+          void tripCancel(tripId, reason).catch((error) => {
+            console.warn("Driver backend trip cancel failed. Keeping local state.", error);
+          });
+        }
+      }
+
       return true;
     },
-    [activeTrip, driverPresenceStatus]
+    [activeTrip, driverPresenceStatus, jobs]
   );
 
   const completeActiveTrip = useCallback(() => {
@@ -3085,6 +3429,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       });
     }
 
+    if (shouldUseDriverBackendWrites()) {
+      void tripComplete(tripId).catch((error) => {
+        console.warn("Driver backend trip complete failed. Keeping local state.", error);
+      });
+    }
+
     return tripId;
   }, [activeTrip, driverPresenceStatus, jobs]);
 
@@ -3148,6 +3498,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       )
     );
     setActiveRideRuntime(createDefaultActiveRideRuntime(null));
+
+    if (shouldUseDriverBackendWrites()) {
+      const reason =
+        resolvedReasonStage === "cancel_no_show" ? "passenger_no_show" : "driver_cancelled";
+      void tripCancel(tripId, reason).catch((error) => {
+        console.warn("Driver backend trip cancel failed. Keeping local state.", error);
+      });
+    }
 
     return tripId;
   }, [activeTrip, driverPresenceStatus]);
@@ -3266,6 +3624,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const updateJobStatus = useCallback((id: string, status: Job["status"]) => {
     setJobs(prev => prev.map(j => j.id === id ? { ...j, status } : j));
+    if (shouldUseDriverBackendWrites()) {
+      if (status === "attended") {
+        void acceptDriverJob(id).catch((error) => {
+          console.warn("Driver backend job accept failed. Keeping local state.", error);
+        });
+      } else if (status === "cancelled") {
+        void rejectDriverJob(id, "driver_rejected").catch((error) => {
+          console.warn("Driver backend job reject failed. Keeping local state.", error);
+        });
+      }
+    }
   }, []);
 
   const updateTourSegmentStatus = useCallback((jobId: string, segmentId: string, status: TourSegmentStatus) => {
@@ -3539,6 +3908,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       });
       setActiveRideRuntime(createDefaultActiveRideRuntime(null));
 
+      if (shouldUseDriverBackendWrites()) {
+        void acceptDriverJob(jobId).catch((error) => {
+          console.warn("Driver backend job accept failed. Keeping local state.", error);
+        });
+      }
+
       return true;
     },
     [jobs, activeTrip, completeActiveTrip, canAccessOrdersWithCurrentDocuments]
@@ -3600,6 +3975,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         stopId: SAMPLE_IDS.stop,
         stage: "accepted",
       });
+
+      if (shouldUseDriverBackendWrites()) {
+        void acceptDriverJob(jobId).catch((error) => {
+          console.warn("Driver backend job accept failed. Keeping local state.", error);
+        });
+      }
 
       return true;
     },
@@ -3889,6 +4270,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       });
       setActiveRideRuntime(createDefaultActiveRideRuntime(jobId));
 
+      if (shouldUseDriverBackendWrites()) {
+        void acceptDriverJob(jobId).catch((error) => {
+          console.warn("Driver backend job accept failed. Keeping local state.", error);
+        });
+      }
+
       return true;
     },
     [jobs, canAcceptJobType, activeTrip, completeActiveTrip, canAccessOrdersWithCurrentDocuments]
@@ -3961,6 +4348,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         },
       });
       setActiveRideRuntime(createDefaultActiveRideRuntime(null));
+      if (shouldUseDriverBackendWrites()) {
+        void acceptDriverJob(jobId).catch((error) => {
+          console.warn("Driver backend job accept failed. Keeping local state.", error);
+        });
+      }
       return true;
     },
     [jobs, activeTrip, sharedRidesEnabled, completeActiveTrip, canAccessOrdersWithCurrentDocuments]
@@ -4069,6 +4461,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       };
     });
 
+    if (shouldUseDriverBackendWrites()) {
+      void tripComplete(activeSharedTrip.id).catch((error) => {
+        console.warn("Driver backend shared trip complete failed. Keeping local state.", error);
+      });
+    }
+
     return activeSharedTrip.id;
   }, [activeSharedTrip, driverPresenceStatus, jobs]);
   const filteredTrips = useMemo(
@@ -4151,6 +4549,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    if (driverBackendEnabled) {
+      return;
+    }
     const handleStorageEvent = (e: StorageEvent) => {
       if (!e.newValue) return;
       if (e.key === "evzone_active_ride_stop_response") {
@@ -4167,7 +4568,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     };
     window.addEventListener("storage", handleStorageEvent);
     return () => window.removeEventListener("storage", handleStorageEvent);
-  }, [activeTrip.tripId, respondToTemporaryStopRequest, respondToSafetyCheck]);
+  }, [activeTrip.tripId, driverBackendEnabled, respondToTemporaryStopRequest, respondToSafetyCheck]);
 
   const value = useMemo<StoreContextType>(
     () => ({

@@ -2,26 +2,44 @@ import { ArrowLeft, Mail, ChevronRight } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  canUseBackendEmailIdentity,
-  forgotPasswordViaBackend,
+  forgotPasswordWithCanonicalBackendFlow,
   isBackendAuthEnabled,
 } from "../services/api/authApi";
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (email) {
       const identity = email.trim();
+      setErrorMessage("");
+      setIsSubmitting(true);
 
-      if (isBackendAuthEnabled() && canUseBackendEmailIdentity(identity)) {
-        try {
-          await forgotPasswordViaBackend({ email: identity.toLowerCase() });
-        } catch (error) {
-          console.warn("Backend forgot-password failed. Continuing with local flow.", error);
+      if (!isBackendAuthEnabled()) {
+        setErrorMessage("Authentication service is unavailable. Please try again later.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      try {
+        const result = await forgotPasswordWithCanonicalBackendFlow(identity);
+        if (!result) {
+          setErrorMessage("Enter your account email to continue.");
+          setIsSubmitting(false);
+          return;
         }
+      } catch (error) {
+        const message =
+          error instanceof Error && error.message
+            ? error.message
+            : "Could not send OTP. Please try again.";
+        setErrorMessage(message);
+        setIsSubmitting(false);
+        return;
       }
 
       navigate("/auth/verify-otp", {
@@ -29,7 +47,9 @@ export default function ForgotPassword() {
           identity,
         },
       });
+      return;
     }
+    setIsSubmitting(false);
   };
 
   return (
@@ -72,12 +92,16 @@ export default function ForgotPassword() {
               />
             </div>
           </div>
+          {errorMessage ? (
+            <p className="text-xs font-semibold text-red-600">{errorMessage}</p>
+          ) : null}
 
           <button
             type="submit"
+            disabled={isSubmitting}
             className="w-full bg-[#03cd8c] text-white font-black py-5 rounded-2xl shadow-xl shadow-emerald-200 flex items-center justify-center group active:scale-[0.98] transition-all"
           >
-            <span>SEND OTP</span>
+            <span>{isSubmitting ? "SENDING..." : "SEND OTP"}</span>
             <ChevronRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
           </button>
         </form>

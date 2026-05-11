@@ -4,9 +4,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
 import {
-  canUseBackendEmailIdentity,
   isBackendAuthEnabled,
-  registerDriverViaBackend,
+  registerDriverWithCanonicalBackendFlow,
 } from "../services/api/authApi";
 import { saveDriverBackendTokens } from "../services/api/driverApi";
 import { resetStoredDocumentState } from "../utils/documentVerificationState";
@@ -130,8 +129,13 @@ export default function Registration() {
       return;
     }
 
-    setErrorMessage("");
+    // Require backend auth enabled
+    if (!isBackendAuthEnabled()) {
+      setErrorMessage("Authentication service is unavailable. Please contact support.");
+      return;
+    }
 
+    setErrorMessage("");
     setDriverProfile({
       ...driverProfile,
       fullName: fullName.trim(),
@@ -146,27 +150,28 @@ export default function Registration() {
       landmark: landmark.trim(),
     });
 
-    if (isBackendAuthEnabled() && canUseBackendEmailIdentity(email.trim())) {
-      try {
-        const backendAuth = await registerDriverViaBackend({
-          fullName: fullName.trim(),
-          email: email.trim().toLowerCase(),
-          phone: phone.trim(),
-          password,
-        });
-        saveDriverBackendTokens(backendAuth.accessToken, backendAuth.refreshToken);
-      } catch (error) {
-        console.warn("Backend registration failed. Falling back to local registration.", error);
+    try {
+      const backendAuth = await registerDriverWithCanonicalBackendFlow({
+        fullName: fullName.trim(),
+        email: email.trim(),
+        phone: phone.trim(),
+        password,
+      });
+      if (!backendAuth) {
+        setErrorMessage("Enter a valid email address to complete backend registration.");
+        setIsSubmitting(false);
+        return;
       }
+      saveDriverBackendTokens(backendAuth.accessToken, backendAuth.refreshToken);
+    } catch (error) {
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : "Registration failed. Please try again.";
+      setErrorMessage(message);
+      setIsSubmitting(false);
+      return;
     }
-
-    saveDriverAuthAccount({
-      fullName: fullName.trim(),
-      email: email.trim(),
-      phone: phone.trim(),
-      password,
-      selectedService,
-    });
 
     resetStoredDocumentState();
     resetOnboardingVehicleSetup();

@@ -13,6 +13,7 @@ import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
+import { shouldUseDriverBackendWrites, tripVerifyOtp } from "../services/api/driverApi";
 import {
   buildTripVerificationPayload,
   isTripVerificationExpired,
@@ -111,7 +112,7 @@ export default function RiderVerification() {
     }
   };
 
-  const handleProceedToStartDrive = () => {
+  const handleProceedToStartDrive = async () => {
     if (!tripId) {
       navigate("/driver/jobs/list");
       return;
@@ -123,6 +124,23 @@ export default function RiderVerification() {
     if (verificationMethod === "otp" && !otpMatches) {
       setOtpError("OTP mismatch. Ask the passenger to share the current trip OTP.");
       return;
+    }
+
+    if (verificationMethod === "otp" && shouldUseDriverBackendWrites()) {
+      try {
+        const response = await tripVerifyOtp(tripId, enteredOtp || expectedOtp);
+        if (!response) {
+          setOtpError("Unable to verify rider OTP right now.");
+          return;
+        }
+      } catch (error) {
+        const message =
+          error instanceof Error && error.message
+            ? error.message
+            : "OTP verification failed. Please try again.";
+        setOtpError(message);
+        return;
+      }
     }
 
     stopCameraStream();
@@ -168,7 +186,7 @@ export default function RiderVerification() {
     }
 
     hasAutoSubmittedRef.current = true;
-    handleProceedToStartDrive();
+    void handleProceedToStartDrive();
   }, [verificationMethod, isOtpComplete, otpMatches, qrConfirmed, verificationLocked]);
 
   useEffect(() => {
