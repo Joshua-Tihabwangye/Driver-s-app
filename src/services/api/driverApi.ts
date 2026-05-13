@@ -466,7 +466,7 @@ export async function tripArrive(tripId: string) {
 export async function tripVerifyOtp(tripId: string, otp: string) {
   const token = readDriverBackendAccessToken();
   if (!isBackendAuthEnabled() || !token) return null;
-  return request<DriverBackendTripActionResult>(`/drivers/me/trips/${tripId}/verify`, {
+  return request<DriverBackendTripActionResult>(`/drivers/me/trips/${tripId}/verify-rider`, {
     method: "POST",
     headers: authHeaders(token),
     body: { otp },
@@ -523,7 +523,7 @@ export async function saveDriverTripSafetyState(tripId: string, payload: DriverB
 export async function requestTemporaryStop(tripId: string, note?: string) {
   const token = readDriverBackendAccessToken();
   if (!isBackendAuthEnabled() || !token) return null;
-  return request<DriverBackendTripSafetyState>(`/drivers/me/trips/${tripId}/safety/temporary-stop/request`, {
+  return request<DriverBackendTripSafetyState>(`/drivers/me/trips/${tripId}/temporary-stop/request`, {
     method: "POST",
     headers: authHeaders(token),
     body: note ? { note } : undefined,
@@ -533,7 +533,7 @@ export async function requestTemporaryStop(tripId: string, note?: string) {
 export async function respondTemporaryStop(tripId: string, decision: "confirm" | "decline") {
   const token = readDriverBackendAccessToken();
   if (!isBackendAuthEnabled() || !token) return null;
-  return request<DriverBackendTripSafetyState>(`/drivers/me/trips/${tripId}/safety/temporary-stop/respond`, {
+  return request<DriverBackendTripSafetyState>(`/drivers/me/trips/${tripId}/temporary-stop/respond`, {
     method: "POST",
     headers: authHeaders(token),
     body: { decision },
@@ -543,7 +543,7 @@ export async function respondTemporaryStop(tripId: string, decision: "confirm" |
 export async function resumeTemporaryStop(tripId: string) {
   const token = readDriverBackendAccessToken();
   if (!isBackendAuthEnabled() || !token) return null;
-  return request<DriverBackendTripSafetyState>(`/drivers/me/trips/${tripId}/safety/temporary-stop/resume`, {
+  return request<DriverBackendTripSafetyState>(`/drivers/me/trips/${tripId}/temporary-stop/resume`, {
     method: "POST",
     headers: authHeaders(token),
   });
@@ -562,7 +562,7 @@ export async function triggerTripSos(
 ) {
   const token = readDriverBackendAccessToken();
   if (!isBackendAuthEnabled() || !token) return null;
-  return request<DriverBackendTripSafetyState>(`/drivers/me/trips/${tripId}/safety/sos`, {
+  return request<DriverBackendTripSafetyState>(`/drivers/me/trips/${tripId}/sos`, {
     method: "POST",
     headers: authHeaders(token),
     body: payload,
@@ -572,7 +572,7 @@ export async function triggerTripSos(
 export async function sendDriverLocationHeartbeat(input: DriverBackendLocationHeartbeatInput) {
   const token = readDriverBackendAccessToken();
   if (!isBackendAuthEnabled() || !token) return null;
-  return request<Record<string, unknown>>("/drivers/me/location/heartbeat", {
+  return request<Record<string, unknown>>("/locations/heartbeat", {
     method: "POST",
     headers: authHeaders(token),
     body: input,
@@ -697,7 +697,7 @@ export async function getDriverWalletSummary() {
 export async function listDriverWalletEvents() {
   const token = readDriverBackendAccessToken();
   if (!isBackendAuthEnabled() || !token) return [];
-  return request<DriverBackendWalletEvent[]>("/drivers/me/wallet/events", {
+  return request<DriverBackendWalletEvent[]>("/drivers/me/earnings/events", {
     method: "GET",
     headers: authHeaders(token),
   });
@@ -706,7 +706,7 @@ export async function listDriverWalletEvents() {
 export async function requestDriverCashout(input: DriverBackendCashoutRequestInput) {
   const token = readDriverBackendAccessToken();
   if (!isBackendAuthEnabled() || !token) return null;
-  return request<DriverBackendCashoutRequest>("/drivers/me/wallet/cashout", {
+  return request<DriverBackendCashoutRequest>("/drivers/me/cashout/requests", {
     method: "POST",
     headers: authHeaders(token),
     body: input,
@@ -716,7 +716,7 @@ export async function requestDriverCashout(input: DriverBackendCashoutRequestInp
 export async function listDriverCashoutRequests() {
   const token = readDriverBackendAccessToken();
   if (!isBackendAuthEnabled() || !token) return [];
-  return request<DriverBackendCashoutRequest[]>("/drivers/me/wallet/cashout", {
+  return request<DriverBackendCashoutRequest[]>("/drivers/me/cashout/requests", {
     method: "GET",
     headers: authHeaders(token),
   });

@@ -2014,7 +2014,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           setActiveRideRuntime(createDefaultActiveRideRuntime(null));
         }
       } catch (error) {
-        console.warn("Driver backend bootstrap failed. Keeping local state.", error);
+        console.warn("Driver backend bootstrap failed.", error);
+        setJobAccessError("Unable to sync with backend. Check server/database connection.");
       }
     };
 
@@ -2318,7 +2319,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setJobAccessError(null);
     if (shouldUseDriverBackendWrites()) {
       void setDriverPresenceOnline().catch((error) => {
-        console.warn("Driver backend online presence update failed. Keeping local state.", error);
+        console.warn("Driver backend online presence update failed.", error);
       });
     }
   }, []);
@@ -2327,7 +2328,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setDriverPresenceStatus("offline");
     if (shouldUseDriverBackendWrites()) {
       void setDriverPresenceOffline().catch((error) => {
-        console.warn("Driver backend offline presence update failed. Keeping local state.", error);
+        console.warn("Driver backend offline presence update failed.", error);
       });
     }
   }, []);
@@ -2498,7 +2499,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         city: patch.city,
         country: patch.country,
       }).catch((error) => {
-        console.warn("Driver backend profile update failed. Keeping local state.", error);
+        console.warn("Driver backend profile update failed.", error);
       });
     }
   }, []);
@@ -2514,7 +2515,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         serviceIds: patch.serviceIds,
         requirementIds: patch.requirementIds,
       }).catch((error) => {
-        console.warn("Driver backend preferences update failed. Keeping local state.", error);
+        console.warn("Driver backend preferences update failed.", error);
       });
     }
   }, []);
@@ -2554,7 +2555,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           );
         })
         .catch((error) => {
-          console.warn("Driver backend emergency contact create failed. Keeping local state.", error);
+          console.warn("Driver backend emergency contact create failed.", error);
         });
     }
   }, []);
@@ -2563,7 +2564,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setEmergencyContacts((prev) => prev.filter((c) => c.id !== id));
     if (shouldUseDriverBackendWrites()) {
       void deleteDriverEmergencyContact(id).catch((error) => {
-        console.warn("Driver backend emergency contact delete failed. Keeping local state.", error);
+        console.warn("Driver backend emergency contact delete failed.", error);
       });
     }
   }, []);
@@ -2578,7 +2579,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         phone: updated.phone,
         relationship: updated.relationship,
       }).catch((error) => {
-        console.warn("Driver backend emergency contact update failed. Keeping local state.", error);
+        console.warn("Driver backend emergency contact update failed.", error);
       });
     }
   }, []);
@@ -2896,7 +2897,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           setActiveRideRuntime(mapBackendSafetyStateToRuntime(state));
         })
         .catch((error) => {
-          console.warn("Driver backend temporary stop request failed. Keeping local state.", error);
+          console.warn("Driver backend temporary stop request failed.", error);
         });
     } else {
       setTimeout(() => {
@@ -2950,7 +2951,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           setActiveRideRuntime(mapBackendSafetyStateToRuntime(state));
         })
         .catch((error) => {
-          console.warn("Driver backend temporary stop response failed. Keeping local state.", error);
+          console.warn("Driver backend temporary stop response failed.", error);
         });
     }
     return true;
@@ -2987,7 +2988,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           setActiveRideRuntime(mapBackendSafetyStateToRuntime(state));
         })
         .catch((error) => {
-          console.warn("Driver backend temporary stop resume failed. Keeping local state.", error);
+          console.warn("Driver backend temporary stop resume failed.", error);
         });
     } else {
       setTimeout(() => {
@@ -3154,7 +3155,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           setActiveRideRuntime(mapBackendSafetyStateToRuntime(state));
         })
         .catch((error) => {
-          console.warn("Driver backend SOS dispatch failed. Keeping local state.", error);
+          console.warn("Driver backend SOS dispatch failed.", error);
         });
     }
     
@@ -3279,15 +3280,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const tripId = activeTrip.tripId;
         if (nextStage === "arrived_pickup" || nextStage === "waiting_for_passenger") {
           void tripArrive(tripId).catch((error) => {
-            console.warn("Driver backend trip arrive failed. Keeping local state.", error);
+            console.warn("Driver backend trip arrive failed.", error);
+            setJobAccessError("Failed to sync trip arrival to backend.");
           });
         } else if (nextStage === "start_drive" || nextStage === "in_progress") {
           void tripStart(tripId).catch((error) => {
-            console.warn("Driver backend trip start failed. Keeping local state.", error);
+            console.warn("Driver backend trip start failed.", error);
+            setJobAccessError("Failed to sync trip start to backend.");
           });
         } else if (nextStage === "completed") {
           void tripComplete(tripId).catch((error) => {
-            console.warn("Driver backend trip complete failed. Keeping local state.", error);
+            console.warn("Driver backend trip complete failed.", error);
+            setJobAccessError("Failed to sync trip completion to backend.");
           });
         } else if (
           nextStage === "cancel_reason" ||
@@ -3301,7 +3305,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                 ? "driver_cancelled"
                 : "cancelled";
           void tripCancel(tripId, reason).catch((error) => {
-            console.warn("Driver backend trip cancel failed. Keeping local state.", error);
+            console.warn("Driver backend trip cancel failed.", error);
+            setJobAccessError("Failed to sync trip cancellation to backend.");
           });
         }
       }
@@ -3431,7 +3436,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
     if (shouldUseDriverBackendWrites()) {
       void tripComplete(tripId).catch((error) => {
-        console.warn("Driver backend trip complete failed. Keeping local state.", error);
+        console.warn("Driver backend trip complete failed.", error);
       });
     }
 
@@ -3503,7 +3508,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const reason =
         resolvedReasonStage === "cancel_no_show" ? "passenger_no_show" : "driver_cancelled";
       void tripCancel(tripId, reason).catch((error) => {
-        console.warn("Driver backend trip cancel failed. Keeping local state.", error);
+        console.warn("Driver backend trip cancel failed.", error);
       });
     }
 
@@ -3527,7 +3532,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         status: patch.status as "active" | "inactive" | "maintenance" | undefined,
         accessories: patch.accessories,
       }).catch((error) => {
-        console.warn("Driver backend vehicle update failed. Keeping local state.", error);
+        console.warn("Driver backend vehicle update failed.", error);
       });
     }
   }, []);
@@ -3547,7 +3552,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         status: vehicle.status as "active" | "inactive" | "maintenance" | undefined,
         accessories: resolveAccessoriesForVehicle(vehicle.type, vehicle.accessories),
       }).catch((error) => {
-        console.warn("Driver backend vehicle create failed. Keeping local state.", error);
+        console.warn("Driver backend vehicle create failed.", error);
       });
     }
   }, []);
@@ -3556,7 +3561,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setVehicles((prev) => prev.filter((v) => v.id !== id));
     if (shouldUseDriverBackendWrites()) {
       void deleteDriverVehicle(id).catch((error) => {
-        console.warn("Driver backend vehicle delete failed. Keeping local state.", error);
+        console.warn("Driver backend vehicle delete failed.", error);
       });
     }
   }, []);
@@ -3627,11 +3632,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     if (shouldUseDriverBackendWrites()) {
       if (status === "attended") {
         void acceptDriverJob(id).catch((error) => {
-          console.warn("Driver backend job accept failed. Keeping local state.", error);
+          console.warn("Driver backend job accept failed.", error);
         });
       } else if (status === "cancelled") {
         void rejectDriverJob(id, "driver_rejected").catch((error) => {
-          console.warn("Driver backend job reject failed. Keeping local state.", error);
+          console.warn("Driver backend job reject failed.", error);
         });
       }
     }
@@ -3910,7 +3915,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
       if (shouldUseDriverBackendWrites()) {
         void acceptDriverJob(jobId).catch((error) => {
-          console.warn("Driver backend job accept failed. Keeping local state.", error);
+          console.warn("Driver backend job accept failed.", error);
         });
       }
 
@@ -3978,7 +3983,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
       if (shouldUseDriverBackendWrites()) {
         void acceptDriverJob(jobId).catch((error) => {
-          console.warn("Driver backend job accept failed. Keeping local state.", error);
+          console.warn("Driver backend job accept failed.", error);
         });
       }
 
@@ -4272,7 +4277,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
       if (shouldUseDriverBackendWrites()) {
         void acceptDriverJob(jobId).catch((error) => {
-          console.warn("Driver backend job accept failed. Keeping local state.", error);
+          console.warn("Driver backend job accept failed.", error);
         });
       }
 
@@ -4350,7 +4355,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setActiveRideRuntime(createDefaultActiveRideRuntime(null));
       if (shouldUseDriverBackendWrites()) {
         void acceptDriverJob(jobId).catch((error) => {
-          console.warn("Driver backend job accept failed. Keeping local state.", error);
+          console.warn("Driver backend job accept failed.", error);
         });
       }
       return true;
@@ -4463,7 +4468,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
     if (shouldUseDriverBackendWrites()) {
       void tripComplete(activeSharedTrip.id).catch((error) => {
-        console.warn("Driver backend shared trip complete failed. Keeping local state.", error);
+        console.warn("Driver backend shared trip complete failed.", error);
       });
     }
 
