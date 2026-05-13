@@ -3,24 +3,25 @@ import {
   BatteryCharging,
   ChevronLeft,
   Layers3,
-  MapPin,
   Minus,
   Navigation,
   Plus,
   X,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { GoogleMap, MarkerF, OverlayViewF, TrafficLayer, useJsApiLoader } from "@react-google-maps/api";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { useStore } from "../context/StoreContext";
 
 type MapLayerMode = "default" | "terrain" | "night";
-
 type MarkerTone = "driver" | "danger" | "warning" | "station" | "neutral";
+type LatLng = { lat: number; lng: number };
 
 export type DriverMapMarker = {
   id: string;
-  positionClass: string;
+  positionClass?: string;
+  position?: LatLng;
   label?: string;
   icon?: LucideIcon;
   tone?: MarkerTone;
@@ -67,95 +68,63 @@ type DriverMapSurfaceProps = {
   children?: ReactNode;
 };
 
-function getToneClasses(tone: MarkerTone) {
-  if (tone === "danger") {
-    return {
-      marker: "bg-[#dc4d46] shadow-[#dc4d46]/30",
-      icon: "text-white",
-      label: "bg-[#dc4d46] text-white border-red-300/40",
-      halo: "bg-red-500/18",
-    };
-  }
-  if (tone === "warning") {
-    return {
-      marker: "bg-[#f2a72f] shadow-[#f2a72f]/30",
-      icon: "text-white",
-      label: "bg-[#f2a72f] text-white border-amber-300/40",
-      halo: "bg-amber-400/18",
-    };
-  }
-  if (tone === "station") {
-    return {
-      marker: "bg-[#45556f] shadow-slate-500/20",
-      icon: "text-white",
-      label: "bg-white text-slate-700 border-slate-200",
-      halo: "bg-slate-400/12",
-    };
-  }
-  if (tone === "neutral") {
-    return {
-      marker: "bg-white shadow-slate-400/20",
-      icon: "text-slate-700",
-      label: "bg-white text-slate-700 border-slate-200",
-      halo: "bg-slate-400/10",
-    };
-  }
-  return {
-    marker: "bg-[#14c8a8] shadow-[#14c8a8]/30",
-    icon: "text-white",
+type MarkerTonePalette = {
+  marker: string;
+  label: string;
+  color: string;
+};
+
+const DEFAULT_CENTER: LatLng = { lat: 0.3476, lng: 32.5825 };
+const LATITUDE_SPAN = 0.26;
+const LONGITUDE_SPAN = 0.3;
+const rawGoogleMapsKey = (import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "").trim();
+const googleMapsApiKey =
+  rawGoogleMapsKey && !/^https?:\/\//i.test(rawGoogleMapsKey) ? rawGoogleMapsKey : "";
+
+const NIGHT_MAP_STYLES: any[] = [
+  { elementType: "geometry", stylers: [{ color: "#1d2c4d" }] },
+  { elementType: "labels.text.fill", stylers: [{ color: "#8ec3b9" }] },
+  { elementType: "labels.text.stroke", stylers: [{ color: "#1a3646" }] },
+  { featureType: "road", elementType: "geometry", stylers: [{ color: "#304a7d" }] },
+  { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#1f365f" }] },
+  { featureType: "water", elementType: "geometry", stylers: [{ color: "#0e1626" }] },
+];
+
+const MARKER_STYLES: Record<MarkerTone, MarkerTonePalette> = {
+  danger: {
+    marker: "bg-[#dc4d46] shadow-[#dc4d46]/30 text-white",
+    label: "bg-[#dc4d46] text-white border-red-300/40",
+    color: "#dc4d46",
+  },
+  warning: {
+    marker: "bg-[#f2a72f] shadow-[#f2a72f]/30 text-white",
+    label: "bg-[#f2a72f] text-white border-amber-300/40",
+    color: "#f2a72f",
+  },
+  station: {
+    marker: "bg-[#45556f] shadow-slate-500/20 text-white",
+    label: "bg-white text-slate-700 border-slate-200",
+    color: "#45556f",
+  },
+  neutral: {
+    marker: "bg-white shadow-slate-400/20 text-slate-700",
+    label: "bg-white text-slate-700 border-slate-200",
+    color: "#64748b",
+  },
+  driver: {
+    marker: "bg-[#14c8a8] shadow-[#14c8a8]/30 text-white",
     label: "bg-white text-slate-700 border-emerald-200",
-    halo: "bg-cyan-400/14",
-  };
-}
+    color: "#14c8a8",
+  },
+};
 
 function getControlClasses(tone: ControlTone = "default", active = false) {
-  if (tone === "danger") {
-    return "bg-[#ef3b2d] text-white border-red-300/30 shadow-red-500/20";
-  }
-  if (tone === "dark") {
-    return "bg-[#1d2334] text-white border-slate-700/40 shadow-slate-900/20";
-  }
+  if (tone === "danger") return "bg-[#ef3b2d] text-white border-red-300/30 shadow-red-500/20";
+  if (tone === "dark") return "bg-[#1d2334] text-white border-slate-700/40 shadow-slate-900/20";
   if (tone === "accent" || active) {
     return "bg-[#b8f0e9] text-[#0f9c88] border-[#63d6c6] shadow-[#63d6c6]/20";
   }
   return "bg-white/96 text-slate-800 border-slate-200/90 shadow-slate-300/30";
-}
-
-function MapMarker({
-  positionClass,
-  label,
-  icon: Icon = MapPin,
-  tone = "neutral",
-  content,
-  markerClassName = "",
-  labelClassName = "",
-  iconClassName = "",
-}: DriverMapMarker) {
-  const palette = getToneClasses(tone);
-
-  return (
-    <div className={`absolute z-20 flex flex-col items-center ${positionClass}`}>
-      {content ? (
-        content
-      ) : (
-        <>
-          <div className={`absolute inset-0 rounded-full blur-md ${palette.halo}`} />
-          <div
-            className={`relative flex h-6 w-6 items-center justify-center rounded-full border-4 border-white shadow-xl ${palette.marker} ${markerClassName}`}
-          >
-            <Icon className={`h-3.5 w-3.5 ${palette.icon} ${iconClassName}`} />
-          </div>
-          {label ? (
-            <span
-              className={`mt-2 inline-flex items-center rounded-full border px-3 py-1 text-[8px] font-black uppercase tracking-[0.16em] shadow-lg ${palette.label} ${labelClassName}`}
-            >
-              {label}
-            </span>
-          ) : null}
-        </>
-      )}
-    </div>
-  );
 }
 
 function MapControlButton({
@@ -207,38 +176,80 @@ function ChipButton({
   );
 }
 
+function readPercent(className: string, edge: "left" | "right" | "top" | "bottom") {
+  const match = className.match(new RegExp(`${edge}-\\[(\\d+(?:\\.\\d+)?)%\\]`));
+  return match ? Number(match[1]) : null;
+}
+
+function clamp(value: number) {
+  return Math.min(0.98, Math.max(0.02, value));
+}
+
+function positionClassToLatLng(positionClass: string | undefined, center: LatLng): LatLng {
+  if (!positionClass) return center;
+
+  let x = 0.5;
+  let y = 0.5;
+
+  const left = readPercent(positionClass, "left");
+  const right = readPercent(positionClass, "right");
+  const top = readPercent(positionClass, "top");
+  const bottom = readPercent(positionClass, "bottom");
+
+  if (left !== null) x = left / 100;
+  if (right !== null) x = 1 - right / 100;
+  if (top !== null) y = top / 100;
+  if (bottom !== null) y = 1 - bottom / 100;
+  if (positionClass.includes("left-1/2") || positionClass.includes("-translate-x-1/2")) x = 0.5;
+  if (positionClass.includes("top-1/2") || positionClass.includes("-translate-y-1/2")) y = 0.5;
+
+  return {
+    lat: center.lat + (0.5 - clamp(y)) * LATITUDE_SPAN,
+    lng: center.lng + (clamp(x) - 0.5) * LONGITUDE_SPAN,
+  };
+}
+
+function toMapMarker(marker: DriverMapMarker, center: LatLng) {
+  const tone = marker.tone || "neutral";
+  return {
+    ...marker,
+    tone,
+    position: marker.position || positionClassToLatLng(marker.positionClass, center),
+  };
+}
+
 const DEFAULT_EV_STATION_MARKERS: DriverMapMarker[] = [
   {
     id: "evzone-hub-west",
-    positionClass: "left-[14%] top-[32%]",
+    position: { lat: 0.351, lng: 32.536 },
     tone: "station",
     label: "EVzone Hub",
     icon: BatteryCharging,
   },
   {
     id: "evzone-fastcharge-north",
-    positionClass: "left-[34%] top-[18%]",
+    position: { lat: 0.387, lng: 32.575 },
     tone: "station",
     label: "Fast Charge",
     icon: BatteryCharging,
   },
   {
     id: "evzone-central",
-    positionClass: "left-[52%] top-[52%]",
+    position: { lat: 0.329, lng: 32.59 },
     tone: "station",
     label: "EVzone Central",
     icon: BatteryCharging,
   },
   {
     id: "evzone-east",
-    positionClass: "right-[24%] top-[28%]",
+    position: { lat: 0.36, lng: 32.635 },
     tone: "station",
     label: "EVzone East",
     icon: BatteryCharging,
   },
   {
     id: "evzone-south",
-    positionClass: "right-[18%] bottom-[22%]",
+    position: { lat: 0.302, lng: 32.623 },
     tone: "station",
     label: "Charge Point",
     icon: BatteryCharging,
@@ -258,6 +269,8 @@ export default function DriverMapSurface({
   defaultBearing = 0,
   defaultLayer = "default",
   defaultTrafficOn = true,
+  defaultAlertsOn = true,
+  defaultStationsOn = true,
   floatingHint = null,
   topBadge,
   topRightSlot,
@@ -272,11 +285,18 @@ export default function DriverMapSurface({
   const [bearing, setBearing] = useState(defaultBearing);
   const [layer, setLayer] = useState<MapLayerMode>(defaultLayer);
   const [trafficOn, setTrafficOn] = useState(defaultTrafficOn);
-  const alertsOn = driverMapPreferences.alertsOn;
-  const stationsOn = driverMapPreferences.stationsOn;
-  const [alertCardVisible, setAlertCardVisible] = useState(driverMapPreferences.alertsOn);
+  const [center, setCenter] = useState<LatLng>(DEFAULT_CENTER);
+  const [mapRef, setMapRef] = useState<any>(null);
+  const alertsOn = driverMapPreferences.alertsOn ?? defaultAlertsOn;
+  const stationsOn = driverMapPreferences.stationsOn ?? defaultStationsOn;
+  const [alertCardVisible, setAlertCardVisible] = useState(alertsOn);
   const [isLocating, setIsLocating] = useState(false);
   const [hint, setHint] = useState<string | null>(floatingHint);
+
+  const { isLoaded, loadError } = useJsApiLoader({
+    id: "evzone-driver-google-map-script",
+    googleMapsApiKey,
+  });
 
   useEffect(() => {
     setHint(floatingHint);
@@ -289,16 +309,23 @@ export default function DriverMapSurface({
   }, [hint]);
 
   useEffect(() => {
-    if (alertsOn) {
-      setAlertCardVisible(true);
-    }
+    if (alertsOn) setAlertCardVisible(true);
   }, [alertsOn]);
 
-  const layerLabel = useMemo(() => {
-    if (layer === "terrain") return "terrain";
-    if (layer === "night") return "night";
-    return "default";
-  }, [layer]);
+  useEffect(() => {
+    if (!mapRef) return;
+    mapRef.setZoom(zoom);
+  }, [mapRef, zoom]);
+
+  useEffect(() => {
+    if (!mapRef) return;
+    const mapTypeId = layer === "terrain" ? "terrain" : "roadmap";
+    mapRef.setMapTypeId(mapTypeId);
+    mapRef.setOptions({
+      styles: layer === "night" ? NIGHT_MAP_STYLES : [],
+      heading: bearing,
+    });
+  }, [mapRef, layer, bearing]);
 
   const cycleLayer = () => {
     setLayer((current) => {
@@ -308,18 +335,43 @@ export default function DriverMapSurface({
     });
   };
 
-  const baseControls: DriverMapControl[] = [
+  const recenterToDevice = () => {
+    if (!navigator.geolocation) {
+      setHint("Location unavailable");
+      return;
+    }
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const nextCenter = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+        setCenter(nextCenter);
+        if (mapRef) mapRef.panTo(nextCenter);
+        setHint("Centered on your location");
+        setIsLocating(false);
+      },
+      () => {
+        setHint("Location permission blocked");
+        setIsLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 9000 }
+    );
+  };
+
+  const controls: DriverMapControl[] = [
     {
       id: "zoom-in",
       icon: Plus,
       ariaLabel: "Zoom in",
-      onClick: () => setZoom((current) => Math.min(current + 1, 18)),
+      onClick: () => setZoom((current) => Math.min(current + 1, 20)),
     },
     {
       id: "zoom-out",
       icon: Minus,
       ariaLabel: "Zoom out",
-      onClick: () => setZoom((current) => Math.max(current - 1, 8)),
+      onClick: () => setZoom((current) => Math.max(current - 1, 4)),
     },
     {
       id: "layer",
@@ -327,25 +379,130 @@ export default function DriverMapSurface({
       ariaLabel: "Cycle map layer",
       onClick: cycleLayer,
     },
+    {
+      id: "locate",
+      icon: Navigation,
+      ariaLabel: "Center map on my location",
+      onClick: recenterToDevice,
+      tone: "accent",
+    },
   ];
-  const controls = baseControls;
-  const visibleMarkers = useMemo(
+
+  const mergedMarkers = useMemo(
     () => (stationsOn ? [...markers, ...stationMarkers] : markers),
     [markers, stationMarkers, stationsOn]
   );
+
+  const visibleMarkers = useMemo(
+    () => mergedMarkers.map((marker) => toMapMarker(marker, center)),
+    [center, mergedMarkers]
+  );
+
+  const layerLabel = useMemo(() => {
+    if (layer === "terrain") return "terrain";
+    if (layer === "night") return "night";
+    return "default";
+  }, [layer]);
+
+  const hasUsableMapsKey = Boolean(googleMapsApiKey);
+  const canRenderGoogleMap = hasUsableMapsKey && isLoaded && !loadError;
 
   return (
     <section
       className={`relative overflow-hidden rounded-[2rem] border border-slate-200 bg-[#eff4fb] shadow-2xl ${heightClass} ${className}`}
     >
-      <div className="absolute inset-0 bg-[linear-gradient(130deg,rgba(190,241,230,0.85)_0%,rgba(220,236,248,0.95)_54%,rgba(235,242,250,0.98)_100%)]" />
-      <div className="absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(148,163,184,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.18)_1px,transparent_1px)] [background-size:28px_28px]" />
-      <div className="absolute inset-0 opacity-[0.22] [background-image:repeating-linear-gradient(55deg,transparent_0_92px,rgba(212,178,152,0.85)_92px_97px,transparent_97px_190px),repeating-linear-gradient(145deg,transparent_0_120px,rgba(224,207,176,0.75)_120px_125px,transparent_125px_220px)]" />
-      <div className="absolute left-[10%] top-[16%] h-[44%] w-[38%] rounded-full bg-emerald-300/20 blur-3xl" />
-      <div className="absolute right-[10%] top-[18%] h-[28%] w-[24%] rounded-full bg-orange-200/18 blur-3xl" />
+      <div className="absolute inset-0">
+        {canRenderGoogleMap ? (
+          <GoogleMap
+            mapContainerStyle={{ width: "100%", height: "100%" }}
+            center={center}
+            zoom={zoom}
+            onLoad={(map) => setMapRef(map)}
+            onUnmount={() => setMapRef(null)}
+            onZoomChanged={() => {
+              if (!mapRef) return;
+              const nextZoom = mapRef.getZoom();
+              if (typeof nextZoom === "number") setZoom(nextZoom);
+            }}
+            onCenterChanged={() => {
+              if (!mapRef) return;
+              const nextCenter = mapRef.getCenter();
+              if (!nextCenter) return;
+              setCenter({ lat: nextCenter.lat(), lng: nextCenter.lng() });
+            }}
+            options={{
+              disableDefaultUI: true,
+              clickableIcons: false,
+              gestureHandling: "greedy",
+              mapTypeControl: false,
+              fullscreenControl: false,
+              zoomControl: false,
+              streetViewControl: false,
+              mapTypeId: layer === "terrain" ? "terrain" : "roadmap",
+              styles: layer === "night" ? NIGHT_MAP_STYLES : [],
+            }}
+          >
+            {trafficOn ? <TrafficLayer /> : null}
+            {visibleMarkers.map((marker) => {
+              const palette = MARKER_STYLES[marker.tone || "neutral"];
+              const googleMaps = (window as any).google?.maps;
+              if (marker.content) {
+                return (
+                  <OverlayViewF
+                    key={marker.id}
+                    position={marker.position as LatLng}
+                    mapPaneName="overlayMouseTarget"
+                    getPixelPositionOffset={(width, height) => ({
+                      x: Math.round(-width / 2),
+                      y: Math.round(-height / 2),
+                    })}
+                  >
+                    <div>{marker.content}</div>
+                  </OverlayViewF>
+                );
+              }
+              return (
+                <MarkerF
+                  key={marker.id}
+                  position={marker.position as LatLng}
+                  label={
+                    marker.label
+                      ? {
+                          text: marker.label,
+                          color: "#1f2937",
+                          fontSize: "10px",
+                          fontWeight: "700",
+                        }
+                      : undefined
+                  }
+                  icon={
+                    googleMaps
+                      ? {
+                          path: googleMaps.SymbolPath.CIRCLE,
+                          scale: 8,
+                          fillColor: palette.color,
+                          fillOpacity: 1,
+                          strokeColor: "#ffffff",
+                          strokeOpacity: 1,
+                          strokeWeight: 2,
+                        }
+                      : undefined
+                  }
+                />
+              );
+            })}
+          </GoogleMap>
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(130deg,rgba(190,241,230,0.85)_0%,rgba(220,236,248,0.95)_54%,rgba(235,242,250,0.98)_100%)] p-4 text-center">
+            <p className="rounded-2xl border border-amber-300/70 bg-white/90 px-4 py-3 text-xs font-semibold text-slate-700 shadow-lg">
+              Google Maps is not loaded. Set a valid `VITE_GOOGLE_MAPS_API_KEY` to render live maps.
+            </p>
+          </div>
+        )}
+      </div>
 
       <div
-        className="absolute inset-0"
+        className="pointer-events-none absolute inset-0"
         style={{ transform: `rotate(${bearing}deg)`, transition: "transform 220ms ease" }}
       >
         <svg className="h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -395,10 +552,6 @@ export default function DriverMapSurface({
         ))}
       </div>
 
-      {visibleMarkers.map((marker) => (
-        <MapMarker key={marker.id} {...marker} />
-      ))}
-
       {children}
 
       {hint ? (
@@ -435,9 +588,7 @@ export default function DriverMapSurface({
               active={alertsOn}
               onClick={() => {
                 const next = !alertsOn;
-                if (next) {
-                  setAlertCardVisible(true);
-                }
+                if (next) setAlertCardVisible(true);
                 setMapAlertsEnabled(next);
               }}
             />
