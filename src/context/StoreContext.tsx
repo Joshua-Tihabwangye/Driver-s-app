@@ -17,7 +17,7 @@ import type {
 } from "../data/types";
 import { MOCK_EARNINGS, MOCK_COMPLETED_TRIPS, MOCK_SHARED_TRIPS, MOCK_DASHBOARD_STATS } from "../data/mockData";
 import { SAMPLE_IDS } from "../data/constants";
-import { BACKEND_FLAG_EVENT } from "../services/api/config";
+import { API_BASE_URL, BACKEND_FLAG_EVENT } from "../services/api/config";
 import { getAssignableJobTypesFromRoleConfig } from "../utils/taskCategories";
 import {
   areAllRequiredDocumentsCompliant,
@@ -451,7 +451,8 @@ const JOBS_STORAGE_KEY = "driver_jobs";
 const TRIPS_STORAGE_KEY = "driver_trips";
 const REVENUE_EVENTS_STORAGE_KEY = "driver_revenue_events";
 const TRIP_FEEDBACKS_STORAGE_KEY = "driver_trip_feedbacks";
-const AUTO_RESEED_REQUESTS = import.meta.env.VITE_AUTO_RESEED_REQUESTS !== "false";
+const DRIVER_BACKEND_ONLY_MODE = true;
+const AUTO_RESEED_REQUESTS = false;
 const REQUEST_RESEED_JOB_TYPES: readonly JobCategory[] = ["ride", "delivery"];
 const DOCUMENT_EXPIRED_API_ERROR =
   "Some of your documents have expired. You won't be able to receive job requests until you upload valid documents.";
@@ -829,6 +830,9 @@ function validateDriverRoleConfig(
 }
 
 function readStoredOnboardingCheckpoints(): OnboardingCheckpointState {
+  if (DRIVER_BACKEND_ONLY_MODE) {
+    return DEFAULT_ONBOARDING_CHECKPOINTS;
+  }
   if (typeof window === "undefined") {
     return DEFAULT_ONBOARDING_CHECKPOINTS;
   }
@@ -850,6 +854,9 @@ function readStoredOnboardingCheckpoints(): OnboardingCheckpointState {
 }
 
 function readStoredDriverRoleSelection(): DriverRoleUpdateInput {
+  if (DRIVER_BACKEND_ONLY_MODE) {
+    return fallback;
+  }
   const fallback: DriverRoleUpdateInput = {
     coreRole: "dual-mode",
     programs: { ...DEFAULT_PROGRAM_FLAGS },
@@ -898,6 +905,9 @@ function readStoredDriverRoleSelection(): DriverRoleUpdateInput {
 }
 
 function readStoredDriverProfile(): DriverProfile {
+  if (DRIVER_BACKEND_ONLY_MODE) {
+    return fallback;
+  }
   const fallback = createDefaultDriverProfile();
   if (typeof window === "undefined") {
     return fallback;
@@ -941,6 +951,9 @@ function readStoredDriverProfile(): DriverProfile {
 }
 
 function readStoredDriverPreferences(): DriverPreferences {
+  if (DRIVER_BACKEND_ONLY_MODE) {
+    return fallback;
+  }
   const fallback = createDefaultDriverPreferences();
   if (typeof window === "undefined") {
     return fallback;
@@ -984,6 +997,9 @@ function readStoredDriverPreferences(): DriverPreferences {
 }
 
 function readStoredVehicles(): Vehicle[] {
+  if (DRIVER_BACKEND_ONLY_MODE) {
+    return [];
+  }
   const resolveSingleVehicleDocument = (group: unknown) => {
     if (!group || typeof group !== "object") {
       return undefined;
@@ -1079,54 +1095,45 @@ function readStoredVehicles(): Vehicle[] {
 }
 
 function readStoredJobs(): Job[] {
-  // In development mode, we always want the initial mock job requests 
-  // to be displayed on refresh to help with workflow refinement.
-  const isDev = import.meta.env.DEV;
-
-  if (typeof window === "undefined") {
-    return [...initialJobs];
+  if (DRIVER_BACKEND_ONLY_MODE || typeof window === "undefined") {
+    return [];
   }
 
   try {
     const raw = window.localStorage.getItem(JOBS_STORAGE_KEY);
-    if (!raw || isDev) {
-      return [...initialJobs];
+    if (!raw) {
+      return [];
     }
 
     const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed) || parsed.length === 0) {
-      return [...initialJobs];
-    }
-
-    return parsed as Job[];
+    return Array.isArray(parsed) ? (parsed as Job[]) : [];
   } catch {
-    return [...initialJobs];
+    return [];
   }
 }
 
 function readStoredTrips(): TripRecord[] {
-  if (typeof window === "undefined") {
-    return [...MOCK_COMPLETED_TRIPS];
+  if (DRIVER_BACKEND_ONLY_MODE || typeof window === "undefined") {
+    return [];
   }
 
   try {
     const raw = window.localStorage.getItem(TRIPS_STORAGE_KEY);
     if (!raw) {
-      return [...MOCK_COMPLETED_TRIPS];
+      return [];
     }
 
     const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) {
-      return [...MOCK_COMPLETED_TRIPS];
-    }
-
-    return parsed as TripRecord[];
+    return Array.isArray(parsed) ? (parsed as TripRecord[]) : [];
   } catch {
-    return [...MOCK_COMPLETED_TRIPS];
+    return [];
   }
 }
 
 function readStoredRevenueEvents(sourceTrips: TripRecord[]): RevenueEvent[] {
+  if (DRIVER_BACKEND_ONLY_MODE) {
+    return [];
+  }
   const fallback = buildSeedRevenueEventsFromTrips(sourceTrips);
 
   if (typeof window === "undefined") {
@@ -1175,6 +1182,9 @@ function buildFallbackTripFeedback(trip: TripRecord): TripFeedback {
 }
 
 function readStoredTripFeedbacks(sourceTrips: TripRecord[]): TripFeedback[] {
+  if (DRIVER_BACKEND_ONLY_MODE) {
+    return [];
+  }
   const fallback = sourceTrips.map((trip) => buildFallbackTripFeedback(trip));
 
   if (typeof window === "undefined") {
@@ -1232,6 +1242,9 @@ function readStoredTripFeedbacks(sourceTrips: TripRecord[]): TripFeedback[] {
 }
 
 function readStoredEmergencyContacts(): SharedContact[] {
+  if (DRIVER_BACKEND_ONLY_MODE) {
+    return [];
+  }
   if (typeof window === "undefined") {
     return [];
   }
@@ -1249,6 +1262,7 @@ function readStoredEmergencyContacts(): SharedContact[] {
 }
 
 function readStoredDraftVehicle(): Vehicle | null {
+  if (DRIVER_BACKEND_ONLY_MODE) return null;
   if (typeof window === "undefined") return null;
   try {
     const raw = window.localStorage.getItem(DRAFT_VEHICLE_STORAGE_KEY);
@@ -1279,6 +1293,9 @@ function readStoredDriverProfilePhoto(): string | null {
 }
 
 function readStoredDeliveryWorkflow(): DeliveryWorkflowState {
+  if (DRIVER_BACKEND_ONLY_MODE) {
+    return DEFAULT_DELIVERY_WORKFLOW;
+  }
   if (typeof window === "undefined") {
     return DEFAULT_DELIVERY_WORKFLOW;
   }
@@ -1300,6 +1317,9 @@ function readStoredDeliveryWorkflow(): DeliveryWorkflowState {
 }
 
 function readStoredSharedRidesEnabled(): boolean {
+  if (DRIVER_BACKEND_ONLY_MODE) {
+    return false;
+  }
   if (typeof window === "undefined") {
     return false;
   }
@@ -1313,6 +1333,9 @@ function readStoredSharedRidesEnabled(): boolean {
 }
 
 function readStoredDriverPresenceStatus(): DriverPresenceStatus {
+  if (DRIVER_BACKEND_ONLY_MODE) {
+    return "offline";
+  }
   if (typeof window === "undefined") {
     return "offline";
   }
@@ -1387,6 +1410,7 @@ function isJobCategory(value: unknown): value is JobCategory {
 
 
 function readStoredActiveRideRuntime(): ActiveRideRuntimeState {
+  if (DRIVER_BACKEND_ONLY_MODE) return DEFAULT_ACTIVE_RIDE_RUNTIME;
   if (typeof window === "undefined") return DEFAULT_ACTIVE_RIDE_RUNTIME;
   try {
     const raw = window.localStorage.getItem(ACTIVE_RIDE_RUNTIME_STORAGE_KEY);
@@ -1398,6 +1422,9 @@ function readStoredActiveRideRuntime(): ActiveRideRuntimeState {
 }
 
 function readStoredActiveTrip(): ActiveTripState {
+  if (DRIVER_BACKEND_ONLY_MODE) {
+    return DEFAULT_ACTIVE_TRIP;
+  }
   if (typeof window === "undefined") {
     return DEFAULT_ACTIVE_TRIP;
   }
@@ -1774,7 +1801,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [activeRideRuntime, setActiveRideRuntime] = useState<ActiveRideRuntimeState>(() => readStoredActiveRideRuntime());
 
   useEffect(() => {
-    if (typeof window === "undefined" || shouldUseDriverBackendWrites()) return;
+    if (typeof window === "undefined" || DRIVER_BACKEND_ONLY_MODE || shouldUseDriverBackendWrites()) return;
     try {
       window.localStorage.setItem(ACTIVE_RIDE_RUNTIME_STORAGE_KEY, JSON.stringify(activeRideRuntime));
     } catch (e) {
@@ -2107,20 +2134,60 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
 
     const socket = createDriverSocket();
+    const driverEventAliases: Record<string, string[]> = {
+      "job.offered": ["job.offer.new"],
+      "job.offer.new": ["job.offered"],
+      "trip.state.changed": [
+        "trip.driver.assigned",
+        "trip.driver.arriving",
+        "trip.arrived",
+        "trip.started",
+        "trip.completed",
+        "trip.cancelled",
+      ],
+      "trip.driver.assigned": ["trip.state.changed"],
+      "trip.driver.arriving": ["trip.state.changed"],
+      "trip.arrived": ["trip.state.changed"],
+      "trip.started": ["trip.state.changed"],
+      "trip.completed": ["trip.state.changed"],
+      "trip.cancelled": ["trip.state.changed"],
+    };
+    const normalizeDriverEvents = (events: string[]) => {
+      const normalized = new Set<string>();
+      events.forEach((eventName) => {
+        if (!eventName) return;
+        normalized.add(eventName);
+        (driverEventAliases[eventName] || []).forEach((alias) => normalized.add(alias));
+      });
+      return Array.from(normalized);
+    };
 
-    socket.on("job.offer.new", (payload: { jobId: string; pickup: string; dropoff: string; type: string; requestedAt: number }) => {
+    const handleJobOffered = (payload: {
+      jobId?: string;
+      tripId?: string;
+      pickup?: string;
+      dropoff?: string;
+      type?: string;
+      requestedAt?: number;
+      pickupLocation?: { lat?: number; lng?: number };
+      dropoffLocation?: { lat?: number; lng?: number };
+      fareEstimate?: number;
+      expiresAt?: number;
+    }) => {
+      const jobId = payload.jobId || payload.tripId;
+      if (!jobId) return;
       setJobs((prev) => {
-        const existingIndex = prev.findIndex((job) => job.id === payload.jobId);
+        const existingIndex = prev.findIndex((job) => job.id === jobId);
         const nextJob: Job = {
-          id: payload.jobId,
-          from: payload.pickup,
-          to: payload.dropoff,
+          id: jobId,
+          from: payload.pickup || "Pickup",
+          to: payload.dropoff || "Dropoff",
           distance: "TBD",
           duration: "TBD",
-          fare: "TBD",
-          jobType: mapBackendJobType(payload.type),
+          fare: payload.fareEstimate ? String(payload.fareEstimate) : "TBD",
+          jobType: mapBackendJobType(payload.type || "ride"),
           status: "pending",
-          requestedAt: payload.requestedAt,
+          requestedAt: payload.requestedAt || Date.now(),
         };
 
         if (existingIndex >= 0) {
@@ -2131,9 +2198,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
         return [nextJob, ...prev];
       });
-    });
+    };
 
-    socket.on("job.offer.updated", (payload: { jobId: string; status: string }) => {
+    const handleJobOfferUpdated = (payload: { jobId: string; status: string }) => {
       setJobs((prev) =>
         prev.map((job) =>
           job.id === payload.jobId
@@ -2144,56 +2211,133 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             : job,
         ),
       );
-    });
+    };
 
-    socket.onAny((eventName, payload: { tripId?: string; status?: string; updatedAt?: number }) => {
-      if (!payload?.tripId || !payload.status || !eventName.startsWith("trip.")) {
-        return;
-      }
+    const statusFromEventName: Record<string, string> = {
+      "trip.driver.assigned": "assigned",
+      "trip.driver.arriving": "driver_en_route",
+      "trip.arrived": "arrived",
+      "trip.started": "in_progress",
+      "trip.completed": "completed",
+      "trip.cancelled": "cancelled",
+    };
+
+    const handleTripStatusEvent = (
+      eventName: string,
+      payload: { tripId?: string; id?: string; newStatus?: string; status?: string; timestamp?: number; updatedAt?: number },
+    ) => {
+      const tripId = payload?.tripId || payload?.id;
+      const status = payload?.newStatus || payload?.status || statusFromEventName[eventName];
+      if (!tripId || !status) return;
+      const normalized = {
+        tripId,
+        status,
+        updatedAt: payload.timestamp ?? payload.updatedAt ?? Date.now(),
+      };
 
       setTrips((prev) =>
         prev.map((trip) =>
-          trip.id === payload.tripId
+          trip.id === normalized.tripId
             ? {
                 ...trip,
-                status: mapBackendTripStatus(payload.status),
+                status: mapBackendTripStatus(normalized.status),
               }
             : trip,
         ),
       );
 
       setActiveTrip((prev) => {
-        if (prev.tripId !== payload.tripId) {
+        if (prev.tripId !== normalized.tripId) {
           return prev;
         }
 
         return {
           ...prev,
-          stage: mapBackendTripStage(payload.status),
+          stage: mapBackendTripStage(normalized.status),
           status:
-            payload.status === "completed"
+            normalized.status === "completed"
               ? "completed"
-              : payload.status === "cancelled"
+              : normalized.status === "cancelled"
                 ? "cancelled"
                 : "in_progress",
           timestamps: {
             ...prev.timestamps,
-            updatedAt: payload.updatedAt ?? Date.now(),
-            arrivedAt: payload.status === "arrived" ? payload.updatedAt ?? Date.now() : prev.timestamps.arrivedAt,
-            startedAt:
-              payload.status === "in_progress" ? payload.updatedAt ?? Date.now() : prev.timestamps.startedAt,
-            completedAt:
-              payload.status === "completed" ? payload.updatedAt ?? Date.now() : prev.timestamps.completedAt,
-            cancelledAt:
-              payload.status === "cancelled" ? payload.updatedAt ?? Date.now() : prev.timestamps.cancelledAt,
+            updatedAt: normalized.updatedAt,
           },
         };
       });
-    });
+    };
 
-    socket.connect();
+    let cancelled = false;
+    let jobOfferedEvents = normalizeDriverEvents(["job.offered"]);
+    let jobOfferUpdatedEvents = normalizeDriverEvents(["job.offer.updated"]);
+    let tripStatusEvents = normalizeDriverEvents(["trip.state.changed"]);
+
+    const bootstrapRealtime = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/compat/realtime/events`);
+        if (response.ok) {
+          const payload = await response.json();
+          const data = (payload?.data || payload) as { driver?: { server?: Record<string, string> } };
+          const backendEvents = Object.values(data?.driver?.server || {}).filter(
+            (value): value is string => typeof value === "string" && value.length > 0,
+          );
+          if (backendEvents.length > 0) {
+            jobOfferedEvents = normalizeDriverEvents(
+              backendEvents.filter((eventName) => eventName.includes("job.offer") || eventName === "job.offered"),
+            );
+            jobOfferUpdatedEvents = normalizeDriverEvents(
+              backendEvents.filter((eventName) => eventName === "job.offer.updated"),
+            );
+            tripStatusEvents = normalizeDriverEvents(
+              backendEvents.filter((eventName) => eventName.startsWith("trip.")),
+            );
+            if (jobOfferedEvents.length === 0) {
+              jobOfferedEvents = normalizeDriverEvents(["job.offered"]);
+            }
+            if (jobOfferUpdatedEvents.length === 0) {
+              jobOfferUpdatedEvents = normalizeDriverEvents(["job.offer.updated"]);
+            }
+            if (tripStatusEvents.length === 0) {
+              tripStatusEvents = normalizeDriverEvents(["trip.state.changed"]);
+            }
+          }
+        }
+      } catch {
+        // Keep default normalized event sets when contract fetch fails.
+      }
+
+      if (!cancelled) {
+        jobOfferedEvents.forEach((eventName) => {
+          socket.on(eventName, handleJobOffered);
+        });
+        jobOfferUpdatedEvents.forEach((eventName) => {
+          socket.on(eventName, handleJobOfferUpdated);
+        });
+        tripStatusEvents.forEach((eventName) => {
+          socket.on(
+            eventName,
+            (payload: { tripId?: string; id?: string; newStatus?: string; status?: string; timestamp?: number; updatedAt?: number }) =>
+              handleTripStatusEvent(eventName, payload || {}),
+          );
+        });
+        socket.connect();
+      }
+    };
+
+    void bootstrapRealtime();
 
     return () => {
+      cancelled = true;
+      jobOfferedEvents.forEach((eventName) => {
+        socket.off(eventName, handleJobOffered);
+      });
+      jobOfferUpdatedEvents.forEach((eventName) => {
+        socket.off(eventName, handleJobOfferUpdated);
+      });
+      tripStatusEvents.forEach((eventName) => {
+        socket.off(eventName);
+      });
       socket.disconnect();
     };
   }, [driverBackendEnabled]);
@@ -2600,7 +2744,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     onboardingBlockers[0]?.route || "/driver/dashboard/offline";
 
   useEffect(() => {
-    if (typeof window === "undefined") {
+    if (typeof window === "undefined" || DRIVER_BACKEND_ONLY_MODE) {
       return;
     }
 
@@ -2615,7 +2759,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [onboardingCheckpoints]);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
+    if (typeof window === "undefined" || DRIVER_BACKEND_ONLY_MODE) {
       return;
     }
 
@@ -2630,7 +2774,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [driverRoleSelection]);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
+    if (typeof window === "undefined" || DRIVER_BACKEND_ONLY_MODE) {
       return;
     }
 
@@ -2645,7 +2789,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [deliveryWorkflow]);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
+    if (typeof window === "undefined" || DRIVER_BACKEND_ONLY_MODE) {
       return;
     }
 
@@ -2660,7 +2804,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [sharedRidesEnabled]);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
+    if (typeof window === "undefined" || DRIVER_BACKEND_ONLY_MODE) {
       return;
     }
 
@@ -2675,7 +2819,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [activeTrip, driverBackendEnabled]);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
+    if (typeof window === "undefined" || DRIVER_BACKEND_ONLY_MODE) {
       return;
     }
 
@@ -2690,7 +2834,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [driverProfile]);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
+    if (typeof window === "undefined" || DRIVER_BACKEND_ONLY_MODE) {
       return;
     }
 
@@ -2705,7 +2849,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [driverPreferences]);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
+    if (typeof window === "undefined" || DRIVER_BACKEND_ONLY_MODE) {
       return;
     }
 
@@ -3033,7 +3177,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                 triggeredAt: timestamp,
                 triggeredByStationary: true,
             };
-            if (!shouldUseDriverBackendWrites()) {
+            if (!DRIVER_BACKEND_ONLY_MODE && !shouldUseDriverBackendWrites()) {
               setTimeout(() => {
                 window.localStorage.setItem('evzone_active_ride_safety_check', JSON.stringify({ tripId: activeTrip.tripId, ts: Date.now() }));
               }, 50);
@@ -3045,7 +3189,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                 driverAction: null,
                 passengerAction: null,
             };
-            if (!shouldUseDriverBackendWrites()) {
+            if (!DRIVER_BACKEND_ONLY_MODE && !shouldUseDriverBackendWrites()) {
               setTimeout(() => {
                 window.localStorage.setItem('evzone_active_ride_safety_resume', JSON.stringify({ tripId: activeTrip.tripId, ts: Date.now() }));
               }, 50);
@@ -3120,7 +3264,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         if (actor === "driver") {
             newCheckState.driverAction = action;
             if (action === "okay") {
-                if (!shouldUseDriverBackendWrites()) {
+                if (!DRIVER_BACKEND_ONLY_MODE && !shouldUseDriverBackendWrites()) {
                   setTimeout(() => {
                     window.localStorage.setItem('evzone_active_ride_safety_driver_okay', JSON.stringify({ tripId: activeTrip.tripId, ts: now }));
                   }, 50);
