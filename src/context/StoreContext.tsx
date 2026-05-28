@@ -854,15 +854,12 @@ function readStoredOnboardingCheckpoints(): OnboardingCheckpointState {
 }
 
 function readStoredDriverRoleSelection(): DriverRoleUpdateInput {
-  if (DRIVER_BACKEND_ONLY_MODE) {
-    return fallback;
-  }
   const fallback: DriverRoleUpdateInput = {
     coreRole: "dual-mode",
     programs: { ...DEFAULT_PROGRAM_FLAGS },
   };
 
-  if (typeof window === "undefined") {
+  if (DRIVER_BACKEND_ONLY_MODE || typeof window === "undefined") {
     return fallback;
   }
 
@@ -905,11 +902,8 @@ function readStoredDriverRoleSelection(): DriverRoleUpdateInput {
 }
 
 function readStoredDriverProfile(): DriverProfile {
-  if (DRIVER_BACKEND_ONLY_MODE) {
-    return fallback;
-  }
   const fallback = createDefaultDriverProfile();
-  if (typeof window === "undefined") {
+  if (DRIVER_BACKEND_ONLY_MODE || typeof window === "undefined") {
     return fallback;
   }
 
@@ -951,11 +945,8 @@ function readStoredDriverProfile(): DriverProfile {
 }
 
 function readStoredDriverPreferences(): DriverPreferences {
-  if (DRIVER_BACKEND_ONLY_MODE) {
-    return fallback;
-  }
   const fallback = createDefaultDriverPreferences();
-  if (typeof window === "undefined") {
+  if (DRIVER_BACKEND_ONLY_MODE || typeof window === "undefined") {
     return fallback;
   }
 
@@ -2866,7 +2857,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [driverProfilePhoto]);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || DRIVER_BACKEND_ONLY_MODE) return;
     try {
       window.localStorage.setItem(VEHICLES_STORAGE_KEY, JSON.stringify(vehicles));
     } catch (e) {
@@ -2875,7 +2866,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [vehicles]);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || DRIVER_BACKEND_ONLY_MODE) return;
     try {
       window.localStorage.setItem(EMERGENCY_CONTACTS_STORAGE_KEY, JSON.stringify(emergencyContacts));
     } catch (e) {
@@ -2884,7 +2875,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [emergencyContacts]);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || DRIVER_BACKEND_ONLY_MODE) return;
     try {
       window.localStorage.setItem(DRIVER_PRESENCE_STORAGE_KEY, driverPresenceStatus);
     } catch (e) {
@@ -2893,7 +2884,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [driverPresenceStatus]);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || DRIVER_BACKEND_ONLY_MODE) return;
     try {
       if (draftVehicle) {
         window.localStorage.setItem(DRAFT_VEHICLE_STORAGE_KEY, JSON.stringify(draftVehicle));
@@ -2906,7 +2897,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [draftVehicle]);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || DRIVER_BACKEND_ONLY_MODE) return;
     try {
       window.localStorage.setItem(JOBS_STORAGE_KEY, JSON.stringify(jobs));
     } catch (e) {
@@ -2915,7 +2906,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [jobs]);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || DRIVER_BACKEND_ONLY_MODE) return;
     try {
       window.localStorage.setItem(TRIPS_STORAGE_KEY, JSON.stringify(trips));
     } catch (e) {
@@ -2924,7 +2915,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [trips]);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || DRIVER_BACKEND_ONLY_MODE) return;
     try {
       window.localStorage.setItem(
         REVENUE_EVENTS_STORAGE_KEY,
@@ -2936,7 +2927,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [revenueEvents]);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || DRIVER_BACKEND_ONLY_MODE) return;
     try {
       window.localStorage.setItem(
         TRIP_FEEDBACKS_STORAGE_KEY,
