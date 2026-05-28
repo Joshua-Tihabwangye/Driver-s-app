@@ -17,7 +17,6 @@ import type {
 } from "../data/types";
 import { MOCK_EARNINGS, MOCK_COMPLETED_TRIPS, MOCK_SHARED_TRIPS, MOCK_DASHBOARD_STATS } from "../data/mockData";
 import { SAMPLE_IDS } from "../data/constants";
-import { API_BASE_URL } from "../services/api/config";
 import { getAssignableJobTypesFromRoleConfig } from "../utils/taskCategories";
 import {
   areAllRequiredDocumentsCompliant,
@@ -29,14 +28,7 @@ import {
 import { OFFLINE_JOB_ACCESS_ERROR } from "../utils/offlineAccess";
 import {
   acceptDriverJob,
-  createDriverEmergencyContact,
   DriverBackendTripSafetyState,
-  createDriverVehicle,
-  deleteDriverEmergencyContact,
-  deleteDriverVehicle,
-  patchDriverPreferences,
-  patchDriverProfile,
-  patchDriverVehicle,
   rejectDriverJob,
   requestTemporaryStop,
   respondTemporaryStop,
@@ -51,12 +43,12 @@ import {
   tripCancel,
   tripComplete,
   tripStart,
-  updateDriverEmergencyContact as patchDriverEmergencyContact,
 } from "../services/api/driverApi";
-import { createDriverSocket } from "../services/driverSocket";
 import { useDriverBackendEnabled } from "./hooks/useDriverBackendEnabled";
 import { useDriverBackendBootstrapSync } from "./hooks/useDriverBackendBootstrapSync";
 import { useDriverLocalPersistence } from "./hooks/useDriverLocalPersistence";
+import { useDriverRealtimeSync } from "./hooks/useDriverRealtimeSync";
+import { useDriverProfileAndAssetsActions } from "./hooks/useDriverProfileAndAssetsActions";
 
 export interface DashboardMetrics {
   onlineTime: string;
@@ -1902,219 +1894,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     defaultActiveTrip: DEFAULT_ACTIVE_TRIP,
   });
 
-  useEffect(() => {
-    if (!driverBackendEnabled) {
-      return;
-    }
-
-    const socket = createDriverSocket();
-    const driverEventAliases: Record<string, string[]> = {
-      "job.offered": ["job.offer.new"],
-      "job.offer.new": ["job.offered"],
-      "trip.state.changed": [
-        "trip.driver.assigned",
-        "trip.driver.arriving",
-        "trip.arrived",
-        "trip.started",
-        "trip.completed",
-        "trip.cancelled",
-      ],
-      "trip.driver.assigned": ["trip.state.changed"],
-      "trip.driver.arriving": ["trip.state.changed"],
-      "trip.arrived": ["trip.state.changed"],
-      "trip.started": ["trip.state.changed"],
-      "trip.completed": ["trip.state.changed"],
-      "trip.cancelled": ["trip.state.changed"],
-    };
-    const normalizeDriverEvents = (events: string[]) => {
-      const normalized = new Set<string>();
-      events.forEach((eventName) => {
-        if (!eventName) return;
-        normalized.add(eventName);
-        (driverEventAliases[eventName] || []).forEach((alias) => normalized.add(alias));
-      });
-      return Array.from(normalized);
-    };
-
-    const handleJobOffered = (payload: {
-      jobId?: string;
-      tripId?: string;
-      pickup?: string;
-      dropoff?: string;
-      type?: string;
-      requestedAt?: number;
-      pickupLocation?: { lat?: number; lng?: number };
-      dropoffLocation?: { lat?: number; lng?: number };
-      fareEstimate?: number;
-      expiresAt?: number;
-    }) => {
-      const jobId = payload.jobId || payload.tripId;
-      if (!jobId) return;
-      setJobs((prev) => {
-        const existingIndex = prev.findIndex((job) => job.id === jobId);
-        const nextJob: Job = {
-          id: jobId,
-          from: payload.pickup || "Pickup",
-          to: payload.dropoff || "Dropoff",
-          distance: "TBD",
-          duration: "TBD",
-          fare: payload.fareEstimate ? String(payload.fareEstimate) : "TBD",
-          jobType: mapBackendJobType(payload.type || "ride"),
-          status: "pending",
-          requestedAt: payload.requestedAt || Date.now(),
-        };
-
-        if (existingIndex >= 0) {
-          const next = [...prev];
-          next[existingIndex] = nextJob;
-          return next;
-        }
-
-        return [nextJob, ...prev];
-      });
-    };
-
-    const handleJobOfferUpdated = (payload: { jobId: string; status: string }) => {
-      setJobs((prev) =>
-        prev.map((job) =>
-          job.id === payload.jobId
-            ? {
-                ...job,
-                status: mapBackendJobStatus(payload.status),
-              }
-            : job,
-        ),
-      );
-    };
-
-    const statusFromEventName: Record<string, string> = {
-      "trip.driver.assigned": "assigned",
-      "trip.driver.arriving": "driver_en_route",
-      "trip.arrived": "arrived",
-      "trip.started": "in_progress",
-      "trip.completed": "completed",
-      "trip.cancelled": "cancelled",
-    };
-
-    const handleTripStatusEvent = (
-      eventName: string,
-      payload: { tripId?: string; id?: string; newStatus?: string; status?: string; timestamp?: number; updatedAt?: number },
-    ) => {
-      const tripId = payload?.tripId || payload?.id;
-      const status = payload?.newStatus || payload?.status || statusFromEventName[eventName];
-      if (!tripId || !status) return;
-      const normalized = {
-        tripId,
-        status,
-        updatedAt: payload.timestamp ?? payload.updatedAt ?? Date.now(),
-      };
-
-      setTrips((prev) =>
-        prev.map((trip) =>
-          trip.id === normalized.tripId
-            ? {
-                ...trip,
-                status: mapBackendTripStatus(normalized.status),
-              }
-            : trip,
-        ),
-      );
-
-      setActiveTrip((prev) => {
-        if (prev.tripId !== normalized.tripId) {
-          return prev;
-        }
-
-        return {
-          ...prev,
-          stage: mapBackendTripStage(normalized.status),
-          status:
-            normalized.status === "completed"
-              ? "completed"
-              : normalized.status === "cancelled"
-                ? "cancelled"
-                : "in_progress",
-          timestamps: {
-            ...prev.timestamps,
-            updatedAt: normalized.updatedAt,
-          },
-        };
-      });
-    };
-
-    let cancelled = false;
-    let jobOfferedEvents = normalizeDriverEvents(["job.offered"]);
-    let jobOfferUpdatedEvents = normalizeDriverEvents(["job.offer.updated"]);
-    let tripStatusEvents = normalizeDriverEvents(["trip.state.changed"]);
-
-    const bootstrapRealtime = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/compat/realtime/events`);
-        if (response.ok) {
-          const payload = await response.json();
-          const data = (payload?.data || payload) as { driver?: { server?: Record<string, string> } };
-          const backendEvents = Object.values(data?.driver?.server || {}).filter(
-            (value): value is string => typeof value === "string" && value.length > 0,
-          );
-          if (backendEvents.length > 0) {
-            jobOfferedEvents = normalizeDriverEvents(
-              backendEvents.filter((eventName) => eventName.includes("job.offer") || eventName === "job.offered"),
-            );
-            jobOfferUpdatedEvents = normalizeDriverEvents(
-              backendEvents.filter((eventName) => eventName === "job.offer.updated"),
-            );
-            tripStatusEvents = normalizeDriverEvents(
-              backendEvents.filter((eventName) => eventName.startsWith("trip.")),
-            );
-            if (jobOfferedEvents.length === 0) {
-              jobOfferedEvents = normalizeDriverEvents(["job.offered"]);
-            }
-            if (jobOfferUpdatedEvents.length === 0) {
-              jobOfferUpdatedEvents = normalizeDriverEvents(["job.offer.updated"]);
-            }
-            if (tripStatusEvents.length === 0) {
-              tripStatusEvents = normalizeDriverEvents(["trip.state.changed"]);
-            }
-          }
-        }
-      } catch {
-        // Keep default normalized event sets when contract fetch fails.
-      }
-
-      if (!cancelled) {
-        jobOfferedEvents.forEach((eventName) => {
-          socket.on(eventName, handleJobOffered);
-        });
-        jobOfferUpdatedEvents.forEach((eventName) => {
-          socket.on(eventName, handleJobOfferUpdated);
-        });
-        tripStatusEvents.forEach((eventName) => {
-          socket.on(
-            eventName,
-            (payload: { tripId?: string; id?: string; newStatus?: string; status?: string; timestamp?: number; updatedAt?: number }) =>
-              handleTripStatusEvent(eventName, payload || {}),
-          );
-        });
-        socket.connect();
-      }
-    };
-
-    void bootstrapRealtime();
-
-    return () => {
-      cancelled = true;
-      jobOfferedEvents.forEach((eventName) => {
-        socket.off(eventName, handleJobOffered);
-      });
-      jobOfferUpdatedEvents.forEach((eventName) => {
-        socket.off(eventName, handleJobOfferUpdated);
-      });
-      tripStatusEvents.forEach((eventName) => {
-        socket.off(eventName);
-      });
-      socket.disconnect();
-    };
-  }, [driverBackendEnabled]);
+  useDriverRealtimeSync({
+    driverBackendEnabled,
+    setJobs,
+    setTrips,
+    setActiveTrip: setActiveTrip as any,
+    mapBackendJobType,
+    mapBackendJobStatus,
+    mapBackendTripStatus,
+    mapBackendTripStage,
+  });
 
   const setSelectedVehicleIndex = useCallback((index: number | null) => {
     setSelectedVehicleIndexState(index);
@@ -2405,102 +2194,22 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return true;
   }, [resolveJobAccessAttempt]);
 
-  const updateDriverProfile = useCallback((patch: Partial<DriverProfile>) => {
-    setDriverProfile((prev) => ({
-      ...prev,
-      ...patch,
-    }));
-    if (shouldUseDriverBackendWrites()) {
-      void patchDriverProfile({
-        fullName: patch.fullName,
-        phone: patch.phone,
-        city: patch.city,
-        country: patch.country,
-      }).catch((error) => {
-        console.warn("Driver backend profile update failed.", error);
-      });
-    }
-  }, []);
-
-  const updateDriverPreferences = useCallback((patch: Partial<DriverPreferences>) => {
-    setDriverPreferences((prev) => ({
-      ...prev,
-      ...patch,
-    }));
-    if (shouldUseDriverBackendWrites()) {
-      void patchDriverPreferences({
-        areaIds: patch.areaIds,
-        serviceIds: patch.serviceIds,
-        requirementIds: patch.requirementIds,
-      }).catch((error) => {
-        console.warn("Driver backend preferences update failed.", error);
-      });
-    }
-  }, []);
-
-  const addEmergencyContact = useCallback((contact: Omit<SharedContact, "id" | "createdAt">) => {
-    const tempId = `ec-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
-    const createdAt = Date.now();
-    setEmergencyContacts((prev) => [
-      ...prev,
-      {
-        ...contact,
-        id: tempId,
-        createdAt,
-      },
-    ]);
-
-    if (shouldUseDriverBackendWrites()) {
-      void createDriverEmergencyContact({
-        name: contact.name,
-        phone: contact.phone,
-        relationship: contact.relationship,
-      })
-        .then((backendContact) => {
-          if (!backendContact) return;
-          setEmergencyContacts((prev) =>
-            prev.map((entry) =>
-              entry.id === tempId
-                ? {
-                    ...entry,
-                    id: backendContact.id,
-                    name: backendContact.name,
-                    phone: backendContact.phone,
-                    relationship: backendContact.relationship,
-                  }
-                : entry,
-            ),
-          );
-        })
-        .catch((error) => {
-          console.warn("Driver backend emergency contact create failed.", error);
-        });
-    }
-  }, []);
-
-  const removeEmergencyContact = useCallback((id: string) => {
-    setEmergencyContacts((prev) => prev.filter((c) => c.id !== id));
-    if (shouldUseDriverBackendWrites()) {
-      void deleteDriverEmergencyContact(id).catch((error) => {
-        console.warn("Driver backend emergency contact delete failed.", error);
-      });
-    }
-  }, []);
-
-  const updateEmergencyContact = useCallback((updated: SharedContact) => {
-    setEmergencyContacts((prev) =>
-      prev.map((c) => (c.id === updated.id ? updated : c))
-    );
-    if (shouldUseDriverBackendWrites()) {
-      void patchDriverEmergencyContact(updated.id, {
-        name: updated.name,
-        phone: updated.phone,
-        relationship: updated.relationship,
-      }).catch((error) => {
-        console.warn("Driver backend emergency contact update failed.", error);
-      });
-    }
-  }, []);
+  const {
+    updateDriverProfile,
+    updateDriverPreferences,
+    addEmergencyContact,
+    removeEmergencyContact,
+    updateEmergencyContact,
+    updateVehicle,
+    addVehicle,
+    deleteVehicle,
+  } = useDriverProfileAndAssetsActions({
+    setDriverProfile,
+    setDriverPreferences,
+    setEmergencyContacts,
+    setVehicles,
+    resolveAccessoriesForVehicle,
+  });
 
   const onboardingBlockers = useMemo<OnboardingBlocker[]>(
     () =>
@@ -3271,52 +2980,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const clearActiveTrip = useCallback(() => {
     setActiveTrip(DEFAULT_ACTIVE_TRIP);
     setActiveRideRuntime(createDefaultActiveRideRuntime(null));
-  }, []);
-
-  const updateVehicle = useCallback((id: string, patch: Partial<Vehicle>) => {
-    setVehicles((prev) => prev.map((v) => (v.id === id ? { ...v, ...patch } : v)));
-    if (shouldUseDriverBackendWrites()) {
-      void patchDriverVehicle(id, {
-        make: patch.make,
-        model: patch.model,
-        year: patch.year,
-        plate: patch.plate,
-        type: patch.type,
-        status: patch.status as "active" | "inactive" | "maintenance" | undefined,
-        accessories: patch.accessories,
-      }).catch((error) => {
-        console.warn("Driver backend vehicle update failed.", error);
-      });
-    }
-  }, []);
-
-  const addVehicle = useCallback((vehicle: Vehicle) => {
-    setVehicles((prev) => [...prev, {
-      ...vehicle,
-      accessories: resolveAccessoriesForVehicle(vehicle.type, vehicle.accessories),
-    }]);
-    if (shouldUseDriverBackendWrites()) {
-      void createDriverVehicle({
-        make: vehicle.make,
-        model: vehicle.model,
-        year: vehicle.year,
-        plate: vehicle.plate,
-        type: vehicle.type,
-        status: vehicle.status as "active" | "inactive" | "maintenance" | undefined,
-        accessories: resolveAccessoriesForVehicle(vehicle.type, vehicle.accessories),
-      }).catch((error) => {
-        console.warn("Driver backend vehicle create failed.", error);
-      });
-    }
-  }, []);
-
-  const deleteVehicle = useCallback((id: string) => {
-    setVehicles((prev) => prev.filter((v) => v.id !== id));
-    if (shouldUseDriverBackendWrites()) {
-      void deleteDriverVehicle(id).catch((error) => {
-        console.warn("Driver backend vehicle delete failed.", error);
-      });
-    }
   }, []);
 
   const toggleVehicleAccessory = useCallback((vehicleId: string, accessoryName: string) => {
