@@ -1,5 +1,5 @@
 import { isBackendAuthEnabled } from "./authApi";
-import { configureHttpClientAuth, request, type TokenRefreshResult } from "./httpClient";
+import { request, configureHttpClientAuth, type TokenRefreshResult } from "@shared/config/src/httpClient";
 
 const AUTH_STORAGE_KEY = "isLoggedIn";
 const AUTH_USER_STORAGE_KEY = "evz_auth_user";
