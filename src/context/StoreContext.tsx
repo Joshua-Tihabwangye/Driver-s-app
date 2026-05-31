@@ -1938,17 +1938,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   }, [selectedVehicleIndex, vehicles.length, setSelectedVehicleIndex]);
 
-  // Keep vehicleReady in sync with selectedVehicleIndex and actual vehicle list.
+  // Keep vehicleReady in sync with selected vehicle/local flow, or backend vehicle records.
   useEffect(() => {
-    const hasVehicle =
+    const hasSelectedVehicle =
       selectedVehicleIndex !== null &&
       selectedVehicleIndex >= 0 &&
       selectedVehicleIndex < vehicles.length;
+    const hasAnyVehicle = vehicles.length > 0;
+    const nextVehicleReady = driverBackendEnabled ? hasAnyVehicle : hasSelectedVehicle;
+
     setOnboardingCheckpoints((prev) => {
-      if (prev.vehicleReady === hasVehicle) return prev;
-      return { ...prev, vehicleReady: hasVehicle };
+      if (prev.vehicleReady === nextVehicleReady) return prev;
+      return { ...prev, vehicleReady: nextVehicleReady };
     });
-  }, [selectedVehicleIndex, vehicles.length]);
+  }, [driverBackendEnabled, selectedVehicleIndex, vehicles.length]);
 
   // Emergency contact readiness requires at least one contact.
   useEffect(() => {

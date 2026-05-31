@@ -21,6 +21,7 @@ import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import StatusChip from "../components/StatusChip";
 import { useStore } from "../context/StoreContext";
+import { useDriverBackendEnabled } from "../context/hooks/useDriverBackendEnabled";
 import {
   areAllRequiredDocumentsCompliant,
   getDocumentExpiryStatus,
@@ -75,8 +76,47 @@ function createSocialLinkEntry(): SocialLinkEntry {
   };
 }
 
+const SOCIAL_LINKS_STORAGE_KEY = "driver_social_links";
+
+function readStoredSocialLinks(): SocialLinkEntry[] {
+  if (typeof window === "undefined") {
+    return [createSocialLinkEntry()];
+  }
+
+  try {
+    const raw = window.localStorage.getItem(SOCIAL_LINKS_STORAGE_KEY);
+    if (!raw) {
+      return [createSocialLinkEntry()];
+    }
+
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      return [createSocialLinkEntry()];
+    }
+
+    const normalized = parsed
+      .map((entry: any) => ({
+        id: typeof entry?.id === "string" && entry.id.trim().length > 0 ? entry.id : createSocialLinkEntry().id,
+        platform: typeof entry?.platform === "string" ? entry.platform : "",
+        username: typeof entry?.username === "string" ? entry.username : "",
+        url: typeof entry?.url === "string" ? entry.url : "",
+      }))
+      .filter((entry: SocialLinkEntry) =>
+        entry.platform.trim().length > 0 ||
+        entry.username.trim().length > 0 ||
+        entry.url.trim().length > 0
+      );
+
+    return normalized.length > 0 ? normalized : [createSocialLinkEntry()];
+  } catch {
+    return [createSocialLinkEntry()];
+  }
+}
+
+
 export default function DriverProfileOnboarding() {
   const navigate = useNavigate();
+  const driverBackendEnabled = useDriverBackendEnabled();
   const {
     canGoOnline,
     assignableJobTypes,
@@ -104,7 +144,7 @@ export default function DriverProfileOnboarding() {
    const [isSocialEditorOpen, setIsSocialEditorOpen] = useState(false);
    const [isSubmitting, setIsSubmitting] = useState(false);
    const [isInfoBreakdownsOpen, setIsInfoBreakdownsOpen] = useState(false);
-   const [socialLinks, setSocialLinks] = useState<SocialLinkEntry[]>([createSocialLinkEntry()]);
+   const [socialLinks, setSocialLinks] = useState<SocialLinkEntry[]>(() => readStoredSocialLinks());
    const driverDisplayName =
     driverProfile.fullName.trim().length > 0 ? driverProfile.fullName.trim() : "Driver";
   const driverCityLabel =
@@ -162,8 +202,11 @@ export default function DriverProfileOnboarding() {
   };
 
    useEffect(() => {
+     if (driverBackendEnabled) {
+       return;
+     }
      setOnboardingCheckpoint("documentsVerified", documentsComplete);
-   }, [documentsComplete, setOnboardingCheckpoint]);
+   }, [documentsComplete, driverBackendEnabled, setOnboardingCheckpoint]);
 
    const vehicleReady = onboardingCheckpoints.vehicleReady;
 
@@ -308,7 +351,7 @@ export default function DriverProfileOnboarding() {
               if (missingNames.length <= 2) return `${missingNames.join(" and ")} is missing.`;
               return `${missingNames.length} document sides are still missing. Check list below.`;
             })(),
-        present: onboardingCheckpoints.documentsVerified,
+        present: onboardingCheckpoints.documentsVerified || documentsComplete,
         route: "/driver/onboarding/profile/documents/upload",
       },
       {
@@ -330,7 +373,7 @@ export default function DriverProfileOnboarding() {
               if (selectedVehicleIndex === null) return "Vehicle selected but not set as active.";
               return "Vehicle setup incomplete.";
             })(),
-        present: onboardingCheckpoints.vehicleReady,
+        present: onboardingCheckpoints.vehicleReady || vehicles.length > 0,
         route: "/driver/vehicles",
       },
       {
@@ -398,6 +441,21 @@ export default function DriverProfileOnboarding() {
       ).length,
     [socialLinks]
   );
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    try {
+      window.localStorage.setItem(
+        SOCIAL_LINKS_STORAGE_KEY,
+        JSON.stringify(socialLinks)
+      );
+    } catch (error) {
+      console.warn("Failed to persist social links:", error);
+    }
+  }, [socialLinks]);
 
   const updateSocialLink = (
     id: string,

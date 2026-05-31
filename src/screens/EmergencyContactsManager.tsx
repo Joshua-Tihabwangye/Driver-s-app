@@ -142,6 +142,7 @@ export default function EmergencyContactsManager() {
     }
 
     resetForm();
+    navigate("/driver/onboarding/profile", { replace: true });
   };
 
   return (
