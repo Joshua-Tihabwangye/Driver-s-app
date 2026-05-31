@@ -241,20 +241,36 @@ function authHeaders(token: string): Record<string, string> {
   return { Authorization: `Bearer ${token}` };
 }
 
+function sanitizeStoredToken(raw: string | null): string | null {
+  const normalized = raw?.trim();
+  if (!normalized || normalized === "undefined" || normalized === "null") {
+    return null;
+  }
+  return normalized;
+}
+
 export function readDriverBackendAccessToken(): string | null {
   if (typeof window === "undefined") return null;
-  return window.localStorage.getItem(DRIVER_BACKEND_ACCESS_TOKEN_KEY);
+  return sanitizeStoredToken(window.localStorage.getItem(DRIVER_BACKEND_ACCESS_TOKEN_KEY));
 }
 
 export function readDriverBackendRefreshToken(): string | null {
   if (typeof window === "undefined") return null;
-  return window.localStorage.getItem(DRIVER_BACKEND_REFRESH_TOKEN_KEY);
+  return sanitizeStoredToken(window.localStorage.getItem(DRIVER_BACKEND_REFRESH_TOKEN_KEY));
 }
 
 export function saveDriverBackendTokens(accessToken: string, refreshToken: string): void {
   if (typeof window === "undefined") return;
-  window.localStorage.setItem(DRIVER_BACKEND_ACCESS_TOKEN_KEY, accessToken);
-  window.localStorage.setItem(DRIVER_BACKEND_REFRESH_TOKEN_KEY, refreshToken);
+  const safeAccessToken = sanitizeStoredToken(accessToken);
+  const safeRefreshToken = sanitizeStoredToken(refreshToken);
+
+  if (!safeAccessToken || !safeRefreshToken) {
+    clearDriverBackendTokens();
+    return;
+  }
+
+  window.localStorage.setItem(DRIVER_BACKEND_ACCESS_TOKEN_KEY, safeAccessToken);
+  window.localStorage.setItem(DRIVER_BACKEND_REFRESH_TOKEN_KEY, safeRefreshToken);
   window.dispatchEvent(new CustomEvent(DRIVER_BACKEND_AUTH_EVENT));
 }
 

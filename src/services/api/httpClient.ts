@@ -5,6 +5,14 @@
 const BACKEND_URL =
   (import.meta.env.VITE_BACKEND_URL as string | undefined) ?? "http://localhost:3001/api/v1";
 
+interface ApiEnvelope<T> {
+  code?: string;
+  message?: string;
+  details?: unknown;
+  requestId?: string;
+  data?: T;
+}
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -35,8 +43,7 @@ export interface RequestOptions {
 // ---------------------------------------------------------------------------
 
 let _auth: HttpClientAuthConfig | null = null;
-let _isRefreshing = false;
-let _refreshQueue: Array<(token: string) => void> = [];
+let _inFlightRefresh: Promise<TokenRefreshResult> | null = null;
 
 // ---------------------------------------------------------------------------
 // Public API
@@ -55,10 +62,12 @@ export async function request<T = unknown>(
   const { method = "GET", headers = {}, body, retryOnUnauthorized = true } =
     options;
 
+  const accessToken = _auth?.getAccessToken();
   const res = await fetch(`${BACKEND_URL}${path}`, {
     method,
     headers: {
       "Content-Type": "application/json",
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
       ...headers,
     },
     ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
@@ -68,32 +77,37 @@ export async function request<T = unknown>(
     // Try a token refresh then retry the original request once.
     const newToken = await _tryRefresh();
     if (newToken) {
-      const retryRes = await fetch(`${BACKEND_URL}${path}`, {
-        method,
+      return request<T>(path, {
+        ...options,
+        retryOnUnauthorized: false,
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${newToken}`,
           ...headers,
+          Authorization: `Bearer ${newToken}`,
         },
-        ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
       });
-      if (!retryRes.ok) {
-        await _handleError(retryRes);
-      }
-      return retryRes.json() as Promise<T>;
     }
     // Refresh failed – session is gone.
     _auth?.onUnauthorized?.();
     throw new Error("Session expired");
   }
 
+  const raw = await res.text();
+  const parsed = _parseJson<ApiEnvelope<T>>(raw);
+
   if (!res.ok) {
-    await _handleError(res);
+    await _handleError(res, parsed);
   }
 
-  // 204 No Content
+  if (parsed && "data" in parsed && parsed.data !== undefined) {
+    return parsed.data;
+  }
+
+  if (parsed !== null) {
+    return parsed as unknown as T;
+  }
+
   if (res.status === 204) return undefined as unknown as T;
-  return res.json() as Promise<T>;
+  throw new Error("Empty response from server");
 }
 
 // ---------------------------------------------------------------------------
@@ -105,35 +119,36 @@ async function _tryRefresh(): Promise<string | null> {
   const refreshToken = _auth.getRefreshToken();
   if (!refreshToken) return null;
 
-  if (_isRefreshing) {
-    // Queue up callers while a refresh is already in flight.
-    return new Promise<string>((resolve) => {
-      _refreshQueue.push(resolve);
+  if (!_inFlightRefresh) {
+    _inFlightRefresh = _auth.refresh(refreshToken).finally(() => {
+      _inFlightRefresh = null;
     });
   }
 
-  _isRefreshing = true;
   try {
-    const result = await _auth.refresh(refreshToken);
+    const result = await _inFlightRefresh;
+    if (!result?.accessToken || !result?.refreshToken) {
+      _auth.clearSession();
+      return null;
+    }
     _auth.setTokens(result.accessToken, result.refreshToken);
-    _refreshQueue.forEach((cb) => cb(result.accessToken));
-    _refreshQueue = [];
     return result.accessToken;
   } catch {
     _auth.clearSession();
     return null;
-  } finally {
-    _isRefreshing = false;
   }
 }
 
-async function _handleError(res: Response): Promise<never> {
-  let message = `Request failed: ${res.status} ${res.statusText}`;
+function _parseJson<T>(text: string): T | null {
+  if (!text) return null;
   try {
-    const json = (await res.json()) as { message?: string };
-    if (json?.message) message = json.message;
+    return JSON.parse(text) as T;
   } catch {
-    /* ignore */
+    return null;
   }
+}
+
+async function _handleError(res: Response, parsed?: ApiEnvelope<unknown> | null): Promise<never> {
+  const message = parsed?.message || `Request failed: ${res.status} ${res.statusText}`;
   throw new Error(message);
 }
