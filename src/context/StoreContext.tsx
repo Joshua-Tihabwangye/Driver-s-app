@@ -17,7 +17,6 @@ import type {
 } from "../data/types";
 import { MOCK_EARNINGS, MOCK_COMPLETED_TRIPS, MOCK_SHARED_TRIPS, MOCK_DASHBOARD_STATS } from "../data/mockData";
 import { SAMPLE_IDS } from "../data/constants";
-import { BACKEND_FLAG_EVENT } from "../services/api/config";
 import { getAssignableJobTypesFromRoleConfig } from "../utils/taskCategories";
 import {
   areAllRequiredDocumentsCompliant,
@@ -29,24 +28,7 @@ import {
 import { OFFLINE_JOB_ACCESS_ERROR } from "../utils/offlineAccess";
 import {
   acceptDriverJob,
-  createDriverEmergencyContact,
-  getDriverActiveTrip,
-  getDriverOnboardingCheckpoints,
-  getDriverPreferences,
-  getDriverProfile,
-  getDriverTripSafetyState,
   DriverBackendTripSafetyState,
-  listDriverEmergencyContacts,
-  listDriverJobs,
-  listDriverTrips,
-  listDriverVehicles,
-  createDriverVehicle,
-  DRIVER_BACKEND_AUTH_EVENT,
-  deleteDriverEmergencyContact,
-  deleteDriverVehicle,
-  patchDriverPreferences,
-  patchDriverProfile,
-  patchDriverVehicle,
   rejectDriverJob,
   requestTemporaryStop,
   respondTemporaryStop,
@@ -61,9 +43,12 @@ import {
   tripCancel,
   tripComplete,
   tripStart,
-  updateDriverEmergencyContact as patchDriverEmergencyContact,
 } from "../services/api/driverApi";
-import { createDriverSocket } from "../services/driverSocket";
+import { useDriverBackendEnabled } from "./hooks/useDriverBackendEnabled";
+import { useDriverBackendBootstrapSync } from "./hooks/useDriverBackendBootstrapSync";
+import { useDriverLocalPersistence } from "./hooks/useDriverLocalPersistence";
+import { useDriverRealtimeSync } from "./hooks/useDriverRealtimeSync";
+import { useDriverProfileAndAssetsActions } from "./hooks/useDriverProfileAndAssetsActions";
 
 export interface DashboardMetrics {
   onlineTime: string;
@@ -451,7 +436,8 @@ const JOBS_STORAGE_KEY = "driver_jobs";
 const TRIPS_STORAGE_KEY = "driver_trips";
 const REVENUE_EVENTS_STORAGE_KEY = "driver_revenue_events";
 const TRIP_FEEDBACKS_STORAGE_KEY = "driver_trip_feedbacks";
-const AUTO_RESEED_REQUESTS = import.meta.env.VITE_AUTO_RESEED_REQUESTS !== "false";
+const DRIVER_BACKEND_ONLY_MODE = true;
+const AUTO_RESEED_REQUESTS = false;
 const REQUEST_RESEED_JOB_TYPES: readonly JobCategory[] = ["ride", "delivery"];
 const DOCUMENT_EXPIRED_API_ERROR =
   "Some of your documents have expired. You won't be able to receive job requests until you upload valid documents.";
@@ -829,6 +815,9 @@ function validateDriverRoleConfig(
 }
 
 function readStoredOnboardingCheckpoints(): OnboardingCheckpointState {
+  if (DRIVER_BACKEND_ONLY_MODE) {
+    return DEFAULT_ONBOARDING_CHECKPOINTS;
+  }
   if (typeof window === "undefined") {
     return DEFAULT_ONBOARDING_CHECKPOINTS;
   }
@@ -855,7 +844,7 @@ function readStoredDriverRoleSelection(): DriverRoleUpdateInput {
     programs: { ...DEFAULT_PROGRAM_FLAGS },
   };
 
-  if (typeof window === "undefined") {
+  if (DRIVER_BACKEND_ONLY_MODE || typeof window === "undefined") {
     return fallback;
   }
 
@@ -899,7 +888,7 @@ function readStoredDriverRoleSelection(): DriverRoleUpdateInput {
 
 function readStoredDriverProfile(): DriverProfile {
   const fallback = createDefaultDriverProfile();
-  if (typeof window === "undefined") {
+  if (DRIVER_BACKEND_ONLY_MODE || typeof window === "undefined") {
     return fallback;
   }
 
@@ -942,7 +931,7 @@ function readStoredDriverProfile(): DriverProfile {
 
 function readStoredDriverPreferences(): DriverPreferences {
   const fallback = createDefaultDriverPreferences();
-  if (typeof window === "undefined") {
+  if (DRIVER_BACKEND_ONLY_MODE || typeof window === "undefined") {
     return fallback;
   }
 
@@ -984,6 +973,9 @@ function readStoredDriverPreferences(): DriverPreferences {
 }
 
 function readStoredVehicles(): Vehicle[] {
+  if (DRIVER_BACKEND_ONLY_MODE) {
+    return [];
+  }
   const resolveSingleVehicleDocument = (group: unknown) => {
     if (!group || typeof group !== "object") {
       return undefined;
@@ -1079,54 +1071,45 @@ function readStoredVehicles(): Vehicle[] {
 }
 
 function readStoredJobs(): Job[] {
-  // In development mode, we always want the initial mock job requests 
-  // to be displayed on refresh to help with workflow refinement.
-  const isDev = import.meta.env.DEV;
-
-  if (typeof window === "undefined") {
-    return [...initialJobs];
+  if (DRIVER_BACKEND_ONLY_MODE || typeof window === "undefined") {
+    return [];
   }
 
   try {
     const raw = window.localStorage.getItem(JOBS_STORAGE_KEY);
-    if (!raw || isDev) {
-      return [...initialJobs];
+    if (!raw) {
+      return [];
     }
 
     const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed) || parsed.length === 0) {
-      return [...initialJobs];
-    }
-
-    return parsed as Job[];
+    return Array.isArray(parsed) ? (parsed as Job[]) : [];
   } catch {
-    return [...initialJobs];
+    return [];
   }
 }
 
 function readStoredTrips(): TripRecord[] {
-  if (typeof window === "undefined") {
-    return [...MOCK_COMPLETED_TRIPS];
+  if (DRIVER_BACKEND_ONLY_MODE || typeof window === "undefined") {
+    return [];
   }
 
   try {
     const raw = window.localStorage.getItem(TRIPS_STORAGE_KEY);
     if (!raw) {
-      return [...MOCK_COMPLETED_TRIPS];
+      return [];
     }
 
     const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) {
-      return [...MOCK_COMPLETED_TRIPS];
-    }
-
-    return parsed as TripRecord[];
+    return Array.isArray(parsed) ? (parsed as TripRecord[]) : [];
   } catch {
-    return [...MOCK_COMPLETED_TRIPS];
+    return [];
   }
 }
 
 function readStoredRevenueEvents(sourceTrips: TripRecord[]): RevenueEvent[] {
+  if (DRIVER_BACKEND_ONLY_MODE) {
+    return [];
+  }
   const fallback = buildSeedRevenueEventsFromTrips(sourceTrips);
 
   if (typeof window === "undefined") {
@@ -1175,6 +1158,9 @@ function buildFallbackTripFeedback(trip: TripRecord): TripFeedback {
 }
 
 function readStoredTripFeedbacks(sourceTrips: TripRecord[]): TripFeedback[] {
+  if (DRIVER_BACKEND_ONLY_MODE) {
+    return [];
+  }
   const fallback = sourceTrips.map((trip) => buildFallbackTripFeedback(trip));
 
   if (typeof window === "undefined") {
@@ -1232,6 +1218,9 @@ function readStoredTripFeedbacks(sourceTrips: TripRecord[]): TripFeedback[] {
 }
 
 function readStoredEmergencyContacts(): SharedContact[] {
+  if (DRIVER_BACKEND_ONLY_MODE) {
+    return [];
+  }
   if (typeof window === "undefined") {
     return [];
   }
@@ -1249,6 +1238,7 @@ function readStoredEmergencyContacts(): SharedContact[] {
 }
 
 function readStoredDraftVehicle(): Vehicle | null {
+  if (DRIVER_BACKEND_ONLY_MODE) return null;
   if (typeof window === "undefined") return null;
   try {
     const raw = window.localStorage.getItem(DRAFT_VEHICLE_STORAGE_KEY);
@@ -1279,6 +1269,9 @@ function readStoredDriverProfilePhoto(): string | null {
 }
 
 function readStoredDeliveryWorkflow(): DeliveryWorkflowState {
+  if (DRIVER_BACKEND_ONLY_MODE) {
+    return DEFAULT_DELIVERY_WORKFLOW;
+  }
   if (typeof window === "undefined") {
     return DEFAULT_DELIVERY_WORKFLOW;
   }
@@ -1300,6 +1293,9 @@ function readStoredDeliveryWorkflow(): DeliveryWorkflowState {
 }
 
 function readStoredSharedRidesEnabled(): boolean {
+  if (DRIVER_BACKEND_ONLY_MODE) {
+    return false;
+  }
   if (typeof window === "undefined") {
     return false;
   }
@@ -1313,6 +1309,9 @@ function readStoredSharedRidesEnabled(): boolean {
 }
 
 function readStoredDriverPresenceStatus(): DriverPresenceStatus {
+  if (DRIVER_BACKEND_ONLY_MODE) {
+    return "offline";
+  }
   if (typeof window === "undefined") {
     return "offline";
   }
@@ -1387,6 +1386,7 @@ function isJobCategory(value: unknown): value is JobCategory {
 
 
 function readStoredActiveRideRuntime(): ActiveRideRuntimeState {
+  if (DRIVER_BACKEND_ONLY_MODE) return DEFAULT_ACTIVE_RIDE_RUNTIME;
   if (typeof window === "undefined") return DEFAULT_ACTIVE_RIDE_RUNTIME;
   try {
     const raw = window.localStorage.getItem(ACTIVE_RIDE_RUNTIME_STORAGE_KEY);
@@ -1398,6 +1398,9 @@ function readStoredActiveRideRuntime(): ActiveRideRuntimeState {
 }
 
 function readStoredActiveTrip(): ActiveTripState {
+  if (DRIVER_BACKEND_ONLY_MODE) {
+    return DEFAULT_ACTIVE_TRIP;
+  }
   if (typeof window === "undefined") {
     return DEFAULT_ACTIVE_TRIP;
   }
@@ -1774,7 +1777,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [activeRideRuntime, setActiveRideRuntime] = useState<ActiveRideRuntimeState>(() => readStoredActiveRideRuntime());
 
   useEffect(() => {
-    if (typeof window === "undefined" || shouldUseDriverBackendWrites()) return;
+    if (typeof window === "undefined" || DRIVER_BACKEND_ONLY_MODE || shouldUseDriverBackendWrites()) return;
     try {
       window.localStorage.setItem(ACTIVE_RIDE_RUNTIME_STORAGE_KEY, JSON.stringify(activeRideRuntime));
     } catch (e) {
@@ -1859,344 +1862,48 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return null;
     }
   });
-  const [driverBackendEnabled, setDriverBackendEnabled] = useState(() => shouldUseDriverBackendWrites());
+  const driverBackendEnabled = useDriverBackendEnabled();
 
-  useEffect(() => {
-    if (typeof window === "undefined") return undefined;
-
-    const syncBackendFlag = () => {
-      setDriverBackendEnabled(shouldUseDriverBackendWrites());
-    };
-
-    window.addEventListener(BACKEND_FLAG_EVENT, syncBackendFlag as EventListener);
-    window.addEventListener(DRIVER_BACKEND_AUTH_EVENT, syncBackendFlag as EventListener);
-    syncBackendFlag();
-
-    return () => {
-      window.removeEventListener(BACKEND_FLAG_EVENT, syncBackendFlag as EventListener);
-      window.removeEventListener(DRIVER_BACKEND_AUTH_EVENT, syncBackendFlag as EventListener);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!driverBackendEnabled) {
-      return;
-    }
-
-    let cancelled = false;
-
-    const hydrateDriverBackendState = async () => {
-      try {
-        const [profile, preferences, checkpoints, backendVehicles, backendJobs, backendTrips, backendActiveTrip, backendContacts] =
-          await Promise.all([
-            getDriverProfile(),
-            getDriverPreferences(),
-            getDriverOnboardingCheckpoints(),
-            listDriverVehicles(),
-            listDriverJobs(),
-            listDriverTrips(),
-            getDriverActiveTrip(),
-            listDriverEmergencyContacts(),
-          ]);
-
-        if (cancelled) {
-          return;
-        }
-
-        if (profile) {
-          setDriverProfile((prev) => ({
-            ...prev,
-            fullName: profile.fullName || prev.fullName,
-            email: profile.email || prev.email,
-            phone: profile.phone || prev.phone,
-            city: profile.city || prev.city,
-            country: profile.country || prev.country,
-          }));
-        }
-
-        if (preferences) {
-          setDriverPreferences({
-            areaIds: preferences.areaIds ?? [],
-            serviceIds: preferences.serviceIds ?? [],
-            requirementIds: preferences.requirementIds ?? [],
-          });
-        }
-
-        if (checkpoints) {
-          setOnboardingCheckpoints({
-            roleSelected: checkpoints.roleSelected,
-            documentsVerified: checkpoints.documentsVerified,
-            identityVerified: checkpoints.identityVerified,
-            vehicleReady: checkpoints.vehicleReady,
-            emergencyContactReady: checkpoints.emergencyContactReady,
-            trainingCompleted: checkpoints.trainingCompleted,
-          });
-        }
-
-        setVehicles(
-          backendVehicles.map((vehicle) => ({
-            id: vehicle.id,
-            make: vehicle.make,
-            model: vehicle.model,
-            year: vehicle.year,
-            plate: vehicle.plate,
-            type: vehicle.type,
-            status: vehicle.status ?? "inactive",
-            accessories: resolveAccessoriesForVehicle(vehicle.type, vehicle.accessories),
-          })),
-        );
-
-        setJobs(
-          backendJobs.map((job) => ({
-            id: job.id,
-            from: job.pickup,
-            to: job.dropoff,
-            distance: "TBD",
-            duration: "TBD",
-            fare: "TBD",
-            jobType: mapBackendJobType(job.type),
-            status: mapBackendJobStatus(job.status),
-            requestedAt: job.requestedAt,
-          })),
-        );
-
-        setTrips(
-          backendTrips.items.map((trip) => ({
-            id: trip.id,
-            from: trip.pickup,
-            to: trip.dropoff,
-            date: new Date(trip.requestedAt).toLocaleDateString(),
-            time: new Date(trip.requestedAt).toLocaleTimeString(),
-            amount: 0,
-            jobType: mapBackendJobType(trip.type),
-            status: mapBackendTripStatus(trip.status),
-            pickup: trip.pickup,
-            dropoff: trip.dropoff,
-            startedAt: trip.startedAt,
-            completedAt: trip.completedAt,
-          })),
-        );
-
-        setEmergencyContacts(
-          backendContacts.map((contact) => ({
-            id: contact.id,
-            name: contact.name,
-            phone: contact.phone,
-            relationship: contact.relationship,
-            createdAt: Date.now(),
-          })),
-        );
-
-        if (backendActiveTrip) {
-          setActiveTrip({
-            tripId: backendActiveTrip.id,
-            jobType: mapBackendJobType(backendActiveTrip.type),
-            stage: mapBackendTripStage(backendActiveTrip.status),
-            status:
-              backendActiveTrip.status === "completed"
-                ? "completed"
-                : backendActiveTrip.status === "cancelled"
-                  ? "cancelled"
-                  : "in_progress",
-            timestamps: {
-              acceptedAt: backendActiveTrip.requestedAt,
-              startedAt: backendActiveTrip.startedAt,
-              completedAt: backendActiveTrip.completedAt,
-              updatedAt: backendActiveTrip.updatedAt,
-            },
-          });
-
-          const safetyState = await getDriverTripSafetyState(backendActiveTrip.id);
-          if (!cancelled && safetyState) {
-            setActiveRideRuntime(mapBackendSafetyStateToRuntime(safetyState));
-          }
-        } else {
-          setActiveRideRuntime(createDefaultActiveRideRuntime(null));
-        }
-      } catch (error) {
-        console.warn("Driver backend bootstrap failed.", error);
-        setJobAccessError("Unable to sync with backend. Check server/database connection.");
-      }
-    };
-
-    void hydrateDriverBackendState();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [driverBackendEnabled]);
-
-  useEffect(() => {
-    if (!driverBackendEnabled) {
-      return;
-    }
-
-    let cancelled = false;
-    const syncFromBackend = async () => {
-      try {
-        const backendActiveTrip = await getDriverActiveTrip();
-        if (cancelled) return;
-
-        if (!backendActiveTrip) {
-          setActiveTrip((prev) => (prev.stage === "idle" ? prev : DEFAULT_ACTIVE_TRIP));
-          setActiveRideRuntime((prev) =>
-            prev.tripId === null &&
-            prev.temporaryStop.status === "idle" &&
-            prev.safetyCheck.status === "idle"
-              ? prev
-              : createDefaultActiveRideRuntime(null),
-          );
-          return;
-        }
-
-        setActiveTrip((prev) => {
-          const next: ActiveTripState = {
-            tripId: backendActiveTrip.id,
-            jobType: mapBackendJobType(backendActiveTrip.type),
-            stage: mapBackendTripStage(backendActiveTrip.status),
-            status:
-              backendActiveTrip.status === "completed"
-                ? "completed"
-                : backendActiveTrip.status === "cancelled"
-                  ? "cancelled"
-                  : "in_progress",
-            timestamps: {
-              ...prev.timestamps,
-              acceptedAt: backendActiveTrip.requestedAt,
-              startedAt: backendActiveTrip.startedAt,
-              completedAt: backendActiveTrip.completedAt,
-              updatedAt: backendActiveTrip.updatedAt,
-            },
-          };
-
-          if (
-            prev.tripId === next.tripId &&
-            prev.stage === next.stage &&
-            prev.status === next.status &&
-            prev.timestamps.updatedAt === next.timestamps.updatedAt
-          ) {
-            return prev;
-          }
-
-          return next;
-        });
-
-        const safetyState = await getDriverTripSafetyState(backendActiveTrip.id);
-        if (!cancelled && safetyState) {
-          setActiveRideRuntime(mapBackendSafetyStateToRuntime(safetyState));
-        }
-      } catch (error) {
-        console.warn("Failed to sync active trip safety state from backend.", error);
-      }
-    };
-
-    void syncFromBackend();
-    const timer = window.setInterval(() => {
-      void syncFromBackend();
-    }, 15000);
-
-    return () => {
-      cancelled = true;
-      window.clearInterval(timer);
-    };
-  }, [driverBackendEnabled]);
-
-  useEffect(() => {
-    if (!driverBackendEnabled) {
-      return;
-    }
-
-    const socket = createDriverSocket();
-
-    socket.on("job.offer.new", (payload: { jobId: string; pickup: string; dropoff: string; type: string; requestedAt: number }) => {
-      setJobs((prev) => {
-        const existingIndex = prev.findIndex((job) => job.id === payload.jobId);
-        const nextJob: Job = {
-          id: payload.jobId,
-          from: payload.pickup,
-          to: payload.dropoff,
-          distance: "TBD",
-          duration: "TBD",
-          fare: "TBD",
-          jobType: mapBackendJobType(payload.type),
-          status: "pending",
-          requestedAt: payload.requestedAt,
-        };
-
-        if (existingIndex >= 0) {
-          const next = [...prev];
-          next[existingIndex] = nextJob;
-          return next;
-        }
-
-        return [nextJob, ...prev];
-      });
-    });
-
-    socket.on("job.offer.updated", (payload: { jobId: string; status: string }) => {
-      setJobs((prev) =>
-        prev.map((job) =>
-          job.id === payload.jobId
-            ? {
-                ...job,
-                status: mapBackendJobStatus(payload.status),
-              }
-            : job,
-        ),
-      );
-    });
-
-    socket.onAny((eventName, payload: { tripId?: string; status?: string; updatedAt?: number }) => {
-      if (!payload?.tripId || !payload.status || !eventName.startsWith("trip.")) {
+  useDriverBackendBootstrapSync({
+    driverBackendEnabled,
+    setDriverProfile,
+    setDriverPreferences,
+    setOnboardingCheckpoints,
+    setVehicles: (next) => {
+      if (typeof next === "function") {
+        setVehicles((prev) => (next as any)(prev));
         return;
       }
+      setVehicles((next as any[]).map((vehicle) => ({
+        ...vehicle,
+        accessories: resolveAccessoriesForVehicle(vehicle.type, vehicle.accessories),
+      })));
+    },
+    setJobs,
+    setTrips,
+    setEmergencyContacts,
+    setActiveTrip,
+    setActiveRideRuntime,
+    setJobAccessError,
+    mapBackendJobType,
+    mapBackendJobStatus,
+    mapBackendTripStatus,
+    mapBackendTripStage,
+    mapBackendSafetyStateToRuntime,
+    createDefaultActiveRideRuntime,
+    defaultActiveTrip: DEFAULT_ACTIVE_TRIP,
+  });
 
-      setTrips((prev) =>
-        prev.map((trip) =>
-          trip.id === payload.tripId
-            ? {
-                ...trip,
-                status: mapBackendTripStatus(payload.status),
-              }
-            : trip,
-        ),
-      );
-
-      setActiveTrip((prev) => {
-        if (prev.tripId !== payload.tripId) {
-          return prev;
-        }
-
-        return {
-          ...prev,
-          stage: mapBackendTripStage(payload.status),
-          status:
-            payload.status === "completed"
-              ? "completed"
-              : payload.status === "cancelled"
-                ? "cancelled"
-                : "in_progress",
-          timestamps: {
-            ...prev.timestamps,
-            updatedAt: payload.updatedAt ?? Date.now(),
-            arrivedAt: payload.status === "arrived" ? payload.updatedAt ?? Date.now() : prev.timestamps.arrivedAt,
-            startedAt:
-              payload.status === "in_progress" ? payload.updatedAt ?? Date.now() : prev.timestamps.startedAt,
-            completedAt:
-              payload.status === "completed" ? payload.updatedAt ?? Date.now() : prev.timestamps.completedAt,
-            cancelledAt:
-              payload.status === "cancelled" ? payload.updatedAt ?? Date.now() : prev.timestamps.cancelledAt,
-          },
-        };
-      });
-    });
-
-    socket.connect();
-
-    return () => {
-      socket.disconnect();
-    };
-  }, [driverBackendEnabled]);
+  useDriverRealtimeSync({
+    driverBackendEnabled,
+    setJobs,
+    setTrips,
+    setActiveTrip: setActiveTrip as any,
+    mapBackendJobType,
+    mapBackendJobStatus,
+    mapBackendTripStatus,
+    mapBackendTripStage,
+  });
 
   const setSelectedVehicleIndex = useCallback((index: number | null) => {
     setSelectedVehicleIndexState(index);
@@ -2231,17 +1938,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   }, [selectedVehicleIndex, vehicles.length, setSelectedVehicleIndex]);
 
-  // Keep vehicleReady in sync with selectedVehicleIndex and actual vehicle list.
+  // Keep vehicleReady in sync with selected vehicle/local flow, or backend vehicle records.
   useEffect(() => {
-    const hasVehicle =
+    const hasSelectedVehicle =
       selectedVehicleIndex !== null &&
       selectedVehicleIndex >= 0 &&
       selectedVehicleIndex < vehicles.length;
+    const hasAnyVehicle = vehicles.length > 0;
+    const nextVehicleReady = driverBackendEnabled ? hasAnyVehicle : hasSelectedVehicle;
+
     setOnboardingCheckpoints((prev) => {
-      if (prev.vehicleReady === hasVehicle) return prev;
-      return { ...prev, vehicleReady: hasVehicle };
+      if (prev.vehicleReady === nextVehicleReady) return prev;
+      return { ...prev, vehicleReady: nextVehicleReady };
     });
-  }, [selectedVehicleIndex, vehicles.length]);
+  }, [driverBackendEnabled, selectedVehicleIndex, vehicles.length]);
 
   // Emergency contact readiness requires at least one contact.
   useEffect(() => {
@@ -2487,102 +2197,22 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return true;
   }, [resolveJobAccessAttempt]);
 
-  const updateDriverProfile = useCallback((patch: Partial<DriverProfile>) => {
-    setDriverProfile((prev) => ({
-      ...prev,
-      ...patch,
-    }));
-    if (shouldUseDriverBackendWrites()) {
-      void patchDriverProfile({
-        fullName: patch.fullName,
-        phone: patch.phone,
-        city: patch.city,
-        country: patch.country,
-      }).catch((error) => {
-        console.warn("Driver backend profile update failed.", error);
-      });
-    }
-  }, []);
-
-  const updateDriverPreferences = useCallback((patch: Partial<DriverPreferences>) => {
-    setDriverPreferences((prev) => ({
-      ...prev,
-      ...patch,
-    }));
-    if (shouldUseDriverBackendWrites()) {
-      void patchDriverPreferences({
-        areaIds: patch.areaIds,
-        serviceIds: patch.serviceIds,
-        requirementIds: patch.requirementIds,
-      }).catch((error) => {
-        console.warn("Driver backend preferences update failed.", error);
-      });
-    }
-  }, []);
-
-  const addEmergencyContact = useCallback((contact: Omit<SharedContact, "id" | "createdAt">) => {
-    const tempId = `ec-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
-    const createdAt = Date.now();
-    setEmergencyContacts((prev) => [
-      ...prev,
-      {
-        ...contact,
-        id: tempId,
-        createdAt,
-      },
-    ]);
-
-    if (shouldUseDriverBackendWrites()) {
-      void createDriverEmergencyContact({
-        name: contact.name,
-        phone: contact.phone,
-        relationship: contact.relationship,
-      })
-        .then((backendContact) => {
-          if (!backendContact) return;
-          setEmergencyContacts((prev) =>
-            prev.map((entry) =>
-              entry.id === tempId
-                ? {
-                    ...entry,
-                    id: backendContact.id,
-                    name: backendContact.name,
-                    phone: backendContact.phone,
-                    relationship: backendContact.relationship,
-                  }
-                : entry,
-            ),
-          );
-        })
-        .catch((error) => {
-          console.warn("Driver backend emergency contact create failed.", error);
-        });
-    }
-  }, []);
-
-  const removeEmergencyContact = useCallback((id: string) => {
-    setEmergencyContacts((prev) => prev.filter((c) => c.id !== id));
-    if (shouldUseDriverBackendWrites()) {
-      void deleteDriverEmergencyContact(id).catch((error) => {
-        console.warn("Driver backend emergency contact delete failed.", error);
-      });
-    }
-  }, []);
-
-  const updateEmergencyContact = useCallback((updated: SharedContact) => {
-    setEmergencyContacts((prev) =>
-      prev.map((c) => (c.id === updated.id ? updated : c))
-    );
-    if (shouldUseDriverBackendWrites()) {
-      void patchDriverEmergencyContact(updated.id, {
-        name: updated.name,
-        phone: updated.phone,
-        relationship: updated.relationship,
-      }).catch((error) => {
-        console.warn("Driver backend emergency contact update failed.", error);
-      });
-    }
-  }, []);
+  const {
+    updateDriverProfile,
+    updateDriverPreferences,
+    addEmergencyContact,
+    removeEmergencyContact,
+    updateEmergencyContact,
+    updateVehicle,
+    addVehicle,
+    deleteVehicle,
+  } = useDriverProfileAndAssetsActions({
+    setDriverProfile,
+    setDriverPreferences,
+    setEmergencyContacts,
+    setVehicles,
+    resolveAccessoriesForVehicle,
+  });
 
   const onboardingBlockers = useMemo<OnboardingBlocker[]>(
     () =>
@@ -2599,209 +2229,44 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const primaryOnboardingRoute =
     onboardingBlockers[0]?.route || "/driver/dashboard/offline";
 
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    try {
-      window.localStorage.setItem(
-        ONBOARDING_CHECKPOINTS_STORAGE_KEY,
-        JSON.stringify(onboardingCheckpoints)
-      );
-    } catch (e) {
-      console.warn("Failed to save onboarding checkpoints to localStorage:", e);
-    }
-  }, [onboardingCheckpoints]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    try {
-      window.localStorage.setItem(
-        DRIVER_ROLE_SELECTION_STORAGE_KEY,
-        JSON.stringify(driverRoleSelection)
-      );
-    } catch (e) {
-      console.warn("Failed to save driver role selection to localStorage:", e);
-    }
-  }, [driverRoleSelection]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    try {
-      window.localStorage.setItem(
-        DELIVERY_WORKFLOW_STORAGE_KEY,
-        JSON.stringify(deliveryWorkflow)
-      );
-    } catch (e) {
-      console.warn("Failed to save delivery workflow to localStorage:", e);
-    }
-  }, [deliveryWorkflow]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    try {
-      window.localStorage.setItem(
-        SHARED_RIDES_ENABLED_STORAGE_KEY,
-        sharedRidesEnabled ? "true" : "false"
-      );
-    } catch (e) {
-      console.warn("Failed to save shared rides enabled to localStorage:", e);
-    }
-  }, [sharedRidesEnabled]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    try {
-      window.localStorage.setItem(
-        ACTIVE_TRIP_STORAGE_KEY,
-        JSON.stringify(activeTrip)
-      );
-    } catch (e) {
-      console.warn("Failed to save active trip to localStorage:", e);
-    }
-  }, [activeTrip, driverBackendEnabled]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    try {
-      window.localStorage.setItem(
-        DRIVER_PROFILE_STORAGE_KEY,
-        JSON.stringify(driverProfile)
-      );
-    } catch (e) {
-      console.warn("Failed to save driver profile to localStorage:", e);
-    }
-  }, [driverProfile]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    try {
-      window.localStorage.setItem(
-        DRIVER_PREFERENCES_STORAGE_KEY,
-        JSON.stringify(driverPreferences)
-      );
-    } catch (e) {
-      console.warn("Failed to save driver preferences to localStorage:", e);
-    }
-  }, [driverPreferences]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    if (!driverProfilePhoto) {
-      window.localStorage.removeItem(DRIVER_PROFILE_PHOTO_STORAGE_KEY);
-      return;
-    }
-
-    try {
-      window.localStorage.setItem(DRIVER_PROFILE_PHOTO_STORAGE_KEY, driverProfilePhoto);
-    } catch (e) {
-      console.warn("Failed to save driver profile photo to localStorage:", e);
-    }
-  }, [driverProfilePhoto]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      window.localStorage.setItem(VEHICLES_STORAGE_KEY, JSON.stringify(vehicles));
-    } catch (e) {
-      console.warn("Failed to save vehicles to localStorage:", e);
-    }
-  }, [vehicles]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      window.localStorage.setItem(EMERGENCY_CONTACTS_STORAGE_KEY, JSON.stringify(emergencyContacts));
-    } catch (e) {
-      console.warn("Failed to save emergency contacts to localStorage:", e);
-    }
-  }, [emergencyContacts]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      window.localStorage.setItem(DRIVER_PRESENCE_STORAGE_KEY, driverPresenceStatus);
-    } catch (e) {
-      console.warn("Failed to save driver presence status to localStorage:", e);
-    }
-  }, [driverPresenceStatus]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      if (draftVehicle) {
-        window.localStorage.setItem(DRAFT_VEHICLE_STORAGE_KEY, JSON.stringify(draftVehicle));
-      } else {
-        window.localStorage.removeItem(DRAFT_VEHICLE_STORAGE_KEY);
-      }
-    } catch (e) {
-      console.warn("Failed to save draft vehicle to localStorage:", e);
-    }
-  }, [draftVehicle]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      window.localStorage.setItem(JOBS_STORAGE_KEY, JSON.stringify(jobs));
-    } catch (e) {
-      console.warn("Failed to save jobs to localStorage:", e);
-    }
-  }, [jobs]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      window.localStorage.setItem(TRIPS_STORAGE_KEY, JSON.stringify(trips));
-    } catch (e) {
-      console.warn("Failed to save trips to localStorage:", e);
-    }
-  }, [trips]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      window.localStorage.setItem(
-        REVENUE_EVENTS_STORAGE_KEY,
-        JSON.stringify(revenueEvents)
-      );
-    } catch (e) {
-      console.warn("Failed to save revenue events to localStorage:", e);
-    }
-  }, [revenueEvents]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      window.localStorage.setItem(
-        TRIP_FEEDBACKS_STORAGE_KEY,
-        JSON.stringify(tripFeedbacks)
-      );
-    } catch (e) {
-      console.warn("Failed to save trip feedback to localStorage:", e);
-    }
-  }, [tripFeedbacks]);
+  useDriverLocalPersistence({
+    driverBackendOnlyMode: DRIVER_BACKEND_ONLY_MODE,
+    driverBackendEnabled,
+    keys: {
+      ONBOARDING_CHECKPOINTS_STORAGE_KEY,
+      DRIVER_ROLE_SELECTION_STORAGE_KEY,
+      DELIVERY_WORKFLOW_STORAGE_KEY,
+      SHARED_RIDES_ENABLED_STORAGE_KEY,
+      ACTIVE_TRIP_STORAGE_KEY,
+      DRIVER_PROFILE_STORAGE_KEY,
+      DRIVER_PREFERENCES_STORAGE_KEY,
+      DRIVER_PROFILE_PHOTO_STORAGE_KEY,
+      VEHICLES_STORAGE_KEY,
+      EMERGENCY_CONTACTS_STORAGE_KEY,
+      DRIVER_PRESENCE_STORAGE_KEY,
+      DRAFT_VEHICLE_STORAGE_KEY,
+      JOBS_STORAGE_KEY,
+      TRIPS_STORAGE_KEY,
+      REVENUE_EVENTS_STORAGE_KEY,
+      TRIP_FEEDBACKS_STORAGE_KEY,
+    },
+    onboardingCheckpoints,
+    driverRoleSelection,
+    deliveryWorkflow,
+    sharedRidesEnabled,
+    activeTrip,
+    driverProfile,
+    driverPreferences,
+    driverProfilePhoto,
+    vehicles,
+    emergencyContacts,
+    driverPresenceStatus,
+    draftVehicle,
+    jobs,
+    trips,
+    revenueEvents,
+    tripFeedbacks,
+  });
 
   useEffect(() => {
     setTripFeedbacks((prev) => {
@@ -3033,7 +2498,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                 triggeredAt: timestamp,
                 triggeredByStationary: true,
             };
-            if (!shouldUseDriverBackendWrites()) {
+            if (!DRIVER_BACKEND_ONLY_MODE && !shouldUseDriverBackendWrites()) {
               setTimeout(() => {
                 window.localStorage.setItem('evzone_active_ride_safety_check', JSON.stringify({ tripId: activeTrip.tripId, ts: Date.now() }));
               }, 50);
@@ -3045,7 +2510,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                 driverAction: null,
                 passengerAction: null,
             };
-            if (!shouldUseDriverBackendWrites()) {
+            if (!DRIVER_BACKEND_ONLY_MODE && !shouldUseDriverBackendWrites()) {
               setTimeout(() => {
                 window.localStorage.setItem('evzone_active_ride_safety_resume', JSON.stringify({ tripId: activeTrip.tripId, ts: Date.now() }));
               }, 50);
@@ -3120,7 +2585,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         if (actor === "driver") {
             newCheckState.driverAction = action;
             if (action === "okay") {
-                if (!shouldUseDriverBackendWrites()) {
+                if (!DRIVER_BACKEND_ONLY_MODE && !shouldUseDriverBackendWrites()) {
                   setTimeout(() => {
                     window.localStorage.setItem('evzone_active_ride_safety_driver_okay', JSON.stringify({ tripId: activeTrip.tripId, ts: now }));
                   }, 50);
@@ -3518,52 +2983,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const clearActiveTrip = useCallback(() => {
     setActiveTrip(DEFAULT_ACTIVE_TRIP);
     setActiveRideRuntime(createDefaultActiveRideRuntime(null));
-  }, []);
-
-  const updateVehicle = useCallback((id: string, patch: Partial<Vehicle>) => {
-    setVehicles((prev) => prev.map((v) => (v.id === id ? { ...v, ...patch } : v)));
-    if (shouldUseDriverBackendWrites()) {
-      void patchDriverVehicle(id, {
-        make: patch.make,
-        model: patch.model,
-        year: patch.year,
-        plate: patch.plate,
-        type: patch.type,
-        status: patch.status as "active" | "inactive" | "maintenance" | undefined,
-        accessories: patch.accessories,
-      }).catch((error) => {
-        console.warn("Driver backend vehicle update failed.", error);
-      });
-    }
-  }, []);
-
-  const addVehicle = useCallback((vehicle: Vehicle) => {
-    setVehicles((prev) => [...prev, {
-      ...vehicle,
-      accessories: resolveAccessoriesForVehicle(vehicle.type, vehicle.accessories),
-    }]);
-    if (shouldUseDriverBackendWrites()) {
-      void createDriverVehicle({
-        make: vehicle.make,
-        model: vehicle.model,
-        year: vehicle.year,
-        plate: vehicle.plate,
-        type: vehicle.type,
-        status: vehicle.status as "active" | "inactive" | "maintenance" | undefined,
-        accessories: resolveAccessoriesForVehicle(vehicle.type, vehicle.accessories),
-      }).catch((error) => {
-        console.warn("Driver backend vehicle create failed.", error);
-      });
-    }
-  }, []);
-
-  const deleteVehicle = useCallback((id: string) => {
-    setVehicles((prev) => prev.filter((v) => v.id !== id));
-    if (shouldUseDriverBackendWrites()) {
-      void deleteDriverVehicle(id).catch((error) => {
-        console.warn("Driver backend vehicle delete failed.", error);
-      });
-    }
   }, []);
 
   const toggleVehicleAccessory = useCallback((vehicleId: string, accessoryName: string) => {

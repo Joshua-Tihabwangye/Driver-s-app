@@ -203,6 +203,7 @@ export default function RegisterServices() {
     }
 
     const normalizedIdentity = identity.trim().toLowerCase();
+    const savedAccount = readDriverAuthAccount();
     setIsSubmittingLogin(true);
     setLoginError("");
 

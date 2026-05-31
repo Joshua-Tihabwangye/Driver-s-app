@@ -1,4 +1,9 @@
-import { API_BASE_URL, APP_ID } from "./config";
+// Self-contained HTTP client for the Driver app.
+// Previously this file re-exported from "@shared/config/src/httpClient" which
+// does not exist in this workspace. All required symbols are now defined here.
+
+const BACKEND_URL =
+  (import.meta.env.VITE_BACKEND_URL as string | undefined) ?? "http://localhost:3001/api/v1";
 
 interface ApiEnvelope<T> {
   code?: string;
@@ -8,12 +13,16 @@ interface ApiEnvelope<T> {
   data?: T;
 }
 
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
 export interface TokenRefreshResult {
   accessToken: string;
   refreshToken: string;
 }
 
-interface HttpClientAuthAdapter {
+export interface HttpClientAuthConfig {
   getAccessToken: () => string | null;
   getRefreshToken: () => string | null;
   setTokens: (accessToken: string, refreshToken: string) => void;
@@ -22,108 +31,71 @@ interface HttpClientAuthAdapter {
   onUnauthorized?: () => void;
 }
 
-interface RequestOptions {
-  method?: "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
-  body?: unknown;
+export interface RequestOptions {
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   headers?: Record<string, string>;
+  body?: unknown;
   retryOnUnauthorized?: boolean;
 }
 
-export class ApiRequestError extends Error {
-  status: number;
-  details?: unknown;
+// ---------------------------------------------------------------------------
+// Internal state
+// ---------------------------------------------------------------------------
 
-  constructor(message: string, status: number, details?: unknown) {
-    super(message);
-    this.name = "ApiRequestError";
-    this.status = status;
-    this.details = details;
-  }
+let _auth: HttpClientAuthConfig | null = null;
+let _inFlightRefresh: Promise<TokenRefreshResult> | null = null;
+
+// ---------------------------------------------------------------------------
+// Public API
+// ---------------------------------------------------------------------------
+
+/** Call once at app start (or module init) to wire up token management. */
+export function configureHttpClientAuth(config: HttpClientAuthConfig): void {
+  _auth = config;
 }
 
-let authAdapter: HttpClientAuthAdapter | null = null;
-let inFlightRefresh: Promise<TokenRefreshResult> | null = null;
+/** Make an authenticated HTTP request against the backend. */
+export async function request<T = unknown>(
+  path: string,
+  options: RequestOptions = {}
+): Promise<T> {
+  const { method = "GET", headers = {}, body, retryOnUnauthorized = true } =
+    options;
 
-export function configureHttpClientAuth(adapter: HttpClientAuthAdapter) {
-  authAdapter = adapter;
-}
-
-function parseJson<T>(text: string): T | null {
-  if (!text) return null;
-  try {
-    return JSON.parse(text) as T;
-  } catch {
-    return null;
-  }
-}
-
-function buildHeaders(options: RequestOptions): Record<string, string> {
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    "X-App-Id": APP_ID,
-    ...(options.headers || {}),
-  };
-
-  if (!headers.Authorization) {
-    const accessToken = authAdapter?.getAccessToken();
-    if (accessToken) {
-      headers.Authorization = `Bearer ${accessToken}`;
-    }
-  }
-
-  return headers;
-}
-
-async function attemptRefresh(): Promise<TokenRefreshResult> {
-  const refreshToken = authAdapter?.getRefreshToken();
-  if (!authAdapter || !refreshToken) {
-    throw new ApiRequestError("Session expired", 401);
-  }
-
-  if (!inFlightRefresh) {
-    inFlightRefresh = authAdapter.refresh(refreshToken).finally(() => {
-      inFlightRefresh = null;
-    });
-  }
-
-  return inFlightRefresh;
-}
-
-function handleUnauthorized() {
-  authAdapter?.clearSession();
-  authAdapter?.onUnauthorized?.();
-}
-
-export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method: options.method || "GET",
-    headers: buildHeaders(options),
-    body: options.body === undefined ? undefined : JSON.stringify(options.body),
+  const accessToken = _auth?.getAccessToken();
+  const res = await fetch(`${BACKEND_URL}${path}`, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      ...headers,
+    },
+    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
   });
 
-  if (response.status === 401 && options.retryOnUnauthorized !== false && authAdapter) {
-    try {
-      const refreshed = await attemptRefresh();
-      authAdapter.setTokens(refreshed.accessToken, refreshed.refreshToken);
+  if (res.status === 401 && retryOnUnauthorized && _auth) {
+    // Try a token refresh then retry the original request once.
+    const newToken = await _tryRefresh();
+    if (newToken) {
       return request<T>(path, {
         ...options,
         retryOnUnauthorized: false,
         headers: {
-          ...(options.headers || {}),
-          Authorization: `Bearer ${refreshed.accessToken}`,
+          ...headers,
+          Authorization: `Bearer ${newToken}`,
         },
       });
-    } catch {
-      handleUnauthorized();
     }
+    // Refresh failed – session is gone.
+    _auth?.onUnauthorized?.();
+    throw new Error("Session expired");
   }
 
-  const raw = await response.text();
-  const parsed = parseJson<ApiEnvelope<T>>(raw);
+  const raw = await res.text();
+  const parsed = _parseJson<ApiEnvelope<T>>(raw);
 
-  if (!response.ok) {
-    const message = parsed?.message || `Request failed with status ${response.status}`;
-    throw new ApiRequestError(message, response.status, parsed?.details);
+  if (!res.ok) {
+    await _handleError(res, parsed);
   }
 
   if (parsed && "data" in parsed && parsed.data !== undefined) {
@@ -134,5 +106,49 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
     return parsed as unknown as T;
   }
 
-  throw new ApiRequestError("Empty response from server", response.status);
+  if (res.status === 204) return undefined as unknown as T;
+  throw new Error("Empty response from server");
+}
+
+// ---------------------------------------------------------------------------
+// Internal helpers
+// ---------------------------------------------------------------------------
+
+async function _tryRefresh(): Promise<string | null> {
+  if (!_auth) return null;
+  const refreshToken = _auth.getRefreshToken();
+  if (!refreshToken) return null;
+
+  if (!_inFlightRefresh) {
+    _inFlightRefresh = _auth.refresh(refreshToken).finally(() => {
+      _inFlightRefresh = null;
+    });
+  }
+
+  try {
+    const result = await _inFlightRefresh;
+    if (!result?.accessToken || !result?.refreshToken) {
+      _auth.clearSession();
+      return null;
+    }
+    _auth.setTokens(result.accessToken, result.refreshToken);
+    return result.accessToken;
+  } catch {
+    _auth.clearSession();
+    return null;
+  }
+}
+
+function _parseJson<T>(text: string): T | null {
+  if (!text) return null;
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    return null;
+  }
+}
+
+async function _handleError(res: Response, parsed?: ApiEnvelope<unknown> | null): Promise<never> {
+  const message = parsed?.message || `Request failed: ${res.status} ${res.statusText}`;
+  throw new Error(message);
 }

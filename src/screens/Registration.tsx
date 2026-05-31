@@ -159,7 +159,6 @@ export default function Registration() {
       });
       if (!backendAuth) {
         setErrorMessage("Enter a valid email address to complete backend registration.");
-        setIsSubmitting(false);
         return;
       }
       saveDriverBackendTokens(backendAuth.accessToken, backendAuth.refreshToken);
@@ -169,7 +168,6 @@ export default function Registration() {
           ? error.message
           : "Registration failed. Please try again.";
       setErrorMessage(message);
-      setIsSubmitting(false);
       return;
     }
 
