@@ -1,4 +1,4 @@
-import { Smartphone } from "lucide-react";
+import { Eye, EyeOff, Smartphone } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
@@ -68,6 +68,8 @@ export default function Registration() {
   const [landmark, setLandmark] = useState(driverProfile.landmark);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isPickingPhone, setIsPickingPhone] = useState(false);
   const [phonebookMessage, setPhonebookMessage] = useState("");
@@ -325,26 +327,52 @@ export default function Registration() {
               onChange={setLandmark}
               placeholder="e.g. Next to Acacia Mall"
             />
-            <Input
-              label="Password"
-              type="password"
-              value={password}
-              onChange={(value) => {
-                setPassword(value);
-                setErrorMessage("");
-              }}
-              placeholder="Create password"
-            />
-            <Input
-              label="Confirm Password"
-              type="password"
-              value={confirmPassword}
-              onChange={(value) => {
-                setConfirmPassword(value);
-                setErrorMessage("");
-              }}
-              placeholder="Confirm password"
-            />
+            <label className="flex flex-col space-y-1">
+              <span className="text-[11px] font-medium text-slate-600">Password</span>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setErrorMessage("");
+                  }}
+                  placeholder="Create password"
+                  className="h-9 w-full rounded-xl border border-slate-200 bg-white px-3 pr-10 text-[13px] text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-500"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </label>
+            <label className="flex flex-col space-y-1">
+              <span className="text-[11px] font-medium text-slate-600">Confirm Password</span>
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value);
+                    setErrorMessage("");
+                  }}
+                  placeholder="Confirm password"
+                  className="h-9 w-full rounded-xl border border-slate-200 bg-white px-3 pr-10 text-[13px] text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword((prev) => !prev)}
+                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-500"
+                >
+                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </label>
           </div>
         </section>
 
