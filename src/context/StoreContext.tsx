@@ -37,6 +37,7 @@ import {
   sendDriverLocationHeartbeat,
   setDriverPresenceOffline,
   setDriverPresenceOnline,
+  patchDriverProfile,
   shouldUseDriverBackendWrites,
   triggerTripSos,
   tripArrive,
@@ -1831,7 +1832,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   );
   const [onboardingCheckpoints, setOnboardingCheckpoints] =
     useState<OnboardingCheckpointState>(() => readStoredOnboardingCheckpoints());
-  const [driverProfilePhoto, setDriverProfilePhoto] = useState<string | null>(() =>
+  const [driverProfilePhoto, setDriverProfilePhotoState] = useState<string | null>(() =>
     readStoredDriverProfilePhoto()
   );
   const [deliveryWorkflow, setDeliveryWorkflow] = useState<DeliveryWorkflowState>(() =>
@@ -1863,10 +1864,39 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   });
   const driverBackendEnabled = useDriverBackendEnabled();
+  const setDriverProfilePhoto = useCallback((photo: string | null) => {
+    const normalizedPhoto = typeof photo === "string" && photo.trim().length > 0 ? photo : null;
+    const hasProfilePhoto = Boolean(normalizedPhoto);
+    setDriverProfilePhotoState(normalizedPhoto);
+    setOnboardingCheckpoints((prev) => {
+      if (prev.identityVerified === hasProfilePhoto) {
+        return prev;
+      }
+      return {
+        ...prev,
+        identityVerified: hasProfilePhoto,
+      };
+    });
+
+    if (shouldUseDriverBackendWrites()) {
+      const shouldPersistPhotoValue =
+        typeof normalizedPhoto === "string" && !normalizedPhoto.startsWith("data:");
+      const identityPatch: { identityVerified: boolean; profilePhoto?: string } = {
+        identityVerified: hasProfilePhoto,
+      };
+      if (shouldPersistPhotoValue && normalizedPhoto) {
+        identityPatch.profilePhoto = normalizedPhoto;
+      }
+      void patchDriverProfile(identityPatch).catch((error) => {
+        console.warn("Driver backend identity update failed.", error);
+      });
+    }
+  }, []);
 
   useDriverBackendBootstrapSync({
     driverBackendEnabled,
     setDriverProfile,
+    setDriverProfilePhoto: setDriverProfilePhotoState,
     setDriverPreferences,
     setOnboardingCheckpoints,
     setVehicles: (next) => {
@@ -2181,6 +2211,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         });
       }
 
+      setOnboardingCheckpoints((prev) => (
+        prev.identityVerified
+          ? prev
+          : { ...prev, identityVerified: true }
+      ));
+      if (shouldUseDriverBackendWrites()) {
+        void patchDriverProfile({ identityVerified: true }).catch((error) => {
+          console.warn("Driver backend selfie verification update failed.", error);
+        });
+      }
+
       setDriverOnline();
       return { ok: true };
     },
@@ -2296,6 +2337,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [activeRideRuntime, driverBackendEnabled]);
 
   useEffect(() => {
+    if (driverBackendEnabled) {
+      return;
+    }
     const hasProfilePhoto = Boolean(driverProfilePhoto && driverProfilePhoto.trim().length > 0);
     setOnboardingCheckpoints((prev) => {
       if (prev.identityVerified === hasProfilePhoto) {
@@ -2306,7 +2350,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         identityVerified: hasProfilePhoto,
       };
     });
-  }, [driverProfilePhoto]);
+  }, [driverBackendEnabled, driverProfilePhoto]);
 
 
 
