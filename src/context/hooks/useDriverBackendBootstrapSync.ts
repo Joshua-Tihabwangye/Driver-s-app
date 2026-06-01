@@ -16,6 +16,7 @@ type AnySetter<T = any> = (value: T | ((prev: T) => T)) => void;
 type UseDriverBackendBootstrapSyncOptions = {
   driverBackendEnabled: boolean;
   setDriverProfile: AnySetter;
+  setDriverProfilePhoto: AnySetter;
   setDriverPreferences: AnySetter;
   setOnboardingCheckpoints: AnySetter;
   setVehicles: AnySetter;
@@ -38,6 +39,7 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
   const {
     driverBackendEnabled,
     setDriverProfile,
+    setDriverProfilePhoto,
     setDriverPreferences,
     setOnboardingCheckpoints,
     setVehicles,
@@ -90,6 +92,7 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
             city: profile.city || prev.city,
             country: profile.country || prev.country,
           }));
+          setDriverProfilePhoto(typeof profile.profilePhoto === "string" && profile.profilePhoto.trim().length > 0 ? profile.profilePhoto : null);
         }
 
         if (preferences) {
@@ -214,6 +217,7 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
     setActiveTrip,
     setDriverPreferences,
     setDriverProfile,
+    setDriverProfilePhoto,
     setEmergencyContacts,
     setJobAccessError,
     setJobs,

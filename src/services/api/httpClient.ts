@@ -2,8 +2,9 @@
 // Previously this file re-exported from "@shared/config/src/httpClient" which
 // does not exist in this workspace. All required symbols are now defined here.
 
-const BACKEND_URL =
-  (import.meta.env.VITE_BACKEND_URL as string | undefined) ?? "http://localhost:3001/api/v1";
+import { API_BASE_URL } from "./config";
+
+const BACKEND_URL = API_BASE_URL;
 
 interface ApiEnvelope<T> {
   code?: string;

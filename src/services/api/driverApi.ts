@@ -13,6 +13,7 @@ export interface DriverBackendProfile {
   phone: string;
   city: string;
   country: string;
+  profilePhoto?: string | null;
 }
 
 export interface DriverBackendPreferencesPatch {
@@ -330,7 +331,9 @@ export async function getDriverProfile() {
   });
 }
 
-export async function patchDriverProfile(patch: Partial<DriverBackendProfile>) {
+export async function patchDriverProfile(
+  patch: Partial<DriverBackendProfile> & { identityVerified?: boolean },
+) {
   const token = readDriverBackendAccessToken();
   if (!isBackendAuthEnabled() || !token) return null;
   return request<DriverBackendProfile>("/drivers/me", {
