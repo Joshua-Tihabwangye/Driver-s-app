@@ -9,6 +9,7 @@ import {
   readDriverAuthAccount,
   saveDriverAuthAccount,
 } from "../utils/registerServiceFlow";
+import { saveAuthPrefill } from "../utils/authPrefill";
 
 function normalizePhone(value: string): string {
   return value.replace(/[^\d]/g, "");
@@ -84,6 +85,7 @@ export default function ResetPassword() {
       return;
     }
 
+    saveAuthPrefill({ email: identity.includes("@") ? identity.toLowerCase() : undefined, identity, password });
     navigate("/app/register-services", { replace: true });
   };
 

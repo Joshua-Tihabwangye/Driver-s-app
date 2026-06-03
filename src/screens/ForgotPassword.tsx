@@ -5,10 +5,12 @@ import {
   forgotPasswordWithCanonicalBackendFlow,
   isBackendAuthEnabled,
 } from "../services/api/authApi";
+import { readAuthPrefill, saveAuthPrefill } from "../utils/authPrefill";
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const prefill = React.useMemo(() => readAuthPrefill(), []);
+  const [email, setEmail] = useState(prefill.identity || prefill.email || "");
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -42,6 +44,7 @@ export default function ForgotPassword() {
         return;
       }
 
+      saveAuthPrefill({ email: identity.includes("@") ? identity.toLowerCase() : undefined, identity });
       navigate("/auth/verify-otp", {
         state: {
           identity,
