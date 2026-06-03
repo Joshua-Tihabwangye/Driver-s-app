@@ -141,6 +141,73 @@ export function getAssignableJobTypesFromRoleConfig(
   return ASSIGNABLE_JOB_TYPE_ORDER.filter((jobType) => assignableSet.has(jobType));
 }
 
+export function getPersistedServiceIdsFromRoleConfig(
+  config: RoleConfigInput
+): TaskCategoryKey[] {
+  const assignable = getAssignableJobTypesFromRoleConfig({
+    ...config,
+    sharedRidesEnabled: false,
+  });
+  return assignable.filter((jobType): jobType is TaskCategoryKey =>
+    TASK_CATEGORY_ORDER.includes(jobType as TaskCategoryKey)
+  );
+}
+
+export function deriveTaskCategorySelectionFromServiceIds(
+  serviceIds: string[] | null | undefined
+): TaskCategorySelection {
+  const selected = new Set(
+    (serviceIds ?? []).filter((value): value is TaskCategoryKey =>
+      TASK_CATEGORY_ORDER.includes(value as TaskCategoryKey)
+    )
+  );
+
+  return {
+    ride: selected.has("ride"),
+    delivery: selected.has("delivery"),
+    rental: selected.has("rental"),
+    tour: selected.has("tour"),
+    ambulance: selected.has("ambulance"),
+  };
+}
+
+export function deriveRoleConfigFromPersistedDriverService(
+  serviceMode: string | null | undefined,
+  serviceIds: string[] | null | undefined
+): RoleConfigInput | null {
+  const validRoles: DriverCoreRole[] = [
+    "ride-only",
+    "delivery-only",
+    "dual-mode",
+    "rental-only",
+    "tour-only",
+    "ambulance-only",
+  ];
+
+  const normalizedServiceMode = typeof serviceMode === "string" ? serviceMode.trim() : "";
+  if (validRoles.includes(normalizedServiceMode as DriverCoreRole)) {
+    const taskCategories = deriveTaskCategorySelectionFromServiceIds(serviceIds);
+    const derivedFromServices = deriveRoleConfigFromTaskCategorySelection(taskCategories);
+    if (derivedFromServices) {
+      return derivedFromServices;
+    }
+
+    return {
+      coreRole: normalizedServiceMode as DriverCoreRole,
+      programs: {
+        rental: normalizedServiceMode === "rental-only",
+        tour: normalizedServiceMode === "tour-only",
+        ambulance: normalizedServiceMode === "ambulance-only",
+        shuttle: false,
+      },
+    };
+  }
+
+  return deriveRoleConfigFromTaskCategorySelection(
+    deriveTaskCategorySelectionFromServiceIds(serviceIds)
+  );
+}
+
 export function buildProjectedTaskAllocation(
   taskCategories: TaskCategorySelection,
   sharedRidesEnabled: boolean

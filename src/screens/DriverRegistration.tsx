@@ -9,11 +9,12 @@ import {
   User
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
 import type { DriverCoreRole } from "../data/types";
 import { resetStoredDocumentState } from "../utils/documentVerificationState";
+import { readSelectedRegisterService, type RegisterServiceKey } from "../utils/registerServiceFlow";
 import type { DriverRoleUpdateInput } from "../context/StoreContext";
 
 // EVzone Driver App – DriverRegistration Registration – Driver Information
@@ -76,6 +77,17 @@ function deriveSelectedServiceFromCoreRole(coreRole: DriverCoreRole): ServiceOpt
   return null;
 }
 
+function deriveSelectedServiceFromRegisterService(
+  serviceKey: RegisterServiceKey | null | undefined
+): ServiceOptionKey | null {
+  if (serviceKey === "ride") return "ride";
+  if (serviceKey === "delivery") return "delivery";
+  if (serviceKey === "rides-delivery") return "rides-delivery";
+  if (serviceKey === "rental") return "rental";
+  if (serviceKey === "ambulance") return "ambulance";
+  return null;
+}
+
 const ROLE_CONFIG_BY_SERVICE: Record<ServiceOptionKey, DriverRoleUpdateInput> = {
   ride: {
     coreRole: "ride-only",
@@ -105,23 +117,37 @@ const ROLE_CONFIG_BY_SERVICE: Record<ServiceOptionKey, DriverRoleUpdateInput> = 
 
 export default function DriverRegistration() {
   const navigate = useNavigate();
+  const location = useLocation();
   const {
     updateDriverRoleConfig,
     driverRoleConfig,
+    onboardingCheckpoints,
     setOnboardingCheckpoint,
     driverProfile,
     driverProfilePhoto,
   } = useStore();
   const driverDisplayName =
     driverProfile.fullName.trim().length > 0 ? driverProfile.fullName.trim() : "Driver";
-  const [selectedServiceKey, setSelectedServiceKey] = useState<ServiceOptionKey | null>(
-    () => deriveSelectedServiceFromCoreRole(driverRoleConfig.coreRole)
-  );
+  const [selectedServiceKey, setSelectedServiceKey] = useState<ServiceOptionKey | null>(() => {
+    const selectedServiceFromState = (
+      location.state as { selectedService?: RegisterServiceKey } | null
+    )?.selectedService;
+    return (
+      deriveSelectedServiceFromRegisterService(selectedServiceFromState) ||
+      deriveSelectedServiceFromRegisterService(readSelectedRegisterService()) ||
+      (onboardingCheckpoints.roleSelected
+        ? deriveSelectedServiceFromCoreRole(driverRoleConfig.coreRole)
+        : null)
+    );
+  });
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
+    if (!onboardingCheckpoints.roleSelected) {
+      return;
+    }
     setSelectedServiceKey(deriveSelectedServiceFromCoreRole(driverRoleConfig.coreRole));
-  }, [driverRoleConfig.coreRole]);
+  }, [driverRoleConfig.coreRole, onboardingCheckpoints.roleSelected]);
 
   const handleServiceToggle = (optionKey: ServiceOptionKey) => {
     // EVzone Driver – Part 1: Service category selection now allows auto-replacement.

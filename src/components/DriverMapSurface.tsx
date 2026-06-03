@@ -185,6 +185,10 @@ function clamp(value: number) {
   return Math.min(0.98, Math.max(0.02, value));
 }
 
+function areLatLngClose(a: LatLng, b: LatLng, tolerance = 0.000001) {
+  return Math.abs(a.lat - b.lat) <= tolerance && Math.abs(a.lng - b.lng) <= tolerance;
+}
+
 function positionClassToLatLng(positionClass: string | undefined, center: LatLng): LatLng {
   if (!positionClass) return center;
 
@@ -259,7 +263,7 @@ const DEFAULT_EV_STATION_MARKERS: DriverMapMarker[] = [
 export default function DriverMapSurface({
   heightClass = "h-[460px]",
   className = "",
-  routePath = "M16 78 C 30 66, 44 56, 56 46 S 74 30, 86 18",
+  routePath,
   routeColor = "#14c8a8",
   routeStrokeWidth = 2.5,
   routeDasharray = "5 4",
@@ -428,7 +432,10 @@ export default function DriverMapSurface({
               if (!mapRef) return;
               const nextCenter = mapRef.getCenter();
               if (!nextCenter) return;
-              setCenter({ lat: nextCenter.lat(), lng: nextCenter.lng() });
+              const normalizedCenter = { lat: nextCenter.lat(), lng: nextCenter.lng() };
+              setCenter((currentCenter) =>
+                areLatLngClose(currentCenter, normalizedCenter) ? currentCenter : normalizedCenter
+              );
             }}
             options={{
               disableDefaultUI: true,
@@ -501,22 +508,24 @@ export default function DriverMapSurface({
         )}
       </div>
 
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{ transform: `rotate(${bearing}deg)`, transition: "transform 220ms ease" }}
-      >
-        <svg className="h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-          <path
-            d={routePath}
-            fill="none"
-            stroke={routeColor}
-            strokeWidth={routeStrokeWidth}
-            strokeLinecap="round"
-            strokeDasharray={routeDasharray}
-            opacity={trafficOn ? 0.95 : 0.55}
-          />
-        </svg>
-      </div>
+      {routePath ? (
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{ transform: `rotate(${bearing}deg)`, transition: "transform 220ms ease" }}
+        >
+          <svg className="h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <path
+              d={routePath}
+              fill="none"
+              stroke={routeColor}
+              strokeWidth={routeStrokeWidth}
+              strokeLinecap="round"
+              strokeDasharray={routeDasharray}
+              opacity={trafficOn ? 0.95 : 0.55}
+            />
+          </svg>
+        </div>
+      ) : null}
 
       <div className="absolute left-3 top-3 z-30 flex items-start gap-2 sm:left-4 sm:top-4">
         {onBack ? (

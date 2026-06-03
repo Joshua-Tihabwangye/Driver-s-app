@@ -78,16 +78,13 @@ export default function OnlineMapView({
     <div className="flex flex-col h-full bg-transparent">
       <DriverMapSurface
         heightClass={showQuickActions ? "h-[460px]" : "h-[540px]"}
-        routePath="M12 78 C 28 62, 38 58, 48 45 S 69 25, 84 18"
-        routeColor="#15b79e"
-        routeStrokeWidth={2.8}
-        routeDasharray="6 4"
         onBack={!homeMode ? () => navigate(-1) : undefined}
         onSos={handleEmergencySos}
         defaultZoom={12}
         defaultTrafficOn
-        defaultAlertsOn
-        defaultStationsOn
+        defaultAlertsOn={false}
+        defaultStationsOn={false}
+        stationMarkers={[]}
         topBadge={(
           <button
             type="button"
@@ -98,25 +95,7 @@ export default function OnlineMapView({
             Online
           </button>
         )}
-        markers={[
-          {
-            id: "driver-location",
-            positionClass: "left-[22%] top-[48%]",
-            tone: "driver",
-            label: "You",
-            icon: Navigation,
-          },
-          {
-            id: "hot-zone",
-            positionClass: "left-[18%] top-[24%]",
-            tone: "danger",
-          },
-          {
-            id: "earnings-zone",
-            positionClass: "right-[22%] top-[42%]",
-            tone: "warning",
-          },
-        ]}
+        markers={[]}
       >
         {!homeMode && (
           <div className="absolute left-4 top-[96px] z-20 rounded-full border border-emerald-200 bg-white/92 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-emerald-700 shadow-lg backdrop-blur-sm">

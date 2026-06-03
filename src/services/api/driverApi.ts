@@ -8,12 +8,16 @@ export const DRIVER_BACKEND_REFRESH_TOKEN_KEY = "evz_backend_refresh_token";
 export const DRIVER_BACKEND_AUTH_EVENT = "evzone:driver-backend-auth";
 
 export interface DriverBackendProfile {
+  id?: string;
   fullName: string;
   email: string;
   phone: string;
   city: string;
   country: string;
   profilePhoto?: string | null;
+  serviceMode?: string | null;
+  status?: string | null;
+  onboardingStatus?: string | null;
 }
 
 export interface DriverBackendPreferencesPatch {
@@ -332,7 +336,11 @@ export async function getDriverProfile() {
 }
 
 export async function patchDriverProfile(
-  patch: Partial<DriverBackendProfile> & { identityVerified?: boolean },
+  patch: Partial<DriverBackendProfile> & {
+    identityVerified?: boolean;
+    roleSelected?: boolean;
+    trainingCompleted?: boolean;
+  },
 ) {
   const token = readDriverBackendAccessToken();
   if (!isBackendAuthEnabled() || !token) return null;

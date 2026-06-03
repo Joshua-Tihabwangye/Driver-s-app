@@ -131,13 +131,13 @@ export default function DriverProfileOnboarding() {
     selectedVehicleIndex,
     emergencyContacts,
   } = useStore();
-  const documentState = useMemo(() => readStoredDocumentState(), []);
+  const documentState = readStoredDocumentState();
   const blockerCount = onboardingBlockers.length;
   const documentsComplete = areAllRequiredDocumentsCompliant(documentState);
-  const trainingComplete = onboardingCheckpoints.trainingCompleted;
+  const effectiveDocumentsVerified = onboardingCheckpoints.documentsVerified || documentsComplete;
   const onboardingPrerequisitesComplete =
     onboardingCheckpoints.roleSelected &&
-    onboardingCheckpoints.documentsVerified &&
+    effectiveDocumentsVerified &&
     onboardingCheckpoints.identityVerified &&
     onboardingCheckpoints.vehicleReady &&
     onboardingCheckpoints.emergencyContactReady;
@@ -209,30 +209,6 @@ export default function DriverProfileOnboarding() {
    }, [documentsComplete, driverBackendEnabled, setOnboardingCheckpoint]);
 
    const vehicleReady = onboardingCheckpoints.vehicleReady;
-
-  const gatewayAction = useMemo(() => {
-    if (!onboardingPrerequisitesComplete) {
-      return {
-        label: "Complete Required Steps",
-        route: onboardingBlockers[0]?.route || "/driver/onboarding/profile",
-        note: "Finish all onboarding requirements to unlock training.",
-      };
-    }
-
-    if (!trainingComplete) {
-      return {
-        label: "Continue to Training",
-        route: "/driver/training/info-session",
-        note: "Finish training before going online.",
-      };
-    }
-
-    return {
-      label: "Go Online",
-      route: "/driver/preferences/identity/face-capture?mode=go-online&next=/driver/dashboard/online",
-      note: "Identity check is required every time you go online.",
-    };
-  }, [onboardingBlockers, onboardingPrerequisitesComplete, trainingComplete]);
 
   type BreakdownItem = {
     id: string;
@@ -351,7 +327,7 @@ export default function DriverProfileOnboarding() {
               if (missingNames.length <= 2) return `${missingNames.join(" and ")} is missing.`;
               return `${missingNames.length} document sides are still missing. Check list below.`;
             })(),
-        present: onboardingCheckpoints.documentsVerified || documentsComplete,
+        present: effectiveDocumentsVerified,
         route: "/driver/onboarding/profile/documents/upload",
       },
       {
@@ -417,7 +393,7 @@ export default function DriverProfileOnboarding() {
     driverProfile.fullName,
     driverProfile.phone,
     onboardingRoleLabel,
-    onboardingCheckpoints.documentsVerified,
+    effectiveDocumentsVerified,
     onboardingCheckpoints.emergencyContactReady,
     onboardingCheckpoints.identityVerified,
     onboardingCheckpoints.roleSelected,
@@ -434,6 +410,32 @@ export default function DriverProfileOnboarding() {
     () => infoBreakdownItems.filter((item) => !item.present),
     [infoBreakdownItems]
   );
+  const nextMissingInfoItem = useMemo(
+    () =>
+      missingInfoItems.find((item) => item.id !== "documents-verified") ||
+      missingInfoItems[0] ||
+      null,
+    [missingInfoItems]
+  );
+
+  const gatewayAction = useMemo(() => {
+    if (nextMissingInfoItem) {
+      return {
+        kind: "next-step",
+        label: "Continue to the Next Step",
+        route: nextMissingInfoItem.route,
+        note: nextMissingInfoItem.detail || "Continue with the next onboarding requirement.",
+      };
+    }
+
+    return {
+      kind: "dashboard",
+      label: "Continue to Dashboard",
+      route: "/driver/dashboard/offline",
+      note: "Onboarding is complete. Go to your dashboard and start work when you are ready.",
+    };
+  }, [nextMissingInfoItem]);
+
   const completedSocialLinksCount = useMemo(
     () =>
       socialLinks.filter(
@@ -645,15 +647,17 @@ export default function DriverProfileOnboarding() {
             <p className="font-black text-xs mb-1 uppercase tracking-tight">
               {canGoOnline
                 ? "Setup Complete"
-                : onboardingPrerequisitesComplete && !trainingComplete
-                ? "Training Pending"
+                : onboardingPrerequisitesComplete
+                ? "Setup Complete"
                 : "Setup Incomplete"}
             </p>
             <p className="font-medium opacity-70">
               {canGoOnline
                 ? "All onboarding requirements are complete. Use Go Online when ready."
-                : onboardingPrerequisitesComplete && !trainingComplete
-                ? "All prerequisites are complete. Continue to training to unlock Go Online."
+                : onboardingPrerequisitesComplete
+                ? "All prerequisites are complete. Continue to the dashboard to start working."
+                : nextMissingInfoItem
+                ? `Next required step: ${nextMissingInfoItem.label}.`
                 : `Complete ${blockerCount} required step${blockerCount === 1 ? "" : "s"} to unlock shifts.`}
             </p>
           </div>
@@ -965,11 +969,11 @@ export default function DriverProfileOnboarding() {
           <button
             type="button"
             onClick={() => {
-              if (gatewayAction.label === "Complete Required Steps") {
+              if (gatewayAction.kind === "next-step") {
                 navigate(gatewayAction.route);
                 return;
               }
-              if (gatewayAction.label === "Go Online") {
+              if (gatewayAction.kind === "online") {
                 const decision = resolveGoOnlineAttempt("/driver/dashboard/online");
                 if (decision.allowed && !decision.requiresSelfie) {
                   setDriverOnline();
@@ -985,23 +989,10 @@ export default function DriverProfileOnboarding() {
                 });
                 return;
               }
-              if (!documentsComplete) {
-                alert("Please upload all required documents (Driving Permit, National ID or Passport, and Conduct Cert) before proceeding.");
-                return;
-              }
-              const identityVerified = onboardingCheckpoints.identityVerified;
-              if (!identityVerified) {
-                alert("Please complete the Identity Check selfie first.");
-                return;
-              }
-              if (!vehicleReady) {
-                alert("Please go to the Garage and select your active vehicle before proceeding.");
-                return;
-              }
               navigate(gatewayAction.route);
             }}
             className={`w-full rounded-2xl py-4 text-sm font-black shadow-lg transition-all active:scale-[0.98] uppercase tracking-widest ${
-              gatewayAction.label === "Go Online" || gatewayAction.label === "Continue to Training"
+              gatewayAction.kind === "online" || gatewayAction.kind === "dashboard"
                 ? "bg-orange-500 text-white shadow-orange-500/20 hover:bg-orange-600"
                 : "bg-slate-900 text-white shadow-slate-900/20 hover:bg-slate-800"
             }`}

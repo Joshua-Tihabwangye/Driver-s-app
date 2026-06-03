@@ -43,14 +43,12 @@ function ApprovedRow({ icon: Icon, title, subtitle }) {
 export default function DocumentVerified() {
   const navigate = useNavigate();
   const {
-    onboardingCheckpoints,
     resolveGoOnlineAttempt,
     setDriverOnline,
     setOnboardingCheckpoint,
   } = useStore();
   const documentState = useMemo(() => readStoredDocumentState(), []);
   const allDocumentsVerified = areAllRequiredDocumentsCompliant(documentState);
-  const trainingCompleted = onboardingCheckpoints.trainingCompleted;
 
   useEffect(() => {
     if (!allDocumentsVerified) {
@@ -65,13 +63,12 @@ export default function DocumentVerified() {
     setOnboardingCheckpoint("documentsVerified", true);
   }, [allDocumentsVerified, documentState, navigate, setOnboardingCheckpoint]);
 
-  const primaryCtaLabel = trainingCompleted ? "Go Online" : "Start Training";
+  const primaryCtaLabel = "Continue to Dashboard";
   const handlePrimaryAction = () => {
-    if (!trainingCompleted) {
-      navigate("/driver/training/intro");
-      return;
-    }
+    navigate("/driver/dashboard/offline");
+  };
 
+  const handleGoOnlineNow = () => {
     const decision = resolveGoOnlineAttempt("/driver/dashboard/online");
     if (decision.allowed && !decision.requiresSelfie) {
       setDriverOnline();
@@ -168,9 +165,9 @@ export default function DocumentVerified() {
                What's Next?
             </p>
             <div className="font-medium space-y-1">
-              <p>• Start the onboarding training track now.</p>
-              <p>• Finish training to unlock the Go Online gateway.</p>
-              <p>• You can return to profile anytime to review progress.</p>
+              <p>• Continue to the dashboard in offline mode.</p>
+              <p>• Tap Go Online when you are ready to start receiving work.</p>
+              <p>• Training remains available later, but it does not block work.</p>
             </div>
           </div>
         </section>
@@ -183,6 +180,13 @@ export default function DocumentVerified() {
             className="w-full rounded-2xl bg-orange-500 py-4 text-sm font-black text-white shadow-xl shadow-orange-500/20 hover:bg-orange-600 active:scale-[0.98] transition-all uppercase tracking-widest"
           >
             {primaryCtaLabel}
+          </button>
+          <button
+            type="button"
+            onClick={handleGoOnlineNow}
+            className="w-full rounded-2xl py-4 text-xs font-black text-slate-900 bg-white border border-slate-200 shadow-sm hover:bg-slate-50 active:scale-95 transition-all uppercase tracking-widest"
+          >
+             Go Online Now
           </button>
           <button
             type="button"
