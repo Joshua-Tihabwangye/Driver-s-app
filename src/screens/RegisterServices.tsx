@@ -10,6 +10,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { FormEvent, useMemo, useState } from "react";
+import { clearAuthPrefillPassword, readAuthPrefill, saveAuthPrefill } from "../utils/authPrefill";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useStore } from "../context/StoreContext";
