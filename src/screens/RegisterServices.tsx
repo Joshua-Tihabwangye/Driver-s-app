@@ -136,13 +136,16 @@ export default function RegisterServices() {
   const { login } = useAuth();
   const { updateDriverProfile } = useStore();
 
+  const authPrefill = useMemo(() => readAuthPrefill(), []);
   const [selectedService, setSelectedService] = useState<RegisterServiceKey | null>(() =>
     readSelectedRegisterService()
   );
-  const [step, setStep] = useState<"service" | "auth">("service");
+  const [step, setStep] = useState<"service" | "auth">(() =>
+    readSelectedRegisterService() && (authPrefill.identity || authPrefill.email) ? "auth" : "service"
+  );
   const [authMode, setAuthMode] = useState<AuthMode>("login");
-  const [identity, setIdentity] = useState("");
-  const [password, setPassword] = useState("");
+  const [identity, setIdentity] = useState(authPrefill.identity || authPrefill.email || "");
+  const [password, setPassword] = useState(authPrefill.password || "");
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [isSubmittingLogin, setIsSubmittingLogin] = useState(false);
@@ -243,6 +246,7 @@ export default function RegisterServices() {
         return;
       }
       saveDriverBackendTokens(backendAuth.accessToken, backendAuth.refreshToken);
+      saveAuthPrefill({ email: backendAuth.user.email, identity: backendAuth.user.email, password });
       const fallbackName =
         savedAccount?.fullName ||
         backendAuth.user.email.split("@")[0] ||
@@ -252,6 +256,7 @@ export default function RegisterServices() {
         email: backendAuth.user.email,
         phone: savedAccount?.phone || "",
       });
+      clearAuthPrefillPassword();
       signedIn = true;
     } catch (error) {
       const message =

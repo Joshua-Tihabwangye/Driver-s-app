@@ -92,7 +92,13 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
             city: profile.city || prev.city,
             country: profile.country || prev.country,
           }));
-          setDriverProfilePhoto(typeof profile.profilePhoto === "string" && profile.profilePhoto.trim().length > 0 ? profile.profilePhoto : null);
+          setDriverProfilePhoto((prev: string | null) => {
+            const backendPhoto = typeof profile.profilePhoto === "string" ? profile.profilePhoto.trim() : "";
+            if (backendPhoto.length > 0) {
+              return backendPhoto;
+            }
+            return prev;
+          });
         }
 
         if (preferences) {

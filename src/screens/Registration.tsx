@@ -9,6 +9,7 @@ import {
 } from "../services/api/authApi";
 import { saveDriverBackendTokens } from "../services/api/driverApi";
 import { resetStoredDocumentState } from "../utils/documentVerificationState";
+import { saveAuthPrefill } from "../utils/authPrefill";
 import {
   canUsePhonebookPicker,
   pickSinglePhonebookContact,
@@ -164,6 +165,7 @@ export default function Registration() {
         return;
       }
       saveDriverBackendTokens(backendAuth.accessToken, backendAuth.refreshToken);
+      saveAuthPrefill({ email: email.trim().toLowerCase(), identity: email.trim().toLowerCase(), password });
     } catch (error) {
       const message =
         error instanceof Error && error.message
