@@ -1,12 +1,10 @@
 import {
-  BatteryCharging,
+  Ambulance,
   Car,
-  Church,
   Eye,
   EyeOff,
-  GraduationCap,
-  Store,
-  Wallet2,
+  Package,
+  Route,
   type LucideIcon,
 } from "lucide-react";
 import { FormEvent, useMemo, useState } from "react";
@@ -18,9 +16,14 @@ import {
   isBackendAuthEnabled,
   loginDriverWithCanonicalBackendFlow,
 } from "../services/api/authApi";
-import { saveDriverBackendTokens } from "../services/api/driverApi";
 import {
-  DRIVER_SERVICE_KEY,
+  DriverBackendOnboardingCheckpoints,
+  DriverBackendProfile,
+  getDriverOnboardingCheckpoints,
+  getDriverProfile,
+  saveDriverBackendTokens,
+} from "../services/api/driverApi";
+import {
   getRegisterServiceLabel,
   readDriverAuthAccount,
   readSelectedRegisterService,
@@ -34,12 +37,11 @@ const SERVICES: Array<{
   icon: LucideIcon;
   color: string;
 }> = [
-  { key: "school", label: "School", icon: GraduationCap, color: "#2196F3" },
-  { key: "seller", label: "Seller", icon: Store, color: "#f77f00" },
-  { key: "driver", label: "EVzone Driver", icon: Car, color: "#f77f00" },
-  { key: "faith", label: "FaithHub", icon: Church, color: "#2196F3" },
-  { key: "charging", label: "EVzone Charging", icon: BatteryCharging, color: "#f77f00" },
-  { key: "wallet", label: "EVzone Wallet Agent", icon: Wallet2, color: "#2196F3" },
+  { key: "ride", label: "Rides", icon: Car, color: "#f77f00" },
+  { key: "delivery", label: "Delivery", icon: Package, color: "#2196F3" },
+  { key: "rides-delivery", label: "Rides + Delivery", icon: Route, color: "#f77f00" },
+  { key: "rental", label: "Rental", icon: Car, color: "#2196F3" },
+  { key: "ambulance", label: "Ambulance", icon: Ambulance, color: "#ef4444" },
 ];
 
 type AuthMode = "login" | "signup";
@@ -48,6 +50,31 @@ type SignupProvider = "evzone" | "google" | "apple";
 
 function normalizePhone(value: string): string {
   return value.replace(/[^\d]/g, "");
+}
+
+function resolvePostLoginRoute(
+  profile: DriverBackendProfile | null,
+  checkpoints: DriverBackendOnboardingCheckpoints | null
+): string {
+  if (profile?.status === "online") {
+    return "/driver/dashboard/online";
+  }
+  if (checkpoints?.onboardingComplete) {
+    return "/driver/dashboard/offline";
+  }
+  if (!checkpoints?.roleSelected) {
+    return "/driver/register";
+  }
+  if (!checkpoints?.documentsVerified || !checkpoints?.identityVerified) {
+    return "/driver/onboarding/profile";
+  }
+  if (!checkpoints?.vehicleReady) {
+    return "/driver/vehicles";
+  }
+  if (!checkpoints?.emergencyContactReady) {
+    return "/driver/safety/emergency/contacts";
+  }
+  return "/driver/dashboard/offline";
 }
 
 function ServiceTile({
@@ -155,7 +182,7 @@ export default function RegisterServices() {
     () => getRegisterServiceLabel(selectedService),
     [selectedService]
   );
-  const supportsDriverAuth = selectedService === DRIVER_SERVICE_KEY;
+  const supportsDriverAuth = Boolean(selectedService);
 
   const handleSelectService = (serviceKey: RegisterServiceKey) => {
     setSelectedService(serviceKey);
@@ -201,11 +228,6 @@ export default function RegisterServices() {
 
     if (!selectedService) {
       setLoginError("Select a service first.");
-      return;
-    }
-
-    if (!supportsDriverAuth) {
-      setLoginError("Driver authentication is currently available only for EVzone Driver.");
       return;
     }
 
@@ -277,11 +299,19 @@ export default function RegisterServices() {
       return;
     }
 
-    const verificationRoute = `/driver/preferences/identity/face-capture?mode=go-online&next=${encodeURIComponent(
-      "/driver/dashboard/online"
-    )}`;
+    let nextRoute = "/driver/dashboard/offline";
+    try {
+      const [backendProfile, backendCheckpoints] = await Promise.all([
+        getDriverProfile(),
+        getDriverOnboardingCheckpoints(),
+      ]);
+      nextRoute = resolvePostLoginRoute(backendProfile, backendCheckpoints);
+    } catch (error) {
+      console.warn("Failed to resolve driver post-login route.", error);
+    }
+    setIsSubmittingLogin(false);
 
-    navigate(verificationRoute, {
+    navigate(nextRoute, {
       replace: true,
       state: {
         selectedService,
@@ -293,7 +323,6 @@ export default function RegisterServices() {
   const loginButtonDisabled =
     isSubmittingLogin ||
     !selectedService ||
-    !supportsDriverAuth ||
     identity.trim().length === 0 ||
     password.trim().length === 0;
 
@@ -383,15 +412,6 @@ export default function RegisterServices() {
               </button>
             </div>
 
-            {!supportsDriverAuth && (
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
-                <p className="text-[11px] font-medium text-slate-600">
-                  EVzone Driver authentication is currently enabled only for the EVzone Driver service.
-                  Use <span className="font-black">Change Service</span> to switch.
-                </p>
-              </div>
-            )}
-
             {authMode === "login" ? (
               <form
                 onSubmit={handleLoginSubmit}
@@ -455,7 +475,7 @@ export default function RegisterServices() {
                       : "bg-orange-500 text-white shadow-lg shadow-orange-500/20 hover:bg-orange-600 active:scale-[0.98]"
                   }`}
                 >
-                  {isSubmittingLogin ? "Logging in..." : "Login and go online"}
+                  {isSubmittingLogin ? "Logging in..." : "Login and continue"}
                 </button>
               </form>
             ) : (

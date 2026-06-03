@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { deriveRoleConfigFromPersistedDriverService } from "../../utils/taskCategories";
 import {
   getDriverActiveTrip,
   getDriverOnboardingCheckpoints,
@@ -18,7 +19,9 @@ type UseDriverBackendBootstrapSyncOptions = {
   setDriverProfile: AnySetter;
   setDriverProfilePhoto: AnySetter;
   setDriverPreferences: AnySetter;
+  setDriverRoleSelection: AnySetter;
   setOnboardingCheckpoints: AnySetter;
+  setDriverPresenceStatus: AnySetter;
   setVehicles: AnySetter;
   setJobs: AnySetter;
   setTrips: AnySetter;
@@ -41,7 +44,9 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
     setDriverProfile,
     setDriverProfilePhoto,
     setDriverPreferences,
+    setDriverRoleSelection,
     setOnboardingCheckpoints,
+    setDriverPresenceStatus,
     setVehicles,
     setJobs,
     setTrips,
@@ -99,14 +104,24 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
             }
             return prev;
           });
+          setDriverPresenceStatus(profile.status === "online" ? "online" : "offline");
         }
 
+        const persistedServiceIds = preferences?.serviceIds ?? [];
         if (preferences) {
           setDriverPreferences({
             areaIds: preferences.areaIds ?? [],
-            serviceIds: preferences.serviceIds ?? [],
+            serviceIds: persistedServiceIds,
             requirementIds: preferences.requirementIds ?? [],
           });
+        }
+
+        const persistedRoleConfig = deriveRoleConfigFromPersistedDriverService(
+          profile?.serviceMode,
+          persistedServiceIds,
+        );
+        if (persistedRoleConfig) {
+          setDriverRoleSelection(persistedRoleConfig);
         }
 
         if (checkpoints) {
@@ -222,8 +237,10 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
     setActiveRideRuntime,
     setActiveTrip,
     setDriverPreferences,
+    setDriverPresenceStatus,
     setDriverProfile,
     setDriverProfilePhoto,
+    setDriverRoleSelection,
     setEmergencyContacts,
     setJobAccessError,
     setJobs,

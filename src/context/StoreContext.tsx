@@ -17,7 +17,7 @@ import type {
 } from "../data/types";
 import { MOCK_EARNINGS, MOCK_COMPLETED_TRIPS, MOCK_SHARED_TRIPS, MOCK_DASHBOARD_STATS } from "../data/mockData";
 import { SAMPLE_IDS } from "../data/constants";
-import { getAssignableJobTypesFromRoleConfig } from "../utils/taskCategories";
+import { getAssignableJobTypesFromRoleConfig, getPersistedServiceIdsFromRoleConfig } from "../utils/taskCategories";
 import {
   areAllRequiredDocumentsCompliant,
   getFirstNonCompliantDocumentKey,
@@ -37,6 +37,7 @@ import {
   sendDriverLocationHeartbeat,
   setDriverPresenceOffline,
   setDriverPresenceOnline,
+  patchDriverPreferences,
   patchDriverProfile,
   shouldUseDriverBackendWrites,
   triggerTripSos,
@@ -502,7 +503,7 @@ function resolveAccessoriesForVehicle(
 }
 
 const DEFAULT_ONBOARDING_CHECKPOINTS: OnboardingCheckpointState = {
-  roleSelected: true,
+  roleSelected: false,
   documentsVerified: false,
   identityVerified: false,
   vehicleReady: false,
@@ -841,7 +842,7 @@ function readStoredOnboardingCheckpoints(): OnboardingCheckpointState {
 
 function readStoredDriverRoleSelection(): DriverRoleUpdateInput {
   const fallback: DriverRoleUpdateInput = {
-    coreRole: "dual-mode",
+    coreRole: "ride-only",
     programs: { ...DEFAULT_PROGRAM_FLAGS },
   };
 
@@ -1898,7 +1899,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setDriverProfile,
     setDriverProfilePhoto: setDriverProfilePhotoState,
     setDriverPreferences,
+    setDriverRoleSelection,
     setOnboardingCheckpoints,
+    setDriverPresenceStatus,
     setVehicles: (next) => {
       if (typeof next === "function") {
         setVehicles((prev) => (next as any)(prev));
@@ -2130,11 +2133,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         };
       }
 
-      const personalDocs = readStoredDocumentState();
-      const hasNonCompliantPersonalDocs =
-        Boolean(getFirstNonCompliantDocumentKey(personalDocs));
+      const hasDocumentBlocker = driverBackendEnabled
+        ? onboardingCheckpoints.documentsVerified !== true
+        : Boolean(getFirstNonCompliantDocumentKey(readStoredDocumentState())) ||
+          hasNonCompliantVehicleDocuments();
 
-      if (hasNonCompliantPersonalDocs || hasNonCompliantVehicleDocuments()) {
+      if (hasDocumentBlocker) {
         return {
           allowed: false,
           reason: "documents",
@@ -2150,7 +2154,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         message: "",
       };
     },
-    [driverPresenceStatus, hasNonCompliantVehicleDocuments]
+    [driverBackendEnabled, driverPresenceStatus, hasNonCompliantVehicleDocuments, onboardingCheckpoints.documentsVerified]
   );
 
   const resolveGoOnlineAttempt = useCallback(
@@ -2159,6 +2163,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         (checkpointId) =>
           checkpointId !== "documentsVerified" &&
           checkpointId !== "identityVerified" &&
+          checkpointId !== "trainingCompleted" &&
           !onboardingCheckpoints[checkpointId]
       );
       if (nonDocumentBlockerId) {
@@ -2255,16 +2260,25 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     resolveAccessoriesForVehicle,
   });
 
-  const onboardingBlockers = useMemo<OnboardingBlocker[]>(
-    () =>
-      ONBOARDING_CHECKPOINT_ORDER.filter(
-        (checkpointId) => !onboardingCheckpoints[checkpointId]
-      ).map((checkpointId) => ({
-        id: checkpointId,
-        ...ONBOARDING_CHECKPOINT_META[checkpointId],
-      })),
-    [onboardingCheckpoints]
-  );
+  const onboardingBlockers = useMemo<OnboardingBlocker[]>(() => {
+    const personalDocs = readStoredDocumentState();
+    const documentsVerified = driverBackendEnabled
+      ? onboardingCheckpoints.documentsVerified === true
+      : areAllRequiredDocumentsCompliant(personalDocs);
+
+    return ONBOARDING_CHECKPOINT_ORDER.filter((checkpointId) => {
+      if (checkpointId === "trainingCompleted") {
+        return false;
+      }
+      if (checkpointId === "documentsVerified") {
+        return !documentsVerified;
+      }
+      return !onboardingCheckpoints[checkpointId];
+    }).map((checkpointId) => ({
+      id: checkpointId,
+      ...ONBOARDING_CHECKPOINT_META[checkpointId],
+    }));
+  }, [driverBackendEnabled, onboardingCheckpoints]);
 
   const canGoOnline = onboardingBlockers.length === 0;
   const primaryOnboardingRoute =
@@ -3291,18 +3305,37 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         return validation;
       }
 
+      const persistedServiceIds = getPersistedServiceIdsFromRoleConfig(input);
       setDriverRoleSelection({
         coreRole: input.coreRole,
         programs: { ...input.programs },
       });
+      setDriverPreferences((prev) => ({
+        ...prev,
+        serviceIds: persistedServiceIds,
+      }));
       setOnboardingCheckpoints((prev) => ({
         ...prev,
         roleSelected: true,
       }));
 
+      if (shouldUseDriverBackendWrites()) {
+        void patchDriverProfile({
+          serviceMode: input.coreRole,
+          roleSelected: true,
+        }).catch((error) => {
+          console.warn("Driver backend role selection update failed.", error);
+        });
+        void patchDriverPreferences({
+          serviceIds: persistedServiceIds,
+        }).catch((error) => {
+          console.warn("Driver backend service preference update failed.", error);
+        });
+      }
+
       return { ok: true };
     },
-    []
+    [setDriverPreferences]
   );
   const enableDualMode = useCallback(() => {
     setDriverRoleSelection((prev) => ({

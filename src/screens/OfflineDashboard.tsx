@@ -4,11 +4,13 @@ import {
   Info,
   WifiOff
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import OfflineConfirmModal from "../components/OfflineConfirmModal";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
+import { useDriverBackendEnabled } from "../context/hooks/useDriverBackendEnabled";
+import { areAllRequiredDocumentsCompliant, readStoredDocumentState } from "../utils/documentVerificationState";
 
 // EVzone Driver App – OfflineDashboard Driver App – Dashboard (Offline State)
 // Driver dashboard when offline, showing status + any blocking issues.
@@ -42,17 +44,21 @@ export default function OfflineDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const [showGoOnlineModal, setShowGoOnlineModal] = useState(false);
+  const driverBackendEnabled = useDriverBackendEnabled();
   const {
     canGoOnline,
     onboardingBlockers,
+    onboardingCheckpoints,
     resolveGoOnlineAttempt,
     setDriverOnline,
-    setDriverOffline,
   } = useStore();
 
-  useEffect(() => {
-    setDriverOffline();
-  }, [setDriverOffline]);
+  const documentsVerified = driverBackendEnabled
+    ? onboardingCheckpoints.documentsVerified === true
+    : areAllRequiredDocumentsCompliant(readStoredDocumentState());
+  const visibleBlockers = onboardingBlockers.filter((blocker) =>
+    blocker.id === "documentsVerified" ? !documentsVerified : true
+  );
 
   const routeState = (location.state as
     | { offlineGuardMessage?: string; blockedPath?: string }
@@ -167,15 +173,15 @@ export default function OfflineDashboard() {
           <div className="px-1">
             <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Attention Required</h2>
           </div>
-          {onboardingBlockers.length === 0 ? (
+          {visibleBlockers.length === 0 ? (
             <IssueRow
               title="All Required Steps Completed"
-              text="Document checks run first. If valid, selfie verification starts and you go online directly after verification."
+              text="Your onboarding is complete. Tap Go Online to run selfie verification and start receiving work."
               type="info"
               onClick={handleGoOnline}
             />
           ) : (
-            onboardingBlockers.map((blocker) => (
+            visibleBlockers.map((blocker) => (
               <IssueRow
                 key={blocker.id}
                 title={blocker.title}

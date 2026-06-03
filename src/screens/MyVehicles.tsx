@@ -16,12 +16,25 @@ import { useStore } from "../context/StoreContext";
 // Integrated with StoreContext for dynamic vehicle list and selection.
 
 function VehicleCard({ image, brand, model, badge, primary, selected, onSelect, onClick }: any) {
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      onClick();
+    }
+  };
+
   return (
-    <div className={`flex items-center space-x-4 rounded-xl border-2 p-3 shadow-sm hover:scale-[1.01] transition-all group ${
-      selected
-        ? "border-brand-active/40 bg-emerald-50/40 ring-1 ring-brand-active/20"
-        : "border-orange-500/10 bg-cream hover:border-orange-500/30"
-    }`}>
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={onClick}
+      onKeyDown={handleKeyDown}
+      className={`flex items-center space-x-4 rounded-xl border-2 p-3 text-left shadow-sm hover:scale-[1.01] transition-all group cursor-pointer ${
+        selected
+          ? "border-brand-active/40 bg-emerald-50/40 ring-1 ring-brand-active/20"
+          : "border-orange-500/10 bg-cream hover:border-orange-500/30"
+      }`}
+    >
       {/* Selection checkbox */}
       <button
         type="button"
@@ -150,23 +163,17 @@ export default function MyVehicles() {
                </div>
              ) : (
                vehicles.map((v, idx) => (
-                 <button
+                 <VehicleCard
                    key={v.id}
-                   type="button"
+                   brand={v.make}
+                   model={v.model}
+                   image={v.imageUrl}
+                   badge={v.type === "Motorcycle" ? "Bike" : idx === 0 ? "Main EV" : null}
+                   primary={idx === 0}
+                   selected={localSelectedIdx === idx}
+                   onSelect={() => setLocalSelectedIdx(idx)}
                    onClick={() => navigate(`/driver/vehicles/${v.id}`)}
-                   className="w-full text-left"
-                 >
-                   <VehicleCard
-                     brand={v.make}
-                     model={v.model}
-                     image={v.imageUrl}
-                     badge={v.type === "Motorcycle" ? "Bike" : idx === 0 ? "Main EV" : null}
-                     primary={idx === 0}
-                     selected={localSelectedIdx === idx}
-                     onSelect={() => setLocalSelectedIdx(idx)}
-                     onClick={() => navigate(`/driver/vehicles/${v.id}`)}
-                   />
-                 </button>
+                 />
                ))
              )}
            </div>
