@@ -19,7 +19,9 @@ import {
   type ChangeEvent,
   type RefObject,
 } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useDriverBackendEnabled } from "../context/hooks/useDriverBackendEnabled";
+import { listDriverDocuments, createDriverDocument } from "../services/api/driverApi";
 import type { VehicleDocumentGroup, VehicleDocuments } from "../data/types";
 import PageHeader from "../components/PageHeader";
 import VehicleDocumentCard from "../components/VehicleDocumentCard";
@@ -213,11 +215,20 @@ function isVehicleDocumentCompliant(group: VehicleDocumentGroup | undefined): bo
     return false;
   }
   const expiryDate = group.expiryDate || group.file.expiryDate || "";
-  return validateDocumentExpiryDate(expiryDate).valid;
+  const status = getDocumentExpiryStatus(expiryDate);
+  return status === "valid" || status === "expiring_soon";
 }
+
+const BACKEND_DOCUMENT_TYPE_TO_KEY: Record<string, DocumentUploadKey> = {
+  national_id_or_passport: "id",
+  drivers_license: "license",
+  conduct_clearance: "police",
+};
 
 export default function RequiredActionsDashboard() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const driverBackendEnabled = useDriverBackendEnabled();
   const personalDocumentsRef = useRef<HTMLElement | null>(null);
   const vehicleDocumentsRef = useRef<HTMLElement | null>(null);
 
@@ -241,6 +252,65 @@ export default function RequiredActionsDashboard() {
   });
 
   const allPersonalDocsCompliant = areAllRequiredDocumentsCompliant(personalDocs);
+
+  useEffect(() => {
+    if (!driverBackendEnabled) {
+      return;
+    }
+
+    let cancelled = false;
+    const hydratePersonalDocumentsFromBackend = async () => {
+      try {
+        const backendDocuments = await listDriverDocuments();
+        if (!backendDocuments.length || cancelled) {
+          return;
+        }
+
+        setPersonalDocs((prev) => {
+          const next = { ...prev };
+          backendDocuments.forEach((doc) => {
+            const documentType =
+              (doc as { documentType?: string }).documentType || doc.type || "";
+            const key = BACKEND_DOCUMENT_TYPE_TO_KEY[documentType];
+            if (!key || !doc.fileUrl) {
+              return;
+            }
+            const expiryDate =
+              typeof doc.expiresAt === "number"
+                ? new Date(doc.expiresAt).toISOString().slice(0, 10)
+                : next[key].expiryDate;
+            const copy = {
+              status: "Uploaded" as const,
+              fileName: doc.fileName || doc.fileUrl.split("/").pop() || doc.type,
+              fileUrl: doc.fileUrl,
+              error: "",
+            };
+            next[key] = {
+              ...next[key],
+              expiryDate,
+              front: { ...copy },
+              back: key === "police" ? next[key].back : { ...copy },
+            };
+          });
+          return next;
+        });
+      } catch (error) {
+        console.warn("Failed to hydrate personal documents from backend.", error);
+      }
+    };
+
+    void hydratePersonalDocumentsFromBackend();
+    return () => {
+      cancelled = true;
+    };
+  }, [driverBackendEnabled]);
+
+  useEffect(() => {
+    const filter = searchParams.get("filter");
+    if (filter === "expired") {
+      scrollToSection(personalDocumentsRef);
+    }
+  }, [searchParams]);
 
   const activeVehicle =
     selectedVehicleIndex !== null &&
@@ -284,6 +354,31 @@ export default function RequiredActionsDashboard() {
     }
   };
 
+  const syncPersonalDocumentToBackend = async (key: DocumentUploadKey, state: DocumentUploadState) => {
+    if (!driverBackendEnabled) return;
+    const entry = state[key];
+    const isComplete = isDocumentEntryComplete(key, entry);
+    const expiryValidation = validateDocumentExpiryDate(entry.expiryDate);
+
+    if (isComplete && expiryValidation.valid) {
+      try {
+        const docTypeMap: Record<DocumentUploadKey, string> = {
+          id: "national_id_or_passport",
+          license: "drivers_license",
+          police: "conduct_clearance",
+        };
+        const fileUrl = entry.front.fileUrl || entry.back.fileUrl;
+        await createDriverDocument({
+          documentType: docTypeMap[key],
+          fileUrl,
+          expiryDate: entry.expiryDate,
+        });
+      } catch (error) {
+        console.warn(`Failed to sync personal document ${key} to backend:`, error);
+      }
+    }
+  };
+
   const handlePersonalExpiryDate = (key: DocumentUploadKey, value: string) => {
     setPersonalDocs((prev) => {
       const next = {
@@ -294,6 +389,7 @@ export default function RequiredActionsDashboard() {
         },
       };
       persistDocumentState(next);
+      void syncPersonalDocumentToBackend(key, next);
       return next;
     });
 
@@ -348,6 +444,7 @@ export default function RequiredActionsDashboard() {
         },
       };
       persistDocumentState(next);
+      void syncPersonalDocumentToBackend(key, next);
       return next;
     });
 

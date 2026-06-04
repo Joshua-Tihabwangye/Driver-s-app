@@ -36,6 +36,25 @@ export interface DriverBackendOnboardingCheckpoints {
   onboardingComplete: boolean;
 }
 
+export interface DriverBackendOnboardingStatus {
+  userId: string;
+  driverId: string | null;
+  isAuthenticated: boolean;
+  hasSelectedService: boolean;
+  hasSelectedServiceCategories: boolean;
+  hasProfile: boolean;
+  hasOperationArea: boolean;
+  hasActiveVehicle: boolean;
+  hasRequiredDriverDocuments: boolean;
+  hasRequiredVehicleDocuments: boolean;
+  hasCompletedTutorials: boolean;
+  onboardingCompleted: boolean;
+  nextRequiredStep: string | null;
+  redirectTo: string;
+  redirectPath: string;
+  checkpoints?: DriverBackendOnboardingCheckpoints;
+}
+
 export interface DriverBackendVehiclePayload {
   make: string;
   model: string;
@@ -48,6 +67,7 @@ export interface DriverBackendVehiclePayload {
 
 export interface DriverBackendVehicle extends DriverBackendVehiclePayload {
   id: string;
+  documents?: Record<string, unknown> | null;
 }
 
 export interface DriverBackendJob {
@@ -164,23 +184,19 @@ export interface DriverBackendTripSafetyState {
 
 export interface DriverBackendDocument {
   id: string;
-  type: string;
-  status: "pending" | "under_review" | "verified" | "rejected";
+  userId: string;
+  userType: string;
+  documentType: string;
   fileUrl: string;
-  fileName: string;
-  uploadedAt: number;
-  verifiedAt?: number;
-  rejectedAt?: number;
-  expiresAt?: number;
-  notes?: string;
+  expiryDate: string;
+  status: "pending" | "under_review" | "verified" | "rejected";
+  rejectionReason?: string | null;
 }
 
 export interface DriverBackendDocumentInput {
-  type: string;
+  documentType: string;
   fileUrl: string;
-  fileName: string;
-  expiresAt?: number;
-  notes?: string;
+  expiryDate: string;
 }
 
 export interface DriverBackendDocumentStatus {
@@ -376,6 +392,28 @@ export async function getDriverOnboardingCheckpoints() {
   return request<DriverBackendOnboardingCheckpoints>("/drivers/me/onboarding/checkpoints", {
     method: "GET",
     headers: authHeaders(token),
+  });
+}
+
+export async function getDriverOnboardingStatus() {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return null;
+  return request<DriverBackendOnboardingStatus>("/drivers/me/onboarding/status", {
+    method: "GET",
+    headers: authHeaders(token),
+  });
+}
+
+export async function uploadDriverVehicleDocument(
+  vehicleId: string,
+  input: { documentType: string; fileUrl: string; expiryDate: string },
+) {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return null;
+  return request<Record<string, unknown>>(`/drivers/me/vehicles/${vehicleId}/documents`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: input,
   });
 }
 

@@ -215,7 +215,7 @@ export default function DriverPreferences() {
     assignableJobTypes,
     driverPreferences,
     updateDriverRoleConfig,
-    setDriverPreferences,
+    updateDriverPreferences,
   } = useStore();
   const [taskCategoryError, setTaskCategoryError] = useState("");
   const [taskCategories, setTaskCategories] = useState<Record<TaskCategoryKey, boolean>>(
@@ -345,7 +345,7 @@ export default function DriverPreferences() {
     }
 
     setSharedRidesEnabled(sharedRidesDraft && taskCategories.ride);
-    setDriverPreferences({
+    updateDriverPreferences({
       areaIds: selectedAreaIds,
       serviceIds: selectedServiceIds,
       requirementIds: selectedRequirementIds.filter((id) => id !== "shared"),

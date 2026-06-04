@@ -1,9 +1,10 @@
 export type RegisterServiceKey =
-  | "ride"
-  | "delivery"
-  | "rides-delivery"
-  | "rental"
-  | "ambulance";
+  | "school"
+  | "seller"
+  | "driver"
+  | "faith"
+  | "charging"
+  | "wallet";
 
 export interface DriverAuthAccount {
   fullName: string;
@@ -15,14 +16,15 @@ export interface DriverAuthAccount {
   updatedAt: number;
 }
 
-export const DRIVER_SERVICE_KEY: RegisterServiceKey = "ride";
+export const DRIVER_SERVICE_KEY: RegisterServiceKey = "driver";
 
 export const REGISTER_SERVICE_LABELS: Record<RegisterServiceKey, string> = {
-  ride: "Rides",
-  delivery: "Delivery",
-  "rides-delivery": "Rides + Delivery",
-  rental: "Rental",
-  ambulance: "Ambulance",
+  school: "School",
+  seller: "Seller",
+  driver: "EVzone Driver",
+  faith: "FaithHub",
+  charging: "EVzone Charging",
+  wallet: "EVzone Wallet Agent",
 };
 
 const SELECTED_SERVICE_STORAGE_KEY = "evz_selected_register_service";

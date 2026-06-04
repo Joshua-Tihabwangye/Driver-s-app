@@ -15,6 +15,7 @@ import {
   pickSinglePhonebookContact,
 } from "../utils/phonebook";
 import {
+  DRIVER_SERVICE_KEY,
   getRegisterServiceLabel,
   readSelectedRegisterService,
   saveDriverAuthAccount,
@@ -49,6 +50,7 @@ export default function Registration() {
     setOnboardingCheckpoint,
     driverProfile,
     setDriverProfile,
+    updateDriverProfile,
     resetOnboardingVehicleSetup,
   } = useStore();
   const selectedServiceFromState = (
@@ -112,6 +114,11 @@ export default function Registration() {
       return;
     }
 
+    if (selectedService !== DRIVER_SERVICE_KEY) {
+      setErrorMessage("Driver registration requires EVzone Driver as your selected service.");
+      return;
+    }
+
     if (!hasPassword) {
       setErrorMessage("Password is required.");
       return;
@@ -165,6 +172,12 @@ export default function Registration() {
         return;
       }
       saveDriverBackendTokens(backendAuth.accessToken, backendAuth.refreshToken);
+      updateDriverProfile({
+        fullName: fullName.trim(),
+        phone: phone.trim(),
+        city: city.trim(),
+        country: country.trim(),
+      });
       saveAuthPrefill({ email: email.trim().toLowerCase(), identity: email.trim().toLowerCase(), password });
     } catch (error) {
       const message =

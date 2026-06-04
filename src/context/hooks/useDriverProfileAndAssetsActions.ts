@@ -10,7 +10,9 @@ import {
   patchDriverVehicle,
   shouldUseDriverBackendWrites,
   updateDriverEmergencyContact as patchDriverEmergencyContact,
+  uploadDriverVehicleDocument,
 } from "../../services/api/driverApi";
+import { VEHICLE_DOCUMENT_API_TYPES } from "../../utils/mapBackendVehicleDocuments";
 
 type DriverProfileLike = Partial<{
   fullName: string;
@@ -155,6 +157,24 @@ export function useDriverProfileAndAssetsActions({
       }).catch((error) => {
         console.warn("Driver backend vehicle update failed.", error);
       });
+
+      if (patch.vehicleDocs) {
+        (["insurance", "inspection"] as const).forEach((docKey) => {
+          const group = patch.vehicleDocs?.[docKey];
+          const fileUrl = group?.file?.url?.trim() || "";
+          const expiryDate = group?.expiryDate || group?.file?.expiryDate || "";
+          if (!fileUrl || fileUrl.startsWith("local://") || !expiryDate) {
+            return;
+          }
+          void uploadDriverVehicleDocument(id, {
+            documentType: VEHICLE_DOCUMENT_API_TYPES[docKey],
+            fileUrl,
+            expiryDate,
+          }).catch((error) => {
+            console.warn(`Driver backend vehicle document upload failed (${docKey}).`, error);
+          });
+        });
+      }
     }
   }, [setVehicles]);
 

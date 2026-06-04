@@ -10,6 +10,8 @@ import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
+import { useDriverBackendEnabled } from "../context/hooks/useDriverBackendEnabled";
+import { createDriverDocument } from "../services/api/driverApi";
 import {
   areAllRequiredDocumentsCompliant,
   createLocalDocumentFileUrl,
@@ -247,8 +249,10 @@ function DocumentCard({
 export default function DocumentUpload() {
   const navigate = useNavigate();
   const location = useLocation();
+  const driverBackendEnabled = useDriverBackendEnabled();
   const { resolveGoOnlineAttempt, setDriverOnline, setOnboardingCheckpoint } =
     useStore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const focusedDoc = useMemo(() => {
     const query = new URLSearchParams(location.search);
     const focus = query.get("focus");
@@ -353,7 +357,7 @@ export default function DocumentUpload() {
     if (input) input.click();
   };
 
-  const handleSubmitDocuments = () => {
+  const handleSubmitDocuments = async () => {
     const nextExpiryErrors = (["id", "license", "police"] as const).reduce(
       (acc, key) => {
         const validation = validateDocumentExpiryDate(docs[key].expiryDate);
@@ -368,25 +372,50 @@ export default function DocumentUpload() {
       return;
     }
 
-    setOnboardingCheckpoint("documentsVerified", true);
-    if (goOnlineNextRoute) {
-      const decision = resolveGoOnlineAttempt(goOnlineNextRoute);
-      if (decision.allowed && !decision.requiresSelfie) {
-        setDriverOnline();
-        navigate(goOnlineNextRoute, { replace: true });
+    setIsSubmitting(true);
+    try {
+      if (driverBackendEnabled) {
+        const docTypeMap: Record<DocumentUploadKey, string> = {
+          id: "national_id_or_passport",
+          license: "drivers_license",
+          police: "conduct_clearance",
+        };
+
+        for (const key of ["id", "license", "police"] as const) {
+          const fileUrl = docs[key].front.fileUrl || docs[key].back.fileUrl;
+          await createDriverDocument({
+            documentType: docTypeMap[key],
+            fileUrl,
+            expiryDate: docs[key].expiryDate,
+          });
+        }
+      }
+
+      setOnboardingCheckpoint("documentsVerified", true);
+      if (goOnlineNextRoute) {
+        const decision = resolveGoOnlineAttempt(goOnlineNextRoute);
+        if (decision.allowed && !decision.requiresSelfie) {
+          setDriverOnline();
+          navigate(goOnlineNextRoute, { replace: true });
+          return;
+        }
+        navigate(decision.route, {
+          replace: true,
+          state: decision.allowed
+            ? undefined
+            : {
+                offlineGuardMessage: decision.message,
+              },
+        });
         return;
       }
-      navigate(decision.route, {
-        replace: true,
-        state: decision.allowed
-          ? undefined
-          : {
-              offlineGuardMessage: decision.message,
-            },
-      });
-      return;
+      navigate("/driver/onboarding/profile");
+    } catch (error) {
+      console.error("Failed to submit documents to backend:", error);
+      alert("Failed to save documents to server. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
-    navigate("/driver/onboarding/profile");
   };
 
   const documentCards = [
@@ -552,16 +581,18 @@ export default function DocumentUpload() {
 
           <button
             type="button"
-            disabled={!allRequiredUploadedWithValidExpiry}
-            aria-disabled={!allRequiredUploadedWithValidExpiry}
+            disabled={!allRequiredUploadedWithValidExpiry || isSubmitting}
+            aria-disabled={!allRequiredUploadedWithValidExpiry || isSubmitting}
             onClick={handleSubmitDocuments}
             className={`w-full rounded-2xl py-4 text-sm font-black uppercase tracking-widest shadow-xl transition-all active:scale-[0.98] ${
-              allRequiredUploadedWithValidExpiry
+              allRequiredUploadedWithValidExpiry && !isSubmitting
                 ? "bg-brand-secondary text-white shadow-brand-secondary/20 hover:bg-brand-secondary/90"
                 : "cursor-not-allowed bg-slate-200 text-slate-500 shadow-none"
             }`}
           >
-            {goOnlineNextRoute
+            {isSubmitting
+              ? "Saving..."
+              : goOnlineNextRoute
               ? "Save Documents & Continue Online"
               : "Save Documents & Continue"}
           </button>

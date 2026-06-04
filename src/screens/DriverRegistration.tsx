@@ -6,60 +6,53 @@ import {
   Pencil,
   Route,
   ShieldCheck,
-  User
+  User,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
 import type { DriverCoreRole } from "../data/types";
 import { resetStoredDocumentState } from "../utils/documentVerificationState";
-import { readSelectedRegisterService, type RegisterServiceKey } from "../utils/registerServiceFlow";
+import {
+  readSelectedDriverCategory,
+  saveSelectedDriverCategory,
+} from "../utils/driverCategoryFlow";
 import type { DriverRoleUpdateInput } from "../context/StoreContext";
-
-// EVzone Driver App – DriverRegistration Registration – Driver Information
-// Standardized Driver Profile registration screen.
 
 const SERVICE_OPTIONS = [
   {
-    key: "ride",
-    label: "Ride only",
-    desc: "Standard passenger trips.",
+    key: "ride" as const,
+    label: "Rides",
+    desc: "Passenger trips and standard ride-hailing requests.",
     icon: Car,
     role: "ride-only",
   },
   {
-    key: "delivery",
-    label: "Delivery only",
-    desc: "Food and parcel deliveries.",
+    key: "delivery" as const,
+    label: "Deliveries",
+    desc: "Food, parcels, and last-mile delivery runs.",
     icon: Package,
     role: "delivery-only",
   },
   {
-    key: "rides-delivery",
-    label: "Rides + Delivery",
-    desc: "Combined passenger and delivery requests.",
-    icon: Car,
+    key: "rides-delivery" as const,
+    label: "Rides + Deliveries",
+    desc: "Accept both passenger rides and delivery jobs.",
+    icon: Route,
     role: "dual-mode",
   },
   {
-    key: "rental",
-    label: "Rental / Chauffeur",
-    desc: "Hourly chauffeur and booked rentals.",
+    key: "rental" as const,
+    label: "Vehicle rental",
+    desc: "Hourly chauffeur, booked rentals, and assigned vehicles.",
     icon: Car,
     role: "rental-only",
   },
   {
-    key: "tour",
-    label: "Tour Driving",
-    desc: "Scheduled tour driving routes.",
-    icon: Route,
-    role: "tour-only",
-  },
-  {
-    key: "ambulance",
-    label: "Ambulance Driver",
-    desc: "Emergency medical transport only.",
+    key: "ambulance" as const,
+    label: "Ambulance",
+    desc: "Emergency medical transport and ambulance dispatch.",
     icon: Ambulance,
     role: "ambulance-only",
   },
@@ -72,19 +65,7 @@ function deriveSelectedServiceFromCoreRole(coreRole: DriverCoreRole): ServiceOpt
   if (coreRole === "delivery-only") return "delivery";
   if (coreRole === "dual-mode") return "rides-delivery";
   if (coreRole === "rental-only") return "rental";
-  if (coreRole === "tour-only") return "tour";
   if (coreRole === "ambulance-only") return "ambulance";
-  return null;
-}
-
-function deriveSelectedServiceFromRegisterService(
-  serviceKey: RegisterServiceKey | null | undefined
-): ServiceOptionKey | null {
-  if (serviceKey === "ride") return "ride";
-  if (serviceKey === "delivery") return "delivery";
-  if (serviceKey === "rides-delivery") return "rides-delivery";
-  if (serviceKey === "rental") return "rental";
-  if (serviceKey === "ambulance") return "ambulance";
   return null;
 }
 
@@ -105,10 +86,6 @@ const ROLE_CONFIG_BY_SERVICE: Record<ServiceOptionKey, DriverRoleUpdateInput> = 
     coreRole: "rental-only",
     programs: { rental: false, tour: false, ambulance: false, shuttle: false },
   },
-  tour: {
-    coreRole: "tour-only",
-    programs: { rental: false, tour: false, ambulance: false, shuttle: false },
-  },
   ambulance: {
     coreRole: "ambulance-only",
     programs: { rental: false, tour: false, ambulance: false, shuttle: false },
@@ -117,7 +94,6 @@ const ROLE_CONFIG_BY_SERVICE: Record<ServiceOptionKey, DriverRoleUpdateInput> = 
 
 export default function DriverRegistration() {
   const navigate = useNavigate();
-  const location = useLocation();
   const {
     updateDriverRoleConfig,
     driverRoleConfig,
@@ -129,16 +105,10 @@ export default function DriverRegistration() {
   const driverDisplayName =
     driverProfile.fullName.trim().length > 0 ? driverProfile.fullName.trim() : "Driver";
   const [selectedServiceKey, setSelectedServiceKey] = useState<ServiceOptionKey | null>(() => {
-    const selectedServiceFromState = (
-      location.state as { selectedService?: RegisterServiceKey } | null
-    )?.selectedService;
-    return (
-      deriveSelectedServiceFromRegisterService(selectedServiceFromState) ||
-      deriveSelectedServiceFromRegisterService(readSelectedRegisterService()) ||
-      (onboardingCheckpoints.roleSelected
-        ? deriveSelectedServiceFromCoreRole(driverRoleConfig.coreRole)
-        : null)
-    );
+    if (onboardingCheckpoints.roleSelected) {
+      return deriveSelectedServiceFromCoreRole(driverRoleConfig.coreRole);
+    }
+    return readSelectedDriverCategory();
   });
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -149,16 +119,15 @@ export default function DriverRegistration() {
     setSelectedServiceKey(deriveSelectedServiceFromCoreRole(driverRoleConfig.coreRole));
   }, [driverRoleConfig.coreRole, onboardingCheckpoints.roleSelected]);
 
-  const handleServiceToggle = (optionKey: ServiceOptionKey) => {
-    // EVzone Driver – Part 1: Service category selection now allows auto-replacement.
-    // Selecting a different category automatically unchecks the previous one.
-    setSelectedServiceKey((prev) => (prev === optionKey ? null : optionKey));
+  const handleSelectCategory = (optionKey: ServiceOptionKey) => {
+    setSelectedServiceKey(optionKey);
+    saveSelectedDriverCategory(optionKey);
     setErrorMessage("");
   };
 
   const handleContinue = () => {
     if (!selectedServiceKey) {
-      setErrorMessage("Select one service category.");
+      setErrorMessage("Select one service category to continue.");
       return;
     }
 
@@ -170,6 +139,8 @@ export default function DriverRegistration() {
       return;
     }
 
+    saveSelectedDriverCategory(selectedServiceKey);
+
     if (!driverRoleConfig.onboardingComplete) {
       resetStoredDocumentState();
       setOnboardingCheckpoint("documentsVerified", false);
@@ -180,19 +151,13 @@ export default function DriverRegistration() {
   };
 
   return (
-    <div className="flex flex-col min-h-full bg-transparent">
-      <PageHeader 
-        title="Driver Profile" 
-        subtitle="Registration" 
-        onBack={() => navigate(-1)} 
-      />
+    <div className="flex min-h-full flex-col bg-transparent">
+      <PageHeader title="Driver Profile" subtitle="Registration" onBack={() => navigate(-1)} />
 
-      {/* Content */}
-      <main className="flex-1 px-6 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
-        {/* Profile photo + name */}
+      <main className="scrollbar-hide flex-1 space-y-6 overflow-y-auto px-6 pb-16 pt-6">
         <section className="flex flex-col items-center">
           <div className="relative mb-3">
-            <div className="h-24 w-24 rounded-[2rem] bg-slate-100 border-[4px] border-orange-500 flex items-center justify-center overflow-hidden shadow-xl shadow-orange-100">
+            <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-[2rem] border-[4px] border-orange-500 bg-slate-100 shadow-xl shadow-orange-100">
               {driverProfilePhoto ? (
                 <img
                   src={driverProfilePhoto}
@@ -206,113 +171,140 @@ export default function DriverRegistration() {
             <button
               type="button"
               onClick={() => navigate("/driver/preferences/identity/upload-image")}
-              className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 border-2 border-white shadow-lg active:scale-90 transition-all"
+              className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-xl border-2 border-white bg-slate-900 shadow-lg transition-all active:scale-90"
             >
               <Pencil className="h-3.5 w-3.5 text-white" />
             </button>
           </div>
-          <h2 className="text-lg font-black text-slate-900 tracking-tight">{driverDisplayName}</h2>
+          <h2 className="text-lg font-black tracking-tight text-slate-900">{driverDisplayName}</h2>
         </section>
 
-        {/* EVzone Driver card */}
-        <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-cream p-8 text-center shadow-sm space-y-4 hover:border-orange-500/30 transition-all">
+        <div className="space-y-4 rounded-[2.5rem] border-2 border-orange-500/10 bg-cream p-8 text-center shadow-sm">
           <div className="flex justify-center">
-            <div className="h-16 w-16 rounded-2xl bg-white border border-orange-50 flex items-center justify-center shadow-lg shadow-orange-100">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-orange-50 bg-white shadow-lg shadow-orange-100">
               <Car className="h-8 w-8 text-orange-500" />
             </div>
           </div>
           <div>
-            <h4 className="text-sm font-black text-slate-900 tracking-tight mb-2 uppercase">EVzone Driver</h4>
-            <p className="text-[11px] text-slate-500 leading-relaxed font-medium">
-              Welcome aboard! Join our community as a driver. Drive
-              with flexibility and earn on your own schedule.
+            <h4 className="mb-2 text-sm font-black uppercase tracking-tight text-slate-900">
+              EVzone Driver
+            </h4>
+            <p className="text-[11px] font-medium leading-relaxed text-slate-500">
+              Welcome aboard. Choose the service category you want to operate under. You can only
+              activate one category at a time.
             </p>
           </div>
         </div>
 
-        {/* Service category selection */}
-        <section className="space-y-4">
-          <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">Service category</h2>
-          <div className="space-y-3">
-            {SERVICE_OPTIONS.map((option) => (
-              <label
-                key={option.key}
-                  // EVzone Driver – Part 1: Service category selection now allows auto-replacement.
-                  // Selecting a different category automatically unchecks the previous one.
-                className={`w-full rounded-2xl border-2 px-4 py-4 text-left flex items-start space-x-3 transition-all active:scale-[0.98] ${
-                  selectedServiceKey === option.key
-                    ? "border-orange-500 bg-[#fffdf5] shadow-lg shadow-orange-500/5"
-                    : "border-orange-500/10 bg-cream hover:border-orange-500/30"
-                }`}
-              >
-                <div className="mt-1">
+        <section className="space-y-3">
+          <div className="px-1">
+            <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
+              Service category
+            </h2>
+            <p className="mt-1 text-[11px] font-medium text-slate-500">
+              Select exactly one option below. Checking a new option replaces your previous choice.
+            </p>
+          </div>
+
+          <div
+            className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+            role="radiogroup"
+            aria-label="Driver service category"
+          >
+            {SERVICE_OPTIONS.map((option) => {
+              const isSelected = selectedServiceKey === option.key;
+              const Icon = option.icon;
+
+              return (
+                <label
+                  key={option.key}
+                  className={`flex cursor-pointer items-start gap-3 px-4 py-4 transition-colors ${
+                    isSelected ? "bg-orange-50/80" : "hover:bg-slate-50"
+                  }`}
+                >
                   <input
                     type="checkbox"
-                    checked={selectedServiceKey === option.key}
-                    onChange={() => handleServiceToggle(option.key)}
-                    disabled={false}
-                    className="h-5 w-5 rounded-lg border-orange-200 text-orange-500 focus:ring-orange-500 bg-white"
+                    checked={isSelected}
+                    onChange={() => handleSelectCategory(option.key)}
+                    className="mt-1 h-5 w-5 shrink-0 rounded border-slate-300 text-orange-500 focus:ring-orange-500"
                   />
-                </div>
-                <div className={`mt-0.5 flex h-10 w-10 items-center justify-center rounded-xl ${selectedServiceKey === option.key ? "bg-white shadow-sm" : "bg-white/50 border border-orange-50"}`}>
-                  <option.icon className={`h-5 w-5 ${selectedServiceKey === option.key ? "text-orange-500" : "text-slate-400"}`} />
-                </div>
-                <div className="flex flex-col">
-                  <span className={`text-sm font-black tracking-tight ${selectedServiceKey === option.key ? "text-slate-900" : "text-slate-700"}`}>
-                    {option.label}
-                  </span>
-                  <span className={`text-[11px] font-medium leading-tight mt-0.5 ${selectedServiceKey === option.key ? "text-slate-600" : "text-slate-400"}`}>
-                    {option.desc}
-                  </span>
-                </div>
-              </label>
-            ))}
+                  <div
+                    className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                      isSelected ? "bg-white shadow-sm ring-1 ring-orange-100" : "bg-slate-100"
+                    }`}
+                  >
+                    <Icon
+                      className={`h-5 w-5 ${isSelected ? "text-orange-500" : "text-slate-500"}`}
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <span
+                      className={`block text-sm font-black tracking-tight ${
+                        isSelected ? "text-slate-900" : "text-slate-800"
+                      }`}
+                    >
+                      {option.label}
+                    </span>
+                    <span
+                      className={`mt-0.5 block text-[11px] font-medium leading-snug ${
+                        isSelected ? "text-slate-600" : "text-slate-400"
+                      }`}
+                    >
+                      {option.desc}
+                    </span>
+                  </div>
+                </label>
+              );
+            })}
           </div>
         </section>
 
-        {/* Allocation note */}
-        <section className="space-y-4">
+        <section className="space-y-3">
           <div className="flex items-center justify-between px-1">
-            <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Allocation policy</h2>
-            <span className="inline-flex items-center text-[10px] uppercase font-black text-slate-400 tracking-widest">
-              <ShieldCheck className="h-3 w-3 mr-1.5 text-emerald-500" />
-              Strict
+            <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
+              Allocation policy
+            </h2>
+            <span className="inline-flex items-center text-[10px] font-black uppercase tracking-widest text-slate-400">
+              <ShieldCheck className="mr-1.5 h-3 w-3 text-emerald-500" />
+              Single category
             </span>
           </div>
-          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-             <p className="text-[10px] text-slate-400 leading-relaxed font-bold uppercase tracking-tight">
-                Only one service category can stay active at a time. Selecting a different category automatically unchecks the previous one.
-             </p>
+          <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+            <p className="text-[10px] font-bold uppercase leading-relaxed tracking-tight text-slate-400">
+              Only one service category can stay active. Selecting another option automatically
+              replaces your current selection.
+            </p>
           </div>
         </section>
 
-        {/* Vehicles accordion */}
         <button
           type="button"
           onClick={() => navigate("/driver/vehicles")}
-          className="flex w-full items-center justify-between rounded-2xl border-2 border-orange-500/10 bg-cream overflow-hidden shadow-sm hover:border-orange-500/30 transition-all px-5 py-4 group"
+          className="group flex w-full items-center justify-between overflow-hidden rounded-2xl border-2 border-orange-500/10 bg-cream px-5 py-4 shadow-sm transition-all hover:border-orange-500/30"
         >
-          <span className="text-sm font-black text-slate-900 group-hover:text-orange-500 transition-colors uppercase tracking-tight">Vehicles</span>
-          <div className="p-1.5 bg-white rounded-lg border border-orange-50 group-hover:bg-orange-50 transition-colors">
+          <span className="text-sm font-black uppercase tracking-tight text-slate-900 transition-colors group-hover:text-orange-500">
+            Vehicles
+          </span>
+          <div className="rounded-lg border border-orange-50 bg-white p-1.5 transition-colors group-hover:bg-orange-50">
             <ChevronDown className="h-4 w-4 text-slate-400 group-hover:text-orange-500" />
           </div>
         </button>
 
-        {/* Continue button */}
-        <button
-          type="button"
-          onClick={handleContinue}
-          className="w-full rounded-2xl bg-orange-500 py-4 text-sm font-black text-white shadow-lg shadow-orange-500/20 hover:bg-orange-600 active:scale-[0.98] transition-all uppercase tracking-widest mt-4 mb-12"
-        >
-          Continue
-        </button>
         {errorMessage && (
-          <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 -mt-8 mb-12">
+          <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3">
             <p className="text-[10px] font-bold uppercase tracking-widest text-red-700">
               {errorMessage}
             </p>
           </div>
         )}
+
+        <button
+          type="button"
+          onClick={handleContinue}
+          className="mb-12 mt-2 w-full rounded-2xl bg-orange-500 py-4 text-sm font-black uppercase tracking-widest text-white shadow-lg shadow-orange-500/20 transition-all hover:bg-orange-600 active:scale-[0.98]"
+        >
+          Continue
+        </button>
       </main>
     </div>
   );
