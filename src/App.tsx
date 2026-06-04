@@ -63,11 +63,11 @@ const PHONE_WIDTH_MEDIA = "(max-width: 640px)";
 
 function GuestOnlyRoute({ children }: { children: ReactNode }) {
   const { isLoggedIn } = useAuth();
-  const { driverPresenceStatus } = useStore();
+  const { canGoOnline, primaryOnboardingRoute } = useStore();
   if (isLoggedIn) {
     return (
       <Navigate
-        to={driverPresenceStatus === "online" ? "/driver/dashboard/online" : AUTHENTICATED_HOME_ROUTE}
+        to={canGoOnline ? AUTHENTICATED_HOME_ROUTE : primaryOnboardingRoute}
         replace
       />
     );

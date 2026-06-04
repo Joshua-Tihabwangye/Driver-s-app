@@ -20,6 +20,7 @@ import { SAMPLE_IDS } from "../data/constants";
 import { getAssignableJobTypesFromRoleConfig, getPersistedServiceIdsFromRoleConfig } from "../utils/taskCategories";
 import {
   areAllRequiredDocumentsCompliant,
+  getDocumentExpiryStatus,
   getFirstNonCompliantDocumentKey,
   hasAnyRequiredDocumentEvidence,
   readStoredDocumentState,
@@ -97,7 +98,8 @@ export type OnboardingCheckpointId =
   | "identityVerified"
   | "vehicleReady"
   | "emergencyContactReady"
-  | "trainingCompleted";
+  | "trainingCompleted"
+  | "operationArea";
 
 export interface OnboardingCheckpointState {
   roleSelected: boolean;
@@ -789,6 +791,11 @@ const ONBOARDING_CHECKPOINT_META: Record<
     title: "Emergency Contacts",
     description: "Add at least one trusted emergency contact.",
     route: "/driver/safety/emergency/contacts",
+  },
+  operationArea: {
+    title: "Operation Area",
+    description: "Select at least one target area where you want to receive requests.",
+    route: "/driver/preferences",
   },
   trainingCompleted: {
     title: "Safety Training",
@@ -1864,6 +1871,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return null;
     }
   });
+  const setSelectedVehicleIndex = useCallback((index: number | null) => {
+    setSelectedVehicleIndexState(index);
+    if (typeof window !== "undefined") {
+      if (index !== null) {
+        window.localStorage.setItem(SELECTED_VEHICLE_STORAGE_KEY, String(index));
+      } else {
+        window.localStorage.removeItem(SELECTED_VEHICLE_STORAGE_KEY);
+      }
+    }
+  }, []);
   const driverBackendEnabled = useDriverBackendEnabled();
   const setDriverProfilePhoto = useCallback((photo: string | null) => {
     const normalizedPhoto = typeof photo === "string" && photo.trim().length > 0 ? photo : null;
@@ -1912,6 +1929,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         accessories: resolveAccessoriesForVehicle(vehicle.type, vehicle.accessories),
       })));
     },
+    setSelectedVehicleIndex,
     setJobs,
     setTrips,
     setEmergencyContacts,
@@ -1937,17 +1955,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     mapBackendTripStatus,
     mapBackendTripStage,
   });
-
-  const setSelectedVehicleIndex = useCallback((index: number | null) => {
-    setSelectedVehicleIndexState(index);
-    if (typeof window !== "undefined") {
-      if (index !== null) {
-        window.localStorage.setItem(SELECTED_VEHICLE_STORAGE_KEY, String(index));
-      } else {
-        window.localStorage.removeItem(SELECTED_VEHICLE_STORAGE_KEY);
-      }
-    }
-  }, []);
 
   const setMapAlertsEnabled = useCallback((enabled: boolean) => {
     setDriverMapPreferences((prev) =>
@@ -2117,8 +2124,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const group = activeVehicle.vehicleDocs?.[docKey];
       const hasFile = Boolean(group?.file?.url && group.file.fileName);
       const expiryDate = group?.expiryDate || group?.file?.expiryDate || "";
-      const hasValidExpiry = validateDocumentExpiryDate(expiryDate).valid;
-      return !hasFile || !hasValidExpiry;
+      if (!hasFile) {
+        return true;
+      }
+      return getDocumentExpiryStatus(expiryDate) === "expired";
     });
   }, [getActiveVehicle]);
 
@@ -2265,8 +2274,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const documentsVerified = driverBackendEnabled
       ? onboardingCheckpoints.documentsVerified === true
       : areAllRequiredDocumentsCompliant(personalDocs);
+    const operationAreaReady = driverPreferences.areaIds.length > 0;
 
-    return ONBOARDING_CHECKPOINT_ORDER.filter((checkpointId) => {
+    const checkpointBlockers = ONBOARDING_CHECKPOINT_ORDER.filter((checkpointId) => {
       if (checkpointId === "trainingCompleted") {
         return false;
       }
@@ -2278,7 +2288,21 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       id: checkpointId,
       ...ONBOARDING_CHECKPOINT_META[checkpointId],
     }));
-  }, [driverBackendEnabled, onboardingCheckpoints]);
+
+    if (driverBackendEnabled && !operationAreaReady) {
+      return [
+        {
+          id: "operationArea",
+          title: "Operation Area",
+          description: "Select at least one target area where you want to receive requests.",
+          route: "/driver/preferences",
+        },
+        ...checkpointBlockers,
+      ];
+    }
+
+    return checkpointBlockers;
+  }, [driverBackendEnabled, driverPreferences.areaIds, onboardingCheckpoints]);
 
   const canGoOnline = onboardingBlockers.length === 0;
   const primaryOnboardingRoute =

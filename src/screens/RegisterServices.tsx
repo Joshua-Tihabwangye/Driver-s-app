@@ -1,10 +1,12 @@
 import {
-  Ambulance,
+  BatteryCharging,
   Car,
+  Church,
   Eye,
   EyeOff,
-  Package,
-  Route,
+  GraduationCap,
+  Store,
+  Wallet2,
   type LucideIcon,
 } from "lucide-react";
 import { FormEvent, useMemo, useState } from "react";
@@ -17,13 +19,13 @@ import {
   loginDriverWithCanonicalBackendFlow,
 } from "../services/api/authApi";
 import {
-  DriverBackendOnboardingCheckpoints,
-  DriverBackendProfile,
-  getDriverOnboardingCheckpoints,
-  getDriverProfile,
+  getDriverOnboardingStatus,
   saveDriverBackendTokens,
+  setDriverPresenceOffline,
 } from "../services/api/driverApi";
+import { resolveRouteFromOnboardingStatus } from "../utils/onboardingRedirect";
 import {
+  DRIVER_SERVICE_KEY,
   getRegisterServiceLabel,
   readDriverAuthAccount,
   readSelectedRegisterService,
@@ -37,11 +39,12 @@ const SERVICES: Array<{
   icon: LucideIcon;
   color: string;
 }> = [
-  { key: "ride", label: "Rides", icon: Car, color: "#f77f00" },
-  { key: "delivery", label: "Delivery", icon: Package, color: "#2196F3" },
-  { key: "rides-delivery", label: "Rides + Delivery", icon: Route, color: "#f77f00" },
-  { key: "rental", label: "Rental", icon: Car, color: "#2196F3" },
-  { key: "ambulance", label: "Ambulance", icon: Ambulance, color: "#ef4444" },
+  { key: "school", label: "School", icon: GraduationCap, color: "#2196F3" },
+  { key: "seller", label: "Seller", icon: Store, color: "#f77f00" },
+  { key: "driver", label: "EVzone Driver", icon: Car, color: "#f77f00" },
+  { key: "faith", label: "FaithHub", icon: Church, color: "#2196F3" },
+  { key: "charging", label: "EVzone Charging", icon: BatteryCharging, color: "#f77f00" },
+  { key: "wallet", label: "EVzone Wallet Agent", icon: Wallet2, color: "#2196F3" },
 ];
 
 type AuthMode = "login" | "signup";
@@ -50,31 +53,6 @@ type SignupProvider = "evzone" | "google" | "apple";
 
 function normalizePhone(value: string): string {
   return value.replace(/[^\d]/g, "");
-}
-
-function resolvePostLoginRoute(
-  profile: DriverBackendProfile | null,
-  checkpoints: DriverBackendOnboardingCheckpoints | null
-): string {
-  if (profile?.status === "online") {
-    return "/driver/dashboard/online";
-  }
-  if (checkpoints?.onboardingComplete) {
-    return "/driver/dashboard/offline";
-  }
-  if (!checkpoints?.roleSelected) {
-    return "/driver/register";
-  }
-  if (!checkpoints?.documentsVerified || !checkpoints?.identityVerified) {
-    return "/driver/onboarding/profile";
-  }
-  if (!checkpoints?.vehicleReady) {
-    return "/driver/vehicles";
-  }
-  if (!checkpoints?.emergencyContactReady) {
-    return "/driver/safety/emergency/contacts";
-  }
-  return "/driver/dashboard/offline";
 }
 
 function ServiceTile({
@@ -162,7 +140,7 @@ function AppleLogoIcon({ className }: { className?: string }) {
 export default function RegisterServices() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const { updateDriverProfile } = useStore();
+  const { updateDriverProfile, setOnboardingCheckpoint, setDriverPresenceStatus } = useStore();
 
   const authPrefill = useMemo(() => readAuthPrefill(), []);
   const [selectedService, setSelectedService] = useState<RegisterServiceKey | null>(() =>
@@ -182,7 +160,7 @@ export default function RegisterServices() {
     () => getRegisterServiceLabel(selectedService),
     [selectedService]
   );
-  const supportsDriverAuth = Boolean(selectedService);
+  const supportsDriverAuth = selectedService === DRIVER_SERVICE_KEY;
 
   const handleSelectService = (serviceKey: RegisterServiceKey) => {
     setSelectedService(serviceKey);
@@ -228,6 +206,11 @@ export default function RegisterServices() {
 
     if (!selectedService) {
       setLoginError("Select a service first.");
+      return;
+    }
+
+    if (!supportsDriverAuth) {
+      setLoginError("Driver authentication is currently available only for EVzone Driver.");
       return;
     }
 
@@ -301,11 +284,26 @@ export default function RegisterServices() {
 
     let nextRoute = "/driver/dashboard/offline";
     try {
-      const [backendProfile, backendCheckpoints] = await Promise.all([
-        getDriverProfile(),
-        getDriverOnboardingCheckpoints(),
-      ]);
-      nextRoute = resolvePostLoginRoute(backendProfile, backendCheckpoints);
+      const onboardingStatus = await getDriverOnboardingStatus();
+      nextRoute = resolveRouteFromOnboardingStatus(onboardingStatus);
+
+      if (onboardingStatus) {
+        const cp = onboardingStatus.checkpoints;
+        setOnboardingCheckpoint("roleSelected", onboardingStatus.hasSelectedServiceCategories);
+        setOnboardingCheckpoint("documentsVerified", onboardingStatus.hasRequiredDriverDocuments);
+        setOnboardingCheckpoint("identityVerified", cp?.identityVerified ?? onboardingStatus.hasProfile);
+        setOnboardingCheckpoint(
+          "vehicleReady",
+          onboardingStatus.hasActiveVehicle && onboardingStatus.hasRequiredVehicleDocuments,
+        );
+        setOnboardingCheckpoint("emergencyContactReady", cp?.emergencyContactReady ?? false);
+        setOnboardingCheckpoint("trainingCompleted", onboardingStatus.hasCompletedTutorials);
+      }
+
+      if (onboardingStatus?.onboardingCompleted) {
+        await setDriverPresenceOffline().catch(() => undefined);
+        setDriverPresenceStatus("offline");
+      }
     } catch (error) {
       console.warn("Failed to resolve driver post-login route.", error);
     }
@@ -323,6 +321,7 @@ export default function RegisterServices() {
   const loginButtonDisabled =
     isSubmittingLogin ||
     !selectedService ||
+    !supportsDriverAuth ||
     identity.trim().length === 0 ||
     password.trim().length === 0;
 

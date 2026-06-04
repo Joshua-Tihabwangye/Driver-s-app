@@ -1,8 +1,9 @@
 import { useEffect } from "react";
 import { deriveRoleConfigFromPersistedDriverService } from "../../utils/taskCategories";
+import { mapBackendVehicleDocuments } from "../../utils/mapBackendVehicleDocuments";
 import {
   getDriverActiveTrip,
-  getDriverOnboardingCheckpoints,
+  getDriverOnboardingStatus,
   getDriverPreferences,
   getDriverProfile,
   getDriverTripSafetyState,
@@ -23,6 +24,7 @@ type UseDriverBackendBootstrapSyncOptions = {
   setOnboardingCheckpoints: AnySetter;
   setDriverPresenceStatus: AnySetter;
   setVehicles: AnySetter;
+  setSelectedVehicleIndex: AnySetter;
   setJobs: AnySetter;
   setTrips: AnySetter;
   setEmergencyContacts: AnySetter;
@@ -48,6 +50,7 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
     setOnboardingCheckpoints,
     setDriverPresenceStatus,
     setVehicles,
+    setSelectedVehicleIndex,
     setJobs,
     setTrips,
     setEmergencyContacts,
@@ -72,17 +75,12 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
 
     const hydrateDriverBackendState = async () => {
       try {
-        const [profile, preferences, checkpoints, backendVehicles, backendJobs, backendTrips, backendActiveTrip, backendContacts] =
-          await Promise.all([
-            getDriverProfile(),
-            getDriverPreferences(),
-            getDriverOnboardingCheckpoints(),
-            listDriverVehicles(),
-            listDriverJobs(),
-            listDriverTrips(),
-            getDriverActiveTrip(),
-            listDriverEmergencyContacts(),
-          ]);
+        const [profile, preferences, onboardingStatus, backendVehicles] = await Promise.all([
+          getDriverProfile(),
+          getDriverPreferences(),
+          getDriverOnboardingStatus(),
+          listDriverVehicles(),
+        ]);
 
         if (cancelled) {
           return;
@@ -124,19 +122,22 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
           setDriverRoleSelection(persistedRoleConfig);
         }
 
-        if (checkpoints) {
+        if (onboardingStatus) {
+          const cp = onboardingStatus.checkpoints;
           setOnboardingCheckpoints({
-            roleSelected: checkpoints.roleSelected,
-            documentsVerified: checkpoints.documentsVerified,
-            identityVerified: checkpoints.identityVerified,
-            vehicleReady: checkpoints.vehicleReady,
-            emergencyContactReady: checkpoints.emergencyContactReady,
-            trainingCompleted: checkpoints.trainingCompleted,
+            roleSelected: onboardingStatus.hasSelectedServiceCategories,
+            documentsVerified: onboardingStatus.hasRequiredDriverDocuments,
+            identityVerified: cp?.identityVerified ?? onboardingStatus.hasProfile,
+            vehicleReady:
+              onboardingStatus.hasActiveVehicle && onboardingStatus.hasRequiredVehicleDocuments,
+            emergencyContactReady: cp?.emergencyContactReady ?? false,
+            trainingCompleted: onboardingStatus.hasCompletedTutorials,
           });
         }
 
-        setVehicles(
-          backendVehicles.map((vehicle) => ({
+        const mappedVehicles = backendVehicles.map((vehicle) => {
+          const vehicleDocs = mapBackendVehicleDocuments(vehicle.documents);
+          return {
             id: vehicle.id,
             make: vehicle.make,
             model: vehicle.model,
@@ -145,8 +146,30 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
             type: vehicle.type,
             status: vehicle.status ?? "inactive",
             accessories: vehicle.accessories || {},
-          })),
+            vehicleDocs,
+            documentsUploaded: Boolean(
+              vehicleDocs.insurance?.file?.url && vehicleDocs.inspection?.file?.url,
+            ),
+          };
+        });
+
+        setVehicles(mappedVehicles);
+
+        const activeVehicleIndex = mappedVehicles.findIndex((vehicle) => vehicle.status === "active");
+        setSelectedVehicleIndex(
+          activeVehicleIndex >= 0 ? activeVehicleIndex : mappedVehicles.length > 0 ? 0 : null,
         );
+
+        const [backendJobs, backendTrips, backendActiveTrip, backendContacts] = await Promise.all([
+          listDriverJobs(),
+          listDriverTrips(),
+          getDriverActiveTrip(),
+          listDriverEmergencyContacts(),
+        ]);
+
+        if (cancelled) {
+          return;
+        }
 
         setJobs(
           backendJobs.map((job) => ({
@@ -245,6 +268,7 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
     setJobAccessError,
     setJobs,
     setOnboardingCheckpoints,
+    setSelectedVehicleIndex,
     setTrips,
     setVehicles,
   ]);

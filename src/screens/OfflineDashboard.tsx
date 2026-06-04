@@ -4,13 +4,17 @@ import {
   Info,
   WifiOff
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import OfflineConfirmModal from "../components/OfflineConfirmModal";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
 import { useDriverBackendEnabled } from "../context/hooks/useDriverBackendEnabled";
-import { areAllRequiredDocumentsCompliant, readStoredDocumentState } from "../utils/documentVerificationState";
+import {
+  areAllRequiredDocumentsCompliant,
+  getDocumentExpiryStatus,
+  readStoredDocumentState,
+} from "../utils/documentVerificationState";
 
 // EVzone Driver App – OfflineDashboard Driver App – Dashboard (Offline State)
 // Driver dashboard when offline, showing status + any blocking issues.
@@ -51,6 +55,8 @@ export default function OfflineDashboard() {
     onboardingCheckpoints,
     resolveGoOnlineAttempt,
     setDriverOnline,
+    vehicles,
+    selectedVehicleIndex,
   } = useStore();
 
   const documentsVerified = driverBackendEnabled
@@ -59,6 +65,28 @@ export default function OfflineDashboard() {
   const visibleBlockers = onboardingBlockers.filter((blocker) =>
     blocker.id === "documentsVerified" ? !documentsVerified : true
   );
+
+  const hasExpiredDocuments = useMemo(() => {
+    const personalDocs = readStoredDocumentState();
+    const personalExpired = (["id", "license", "police"] as const).some(
+      (key) => getDocumentExpiryStatus(personalDocs[key].expiryDate) === "expired",
+    );
+
+    const activeVehicle =
+      selectedVehicleIndex !== null &&
+      selectedVehicleIndex >= 0 &&
+      selectedVehicleIndex < vehicles.length
+        ? vehicles[selectedVehicleIndex]
+        : vehicles[0];
+
+    const vehicleExpired = (["insurance", "inspection"] as const).some((docKey) => {
+      const group = activeVehicle?.vehicleDocs?.[docKey];
+      const expiryDate = group?.expiryDate || group?.file?.expiryDate || "";
+      return getDocumentExpiryStatus(expiryDate) === "expired";
+    });
+
+    return personalExpired || vehicleExpired;
+  }, [selectedVehicleIndex, vehicles]);
 
   const routeState = (location.state as
     | { offlineGuardMessage?: string; blockedPath?: string }
@@ -151,6 +179,21 @@ export default function OfflineDashboard() {
               : "Selfie verification runs first. Missing checks are enforced after capture."}
           </p>
         </section>
+
+        {hasExpiredDocuments ? (
+          <button
+            type="button"
+            onClick={() => navigate("/driver/dashboard/required-actions?filter=expired")}
+            className="w-full rounded-3xl border border-red-200 bg-red-50 p-4 text-left transition-all hover:border-red-300 active:scale-[0.99]"
+          >
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-600">
+              Expired Documents
+            </p>
+            <p className="mt-1 text-[11px] font-bold leading-relaxed text-red-700">
+              One or more required documents are expired. Tap to review and update them.
+            </p>
+          </button>
+        ) : null}
 
         {hasOfflineGuardMessage ? (
           <section className="rounded-3xl border border-orange-200 bg-orange-50 p-4 space-y-2">
