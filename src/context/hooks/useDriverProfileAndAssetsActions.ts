@@ -19,6 +19,11 @@ type DriverProfileLike = Partial<{
   phone: string;
   city: string;
   country: string;
+  dob: string;
+  streetAddress: string;
+  district: string;
+  postalCode: string;
+  landmark: string;
 }>;
 
 type DriverPreferencesLike = Partial<{
@@ -54,6 +59,11 @@ export function useDriverProfileAndAssetsActions({
         phone: patch.phone,
         city: patch.city,
         country: patch.country,
+        dateOfBirth: patch.dob,
+        streetAddress: patch.streetAddress,
+        district: patch.district,
+        postalCode: patch.postalCode,
+        landmark: patch.landmark,
       }).catch((error) => {
         console.warn("Driver backend profile update failed.", error);
       });

@@ -61,13 +61,16 @@ export default function OnlineMapView({
 }) {
   const [showOfflineModal, setShowOfflineModal] = useState(false);
   const navigate = useNavigate();
-  const { driverPresenceStatus, setDriverOffline, respondToSafetyCheck } = useStore();
+  const { driverPresenceStatus, driverBootstrapReady, setDriverOffline, respondToSafetyCheck } = useStore();
 
   useEffect(() => {
+    // Do not redirect until the bootstrap has resolved — on a hard refresh the
+    // presence status starts as "offline" even when the driver is actually online.
+    if (!driverBootstrapReady) return;
     if (driverPresenceStatus !== "online") {
       navigate("/driver/dashboard/offline", { replace: true });
     }
-  }, [driverPresenceStatus, navigate]);
+  }, [driverBootstrapReady, driverPresenceStatus, navigate]);
 
   const handleEmergencySos = () => {
     respondToSafetyCheck("driver", "sos");

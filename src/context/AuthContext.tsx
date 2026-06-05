@@ -1,5 +1,5 @@
 import React,{ createContext,useContext,useEffect,useState } from "react";
-import { clearDriverBackendTokens } from "../services/api/driverApi";
+import { clearDriverBackendTokens, readDriverBackendAccessToken } from "../services/api/driverApi";
 
 export const AUTH_STORAGE_KEY = "isLoggedIn";
 export const AUTH_USER_STORAGE_KEY = "evz_auth_user";
@@ -70,11 +70,16 @@ function readStoredAuthUser(): AuthUser | null {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    return localStorage.getItem(AUTH_STORAGE_KEY) === "true";
+    return localStorage.getItem(AUTH_STORAGE_KEY) === "true" || Boolean(readDriverBackendAccessToken());
   });
   const [user, setUser] = useState<AuthUser | null>(() => readStoredAuthUser());
 
   useEffect(() => {
+    if (!isLoggedIn && readDriverBackendAccessToken()) {
+      setIsLoggedIn(true);
+      return;
+    }
+
     if (!isLoggedIn) {
       setUser(null);
       if (typeof window !== "undefined") {

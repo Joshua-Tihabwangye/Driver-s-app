@@ -277,18 +277,7 @@ export default function DriverRegistration() {
           </div>
         </section>
 
-        <button
-          type="button"
-          onClick={() => navigate("/driver/vehicles")}
-          className="group flex w-full items-center justify-between overflow-hidden rounded-2xl border-2 border-orange-500/10 bg-cream px-5 py-4 shadow-sm transition-all hover:border-orange-500/30"
-        >
-          <span className="text-sm font-black uppercase tracking-tight text-slate-900 transition-colors group-hover:text-orange-500">
-            Vehicles
-          </span>
-          <div className="rounded-lg border border-orange-50 bg-white p-1.5 transition-colors group-hover:bg-orange-50">
-            <ChevronDown className="h-4 w-4 text-slate-400 group-hover:text-orange-500" />
-          </div>
-        </button>
+
 
         {errorMessage && (
           <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3">

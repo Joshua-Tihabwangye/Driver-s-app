@@ -140,18 +140,18 @@ function AppleLogoIcon({ className }: { className?: string }) {
 export default function RegisterServices() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const { updateDriverProfile, setOnboardingCheckpoint, setDriverPresenceStatus } = useStore();
+  const { updateDriverProfile, setOnboardingCheckpoint, setDriverOffline } = useStore();
 
   const authPrefill = useMemo(() => readAuthPrefill(), []);
   const [selectedService, setSelectedService] = useState<RegisterServiceKey | null>(() =>
     readSelectedRegisterService()
   );
   const [step, setStep] = useState<"service" | "auth">(() =>
-    readSelectedRegisterService() && (authPrefill.identity || authPrefill.email) ? "auth" : "service"
+    readSelectedRegisterService() ? "auth" : "service"
   );
   const [authMode, setAuthMode] = useState<AuthMode>("login");
-  const [identity, setIdentity] = useState(authPrefill.identity || authPrefill.email || "");
-  const [password, setPassword] = useState(authPrefill.password || "");
+  const [identity, setIdentity] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [isSubmittingLogin, setIsSubmittingLogin] = useState(false);
@@ -302,7 +302,7 @@ export default function RegisterServices() {
 
       if (onboardingStatus?.onboardingCompleted) {
         await setDriverPresenceOffline().catch(() => undefined);
-        setDriverPresenceStatus("offline");
+        setDriverOffline();
       }
     } catch (error) {
       console.warn("Failed to resolve driver post-login route.", error);

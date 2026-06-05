@@ -9,16 +9,23 @@ import OnlineMapView from "./OnlineMapView";
 export default function OnlineDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { driverPresenceStatus, resolveJobAccessAttempt } = useStore();
   const [showDocumentWarning, setShowDocumentWarning] = useState(false);
   const [documentWarningMessage, setDocumentWarningMessage] = useState("");
+  const { driverPresenceStatus, driverBootstrapReady, resolveJobAccessAttempt } = useStore();
 
+  // Wait for backend bootstrap before making routing decisions.
+  // On a hard refresh, driverPresenceStatus starts as "offline" (default) even
+  // if the driver was online — the backend fetch will correct it. Firing the
+  // redirect before that correction kicks us to the offline page incorrectly.
   useEffect(() => {
+    if (!driverBootstrapReady) {
+      return; // Still hydrating — do not redirect yet.
+    }
     if (driverPresenceStatus === "online") {
       return;
     }
     navigate("/driver/dashboard/offline", { replace: true });
-  }, [driverPresenceStatus, navigate]);
+  }, [driverBootstrapReady, driverPresenceStatus, navigate]);
 
   useEffect(() => {
     const routeState = (location.state as { documentGuardMessage?: string } | null) || null;

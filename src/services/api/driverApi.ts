@@ -14,6 +14,12 @@ export interface DriverBackendProfile {
   phone: string;
   city: string;
   country: string;
+  dateOfBirth?: string | null;
+  streetAddress?: string | null;
+  district?: string | null;
+  postalCode?: string | null;
+  landmark?: string | null;
+  nationalIdNumber?: string | null;
   profilePhoto?: string | null;
   serviceMode?: string | null;
   status?: string | null;
