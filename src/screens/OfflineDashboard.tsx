@@ -57,6 +57,7 @@ export default function OfflineDashboard() {
     setDriverOnline,
     vehicles,
     selectedVehicleIndex,
+    driverBootstrapReady,
   } = useStore();
 
   const documentsVerified = driverBackendEnabled
@@ -167,10 +168,11 @@ export default function OfflineDashboard() {
 
           <button
             type="button"
-            onClick={handleGoOnline}
-            className="relative z-10 w-full rounded-2xl bg-brand-active py-4 text-xs font-black text-slate-900 hover:bg-brand-active/90 active:scale-95 transition-all shadow-xl shadow-brand-active/20 uppercase tracking-widest"
+            onClick={driverBootstrapReady ? handleGoOnline : undefined}
+            disabled={!driverBootstrapReady}
+            className="relative z-10 w-full rounded-2xl bg-brand-active py-4 text-xs font-black text-slate-900 hover:bg-brand-active/90 active:scale-95 transition-all shadow-xl shadow-brand-active/20 uppercase tracking-widest disabled:opacity-60 disabled:cursor-wait"
           >
-            Go Online
+            {driverBootstrapReady ? "Go Online" : "Loading..."}
           </button>
           
           <p className="relative z-10 text-[11px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed">
@@ -211,50 +213,7 @@ export default function OfflineDashboard() {
           </section>
         ) : null}
 
-        {/* Issues */}
-        <section className="space-y-4">
-          <div className="px-1">
-            <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Attention Required</h2>
-          </div>
-          {visibleBlockers.length === 0 ? (
-            <IssueRow
-              title="All Required Steps Completed"
-              text="Your onboarding is complete. Tap Go Online to run selfie verification and start receiving work."
-              type="info"
-              onClick={handleGoOnline}
-            />
-          ) : (
-            visibleBlockers.map((blocker) => (
-              <IssueRow
-                key={blocker.id}
-                title={blocker.title}
-                text={blocker.description}
-                type="blocking"
-                onClick={() =>
-                  navigateToBlocker({
-                    id: blocker.id,
-                    route: blocker.route,
-                  })
-                }
-              />
-            ))
-          )}
-        </section>
 
-        {/* Info / Tips */}
-        <section className="pt-2">
-           <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-cream p-6 text-center space-y-3 shadow-sm">
-              <div className="bg-white dark:bg-slate-700 h-12 w-12 rounded-2xl shadow-sm flex items-center justify-center mx-auto border border-orange-100">
-                <Info className="h-6 w-6 text-orange-500" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-tight">Take a Break</p>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium leading-relaxed px-2">
-                  Rest when you need to. Tap Go Online to start receiving ride requests.
-                </p>
-              </div>
-           </div>
-        </section>
       </main>
 
       <OfflineConfirmModal

@@ -12,7 +12,7 @@ import { useStore } from "../context/StoreContext";
 export default function TrainingCompletion() {
   const navigate = useNavigate();
   const { isLoggedIn, login } = useAuth();
-  const { setOnboardingCheckpoint } = useStore();
+  const { setOnboardingCheckpoint, setDriverOnline } = useStore();
   const [continueRequested, setContinueRequested] = useState(false);
 
   useEffect(() => {
@@ -24,8 +24,9 @@ export default function TrainingCompletion() {
       return;
     }
 
-    navigate("/driver/dashboard/offline", { replace: true });
-  }, [continueRequested, isLoggedIn, navigate]);
+    setDriverOnline();
+    navigate("/driver/dashboard/online", { replace: true });
+  }, [continueRequested, isLoggedIn, navigate, setDriverOnline]);
 
   const handleContinue = () => {
     setContinueRequested(true);
@@ -34,7 +35,8 @@ export default function TrainingCompletion() {
       return;
     }
 
-    navigate("/driver/dashboard/offline", { replace: true });
+    setDriverOnline();
+    navigate("/driver/dashboard/online", { replace: true });
   };
 
   return (

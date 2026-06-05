@@ -63,14 +63,12 @@ const PHONE_WIDTH_MEDIA = "(max-width: 640px)";
 
 function GuestOnlyRoute({ children }: { children: ReactNode }) {
   const { isLoggedIn } = useAuth();
-  const { canGoOnline, primaryOnboardingRoute } = useStore();
+  // Always go to the dashboard when logged in.
+  // canGoOnline is computed from async backend state that hasn't loaded yet
+  // at this point, so gating on it causes returning (fully onboarded) drivers
+  // to be bounced back to onboarding screens on every login.
   if (isLoggedIn) {
-    return (
-      <Navigate
-        to={canGoOnline ? AUTHENTICATED_HOME_ROUTE : primaryOnboardingRoute}
-        replace
-      />
-    );
+    return <Navigate to={AUTHENTICATED_HOME_ROUTE} replace />;
   }
 
   return <>{children}</>;

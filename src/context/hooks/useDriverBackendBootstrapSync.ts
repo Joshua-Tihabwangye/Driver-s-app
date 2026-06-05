@@ -23,6 +23,7 @@ type UseDriverBackendBootstrapSyncOptions = {
   setDriverRoleSelection: AnySetter;
   setOnboardingCheckpoints: AnySetter;
   setDriverPresenceStatus: AnySetter;
+  setBootstrapReady: AnySetter<boolean>;
   setVehicles: AnySetter;
   setSelectedVehicleIndex: AnySetter;
   setJobs: AnySetter;
@@ -49,6 +50,7 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
     setDriverRoleSelection,
     setOnboardingCheckpoints,
     setDriverPresenceStatus,
+    setBootstrapReady,
     setVehicles,
     setSelectedVehicleIndex,
     setJobs,
@@ -68,6 +70,7 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
 
   useEffect(() => {
     if (!driverBackendEnabled) {
+      setBootstrapReady(true);
       return;
     }
 
@@ -94,6 +97,11 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
             phone: profile.phone || prev.phone,
             city: profile.city || prev.city,
             country: profile.country || prev.country,
+            dob: profile.dateOfBirth || prev.dob,
+            streetAddress: profile.streetAddress || prev.streetAddress,
+            district: profile.district || prev.district,
+            postalCode: profile.postalCode || prev.postalCode,
+            landmark: profile.landmark || prev.landmark,
           }));
           setDriverProfilePhoto((prev: string | null) => {
             const backendPhoto = typeof profile.profilePhoto === "string" ? profile.profilePhoto.trim() : "";
@@ -102,7 +110,16 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
             }
             return prev;
           });
-          setDriverPresenceStatus(profile.status === "online" ? "online" : "offline");
+          // Only promote to "online" from the backend — never downgrade a session
+          // that the user has already set to online (e.g. they clicked Go Online
+          // and the bootstrap re-runs before the backend presence call propagates).
+          if (profile.status === "online") {
+            setDriverPresenceStatus("online");
+          } else {
+            // Keep any existing "online" value the user set; only fall back to
+            // "offline" if the state is not already "online".
+            setDriverPresenceStatus((prev: string) => (prev === "online" ? "online" : "offline"));
+          }
         }
 
         const persistedServiceIds = preferences?.serviceIds ?? [];
@@ -241,6 +258,11 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
       } catch (error) {
         console.warn("Driver backend bootstrap failed.", error);
         setJobAccessError("Unable to sync with backend. Check server/database connection.");
+      } finally {
+        if (!cancelled) {
+          // Always mark bootstrap as ready so UI guards don't block forever.
+          setBootstrapReady(true);
+        }
       }
     };
 
@@ -259,6 +281,7 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
     mapBackendTripStatus,
     setActiveRideRuntime,
     setActiveTrip,
+    setBootstrapReady,
     setDriverPreferences,
     setDriverPresenceStatus,
     setDriverProfile,

@@ -7,11 +7,7 @@ export function resolveRouteFromOnboardingStatus(
     return "/driver/dashboard/offline";
   }
 
-  if (status.onboardingCompleted) {
-    return "/driver/dashboard/offline";
-  }
-
-  return status.redirectPath || "/driver/onboarding/profile";
+  return status.redirectPath || (status.onboardingCompleted ? "/driver/dashboard/offline" : "/driver/onboarding/profile");
 }
 
 export function resolveRouteFromLegacyCheckpoints(
@@ -29,6 +25,7 @@ export function resolveRouteFromLegacyCheckpoints(
     return "/driver/dashboard/offline";
   }
 
+  // Onboarding complete → dashboard, full stop.
   if (checkpoints.onboardingComplete) {
     return "/driver/dashboard/offline";
   }

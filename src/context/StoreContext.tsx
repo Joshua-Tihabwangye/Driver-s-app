@@ -402,6 +402,7 @@ interface StoreContextType {
   resolveJobAccessAttempt: (nextRoute?: string) => JobAccessDecision;
   resolveGoOnlineAttempt: (nextRoute?: string) => GoOnlineDecision;
   completeGoOnlineAfterSelfieVerification: () => Promise<GoOnlineCompletionResult>;
+  driverBootstrapReady: boolean;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -1856,6 +1857,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [driverPresenceStatus, setDriverPresenceStatus] = useState<DriverPresenceStatus>(() =>
     readStoredDriverPresenceStatus()
   );
+  // True once the first backend bootstrap has completed (or failed).
+  // Guards navigation guards that would otherwise fire before we know the real status.
+  const [driverBootstrapReady, setDriverBootstrapReady] = useState<boolean>(
+    !DRIVER_BACKEND_ONLY_MODE // If not in backend mode, no async bootstrap needed
+  );
   const [driverMapPreferences, setDriverMapPreferences] = useState<DriverMapPreferences>(() =>
     readStoredDriverMapPreferences()
   );
@@ -1919,6 +1925,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setDriverRoleSelection,
     setOnboardingCheckpoints,
     setDriverPresenceStatus,
+    setBootstrapReady: setDriverBootstrapReady,
     setVehicles: (next) => {
       if (typeof next === "function") {
         setVehicles((prev) => (next as any)(prev));
@@ -2168,15 +2175,33 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const resolveGoOnlineAttempt = useCallback(
     (nextRoute = "/driver/dashboard/online"): GoOnlineDecision => {
-      const nonDocumentBlockerId = ONBOARDING_CHECKPOINT_ORDER.find(
-        (checkpointId) =>
-          checkpointId !== "documentsVerified" &&
-          checkpointId !== "identityVerified" &&
-          checkpointId !== "trainingCompleted" &&
-          !onboardingCheckpoints[checkpointId]
+      // If the backend bootstrap hasn't finished yet, checkpoints are all false
+      // (default state). Attempting to resolve the decision now would incorrectly
+      // redirect to /driver/register. Return a safe "not ready" response instead.
+      if (driverBackendEnabled && !driverBootstrapReady) {
+        return {
+          allowed: false,
+          requiresSelfie: false,
+          route: "/driver/dashboard/offline",
+          message: "Loading driver status...",
+        };
+      }
+
+      if (driverBackendEnabled && driverPreferences.areaIds.length === 0) {
+        const blockerMeta = ONBOARDING_CHECKPOINT_META.operationArea;
+        return {
+          allowed: false,
+          requiresSelfie: false,
+          route: blockerMeta.route,
+          message: blockerMeta.description,
+        };
+      }
+
+      const primaryCheckpointBlockerId = ONBOARDING_CHECKPOINT_ORDER.find(
+        (checkpointId) => !onboardingCheckpoints[checkpointId],
       );
-      if (nonDocumentBlockerId) {
-        const blockerMeta = ONBOARDING_CHECKPOINT_META[nonDocumentBlockerId];
+      if (primaryCheckpointBlockerId) {
+        const blockerMeta = ONBOARDING_CHECKPOINT_META[primaryCheckpointBlockerId];
         return {
           allowed: false,
           requiresSelfie: false,
@@ -2203,7 +2228,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         message: SELFIE_REQUIRED_MESSAGE,
       };
     },
-    [onboardingCheckpoints]
+    [driverBackendEnabled, driverBootstrapReady, driverPreferences.areaIds.length, onboardingCheckpoints]
   );
 
   const completeGoOnlineAfterSelfieVerification = useCallback(
@@ -4124,6 +4149,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       onboardingBlockers,
       canGoOnline,
       driverPresenceStatus,
+      driverBootstrapReady,
       primaryOnboardingRoute,
       // Use the pre-computed memo (already respects role config + sharedRidesEnabled)
       assignableJobTypes,
@@ -4224,6 +4250,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       onboardingBlockers,
       canGoOnline,
       driverPresenceStatus,
+      driverBootstrapReady,
       primaryOnboardingRoute,
       assignableJobTypes,
       canAcceptJobType,

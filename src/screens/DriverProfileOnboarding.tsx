@@ -79,38 +79,8 @@ function createSocialLinkEntry(): SocialLinkEntry {
 const SOCIAL_LINKS_STORAGE_KEY = "driver_social_links";
 
 function readStoredSocialLinks(): SocialLinkEntry[] {
-  if (typeof window === "undefined") {
-    return [createSocialLinkEntry()];
-  }
-
-  try {
-    const raw = window.localStorage.getItem(SOCIAL_LINKS_STORAGE_KEY);
-    if (!raw) {
-      return [createSocialLinkEntry()];
-    }
-
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed) || parsed.length === 0) {
-      return [createSocialLinkEntry()];
-    }
-
-    const normalized = parsed
-      .map((entry: any) => ({
-        id: typeof entry?.id === "string" && entry.id.trim().length > 0 ? entry.id : createSocialLinkEntry().id,
-        platform: typeof entry?.platform === "string" ? entry.platform : "",
-        username: typeof entry?.username === "string" ? entry.username : "",
-        url: typeof entry?.url === "string" ? entry.url : "",
-      }))
-      .filter((entry: SocialLinkEntry) =>
-        entry.platform.trim().length > 0 ||
-        entry.username.trim().length > 0 ||
-        entry.url.trim().length > 0
-      );
-
-    return normalized.length > 0 ? normalized : [createSocialLinkEntry()];
-  } catch {
-    return [createSocialLinkEntry()];
-  }
+  // Always return a fresh entry to avoid mock data from localStorage
+  return [createSocialLinkEntry()];
 }
 
 
@@ -361,6 +331,15 @@ export default function DriverProfileOnboarding() {
         present: onboardingCheckpoints.emergencyContactReady,
         route: "/driver/safety/emergency/contacts",
       },
+      {
+        id: "training-completed",
+        label: "Safety Training",
+        detail: onboardingCheckpoints.trainingCompleted
+          ? "Safety training is complete."
+          : "Complete the required driver training.",
+        present: onboardingCheckpoints.trainingCompleted,
+        route: "/driver/training/intro",
+      },
     ];
 
     const docItems: BreakdownItem[] = documentSides.map((item) => {
@@ -444,20 +423,7 @@ export default function DriverProfileOnboarding() {
     [socialLinks]
   );
 
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    try {
-      window.localStorage.setItem(
-        SOCIAL_LINKS_STORAGE_KEY,
-        JSON.stringify(socialLinks)
-      );
-    } catch (error) {
-      console.warn("Failed to persist social links:", error);
-    }
-  }, [socialLinks]);
+  // Removed localStorage persistence for social links to prevent mock data behavior
 
   const updateSocialLink = (
     id: string,

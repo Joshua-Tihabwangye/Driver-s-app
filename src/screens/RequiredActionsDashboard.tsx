@@ -93,6 +93,7 @@ const BLOCKER_ICON_MAP: Record<OnboardingCheckpointId, IconComponent> = {
   vehicleReady: Car,
   emergencyContactReady: Users,
   trainingCompleted: BookOpenCheck,
+  operationArea: ShieldCheck,
 };
 
 function ActionRow({ icon: Icon, title, text, type, onClick }: ActionRowProps) {
@@ -269,19 +270,17 @@ export default function RequiredActionsDashboard() {
         setPersonalDocs((prev) => {
           const next = { ...prev };
           backendDocuments.forEach((doc) => {
-            const documentType =
-              (doc as { documentType?: string }).documentType || doc.type || "";
+            const documentType = doc.documentType || "";
             const key = BACKEND_DOCUMENT_TYPE_TO_KEY[documentType];
             if (!key || !doc.fileUrl) {
               return;
             }
-            const expiryDate =
-              typeof doc.expiresAt === "number"
-                ? new Date(doc.expiresAt).toISOString().slice(0, 10)
-                : next[key].expiryDate;
+            const expiryDate = doc.expiryDate
+              ? new Date(doc.expiryDate).toISOString().slice(0, 10)
+              : next[key].expiryDate;
             const copy = {
               status: "Uploaded" as const,
-              fileName: doc.fileName || doc.fileUrl.split("/").pop() || doc.type,
+              fileName: doc.fileUrl.split("/").pop() || doc.documentType,
               fileUrl: doc.fileUrl,
               error: "",
             };

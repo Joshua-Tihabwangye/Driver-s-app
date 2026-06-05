@@ -177,6 +177,11 @@ export default function Registration() {
         phone: phone.trim(),
         city: city.trim(),
         country: country.trim(),
+        dob: dob.trim(),
+        streetAddress: streetAddress.trim(),
+        district: district.trim(),
+        postalCode: postalCode.trim(),
+        landmark: landmark.trim(),
       });
       saveAuthPrefill({ email: email.trim().toLowerCase(), identity: email.trim().toLowerCase(), password });
     } catch (error) {

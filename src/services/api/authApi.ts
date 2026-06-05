@@ -85,6 +85,7 @@ export function canUseBackendEmailIdentity(identity: string): boolean {
 export async function registerDriverViaBackend(input: DriverBackendRegisterInput): Promise<BackendAuthTokens> {
   return request<BackendAuthTokens>("/auth/register", {
     method: "POST",
+    retryOnUnauthorized: false,
     body: {
       email: input.email,
       password: input.password,
@@ -111,6 +112,7 @@ export async function registerDriverWithCanonicalBackendFlow(
 export async function loginDriverViaBackend(input: DriverBackendLoginInput): Promise<BackendAuthTokens> {
   return request<BackendAuthTokens>("/auth/login", {
     method: "POST",
+    retryOnUnauthorized: false,
     body: input,
   });
 }
@@ -120,6 +122,7 @@ export async function forgotPasswordViaBackend(
 ): Promise<DriverBackendForgotPasswordResult> {
   return request<DriverBackendForgotPasswordResult>("/auth/forgot-password", {
     method: "POST",
+    retryOnUnauthorized: false,
     body: input,
   });
 }
@@ -129,6 +132,7 @@ export async function verifyOtpViaBackend(
 ): Promise<DriverBackendVerifyOtpResult> {
   return request<DriverBackendVerifyOtpResult>("/auth/verify-otp", {
     method: "POST",
+    retryOnUnauthorized: false,
     body: input,
   });
 }
@@ -138,6 +142,7 @@ export async function resetPasswordViaBackend(
 ): Promise<DriverBackendResetPasswordResult> {
   return request<DriverBackendResetPasswordResult>("/auth/reset-password", {
     method: "POST",
+    retryOnUnauthorized: false,
     body: input,
   });
 }
