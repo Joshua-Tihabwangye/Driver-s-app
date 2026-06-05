@@ -9,7 +9,7 @@ import {
 export default function OTPVerification() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [otp, setOtp] = useState(["", "", "", ""]);
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [timer, setTimer] = useState(30);
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -28,7 +28,7 @@ export default function OTPVerification() {
       setOtp(newOtp);
 
       // Auto-focus next input
-      if (value && index < 3) {
+      if (value && index < otp.length - 1) {
         const nextInput = document.getElementById(`otp-${index + 1}`);
         nextInput?.focus();
       }
@@ -112,7 +112,7 @@ export default function OTPVerification() {
             Verify OTP
           </h1>
           <p className="text-slate-500 font-medium">
-            We've sent a 4-digit code to your registered device.
+            We've sent a 6-digit code to your registered device.
           </p>
         </div>
 
@@ -126,7 +126,7 @@ export default function OTPVerification() {
               value={digit}
               onChange={(e) => handleChange(index, e.target.value)}
               onKeyDown={(e) => handleKeyDown(index, e)}
-              className="w-16 h-20 bg-white border border-slate-100 rounded-2xl text-center text-3xl font-black text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#03cd8c]/20 focus:border-[#03cd8c] transition-all shadow-sm"
+              className="w-12 h-20 bg-white border border-slate-100 rounded-2xl text-center text-3xl font-black text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#03cd8c]/20 focus:border-[#03cd8c] transition-all shadow-sm"
               maxLength={1}
             />
           ))}
