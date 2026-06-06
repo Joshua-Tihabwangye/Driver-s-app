@@ -13,6 +13,8 @@ import {
   listDriverVehicles,
 } from "../../services/api/driverApi";
 
+const SELECTED_VEHICLE_STORAGE_KEY = "driver_selected_vehicle";
+
 type AnySetter<T = any> = (value: T | ((prev: T) => T)) => void;
 
 type UseDriverBackendBootstrapSyncOptions = {
@@ -78,18 +80,42 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
 
     const hydrateDriverBackendState = async () => {
       try {
-        const [profile, preferences, onboardingStatus, backendVehicles] = await Promise.all([
+        const [profileResult, preferencesResult, onboardingStatusResult, backendVehiclesResult] = await Promise.allSettled([
           getDriverProfile(),
           getDriverPreferences(),
           getDriverOnboardingStatus(),
           listDriverVehicles(),
         ]);
 
+        const profile = profileResult.status === "fulfilled" ? profileResult.value : null;
+        const preferences = preferencesResult.status === "fulfilled" ? preferencesResult.value : null;
+        const onboardingStatus =
+          onboardingStatusResult.status === "fulfilled" ? onboardingStatusResult.value : null;
+        const backendVehicles =
+          backendVehiclesResult.status === "fulfilled" ? backendVehiclesResult.value : [];
+
         if (cancelled) {
           return;
         }
 
+        if (onboardingStatusResult.status === "rejected") {
+          console.warn("Driver onboarding bootstrap sync failed.", onboardingStatusResult.reason);
+        }
+
+        if (profileResult.status === "rejected") {
+          console.warn("Driver profile bootstrap sync failed.", profileResult.reason);
+        }
+
+        if (preferencesResult.status === "rejected") {
+          console.warn("Driver preferences bootstrap sync failed.", preferencesResult.reason);
+        }
+
+        if (backendVehiclesResult.status === "rejected") {
+          console.warn("Driver vehicles bootstrap sync failed.", backendVehiclesResult.reason);
+        }
+
         if (profile) {
+          const backendPhoto = typeof profile.profilePhoto === "string" ? profile.profilePhoto.trim() : "";
           setDriverProfile((prev: any) => ({
             ...prev,
             fullName: profile.fullName || prev.fullName,
@@ -103,13 +129,11 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
             postalCode: profile.postalCode || prev.postalCode,
             landmark: profile.landmark || prev.landmark,
           }));
-          setDriverProfilePhoto((prev: string | null) => {
-            const backendPhoto = typeof profile.profilePhoto === "string" ? profile.profilePhoto.trim() : "";
-            if (backendPhoto.length > 0) {
-              return backendPhoto;
-            }
-            return prev;
-          });
+          setDriverProfilePhoto(backendPhoto.length > 0 ? backendPhoto : null);
+          setOnboardingCheckpoints((prev: any) => ({
+            ...prev,
+            identityVerified: backendPhoto.length > 0,
+          }));
           // Only promote to "online" from the backend — never downgrade a session
           // that the user has already set to online (e.g. they clicked Go Online
           // and the bootstrap re-runs before the backend presence call propagates).
@@ -141,10 +165,12 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
 
         if (onboardingStatus) {
           const cp = onboardingStatus.checkpoints;
+          const hasBackendPhoto =
+            typeof profile?.profilePhoto === "string" && profile.profilePhoto.trim().length > 0;
           setOnboardingCheckpoints({
             roleSelected: onboardingStatus.hasSelectedServiceCategories,
             documentsVerified: onboardingStatus.hasRequiredDriverDocuments,
-            identityVerified: cp?.identityVerified ?? onboardingStatus.hasProfile,
+            identityVerified: Boolean(cp?.identityVerified ?? hasBackendPhoto),
             vehicleReady:
               onboardingStatus.hasActiveVehicle && onboardingStatus.hasRequiredVehicleDocuments,
             emergencyContactReady: cp?.emergencyContactReady ?? false,
@@ -172,12 +198,26 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
 
         setVehicles(mappedVehicles);
 
+        let persistedSelectedVehicleIndex: number | null = null;
+        if (typeof window !== "undefined") {
+          const rawSelectedVehicleIndex = window.localStorage.getItem(SELECTED_VEHICLE_STORAGE_KEY);
+          const parsedSelectedVehicleIndex = rawSelectedVehicleIndex === null ? Number.NaN : Number.parseInt(rawSelectedVehicleIndex, 10);
+          if (Number.isFinite(parsedSelectedVehicleIndex) && parsedSelectedVehicleIndex >= 0) {
+            persistedSelectedVehicleIndex = parsedSelectedVehicleIndex;
+          }
+        }
         const activeVehicleIndex = mappedVehicles.findIndex((vehicle) => vehicle.status === "active");
         setSelectedVehicleIndex(
-          activeVehicleIndex >= 0 ? activeVehicleIndex : mappedVehicles.length > 0 ? 0 : null,
+          persistedSelectedVehicleIndex !== null && persistedSelectedVehicleIndex < mappedVehicles.length
+            ? persistedSelectedVehicleIndex
+            : activeVehicleIndex >= 0
+              ? activeVehicleIndex
+              : mappedVehicles.length > 0
+                ? 0
+                : null,
         );
 
-        const [backendJobs, backendTrips, backendActiveTrip, backendContacts] = await Promise.all([
+        const [backendJobsResult, backendTripsResult, backendActiveTripResult, backendContactsResult] = await Promise.allSettled([
           listDriverJobs(),
           listDriverTrips(),
           getDriverActiveTrip(),
@@ -186,6 +226,35 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
 
         if (cancelled) {
           return;
+        }
+
+        const backendJobs = backendJobsResult.status === "fulfilled" ? backendJobsResult.value : [];
+        const backendTrips =
+          backendTripsResult.status === "fulfilled"
+            ? backendTripsResult.value
+            : { items: [] };
+        const backendActiveTrip =
+          backendActiveTripResult.status === "fulfilled" ? backendActiveTripResult.value : null;
+        const backendContacts =
+          backendContactsResult.status === "fulfilled" ? backendContactsResult.value : [];
+
+        if (backendJobsResult.status === "rejected") {
+          console.warn("Driver jobs bootstrap sync failed.", backendJobsResult.reason);
+          setJobAccessError("Unable to sync jobs from backend right now.");
+        } else {
+          setJobAccessError(null);
+        }
+
+        if (backendTripsResult.status === "rejected") {
+          console.warn("Driver trips bootstrap sync failed.", backendTripsResult.reason);
+        }
+
+        if (backendActiveTripResult.status === "rejected") {
+          console.warn("Driver active trip bootstrap sync failed.", backendActiveTripResult.reason);
+        }
+
+        if (backendContactsResult.status === "rejected") {
+          console.warn("Driver emergency contacts bootstrap sync failed.", backendContactsResult.reason);
         }
 
         setJobs(
@@ -248,9 +317,13 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
             },
           });
 
-          const safetyState = await getDriverTripSafetyState(backendActiveTrip.id);
-          if (!cancelled && safetyState) {
-            setActiveRideRuntime(mapBackendSafetyStateToRuntime(safetyState));
+          try {
+            const safetyState = await getDriverTripSafetyState(backendActiveTrip.id);
+            if (!cancelled && safetyState) {
+              setActiveRideRuntime(mapBackendSafetyStateToRuntime(safetyState));
+            }
+          } catch (error) {
+            console.warn("Driver safety bootstrap sync failed.", error);
           }
         } else {
           setActiveRideRuntime(createDefaultActiveRideRuntime(null));
