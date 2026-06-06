@@ -33,6 +33,8 @@ export default function Profile() {
     driverProfile,
     updateDriverProfile,
     onboardingCheckpoints,
+    vehicles,
+    selectedVehicleIndex,
   } = useStore();
   const [isEditing, setIsEditing] = useState(false);
   const [isPickingPhone, setIsPickingPhone] = useState(false);
@@ -52,8 +54,21 @@ export default function Profile() {
       .slice(0, 2)
       .map((part) => part[0]?.toUpperCase() || "")
       .join("") || "DR";
-  const documentsComplete = areAllRequiredDocumentsCompliant(readStoredDocumentState());
-  const identityVerified = onboardingCheckpoints.identityVerified;
+  const documentsComplete =
+    onboardingCheckpoints.documentsVerified ||
+    areAllRequiredDocumentsCompliant(readStoredDocumentState());
+  const identityVerified =
+    onboardingCheckpoints.identityVerified ||
+    Boolean(driverProfilePhoto && driverProfilePhoto.trim().length > 0);
+  const selectedVehicle =
+    selectedVehicleIndex !== null &&
+    selectedVehicleIndex >= 0 &&
+    selectedVehicleIndex < vehicles.length
+      ? vehicles[selectedVehicleIndex]
+      : vehicles[0] ?? null;
+  const selectedVehicleLabel = selectedVehicle
+    ? `${selectedVehicle.make} ${selectedVehicle.model} • ${selectedVehicle.plate}`.trim()
+    : "No vehicle added yet";
 
   useEffect(() => {
     if (isEditing) {
@@ -302,7 +317,7 @@ export default function Profile() {
               </div>
               <div className="flex flex-col items-start text-left">
                 <p className="text-[13px] font-black text-slate-900 uppercase tracking-tight">Vehicle Fleet</p>
-                <p className="text-[10px] text-slate-400 font-medium tracking-tight">Toyota Prius • UBB 123X</p>
+                <p className="text-[10px] text-slate-400 font-medium tracking-tight">{selectedVehicleLabel}</p>
               </div>
             </div>
             <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
