@@ -83,14 +83,15 @@ export async function request<T = unknown>(
     options;
 
   const accessToken = _auth?.getAccessToken();
+  const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
   const res = await fetch(`${BACKEND_URL}${path}`, {
     method,
     headers: {
-      "Content-Type": "application/json",
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
       ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
       ...headers,
     },
-    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+    ...(body !== undefined ? { body: isFormData ? (body as FormData) : JSON.stringify(body) } : {}),
   });
 
   if (res.status === 401 && retryOnUnauthorized && _auth) {

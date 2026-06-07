@@ -282,6 +282,7 @@ export default function RequiredActionsDashboard() {
               status: "Uploaded" as const,
               fileName: doc.fileUrl.split("/").pop() || doc.documentType,
               fileUrl: doc.fileUrl,
+              fileKey: doc.fileKey || "",
               error: "",
             };
             next[key] = {

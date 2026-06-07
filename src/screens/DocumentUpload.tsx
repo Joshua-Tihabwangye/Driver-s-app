@@ -11,10 +11,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
 import { useDriverBackendEnabled } from "../context/hooks/useDriverBackendEnabled";
-import { createDriverDocument } from "../services/api/driverApi";
+import { createDriverDocument, uploadFile } from "../services/api/driverApi";
 import {
   areAllRequiredDocumentsCompliant,
-  createLocalDocumentFileUrl,
   getDaysUntilExpiry,
   getDocumentExpiryStatus,
   getRequiredDocumentSides,
@@ -305,7 +304,7 @@ export default function DocumentUpload() {
     setExpiryErrors((prev) => ({ ...prev, [key]: result.error }));
   };
 
-  const handleFileSelected = (
+  const handleFileSelected = async (
     key: DocumentUploadKey,
     side: DocumentUploadSide,
     event: ChangeEvent<HTMLInputElement>
@@ -321,34 +320,73 @@ export default function DocumentUpload() {
     }));
     const hasValidExpiry = expiryValidation.valid;
 
-    setDocs((prev) => {
-      const next = {
-        ...prev,
-        [key]: {
-          ...prev[key],
-          [side]: accepted && hasValidExpiry
-            ? {
-                status: "Uploaded",
-                fileName: file.name,
-                fileUrl: createLocalDocumentFileUrl(file.name),
-                error: "",
-              }
-            : {
-                status: "Rejected",
-                fileName: file.name,
-                fileUrl: "",
-                error: accepted
-                  ? expiryValidation.error
-                  : "Only PDF and image files are allowed. Re-upload this copy.",
-              },
-        },
-      };
-      persistDocumentState(next);
-      return next;
-    });
+    if (!accepted || !hasValidExpiry) {
+      setDocs((prev) => {
+        const next = {
+          ...prev,
+          [key]: {
+            ...prev[key],
+            [side]: {
+              status: "Rejected",
+              fileName: file.name,
+              fileUrl: "",
+              fileKey: "",
+              error: accepted
+                ? expiryValidation.error
+                : "Only PDF and image files are allowed. Re-upload this copy.",
+            },
+          },
+        };
+        persistDocumentState(next);
+        return next;
+      });
+      if (!accepted) {
+        navigate(`/driver/onboarding/profile/documents/rejected?focus=${key}&side=${side}`);
+      }
+      return;
+    }
 
-    if (!accepted) {
-      navigate(`/driver/onboarding/profile/documents/rejected?focus=${key}&side=${side}`);
+    // Upload file to backend storage
+    try {
+      const uploadResult = await uploadFile(file, "document");
+      if (!uploadResult) {
+        throw new Error("Upload failed");
+      }
+      setDocs((prev) => {
+        const next = {
+          ...prev,
+          [key]: {
+            ...prev[key],
+            [side]: {
+              status: "Uploaded",
+              fileName: file.name,
+              fileUrl: uploadResult.fileUrl,
+              fileKey: uploadResult.fileKey,
+              error: "",
+            },
+          },
+        };
+        persistDocumentState(next);
+        return next;
+      });
+    } catch (error) {
+      setDocs((prev) => {
+        const next = {
+          ...prev,
+          [key]: {
+            ...prev[key],
+            [side]: {
+              status: "Rejected",
+              fileName: file.name,
+              fileUrl: "",
+              fileKey: "",
+              error: error instanceof Error ? error.message : "Upload failed. Please try again.",
+            },
+          },
+        };
+        persistDocumentState(next);
+        return next;
+      });
     }
   };
 
@@ -382,10 +420,19 @@ export default function DocumentUpload() {
         };
 
         for (const key of ["id", "license", "police"] as const) {
+          const side = docs[key].front.fileUrl ? "front" : docs[key].back.fileUrl ? "back" : "";
           const fileUrl = docs[key].front.fileUrl || docs[key].back.fileUrl;
+          const fileKey = docs[key].front.fileKey || docs[key].back.fileKey;
+          if (!fileUrl || fileUrl.startsWith("local://") || fileUrl.startsWith("data:")) {
+            continue;
+          }
           await createDriverDocument({
             documentType: docTypeMap[key],
             fileUrl,
+            fileKey,
+            originalFileName: docs[key].front.fileName || docs[key].back.fileName,
+            mimeType: "",
+            side: side || undefined,
             expiryDate: docs[key].expiryDate,
           });
         }

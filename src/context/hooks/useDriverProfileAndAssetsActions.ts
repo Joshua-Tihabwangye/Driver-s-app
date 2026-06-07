@@ -11,6 +11,7 @@ import {
   shouldUseDriverBackendWrites,
   updateDriverEmergencyContact as patchDriverEmergencyContact,
   uploadDriverVehicleDocument,
+  uploadFile,
 } from "../../services/api/driverApi";
 import { VEHICLE_DOCUMENT_API_TYPES } from "../../utils/mapBackendVehicleDocuments";
 
@@ -175,6 +176,12 @@ export function useDriverProfileAndAssetsActions({
         type: patch.type,
         status: patch.status as "active" | "inactive" | "maintenance" | undefined,
         accessories: patch.accessories,
+        imageKey: patch.imageKey,
+        imageUrl: patch.imageUrl,
+        batterySize: patch.batterySize,
+        color: patch.color,
+        range: patch.range,
+        isActive: patch.isActive,
       })
         .then(() => refreshBackendOnboardingState())
         .catch((error) => {
@@ -182,16 +189,33 @@ export function useDriverProfileAndAssetsActions({
         });
 
       if (patch.vehicleDocs) {
-        (["insurance", "inspection"] as const).forEach((docKey) => {
+        (["insurance", "inspection"] as const).forEach(async (docKey) => {
           const group = patch.vehicleDocs?.[docKey];
+          const file = group?.file?.rawFile as File | undefined;
           const fileUrl = group?.file?.url?.trim() || "";
           const expiryDate = group?.expiryDate || group?.file?.expiryDate || "";
-          if (!fileUrl || fileUrl.startsWith("local://") || !expiryDate) {
+          if (!expiryDate) return;
+          let uploadedUrl = fileUrl;
+          let uploadedKey: string | undefined;
+          if (file && file.size > 0) {
+            try {
+              const uploadResult = await uploadFile(file, "document");
+              if (uploadResult) {
+                uploadedUrl = uploadResult.fileUrl;
+                uploadedKey = uploadResult.fileKey;
+              }
+            } catch (error) {
+              console.warn(`Driver vehicle document file upload failed (${docKey}).`, error);
+              return;
+            }
+          }
+          if (!uploadedUrl || uploadedUrl.startsWith("local://") || uploadedUrl.startsWith("data:")) {
             return;
           }
           void uploadDriverVehicleDocument(id, {
             documentType: VEHICLE_DOCUMENT_API_TYPES[docKey],
-            fileUrl,
+            fileUrl: uploadedUrl,
+            fileKey: uploadedKey,
             expiryDate,
           }).catch((error) => {
             console.warn(`Driver backend vehicle document upload failed (${docKey}).`, error);
@@ -214,6 +238,12 @@ export function useDriverProfileAndAssetsActions({
         type: vehicle.type,
         status: vehicle.status as "active" | "inactive" | "maintenance" | undefined,
         accessories,
+        imageKey: vehicle.imageKey,
+        imageUrl: vehicle.imageUrl,
+        batterySize: vehicle.batterySize,
+        color: vehicle.color,
+        range: vehicle.range,
+        isActive: vehicle.isActive,
       })
         .then(() => refreshBackendOnboardingState())
         .catch((error) => {

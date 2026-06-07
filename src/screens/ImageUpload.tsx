@@ -11,7 +11,7 @@ import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
-import { uploadDriverIdentityPhoto } from "../services/api/driverApi";
+import { uploadDriverIdentityPhoto, uploadFile } from "../services/api/driverApi";
 
 // EVzone Driver App – ImageUpload Upload Your Image
 // Redesigned UI (green curved header, circular preview, green checkmark badge)
@@ -39,6 +39,7 @@ function TipRow({ icon: Icon, title, text }) {
 export default function ImageUpload() {
   const { driverProfilePhoto, setDriverProfilePhoto, setOnboardingCheckpoint } = useStore();
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(driverProfilePhoto);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [cameraError, setCameraError] = useState("");
   const [submitError, setSubmitError] = useState("");
@@ -66,6 +67,8 @@ export default function ImageUpload() {
   };
 
   const setPreviewFromBlob = (blob: Blob) => {
+    const file = new File([blob], "profile-photo.jpg", { type: "image/jpeg" });
+    setSelectedFile(file);
     const reader = new FileReader();
     reader.onloadend = () => {
       if (typeof reader.result !== "string") {
@@ -105,11 +108,22 @@ export default function ImageUpload() {
     setIsSubmitting(true);
     setSubmitError("");
     try {
-      const result = await uploadDriverIdentityPhoto({ imageUrl: imagePreviewUrl });
+      let imageKey: string | undefined;
+      let imageUrl = imagePreviewUrl;
+
+      if (selectedFile && !imagePreviewUrl.startsWith("http")) {
+        const uploadResult = await uploadFile(selectedFile, "image");
+        if (uploadResult) {
+          imageKey = uploadResult.fileKey;
+          imageUrl = uploadResult.fileUrl;
+        }
+      }
+
+      const result = await uploadDriverIdentityPhoto({ imageUrl, imageKey, profilePhotoUrl: imageUrl });
       const persistedPhoto =
         typeof result?.profilePhoto === "string" && result.profilePhoto.trim().length > 0
           ? result.profilePhoto
-          : imagePreviewUrl;
+          : imageUrl;
       setDriverProfilePhoto(persistedPhoto);
       setOnboardingCheckpoint("identityVerified", result?.identityVerified === true);
       navigate("/driver/onboarding/profile", { replace: true });

@@ -4,10 +4,12 @@ import {
   Circle,
   Eye,
   SunMedium,
+  Loader2,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { uploadFile, saveDriverFaceCapture } from "../services/api/driverApi";
 
 function Tip({ icon: Icon, title, text }) {
   return (
@@ -55,6 +57,15 @@ export default function FaceCapture() {
     2: false,
     3: false,
   });
+  const [uploadingStep, setUploadingStep] = useState<1 | 2 | 3 | null>(null);
+  const [captureKeys, setCaptureKeys] = useState<{
+    frontImageKey?: string;
+    rightImageKey?: string;
+    leftImageKey?: string;
+    frontImageUrl?: string;
+    rightImageUrl?: string;
+    leftImageUrl?: string;
+  }>({});
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -126,12 +137,58 @@ export default function FaceCapture() {
     };
   }, []);
 
-  const handleCapture = () => {
+  const handleCapture = async () => {
     const videoElement = videoRef.current;
     if (!videoElement || videoElement.videoWidth === 0 || videoElement.videoHeight === 0) {
       setCameraError("Camera feed is not ready. Please hold still and try again.");
       return;
     }
+
+    const canvas = document.createElement("canvas");
+    canvas.width = videoElement.videoWidth;
+    canvas.height = videoElement.videoHeight;
+    const context = canvas.getContext("2d");
+    if (!context) {
+      setCameraError("Unable to capture photo on this device.");
+      return;
+    }
+    context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob((b) => resolve(b), "image/jpeg", 0.92)
+    );
+    if (!blob) {
+      setCameraError("Unable to capture photo. Please try again.");
+      return;
+    }
+
+    setUploadingStep(step);
+    try {
+      const file = new File([blob], `face-capture-${step}.jpg`, { type: "image/jpeg" });
+      const result = await uploadFile(file, "face-capture");
+      if (result) {
+        setCaptureKeys((prev) => {
+          const next = { ...prev };
+          if (step === 1) {
+            next.frontImageKey = result.fileKey;
+            next.frontImageUrl = result.fileUrl;
+          } else if (step === 2) {
+            next.rightImageKey = result.fileKey;
+            next.rightImageUrl = result.fileUrl;
+          } else {
+            next.leftImageKey = result.fileKey;
+            next.leftImageUrl = result.fileUrl;
+          }
+          return next;
+        });
+      }
+    } catch (error) {
+      console.warn("Face capture upload failed", error);
+      setCameraError("Failed to upload capture. Please try again.");
+      setUploadingStep(null);
+      return;
+    }
+    setUploadingStep(null);
 
     setCapturedSteps((prev) => ({ ...prev, [step]: true }));
 
@@ -142,6 +199,20 @@ export default function FaceCapture() {
         setIsAdvancingStep(false);
       }, 320);
       return;
+    }
+
+    // Final step: persist all captures
+    try {
+      await saveDriverFaceCapture({
+        frontImageKey: captureKeys.frontImageKey,
+        rightImageKey: captureKeys.rightImageKey,
+        leftImageKey: captureKeys.leftImageKey,
+        frontImageUrl: captureKeys.frontImageUrl,
+        rightImageUrl: captureKeys.rightImageUrl,
+        leftImageUrl: captureKeys.leftImageUrl,
+      });
+    } catch (error) {
+      console.warn("Failed to persist face capture", error);
     }
 
     stopCameraStream();
@@ -155,7 +226,7 @@ export default function FaceCapture() {
         ? "Front captured. Keep turning right for the next capture."
         : "Front and right captured. Left capture is final.";
 
-  const ctaDisabled = !isCameraReady || cameraError.length > 0 || isAdvancingStep;
+  const ctaDisabled = !isCameraReady || cameraError.length > 0 || isAdvancingStep || uploadingStep !== null;
   const ctaActionText =
     step === 1
       ? "Capture front view"
@@ -173,7 +244,9 @@ export default function FaceCapture() {
   const cameraStatusText = cameraError
     ? "Camera unavailable"
     : isCameraReady
-      ? isAdvancingStep
+      ? uploadingStep !== null
+        ? "Uploading capture..."
+        : isAdvancingStep
         ? "Captured. Moving to next angle..."
         : "Camera ready"
       : "Starting camera...";
@@ -239,11 +312,15 @@ export default function FaceCapture() {
                     : "border-white/95 bg-white/20 shadow-[0_0_30px_rgba(255,255,255,0.45)] active:scale-95"
                 }`}
               >
-                <span
-                  className={`h-9 w-9 rounded-full transition-all ${
-                    ctaDisabled ? "bg-white/30" : "bg-white animate-pulse"
-                  }`}
-                />
+                {uploadingStep === step ? (
+                  <Loader2 className="h-6 w-6 text-white animate-spin" />
+                ) : (
+                  <span
+                    className={`h-9 w-9 rounded-full transition-all ${
+                      ctaDisabled ? "bg-white/30" : "bg-white animate-pulse"
+                    }`}
+                  />
+                )}
               </button>
             </div>
           </div>

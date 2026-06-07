@@ -1,29 +1,41 @@
 import React, { useRef, useState } from "react";
-import { Camera, Image as ImageIcon, FileText } from "lucide-react";
+import { Camera, Image as ImageIcon, FileText, Loader2 } from "lucide-react";
+import { uploadFile } from "../services/api/driverApi";
 
 interface VehicleImageUploadProps {
   label?: string;
   imageUrl: string;
-  onChange: (url: string) => void;
+  onChange: (url: string, key?: string) => void;
 }
 
 export default function VehicleImageUpload({ label, imageUrl, onChange }: VehicleImageUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string>("");
+  const [isUploading, setIsUploading] = useState(false);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setError("");
     const file = e.target.files?.[0];
-    if (file) {
-      if (!file.type.startsWith("image/") && file.type !== "application/pdf") {
-        setError("Only PDF and Image files are currently supported.");
-        return;
+    if (!file) return;
+
+    if (!file.type.startsWith("image/") && file.type !== "application/pdf") {
+      setError("Only PDF and Image files are currently supported.");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const result = await uploadFile(file, "image");
+      if (result) {
+        onChange(result.fileUrl, result.fileKey);
+      } else {
+        setError("Upload failed. Please try again.");
       }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        onChange(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Upload failed.");
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
@@ -37,9 +49,14 @@ export default function VehicleImageUpload({ label, imageUrl, onChange }: Vehicl
       </div>
       <div 
         className="relative h-24 w-full rounded-[2rem] border-2 border-dashed border-slate-300 bg-slate-50 flex flex-col items-center justify-center overflow-hidden cursor-pointer hover:border-orange-500/50 hover:bg-orange-50/30 transition-all group"
-        onClick={() => fileInputRef.current?.click()}
+        onClick={() => !isUploading && fileInputRef.current?.click()}
       >
-        {imageUrl ? (
+        {isUploading ? (
+          <div className="flex flex-col items-center justify-center h-full w-full">
+            <Loader2 className="h-6 w-6 text-slate-400 animate-spin" />
+            <span className="text-[10px] font-bold text-slate-400 mt-1">Uploading...</span>
+          </div>
+        ) : imageUrl ? (
           <>
             {isPdf ? (
               <div className="flex flex-col items-center justify-center h-full w-full bg-blue-50/50 text-blue-600">

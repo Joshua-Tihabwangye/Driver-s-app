@@ -23,8 +23,10 @@ import {
   getDocumentExpiryStatus,
   getFirstNonCompliantDocumentKey,
   hasAnyRequiredDocumentEvidence,
+  persistDocumentState,
   readStoredDocumentState,
   validateDocumentExpiryDate,
+  type DocumentUploadKey,
 } from "../utils/documentVerificationState";
 import { OFFLINE_JOB_ACCESS_ERROR } from "../utils/offlineAccess";
 import {
@@ -52,6 +54,9 @@ import {
   tripCancel,
   tripComplete,
   tripStart,
+  setDriverActiveVehicle,
+  listDriverVehicles,
+  listDriverDocuments,
 } from "../services/api/driverApi";
 import { useDriverBackendEnabled } from "./hooks/useDriverBackendEnabled";
 import { useDriverBackendBootstrapSync } from "./hooks/useDriverBackendBootstrapSync";
@@ -1864,7 +1869,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }
     }
   }, []);
+
   const driverBackendEnabled = useDriverBackendEnabled();
+
+  // Sync active vehicle selection to backend
+  const syncActiveVehicleToBackend = useCallback(async (vehicleId: string | null) => {
+    if (!driverBackendEnabled || !readDriverBackendAccessToken()) return;
+    try {
+      await setDriverActiveVehicle(vehicleId);
+    } catch (error) {
+      console.warn("Failed to sync active vehicle to backend", error);
+    }
+  }, [driverBackendEnabled]);
   useEffect(() => {
     if (typeof window === "undefined") {
       return undefined;
@@ -1885,10 +1901,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const [profile, preferences, onboardingStatus] = await Promise.all([
+    const [profile, preferences, onboardingStatus, backendVehicles, backendDocuments] = await Promise.all([
       getDriverProfile().catch(() => null),
       getDriverPreferences().catch(() => null),
       getDriverOnboardingStatus().catch(() => null),
+      listDriverVehicles().catch(() => []),
+      listDriverDocuments().catch(() => []),
     ]);
 
     if (profile) {
@@ -1908,6 +1926,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }));
       setDriverProfilePhotoState(backendPhoto.length > 0 ? backendPhoto : null);
       setDriverPresenceStatus(profile.status === "online" ? "online" : "offline");
+
+      // Restore active vehicle from backend
+      if (profile.activeVehicleId && backendVehicles && backendVehicles.length > 0) {
+        const activeIndex = backendVehicles.findIndex((v) => v.id === profile.activeVehicleId);
+        if (activeIndex >= 0) {
+          setSelectedVehicleIndex(activeIndex);
+        }
+      }
     }
 
     if (preferences) {
@@ -1938,6 +1964,39 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             ? "/driver/dashboard/offline"
             : "/driver/onboarding/profile"),
       );
+    }
+
+    // Hydrate local document state from backend records
+    if (backendDocuments && backendDocuments.length > 0) {
+      const docTypeMap: Record<string, DocumentUploadKey> = {
+        national_id_or_passport: "id",
+        drivers_license: "license",
+        conduct_clearance: "police",
+      };
+      const next = readStoredDocumentState();
+      let changed = false;
+      for (const doc of backendDocuments) {
+        const key = docTypeMap[doc.documentType];
+        if (!key) continue;
+        const side = doc.side === "back" ? "back" : "front";
+        if (!next[key][side].fileUrl && doc.fileUrl) {
+          next[key] = {
+            ...next[key],
+            expiryDate: doc.expiryDate ? doc.expiryDate.slice(0, 10) : next[key].expiryDate,
+            [side]: {
+              status: "Uploaded",
+              fileName: doc.originalFileName || doc.fileUrl || "",
+              fileUrl: doc.fileUrl || "",
+              fileKey: doc.fileKey || "",
+              error: "",
+            },
+          };
+          changed = true;
+        }
+      }
+      if (changed) {
+        persistDocumentState(next);
+      }
     }
 
     setDriverBootstrapReady(true);
@@ -2030,6 +2089,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setSelectedVehicleIndex(null);
     }
   }, [selectedVehicleIndex, vehicles.length, setSelectedVehicleIndex]);
+
+  // Sync active vehicle selection to backend
+  useEffect(() => {
+    if (!driverBackendEnabled) return;
+    const activeVehicle =
+      selectedVehicleIndex !== null &&
+      selectedVehicleIndex >= 0 &&
+      selectedVehicleIndex < vehicles.length
+        ? vehicles[selectedVehicleIndex]
+        : null;
+    void syncActiveVehicleToBackend(activeVehicle?.id ?? null);
+  }, [driverBackendEnabled, selectedVehicleIndex, vehicles]);
 
   // Keep vehicleReady in sync with selected vehicle/local flow, or backend vehicle records.
   useEffect(() => {
