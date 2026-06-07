@@ -370,6 +370,7 @@ export default function DocumentUpload() {
         return next;
       });
     } catch (error) {
+      console.error("Document upload failed:", error);
       setDocs((prev) => {
         const next = {
           ...prev,
