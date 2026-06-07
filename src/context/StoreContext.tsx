@@ -772,12 +772,12 @@ const ONBOARDING_CHECKPOINT_META: Record<
   documentsVerified: {
     title: "Document Verification",
     description: "Upload and verify required driver documents.",
-    route: "/driver/onboarding/profile/documents/upload",
+    route: "/driver/onboarding/profile",
   },
   identityVerified: {
     title: "Identity Verification",
     description: "Upload a profile photo.",
-    route: "/driver/preferences/identity/upload-image",
+    route: "/driver/onboarding/profile",
   },
   vehicleReady: {
     title: "Vehicle Setup",
@@ -787,7 +787,7 @@ const ONBOARDING_CHECKPOINT_META: Record<
   emergencyContactReady: {
     title: "Emergency Contacts",
     description: "Add at least one trusted emergency contact.",
-    route: "/driver/safety/emergency/contacts",
+    route: "/driver/onboarding/profile",
   },
   operationArea: {
     title: "Operation Area",
@@ -2371,9 +2371,23 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const effectiveOnboardingCompleted = driverBackendEnabled
     ? onboardingCompleted
     : canGoOnline;
+  const localProfileStageReady =
+    onboardingCheckpoints.documentsVerified === true &&
+    onboardingCheckpoints.identityVerified === true &&
+    onboardingCheckpoints.emergencyContactReady === true &&
+    driverPreferences.areaIds.length > 0;
+  const localPrimaryOnboardingRoute = !onboardingCheckpoints.roleSelected
+    ? "/driver/register"
+    : !onboardingCheckpoints.vehicleReady
+      ? "/driver/vehicles"
+      : !localProfileStageReady
+        ? "/driver/onboarding/profile"
+        : !onboardingCheckpoints.trainingCompleted
+          ? "/driver/training/intro"
+          : "/driver/dashboard/offline";
   const primaryOnboardingRoute = driverBackendEnabled
     ? backendPrimaryOnboardingRoute
-    : onboardingBlockers[0]?.route || "/driver/dashboard/offline";
+    : localPrimaryOnboardingRoute;
 
   useDriverLocalPersistence({
     driverBackendOnlyMode: DRIVER_BACKEND_ONLY_MODE,

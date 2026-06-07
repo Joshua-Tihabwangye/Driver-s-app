@@ -91,6 +91,7 @@ export default function DriverProfileOnboarding() {
     canGoOnline,
     assignableJobTypes,
     driverProfile,
+    driverPreferences,
     driverProfilePhoto,
     onboardingBlockers,
     onboardingCheckpoints,
@@ -283,6 +284,16 @@ export default function DriverProfileOnboarding() {
         route: "/driver/register",
       },
       {
+        id: "operation-area",
+        label: "Operation Area",
+        detail:
+          driverPreferences.areaIds.length > 0
+            ? `${driverPreferences.areaIds.length} target area(s) selected.`
+            : "Select at least one target area to receive requests.",
+        present: driverPreferences.areaIds.length > 0,
+        route: "/driver/preferences",
+      },
+      {
         id: "documents-verified",
         label: "Documents Verification",
         detail: onboardingCheckpoints.documentsVerified
@@ -370,6 +381,7 @@ export default function DriverProfileOnboarding() {
     driverProfile.email,
     driverProfile.fullName,
     driverProfile.phone,
+    driverPreferences.areaIds.length,
     onboardingRoleLabel,
     effectiveDocumentsVerified,
     onboardingCheckpoints.emergencyContactReady,

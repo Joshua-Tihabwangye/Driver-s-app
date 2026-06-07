@@ -147,7 +147,7 @@ export default function DriverRegistration() {
       setOnboardingCheckpoint("trainingCompleted", false);
     }
 
-    navigate("/driver/onboarding/profile");
+    navigate("/driver/vehicles");
   };
 
   return (

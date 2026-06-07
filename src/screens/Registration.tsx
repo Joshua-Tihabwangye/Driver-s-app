@@ -8,6 +8,7 @@ import {
   isBackendAuthEnabled,
   registerDriverWithCanonicalBackendFlow,
 } from "../services/api/authApi";
+import { saveDriverBackendTokens } from "../services/api/driverApi";
 import { resetStoredDocumentState } from "../utils/documentVerificationState";
 import { saveAuthPrefill } from "../utils/authPrefill";
 import {
@@ -172,6 +173,14 @@ export default function Registration() {
         setErrorMessage("Enter a valid email address to complete backend registration.");
         return;
       }
+      saveDriverBackendTokens(backendAuth.accessToken, backendAuth.refreshToken);
+      saveDriverAuthAccount({
+        fullName: fullName.trim(),
+        email: email.trim().toLowerCase(),
+        phone: phone.trim(),
+        password,
+        selectedService,
+      });
       updateDriverProfile({
         fullName: fullName.trim(),
         phone: phone.trim(),
