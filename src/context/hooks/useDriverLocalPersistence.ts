@@ -31,7 +31,7 @@ type UseDriverLocalPersistenceInput = {
   activeTrip: unknown;
   driverProfile: unknown;
   driverPreferences: unknown;
-  driverProfilePhoto: string;
+  driverProfilePhoto: string | null;
   vehicles: Vehicle[];
   emergencyContacts: SharedContact[];
   driverPresenceStatus: string;
@@ -81,11 +81,6 @@ export function useDriverLocalPersistence({
 }: UseDriverLocalPersistenceInput) {
   useEffect(() => {
     if (!canPersistBackendOwnedState(driverBackendOnlyMode, driverBackendEnabled)) return;
-    persistJson(keys.ONBOARDING_CHECKPOINTS_STORAGE_KEY, onboardingCheckpoints, "Failed to save onboarding checkpoints to localStorage:");
-  }, [driverBackendEnabled, driverBackendOnlyMode, keys.ONBOARDING_CHECKPOINTS_STORAGE_KEY, onboardingCheckpoints]);
-
-  useEffect(() => {
-    if (!canPersistBackendOwnedState(driverBackendOnlyMode, driverBackendEnabled)) return;
     persistJson(keys.DRIVER_ROLE_SELECTION_STORAGE_KEY, driverRoleSelection, "Failed to save driver role selection to localStorage:");
   }, [driverBackendEnabled, driverBackendOnlyMode, driverRoleSelection, keys.DRIVER_ROLE_SELECTION_STORAGE_KEY]);
 
@@ -120,21 +115,6 @@ export function useDriverLocalPersistence({
 
   useEffect(() => {
     if (!canPersistBackendOwnedState(driverBackendOnlyMode, driverBackendEnabled)) return;
-
-    if (!driverProfilePhoto) {
-      window.localStorage.removeItem(keys.DRIVER_PROFILE_PHOTO_STORAGE_KEY);
-      return;
-    }
-
-    try {
-      window.localStorage.setItem(keys.DRIVER_PROFILE_PHOTO_STORAGE_KEY, driverProfilePhoto);
-    } catch (error) {
-      console.warn("Failed to save driver profile photo to localStorage:", error);
-    }
-  }, [driverBackendEnabled, driverBackendOnlyMode, driverProfilePhoto, keys.DRIVER_PROFILE_PHOTO_STORAGE_KEY]);
-
-  useEffect(() => {
-    if (!canPersistBackendOwnedState(driverBackendOnlyMode, driverBackendEnabled)) return;
     persistJson(keys.VEHICLES_STORAGE_KEY, vehicles, "Failed to save vehicles to localStorage:");
   }, [driverBackendEnabled, driverBackendOnlyMode, keys.VEHICLES_STORAGE_KEY, vehicles]);
 
@@ -142,15 +122,6 @@ export function useDriverLocalPersistence({
     if (!canPersistBackendOwnedState(driverBackendOnlyMode, driverBackendEnabled)) return;
     persistJson(keys.EMERGENCY_CONTACTS_STORAGE_KEY, emergencyContacts, "Failed to save emergency contacts to localStorage:");
   }, [driverBackendEnabled, driverBackendOnlyMode, emergencyContacts, keys.EMERGENCY_CONTACTS_STORAGE_KEY]);
-
-  useEffect(() => {
-    if (!canPersistBackendOwnedState(driverBackendOnlyMode, driverBackendEnabled)) return;
-    try {
-      window.localStorage.setItem(keys.DRIVER_PRESENCE_STORAGE_KEY, driverPresenceStatus);
-    } catch (error) {
-      console.warn("Failed to save driver presence status to localStorage:", error);
-    }
-  }, [driverBackendEnabled, driverBackendOnlyMode, driverPresenceStatus, keys.DRIVER_PRESENCE_STORAGE_KEY]);
 
   useEffect(() => {
     if (!canPersistBackendOwnedState(driverBackendOnlyMode, driverBackendEnabled)) return;

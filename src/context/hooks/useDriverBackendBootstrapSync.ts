@@ -19,11 +19,14 @@ type AnySetter<T = any> = (value: T | ((prev: T) => T)) => void;
 
 type UseDriverBackendBootstrapSyncOptions = {
   driverBackendEnabled: boolean;
+  bootstrapTrigger: number;
   setDriverProfile: AnySetter;
   setDriverProfilePhoto: AnySetter;
   setDriverPreferences: AnySetter;
   setDriverRoleSelection: AnySetter;
   setOnboardingCheckpoints: AnySetter;
+  setOnboardingCompleted: AnySetter<boolean>;
+  setPrimaryOnboardingRoute: AnySetter<string>;
   setDriverPresenceStatus: AnySetter;
   setBootstrapReady: AnySetter<boolean>;
   setVehicles: AnySetter;
@@ -46,11 +49,14 @@ type UseDriverBackendBootstrapSyncOptions = {
 export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrapSyncOptions): void {
   const {
     driverBackendEnabled,
+    bootstrapTrigger,
     setDriverProfile,
     setDriverProfilePhoto,
     setDriverPreferences,
     setDriverRoleSelection,
     setOnboardingCheckpoints,
+    setOnboardingCompleted,
+    setPrimaryOnboardingRoute,
     setDriverPresenceStatus,
     setBootstrapReady,
     setVehicles,
@@ -130,20 +136,7 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
             landmark: profile.landmark || prev.landmark,
           }));
           setDriverProfilePhoto(backendPhoto.length > 0 ? backendPhoto : null);
-          setOnboardingCheckpoints((prev: any) => ({
-            ...prev,
-            identityVerified: backendPhoto.length > 0,
-          }));
-          // Only promote to "online" from the backend — never downgrade a session
-          // that the user has already set to online (e.g. they clicked Go Online
-          // and the bootstrap re-runs before the backend presence call propagates).
-          if (profile.status === "online") {
-            setDriverPresenceStatus("online");
-          } else {
-            // Keep any existing "online" value the user set; only fall back to
-            // "offline" if the state is not already "online".
-            setDriverPresenceStatus((prev: string) => (prev === "online" ? "online" : "offline"));
-          }
+          setDriverPresenceStatus(profile.status === "online" ? "online" : "offline");
         }
 
         const persistedServiceIds = preferences?.serviceIds ?? [];
@@ -170,12 +163,19 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
           setOnboardingCheckpoints({
             roleSelected: onboardingStatus.hasSelectedServiceCategories,
             documentsVerified: onboardingStatus.hasRequiredDriverDocuments,
-            identityVerified: Boolean(cp?.identityVerified ?? hasBackendPhoto),
+            identityVerified: cp?.identityVerified === true || hasBackendPhoto,
             vehicleReady:
               onboardingStatus.hasActiveVehicle && onboardingStatus.hasRequiredVehicleDocuments,
-            emergencyContactReady: cp?.emergencyContactReady ?? false,
+            emergencyContactReady: cp?.emergencyContactReady === true,
             trainingCompleted: onboardingStatus.hasCompletedTutorials,
           });
+          setOnboardingCompleted(onboardingStatus.onboardingCompleted === true);
+          setPrimaryOnboardingRoute(
+            onboardingStatus.redirectPath ||
+              (onboardingStatus.onboardingCompleted
+                ? "/driver/dashboard/offline"
+                : "/driver/onboarding/profile"),
+          );
         }
 
         const mappedVehicles = backendVehicles.map((vehicle) => {
@@ -216,6 +216,7 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
                 ? 0
                 : null,
         );
+        setBootstrapReady(true);
 
         const [backendJobsResult, backendTripsResult, backendActiveTripResult, backendContactsResult] = await Promise.allSettled([
           listDriverJobs(),
@@ -443,6 +444,7 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
       window.clearInterval(timer);
     };
   }, [
+    bootstrapTrigger,
     createDefaultActiveRideRuntime,
     defaultActiveTrip,
     driverBackendEnabled,
@@ -451,5 +453,20 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
     mapBackendTripStage,
     setActiveRideRuntime,
     setActiveTrip,
+    setBootstrapReady,
+    setDriverPreferences,
+    setDriverPresenceStatus,
+    setDriverProfile,
+    setDriverProfilePhoto,
+    setDriverRoleSelection,
+    setEmergencyContacts,
+    setJobAccessError,
+    setJobs,
+    setOnboardingCheckpoints,
+    setOnboardingCompleted,
+    setPrimaryOnboardingRoute,
+    setSelectedVehicleIndex,
+    setTrips,
+    setVehicles,
   ]);
 }

@@ -29,8 +29,14 @@ import {
 import { OFFLINE_JOB_ACCESS_ERROR } from "../utils/offlineAccess";
 import {
   acceptDriverJob,
+  DRIVER_BACKEND_AUTH_EVENT,
+  DriverBackendPresenceOnlineResult,
   DriverBackendTripSafetyState,
+  getDriverOnboardingStatus,
+  getDriverPreferences,
+  getDriverProfile,
   rejectDriverJob,
+  readDriverBackendAccessToken,
   requestTemporaryStop,
   respondTemporaryStop,
   resumeTemporaryStop,
@@ -268,15 +274,9 @@ export interface TripFeedback {
 
 export interface GoOnlineDecision {
   allowed: boolean;
-  requiresSelfie: boolean;
+  requiresConfirmation: boolean;
   route: string;
   message: string;
-}
-
-export interface GoOnlineCompletionResult {
-  ok: boolean;
-  error?: string;
-  redirectRoute?: string;
 }
 
 export interface JobAccessDecision {
@@ -316,6 +316,7 @@ interface StoreContextType {
   onboardingCheckpoints: OnboardingCheckpointState;
   onboardingBlockers: OnboardingBlocker[];
   canGoOnline: boolean;
+  onboardingCompleted: boolean;
   driverPresenceStatus: DriverPresenceStatus;
   primaryOnboardingRoute: string;
   assignableJobTypes: JobCategory[];
@@ -362,8 +363,8 @@ interface StoreContextType {
     checkpoint: OnboardingCheckpointId,
     isComplete?: boolean
   ) => void;
-  setDriverOnline: () => void;
-  setDriverOffline: () => void;
+  setDriverOnline: (input?: { confirmed?: boolean }) => Promise<DriverBackendPresenceOnlineResult | null>;
+  setDriverOffline: () => Promise<Record<string, unknown> | null>;
   resetOnboardingVehicleSetup: () => void;
   acceptRideJob: (jobId: string) => boolean;
   acceptSpecializedJob: (
@@ -401,7 +402,6 @@ interface StoreContextType {
   clearJobAccessError: () => void;
   resolveJobAccessAttempt: (nextRoute?: string) => JobAccessDecision;
   resolveGoOnlineAttempt: (nextRoute?: string) => GoOnlineDecision;
-  completeGoOnlineAfterSelfieVerification: () => Promise<GoOnlineCompletionResult>;
   driverBootstrapReady: boolean;
 }
 
@@ -446,12 +446,8 @@ const AUTO_RESEED_REQUESTS = false;
 const REQUEST_RESEED_JOB_TYPES: readonly JobCategory[] = ["ride", "delivery"];
 const DOCUMENT_EXPIRED_API_ERROR =
   "Some of your documents have expired. You won't be able to receive job requests until you upload valid documents.";
-const SELFIE_REQUIRED_MESSAGE =
-  "Selfie verification is required before you can go online.";
-const SELFIE_NOT_REQUIRED_MESSAGE =
-  "All compliance checks are complete. You can go online now.";
-const REQUIRE_GO_ONLINE_SELFIE =
-  import.meta.env.VITE_REQUIRE_GO_ONLINE_SELFIE !== "false";
+const GO_ONLINE_CONFIRMATION_MESSAGE =
+  "Please confirm going online before the backend updates your status.";
 
 const DEFAULT_DRIVER_MAP_PREFERENCES: DriverMapPreferences = {
   alertsOn: true,
@@ -825,27 +821,7 @@ function validateDriverRoleConfig(
 }
 
 function readStoredOnboardingCheckpoints(): OnboardingCheckpointState {
-  if (DRIVER_BACKEND_ONLY_MODE) {
-    return DEFAULT_ONBOARDING_CHECKPOINTS;
-  }
-  if (typeof window === "undefined") {
-    return DEFAULT_ONBOARDING_CHECKPOINTS;
-  }
-
-  try {
-    const raw = window.localStorage.getItem(ONBOARDING_CHECKPOINTS_STORAGE_KEY);
-    if (!raw) {
-      return DEFAULT_ONBOARDING_CHECKPOINTS;
-    }
-
-    const parsed = JSON.parse(raw) as Partial<OnboardingCheckpointState>;
-    return {
-      ...DEFAULT_ONBOARDING_CHECKPOINTS,
-      ...parsed,
-    };
-  } catch {
-    return DEFAULT_ONBOARDING_CHECKPOINTS;
-  }
+  return DEFAULT_ONBOARDING_CHECKPOINTS;
 }
 
 function readStoredDriverRoleSelection(): DriverRoleUpdateInput {
@@ -1266,6 +1242,9 @@ function readStoredDraftVehicle(): Vehicle | null {
 }
 
 function readStoredDriverProfilePhoto(): string | null {
+  if (DRIVER_BACKEND_ONLY_MODE) {
+    return null;
+  }
   if (typeof window === "undefined") {
     return null;
   }
@@ -1319,19 +1298,13 @@ function readStoredSharedRidesEnabled(): boolean {
 }
 
 function readStoredDriverPresenceStatus(): DriverPresenceStatus {
-  if (DRIVER_BACKEND_ONLY_MODE) {
-    return "offline";
-  }
-  if (typeof window === "undefined") {
-    return "offline";
-  }
+  return "offline";
+}
 
-  try {
-    const raw = window.localStorage.getItem(DRIVER_PRESENCE_STORAGE_KEY);
-    return raw === "online" ? "online" : "offline";
-  } catch {
-    return "offline";
-  }
+function resolveEffectiveDriverPresenceStatus(
+  currentStatus: DriverPresenceStatus,
+): DriverPresenceStatus {
+  return currentStatus;
 }
 
 function readStoredDriverMapPreferences(): DriverMapPreferences {
@@ -1857,6 +1830,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [driverPresenceStatus, setDriverPresenceStatus] = useState<DriverPresenceStatus>(() =>
     readStoredDriverPresenceStatus()
   );
+  const [onboardingCompleted, setOnboardingCompleted] = useState<boolean>(false);
+  const [backendPrimaryOnboardingRoute, setBackendPrimaryOnboardingRoute] =
+    useState<string>("/driver/onboarding/profile");
   // True once the first backend bootstrap has completed (or failed).
   // Guards navigation guards that would otherwise fire before we know the real status.
   const [driverBootstrapReady, setDriverBootstrapReady] = useState<boolean>(
@@ -1866,6 +1842,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     readStoredDriverMapPreferences()
   );
   const [jobAccessError, setJobAccessError] = useState<string | null>(null);
+  const [backendBootstrapTrigger, setBackendBootstrapTrigger] = useState(0);
   const [selectedVehicleIndex, setSelectedVehicleIndexState] = useState<number | null>(() => {
     if (typeof window === "undefined") return null;
     try {
@@ -1888,42 +1865,111 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   }, []);
   const driverBackendEnabled = useDriverBackendEnabled();
-  const setDriverProfilePhoto = useCallback((photo: string | null) => {
-    const normalizedPhoto = typeof photo === "string" && photo.trim().length > 0 ? photo : null;
-    const hasProfilePhoto = Boolean(normalizedPhoto);
-    setDriverProfilePhotoState(normalizedPhoto);
-    setOnboardingCheckpoints((prev) => {
-      if (prev.identityVerified === hasProfilePhoto) {
-        return prev;
-      }
-      return {
-        ...prev,
-        identityVerified: hasProfilePhoto,
-      };
-    });
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
 
-    if (shouldUseDriverBackendWrites()) {
-      const shouldPersistPhotoValue =
-        typeof normalizedPhoto === "string" && !normalizedPhoto.startsWith("data:");
-      const identityPatch: { identityVerified: boolean; profilePhoto?: string } = {
-        identityVerified: hasProfilePhoto,
-      };
-      if (shouldPersistPhotoValue && normalizedPhoto) {
-        identityPatch.profilePhoto = normalizedPhoto;
-      }
-      void patchDriverProfile(identityPatch).catch((error) => {
-        console.warn("Driver backend identity update failed.", error);
+    const handleBackendAuthChange = () => {
+      setBackendBootstrapTrigger((prev) => prev + 1);
+    };
+
+    window.addEventListener(DRIVER_BACKEND_AUTH_EVENT, handleBackendAuthChange);
+    return () => {
+      window.removeEventListener(DRIVER_BACKEND_AUTH_EVENT, handleBackendAuthChange);
+    };
+  }, []);
+
+  const refreshBackendOnboardingState = useCallback(async () => {
+    if (!driverBackendEnabled || !readDriverBackendAccessToken()) {
+      return;
+    }
+
+    const [profile, preferences, onboardingStatus] = await Promise.all([
+      getDriverProfile().catch(() => null),
+      getDriverPreferences().catch(() => null),
+      getDriverOnboardingStatus().catch(() => null),
+    ]);
+
+    if (profile) {
+      const backendPhoto = typeof profile.profilePhoto === "string" ? profile.profilePhoto.trim() : "";
+      setDriverProfile((prev) => ({
+        ...prev,
+        fullName: profile.fullName || prev.fullName,
+        email: profile.email || prev.email,
+        phone: profile.phone || prev.phone,
+        city: profile.city || prev.city,
+        country: profile.country || prev.country,
+        dob: profile.dateOfBirth || prev.dob,
+        streetAddress: profile.streetAddress || prev.streetAddress,
+        district: profile.district || prev.district,
+        postalCode: profile.postalCode || prev.postalCode,
+        landmark: profile.landmark || prev.landmark,
+      }));
+      setDriverProfilePhotoState(backendPhoto.length > 0 ? backendPhoto : null);
+      setDriverPresenceStatus(profile.status === "online" ? "online" : "offline");
+    }
+
+    if (preferences) {
+      setDriverPreferences({
+        areaIds: preferences.areaIds ?? [],
+        serviceIds: preferences.serviceIds ?? [],
+        requirementIds: preferences.requirementIds ?? [],
       });
     }
-  }, []);
+
+    if (onboardingStatus) {
+      const cp = onboardingStatus.checkpoints;
+      const hasBackendPhoto =
+        typeof profile?.profilePhoto === "string" && profile.profilePhoto.trim().length > 0;
+      setOnboardingCheckpoints({
+        roleSelected: onboardingStatus.hasSelectedServiceCategories,
+        documentsVerified: onboardingStatus.hasRequiredDriverDocuments,
+        identityVerified: cp?.identityVerified === true || hasBackendPhoto,
+        vehicleReady:
+          onboardingStatus.hasActiveVehicle && onboardingStatus.hasRequiredVehicleDocuments,
+        emergencyContactReady: cp?.emergencyContactReady === true,
+        trainingCompleted: onboardingStatus.hasCompletedTutorials,
+      });
+      setOnboardingCompleted(onboardingStatus.onboardingCompleted === true);
+      setBackendPrimaryOnboardingRoute(
+        onboardingStatus.redirectPath ||
+          (onboardingStatus.onboardingCompleted
+            ? "/driver/dashboard/offline"
+            : "/driver/onboarding/profile"),
+      );
+    }
+
+    setDriverBootstrapReady(true);
+  }, [driverBackendEnabled]);
+
+  const setDriverProfilePhoto = useCallback((photo: string | null) => {
+    const normalizedPhoto = typeof photo === "string" && photo.trim().length > 0 ? photo : null;
+    setDriverProfilePhotoState(normalizedPhoto);
+    if (!driverBackendEnabled) {
+      const hasProfilePhoto = Boolean(normalizedPhoto);
+      setOnboardingCheckpoints((prev) => {
+        if (prev.identityVerified === hasProfilePhoto) {
+          return prev;
+        }
+        return {
+          ...prev,
+          identityVerified: hasProfilePhoto,
+        };
+      });
+    }
+  }, [driverBackendEnabled]);
 
   useDriverBackendBootstrapSync({
     driverBackendEnabled,
+    bootstrapTrigger: backendBootstrapTrigger,
     setDriverProfile,
     setDriverProfilePhoto: setDriverProfilePhotoState,
     setDriverPreferences,
     setDriverRoleSelection,
     setOnboardingCheckpoints,
+    setOnboardingCompleted,
+    setPrimaryOnboardingRoute: setBackendPrimaryOnboardingRoute,
     setDriverPresenceStatus,
     setBootstrapReady: setDriverBootstrapReady,
     setVehicles: (next) => {
@@ -1987,12 +2033,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   // Keep vehicleReady in sync with selected vehicle/local flow, or backend vehicle records.
   useEffect(() => {
+    if (driverBackendEnabled) {
+      return;
+    }
     const hasSelectedVehicle =
       selectedVehicleIndex !== null &&
       selectedVehicleIndex >= 0 &&
       selectedVehicleIndex < vehicles.length;
-    const hasAnyVehicle = vehicles.length > 0;
-    const nextVehicleReady = driverBackendEnabled ? hasAnyVehicle : hasSelectedVehicle;
+    const nextVehicleReady = hasSelectedVehicle;
 
     setOnboardingCheckpoints((prev) => {
       if (prev.vehicleReady === nextVehicleReady) return prev;
@@ -2002,12 +2050,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   // Emergency contact readiness requires at least one contact.
   useEffect(() => {
+    if (driverBackendEnabled) {
+      return;
+    }
     const hasEmergencyContact = emergencyContacts.length > 0;
     setOnboardingCheckpoints((prev) => {
       if (prev.emergencyContactReady === hasEmergencyContact) return prev;
       return { ...prev, emergencyContactReady: hasEmergencyContact };
     });
-  }, [emergencyContacts.length]);
+  }, [driverBackendEnabled, emergencyContacts.length]);
 
   // Keep document readiness aligned with stored document state on load/focus.
   useEffect(() => {
@@ -2057,6 +2108,27 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const setOnboardingCheckpoint = useCallback(
     (checkpoint: OnboardingCheckpointId, isComplete = true) => {
+      if (driverBackendEnabled) {
+        if (checkpoint === "trainingCompleted") {
+          void patchDriverProfile({ trainingCompleted: isComplete })
+            .then(() => refreshBackendOnboardingState())
+            .catch((error) => {
+              console.warn("Driver backend training checkpoint update failed.", error);
+            });
+        } else if (checkpoint === "identityVerified") {
+          void patchDriverProfile({ identityVerified: isComplete })
+            .then(() => refreshBackendOnboardingState())
+            .catch((error) => {
+              console.warn("Driver backend identity checkpoint update failed.", error);
+            });
+        } else {
+          void refreshBackendOnboardingState().catch((error) => {
+            console.warn("Driver backend onboarding refresh failed.", error);
+          });
+        }
+        return;
+      }
+
       setOnboardingCheckpoints((prev) => {
         if (prev[checkpoint] === isComplete) {
           return prev;
@@ -2068,27 +2140,43 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         };
       });
     },
-    []
+    [driverBackendEnabled, refreshBackendOnboardingState]
   );
 
-  const setDriverOnline = useCallback(() => {
-    setDriverPresenceStatus("online");
-    setJobAccessError(null);
-    if (shouldUseDriverBackendWrites()) {
-      void setDriverPresenceOnline().catch((error) => {
-        console.warn("Driver backend online presence update failed.", error);
-      });
-    }
-  }, []);
+  const setDriverOnline = useCallback(
+    async (input?: { confirmed?: boolean }) => {
+      if (shouldUseDriverBackendWrites()) {
+        const result = await setDriverPresenceOnline(input);
+        if (result?.status === "online") {
+          setDriverPresenceStatus("online");
+          setJobAccessError(null);
+          await refreshBackendOnboardingState().catch(() => undefined);
+        }
+        return result;
+      }
 
-  const setDriverOffline = useCallback(() => {
-    setDriverPresenceStatus("offline");
+      setDriverPresenceStatus("online");
+      setJobAccessError(null);
+      return {
+        status: "online",
+        requiresConfirmation: false,
+        redirectPath: "/driver/dashboard/online",
+      } satisfies DriverBackendPresenceOnlineResult;
+    },
+    [refreshBackendOnboardingState]
+  );
+
+  const setDriverOffline = useCallback(async () => {
     if (shouldUseDriverBackendWrites()) {
-      void setDriverPresenceOffline().catch((error) => {
-        console.warn("Driver backend offline presence update failed.", error);
-      });
+      const result = await setDriverPresenceOffline();
+      setDriverPresenceStatus("offline");
+      await refreshBackendOnboardingState().catch(() => undefined);
+      return result;
     }
-  }, []);
+
+    setDriverPresenceStatus("offline");
+    return { status: "offline" };
+  }, [refreshBackendOnboardingState]);
 
   const resetOnboardingVehicleSetup = useCallback(() => {
     setVehicles([]);
@@ -2140,7 +2228,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const resolveJobAccessAttempt = useCallback(
     (nextRoute = "/driver/jobs/list"): JobAccessDecision => {
-      if (driverPresenceStatus !== "online") {
+      if (resolveEffectiveDriverPresenceStatus(driverPresenceStatus) !== "online") {
         return {
           allowed: false,
           reason: "offline",
@@ -2175,25 +2263,21 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const resolveGoOnlineAttempt = useCallback(
     (nextRoute = "/driver/dashboard/online"): GoOnlineDecision => {
-      // If the backend bootstrap hasn't finished yet, checkpoints are all false
-      // (default state). Attempting to resolve the decision now would incorrectly
-      // redirect to /driver/register. Return a safe "not ready" response instead.
       if (driverBackendEnabled && !driverBootstrapReady) {
         return {
           allowed: false,
-          requiresSelfie: false,
+          requiresConfirmation: false,
           route: "/driver/dashboard/offline",
           message: "Loading driver status...",
         };
       }
 
-      if (driverBackendEnabled && driverPreferences.areaIds.length === 0) {
-        const blockerMeta = ONBOARDING_CHECKPOINT_META.operationArea;
+      if (driverBackendEnabled) {
         return {
-          allowed: false,
-          requiresSelfie: false,
-          route: blockerMeta.route,
-          message: blockerMeta.description,
+          allowed: true,
+          requiresConfirmation: true,
+          route: nextRoute,
+          message: GO_ONLINE_CONFIRMATION_MESSAGE,
         };
       }
 
@@ -2204,67 +2288,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const blockerMeta = ONBOARDING_CHECKPOINT_META[primaryCheckpointBlockerId];
         return {
           allowed: false,
-          requiresSelfie: false,
+          requiresConfirmation: false,
           route: blockerMeta.route,
           message: blockerMeta.description,
         };
       }
 
-      if (!REQUIRE_GO_ONLINE_SELFIE) {
-        return {
-          allowed: true,
-          requiresSelfie: false,
-          route: nextRoute,
-          message: SELFIE_NOT_REQUIRED_MESSAGE,
-        };
-      }
-
       return {
         allowed: true,
-        requiresSelfie: true,
-        route: `/driver/preferences/identity/face-capture?mode=go-online&next=${encodeURIComponent(
-          nextRoute
-        )}`,
-        message: SELFIE_REQUIRED_MESSAGE,
+        requiresConfirmation: true,
+        route: nextRoute,
+        message: GO_ONLINE_CONFIRMATION_MESSAGE,
       };
     },
-    [driverBackendEnabled, driverBootstrapReady, driverPreferences.areaIds.length, onboardingCheckpoints]
-  );
-
-  const completeGoOnlineAfterSelfieVerification = useCallback(
-    async (): Promise<GoOnlineCompletionResult> => {
-      const decision = resolveGoOnlineAttempt("/driver/dashboard/online");
-      if (!decision.allowed) {
-        setJobAccessError(decision.message);
-        return {
-          ok: false,
-          error: decision.message,
-          redirectRoute: decision.route,
-        };
-      }
-
-      setJobAccessError(null);
-      if (typeof window !== "undefined") {
-        await new Promise<void>((resolve) => {
-          window.setTimeout(() => resolve(), 450);
-        });
-      }
-
-      setOnboardingCheckpoints((prev) => (
-        prev.identityVerified
-          ? prev
-          : { ...prev, identityVerified: true }
-      ));
-      if (shouldUseDriverBackendWrites()) {
-        void patchDriverProfile({ identityVerified: true }).catch((error) => {
-          console.warn("Driver backend selfie verification update failed.", error);
-        });
-      }
-
-      setDriverOnline();
-      return { ok: true };
-    },
-    [resolveGoOnlineAttempt, setDriverOnline]
+    [driverBackendEnabled, driverBootstrapReady, onboardingCheckpoints]
   );
 
   const canAccessOrdersWithCurrentDocuments = useCallback(() => {
@@ -2292,6 +2329,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setEmergencyContacts,
     setVehicles,
     resolveAccessoriesForVehicle,
+    refreshBackendOnboardingState,
   });
 
   const onboardingBlockers = useMemo<OnboardingBlocker[]>(() => {
@@ -2330,8 +2368,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [driverBackendEnabled, driverPreferences.areaIds, onboardingCheckpoints]);
 
   const canGoOnline = onboardingBlockers.length === 0;
-  const primaryOnboardingRoute =
-    onboardingBlockers[0]?.route || "/driver/dashboard/offline";
+  const effectiveOnboardingCompleted = driverBackendEnabled
+    ? onboardingCompleted
+    : canGoOnline;
+  const primaryOnboardingRoute = driverBackendEnabled
+    ? backendPrimaryOnboardingRoute
+    : onboardingBlockers[0]?.route || "/driver/dashboard/offline";
 
   useDriverLocalPersistence({
     driverBackendOnlyMode: DRIVER_BACKEND_ONLY_MODE,
@@ -2422,9 +2464,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     () => ({
       coreRole: driverRoleSelection.coreRole,
       programs: driverRoleSelection.programs,
-      onboardingComplete: canGoOnline,
+      onboardingComplete: effectiveOnboardingCompleted,
     }),
-    [driverRoleSelection, canGoOnline]
+    [driverRoleSelection, effectiveOnboardingCompleted]
   );
 
   // Actions
@@ -3372,19 +3414,23 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         void patchDriverProfile({
           serviceMode: input.coreRole,
           roleSelected: true,
-        }).catch((error) => {
-          console.warn("Driver backend role selection update failed.", error);
-        });
+        })
+          .then(() => refreshBackendOnboardingState())
+          .catch((error) => {
+            console.warn("Driver backend role selection update failed.", error);
+          });
         void patchDriverPreferences({
           serviceIds: persistedServiceIds,
-        }).catch((error) => {
-          console.warn("Driver backend service preference update failed.", error);
-        });
+        })
+          .then(() => refreshBackendOnboardingState())
+          .catch((error) => {
+            console.warn("Driver backend service preference update failed.", error);
+          });
       }
 
       return { ok: true };
     },
-    [setDriverPreferences]
+    [refreshBackendOnboardingState, setDriverPreferences]
   );
   const enableDualMode = useCallback(() => {
     setDriverRoleSelection((prev) => ({
@@ -4148,6 +4194,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       onboardingCheckpoints,
       onboardingBlockers,
       canGoOnline,
+      onboardingCompleted: effectiveOnboardingCompleted,
       driverPresenceStatus,
       driverBootstrapReady,
       primaryOnboardingRoute,
@@ -4227,7 +4274,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       clearJobAccessError,
       resolveJobAccessAttempt,
       resolveGoOnlineAttempt,
-      completeGoOnlineAfterSelfieVerification,
     }),
     [
       periodFilter,
@@ -4249,6 +4295,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       onboardingCheckpoints,
       onboardingBlockers,
       canGoOnline,
+      effectiveOnboardingCompleted,
       driverPresenceStatus,
       driverBootstrapReady,
       primaryOnboardingRoute,
@@ -4318,7 +4365,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       clearJobAccessError,
       resolveJobAccessAttempt,
       resolveGoOnlineAttempt,
-      completeGoOnlineAfterSelfieVerification,
     ]
   );
 

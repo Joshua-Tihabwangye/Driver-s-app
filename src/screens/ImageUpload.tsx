@@ -11,6 +11,7 @@ import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
+import { uploadDriverIdentityPhoto } from "../services/api/driverApi";
 
 // EVzone Driver App – ImageUpload Upload Your Image
 // Redesigned UI (green curved header, circular preview, green checkmark badge)
@@ -36,10 +37,12 @@ function TipRow({ icon: Icon, title, text }) {
 }
 
 export default function ImageUpload() {
-  const { driverProfilePhoto, setDriverProfilePhoto } = useStore();
+  const { driverProfilePhoto, setDriverProfilePhoto, setOnboardingCheckpoint } = useStore();
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(driverProfilePhoto);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [cameraError, setCameraError] = useState("");
+  const [submitError, setSubmitError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const galleryInputRef = useRef<HTMLInputElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -76,6 +79,7 @@ export default function ImageUpload() {
   };
 
   const handleOpenGallery = () => {
+    setSubmitError("");
     galleryInputRef.current?.click();
   };
 
@@ -89,6 +93,35 @@ export default function ImageUpload() {
   const handleOpenCamera = () => {
     setIsCameraOpen(true);
     setCameraError("");
+    setSubmitError("");
+  };
+
+  const handleConfirmAndContinue = async () => {
+    if (!imagePreviewUrl) {
+      setSubmitError("Select or capture a profile photo first.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitError("");
+    try {
+      const result = await uploadDriverIdentityPhoto({ imageUrl: imagePreviewUrl });
+      const persistedPhoto =
+        typeof result?.profilePhoto === "string" && result.profilePhoto.trim().length > 0
+          ? result.profilePhoto
+          : imagePreviewUrl;
+      setDriverProfilePhoto(persistedPhoto);
+      setOnboardingCheckpoint("identityVerified", result?.identityVerified === true);
+      navigate("/driver/onboarding/profile", { replace: true });
+    } catch (error) {
+      setSubmitError(
+        error instanceof Error && error.message
+          ? error.message
+          : "Failed to save your profile photo. Please try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCaptureFromCamera = () => {
@@ -275,12 +308,19 @@ export default function ImageUpload() {
           <div className="mt-4 pt-4 border-t border-slate-100">
             <button
               type="button"
-              onClick={() => navigate("/driver/preferences/identity/face-capture")}
+              onClick={handleConfirmAndContinue}
+              disabled={isSubmitting}
               className="w-full rounded-2xl bg-[#1c2b4d] py-4 text-sm font-black text-white shadow-xl shadow-slate-900/20 active:scale-[0.98] transition-all uppercase tracking-widest"
             >
-              Confirm & Continue
+              {isSubmitting ? "Saving..." : "Confirm & Continue"}
             </button>
           </div>
+
+          {submitError ? (
+            <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-[11px] font-semibold text-red-700">
+              {submitError}
+            </p>
+          ) : null}
           
           <p className="px-6 mt-2 text-[10px] font-medium text-slate-400 text-center leading-relaxed">
             By continuing, you agree that this photo represents you and meets our community guidelines.

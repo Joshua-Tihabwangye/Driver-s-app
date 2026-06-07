@@ -250,7 +250,7 @@ export default function DocumentUpload() {
   const navigate = useNavigate();
   const location = useLocation();
   const driverBackendEnabled = useDriverBackendEnabled();
-  const { resolveGoOnlineAttempt, setDriverOnline, setOnboardingCheckpoint } =
+  const { resolveGoOnlineAttempt, setOnboardingCheckpoint } =
     useStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const focusedDoc = useMemo(() => {
@@ -394,9 +394,13 @@ export default function DocumentUpload() {
       setOnboardingCheckpoint("documentsVerified", true);
       if (goOnlineNextRoute) {
         const decision = resolveGoOnlineAttempt(goOnlineNextRoute);
-        if (decision.allowed && !decision.requiresSelfie) {
-          setDriverOnline();
-          navigate(goOnlineNextRoute, { replace: true });
+        if (decision.allowed) {
+          navigate("/driver/dashboard/offline", {
+            replace: true,
+            state: {
+              openGoOnlineConfirmation: true,
+            },
+          });
           return;
         }
         navigate(decision.route, {

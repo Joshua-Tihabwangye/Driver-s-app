@@ -2,12 +2,12 @@ import { Eye, EyeOff, Smartphone } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { AUTH_LOGIN_ROUTE, useAuth } from "../context/AuthContext";
 import { useStore } from "../context/StoreContext";
 import {
   isBackendAuthEnabled,
   registerDriverWithCanonicalBackendFlow,
 } from "../services/api/authApi";
-import { saveDriverBackendTokens } from "../services/api/driverApi";
 import { resetStoredDocumentState } from "../utils/documentVerificationState";
 import { saveAuthPrefill } from "../utils/authPrefill";
 import {
@@ -46,6 +46,7 @@ function Input({ label, type = "text", value, onChange, placeholder }) {
 export default function Registration() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { logout } = useAuth();
   const {
     setOnboardingCheckpoint,
     driverProfile,
@@ -171,7 +172,6 @@ export default function Registration() {
         setErrorMessage("Enter a valid email address to complete backend registration.");
         return;
       }
-      saveDriverBackendTokens(backendAuth.accessToken, backendAuth.refreshToken);
       updateDriverProfile({
         fullName: fullName.trim(),
         phone: phone.trim(),
@@ -197,8 +197,12 @@ export default function Registration() {
     resetOnboardingVehicleSetup();
     setOnboardingCheckpoint("documentsVerified", false);
     setOnboardingCheckpoint("trainingCompleted", false);
+    logout();
 
-    navigate("/driver/register", { state: { selectedService } });
+    navigate(AUTH_LOGIN_ROUTE, {
+      replace: true,
+      state: { selectedService, authMode: "login" },
+    });
   };
 
   const handlePickPhoneFromPhonebook = async () => {

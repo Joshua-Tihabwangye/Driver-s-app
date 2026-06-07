@@ -68,6 +68,15 @@ function BottomNavItem({
   );
 }
 
+function isDriverOptimisticallyOnline() {
+  if (typeof window === "undefined") return false;
+  try {
+    return window.localStorage.getItem("driver_presence_status") === "online";
+  } catch {
+    return false;
+  }
+}
+
 const TABS = [
   { id: "home", label: "Home", icon: Home, route: "/driver/dashboard/online" },
   { id: "jobs", label: "Jobs", icon: Briefcase, route: "/driver/jobs/list" },
@@ -129,7 +138,7 @@ export default function BottomNav({ isVisible = true }: { isVisible?: boolean })
   const { pendingCount } = useJobs();
   const { driverPresenceStatus } = useStore();
   const active = getActiveTab(location.pathname);
-  const isOffline = driverPresenceStatus === "offline";
+  const isOffline = driverPresenceStatus === "offline" && !isDriverOptimisticallyOnline();
 
   return (
     <nav

@@ -212,6 +212,18 @@ export interface DriverBackendDocumentStatus {
   hasBlockingIssues: boolean;
 }
 
+export interface DriverBackendIdentityPhotoResult {
+  profilePhoto?: string | null;
+  identityVerified?: boolean;
+}
+
+export interface DriverBackendPresenceOnlineResult {
+  status: "offline" | "online";
+  requiresConfirmation: boolean;
+  message?: string | null;
+  redirectPath?: string | null;
+}
+
 export interface DriverBackendEarningsSummary {
   period: string;
   total: number;
@@ -423,12 +435,13 @@ export async function uploadDriverVehicleDocument(
   });
 }
 
-export async function setDriverPresenceOnline() {
+export async function setDriverPresenceOnline(input?: { confirmed?: boolean }) {
   const token = readDriverBackendAccessToken();
   if (!isBackendAuthEnabled() || !token) return null;
-  return request<Record<string, unknown>>("/drivers/me/presence/online", {
+  return request<DriverBackendPresenceOnlineResult>("/drivers/me/presence/online", {
     method: "POST",
     headers: authHeaders(token),
+    body: input,
   });
 }
 
@@ -744,6 +757,16 @@ export async function getDriverDocumentStatus() {
   return request<DriverBackendDocumentStatus>("/drivers/me/documents/status", {
     method: "GET",
     headers: authHeaders(token),
+  });
+}
+
+export async function uploadDriverIdentityPhoto(input: { imageUrl: string }) {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return null;
+  return request<DriverBackendIdentityPhotoResult>("/drivers/me/identity/photo", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: input,
   });
 }
 

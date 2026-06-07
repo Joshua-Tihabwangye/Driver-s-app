@@ -96,7 +96,6 @@ export default function DriverProfileOnboarding() {
     onboardingCheckpoints,
     setOnboardingCheckpoint,
     resolveGoOnlineAttempt,
-    setDriverOnline,
     vehicles,
     selectedVehicleIndex,
     emergencyContacts,
@@ -941,9 +940,13 @@ export default function DriverProfileOnboarding() {
               }
               if (gatewayAction.kind === "online") {
                 const decision = resolveGoOnlineAttempt("/driver/dashboard/online");
-                if (decision.allowed && !decision.requiresSelfie) {
-                  setDriverOnline();
-                  navigate("/driver/dashboard/online", { replace: true });
+                if (decision.allowed) {
+                  navigate("/driver/dashboard/offline", {
+                    replace: true,
+                    state: {
+                      openGoOnlineConfirmation: true,
+                    },
+                  });
                   return;
                 }
                 navigate(decision.route, {
