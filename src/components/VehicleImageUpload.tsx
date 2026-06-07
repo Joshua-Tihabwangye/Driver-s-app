@@ -32,6 +32,7 @@ export default function VehicleImageUpload({ label, imageUrl, onChange }: Vehicl
         setError("Upload failed. Please try again.");
       }
     } catch (err) {
+      console.error("Vehicle image upload failed:", err);
       setError(err instanceof Error ? err.message : "Upload failed.");
     } finally {
       setIsUploading(false);

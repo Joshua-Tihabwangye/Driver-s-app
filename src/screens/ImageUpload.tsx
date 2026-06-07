@@ -128,6 +128,7 @@ export default function ImageUpload() {
       setOnboardingCheckpoint("identityVerified", result?.identityVerified === true);
       navigate("/driver/onboarding/profile", { replace: true });
     } catch (error) {
+      console.error("Profile photo upload failed:", error);
       setSubmitError(
         error instanceof Error && error.message
           ? error.message
