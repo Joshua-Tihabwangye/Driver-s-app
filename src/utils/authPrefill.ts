@@ -30,11 +30,15 @@ export function readAuthPrefill(): AuthPrefillState {
 export function saveAuthPrefill(next: AuthPrefillState): void {
   if (!canUseSessionStorage()) return;
 
+  // Never persist password to storage
+  const safeNext = { ...next };
+  delete safeNext.password;
+
   const current = readAuthPrefill();
   const merged: AuthPrefillState = {
     ...current,
     ...Object.fromEntries(
-      Object.entries(next).map(([key, value]) => [key, typeof value === "string" ? value.trim() : value]),
+      Object.entries(safeNext).map(([key, value]) => [key, typeof value === "string" ? value.trim() : value]),
     ),
   };
 

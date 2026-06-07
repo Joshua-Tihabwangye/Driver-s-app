@@ -1,11 +1,36 @@
 import { getBackendEnabled } from "./config";
 import { request } from "./httpClient";
+import type { DriverBackendOnboardingStatus } from "./driverApi";
 
 interface BackendAuthUser {
   id: string;
   driverId?: string;
   email: string;
   roles?: string[];
+}
+
+export interface DriverBackendSessionUser {
+  id: string;
+  email: string;
+  phone?: string | null;
+  status?: string | null;
+  roles?: string[];
+  lastLoginAt?: string | null;
+}
+
+export interface DriverBackendSessionProfile {
+  driverProfileId?: string | null;
+  riderProfileId?: string | null;
+  fleetProfileId?: string | null;
+  adminProfileId?: string | null;
+}
+
+export interface DriverBackendSessionResponse {
+  user: DriverBackendSessionUser;
+  profile: DriverBackendSessionProfile;
+  permissions: string[];
+  defaultRedirect?: string;
+  onboarding: DriverBackendOnboardingStatus | null;
 }
 
 interface BackendAuthTokens {
@@ -187,4 +212,14 @@ export async function resetPasswordWithCanonicalBackendFlow(
       newPassword,
     }),
   );
+}
+
+export async function fetchDriverBackendSession(): Promise<DriverBackendSessionResponse | null> {
+  if (!isBackendAuthEnabled()) {
+    return null;
+  }
+
+  return request<DriverBackendSessionResponse>("/auth/session", {
+    method: "GET",
+  });
 }

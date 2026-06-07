@@ -62,21 +62,24 @@ const SENSITIVE_ONBOARDING_IDS = new Set([
 const PHONE_WIDTH_MEDIA = "(max-width: 640px)";
 
 function GuestOnlyRoute({ children }: { children: ReactNode }) {
-  const { isLoggedIn } = useAuth();
-  // Always go to the dashboard when logged in.
-  // canGoOnline is computed from async backend state that hasn't loaded yet
-  // at this point, so gating on it causes returning (fully onboarded) drivers
-  // to be bounced back to onboarding screens on every login.
+  const { isAuthReady, isLoggedIn, defaultRedirect } = useAuth();
+  if (!isAuthReady) {
+    return null;
+  }
   if (isLoggedIn) {
-    return <Navigate to={AUTHENTICATED_HOME_ROUTE} replace />;
+    return <Navigate to={defaultRedirect || AUTHENTICATED_HOME_ROUTE} replace />;
   }
 
   return <>{children}</>;
 }
 
 function RequireAuth({ children }: { children: ReactNode }) {
-  const { isLoggedIn } = useAuth();
+  const { isAuthReady, isLoggedIn } = useAuth();
   const location = useLocation();
+
+  if (!isAuthReady) {
+    return null;
+  }
 
   if (!isLoggedIn) {
     const from = `${location.pathname}${location.search}${location.hash}`;
@@ -92,6 +95,24 @@ function RequireAuth({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
+function RequireOnboarding({ children }: { children: ReactNode }) {
+  const { driverBootstrapReady, onboardingCompleted, primaryOnboardingRoute } = useStore();
+  const location = useLocation();
+
+  if (!driverBootstrapReady) {
+    return null;
+  }
+
+  if (!onboardingCompleted) {
+    const targetRoute = primaryOnboardingRoute || "/driver/onboarding/profile";
+    if (location.pathname !== targetRoute) {
+      return <Navigate to={targetRoute} replace />;
+    }
+  }
+
+  return <>{children}</>;
+}
+
 function RequireOnlineForJobs({
   children,
   routePath,
@@ -99,11 +120,17 @@ function RequireOnlineForJobs({
   children: ReactNode;
   routePath: string;
 }) {
-  const { driverPresenceStatus, resolveJobAccessAttempt } = useStore();
+  const { driverPresenceStatus, driverBootstrapReady, resolveJobAccessAttempt } = useStore();
   const location = useLocation();
 
+  if (!driverBootstrapReady) {
+    return <>{children}</>;
+  }
+
+  const isOffline = driverPresenceStatus === "offline";
+
   if (
-    driverPresenceStatus === "offline" &&
+    isOffline &&
     isOfflineRestrictedPath(routePath)
   ) {
     return (
@@ -140,8 +167,6 @@ function RequireOnlineForJobs({
 
 export default function App() {
   const { isDark } = useTheme();
-  const { onboardingCheckpoints } = useStore();
-  const registrationStarted = onboardingCheckpoints.roleSelected;
   const [isPhoneView, setIsPhoneView] = useState(() => {
     if (typeof window === "undefined") return true;
     return window.matchMedia(PHONE_WIDTH_MEDIA).matches;
@@ -233,12 +258,8 @@ export default function App() {
             </AppPhoneShell>
           );
 
-          // Allow all onboarding steps to be accessed easily without strict session blocking.
-          // Since the user is not officially logged in until the very end, placing these behind
-          // RequireAuth immediately leads to infinite redirect loops back to login.
-          const isCurrentlyPublic = 
-            PUBLIC_SCREEN_IDS.has(screen.id) || 
-            SENSITIVE_ONBOARDING_IDS.has(screen.id);
+          const isCurrentlyPublic = PUBLIC_SCREEN_IDS.has(screen.id);
+          const isOnboardingScreen = SENSITIVE_ONBOARDING_IDS.has(screen.id);
           const routeRequiresOnlineForJobs = isOfflineRestrictedPath(screen.path);
           const onlineProtectedElement = routeRequiresOnlineForJobs ? (
             <RequireOnlineForJobs routePath={screen.path}>
@@ -255,7 +276,13 @@ export default function App() {
               element={
                 isCurrentlyPublic
                   ? onlineProtectedElement
-                  : <RequireAuth>{onlineProtectedElement}</RequireAuth>
+                  : isOnboardingScreen
+                    ? <RequireAuth>{onlineProtectedElement}</RequireAuth>
+                    : (
+                      <RequireAuth>
+                        <RequireOnboarding>{onlineProtectedElement}</RequireOnboarding>
+                      </RequireAuth>
+                    )
               }
             />
           );

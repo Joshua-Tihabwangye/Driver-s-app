@@ -24,19 +24,29 @@ export default function TrainingCompletion() {
       return;
     }
 
-    setDriverOnline();
-    navigate("/driver/dashboard/online", { replace: true });
+    void setDriverOnline({ confirmed: true })
+      .then((result) => {
+        navigate(result?.redirectPath || "/driver/dashboard/online", { replace: true });
+      })
+      .catch(() => {
+        navigate("/driver/dashboard/offline", { replace: true });
+      });
   }, [continueRequested, isLoggedIn, navigate, setDriverOnline]);
 
   const handleContinue = () => {
     setContinueRequested(true);
     if (!isLoggedIn) {
-      login();
+      void login();
       return;
     }
 
-    setDriverOnline();
-    navigate("/driver/dashboard/online", { replace: true });
+    void setDriverOnline({ confirmed: true })
+      .then((result) => {
+        navigate(result?.redirectPath || "/driver/dashboard/online", { replace: true });
+      })
+      .catch(() => {
+        navigate("/driver/dashboard/offline", { replace: true });
+      });
   };
 
   return (

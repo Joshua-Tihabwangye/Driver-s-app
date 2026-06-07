@@ -69,6 +69,12 @@ export interface DriverBackendVehiclePayload {
   type: string;
   status?: "active" | "inactive" | "maintenance";
   accessories?: Record<string, "Available" | "Missing" | "Required">;
+  imageKey?: string;
+  imageUrl?: string;
+  batterySize?: string;
+  color?: string;
+  range?: string;
+  isActive?: boolean;
 }
 
 export interface DriverBackendVehicle extends DriverBackendVehiclePayload {
@@ -194,6 +200,7 @@ export interface DriverBackendDocument {
   userType: string;
   documentType: string;
   fileUrl: string;
+  fileKey?: string | null;
   expiryDate: string;
   status: "pending" | "under_review" | "verified" | "rejected";
   rejectionReason?: string | null;
@@ -202,6 +209,11 @@ export interface DriverBackendDocument {
 export interface DriverBackendDocumentInput {
   documentType: string;
   fileUrl: string;
+  fileKey?: string;
+  originalFileName?: string;
+  mimeType?: string;
+  sizeBytes?: number;
+  side?: string;
   expiryDate: string;
 }
 
@@ -210,6 +222,44 @@ export interface DriverBackendDocumentStatus {
   completed: string[];
   missing: string[];
   hasBlockingIssues: boolean;
+}
+
+export interface DriverBackendIdentityPhotoResult {
+  profilePhoto?: string | null;
+  identityVerified?: boolean;
+}
+
+export interface DriverBackendFaceCapture {
+  id: string;
+  driverProfileId: string;
+  userId: string;
+  frontImageKey?: string | null;
+  rightImageKey?: string | null;
+  leftImageKey?: string | null;
+  frontImageUrl?: string | null;
+  rightImageUrl?: string | null;
+  leftImageUrl?: string | null;
+  status: string;
+  capturedAt?: number | null;
+  createdAt: number;
+}
+
+export interface DriverBackendSocialLink {
+  id: string;
+  driverProfileId: string;
+  userId: string;
+  platform: string;
+  username: string;
+  url: string;
+  isVerified: boolean;
+  createdAt: number;
+}
+
+export interface DriverBackendPresenceOnlineResult {
+  status: "offline" | "online";
+  requiresConfirmation: boolean;
+  message?: string | null;
+  redirectPath?: string | null;
 }
 
 export interface DriverBackendEarningsSummary {
@@ -412,7 +462,7 @@ export async function getDriverOnboardingStatus() {
 
 export async function uploadDriverVehicleDocument(
   vehicleId: string,
-  input: { documentType: string; fileUrl: string; expiryDate: string },
+  input: { documentType: string; fileUrl: string; fileKey?: string; expiryDate: string },
 ) {
   const token = readDriverBackendAccessToken();
   if (!isBackendAuthEnabled() || !token) return null;
@@ -423,12 +473,13 @@ export async function uploadDriverVehicleDocument(
   });
 }
 
-export async function setDriverPresenceOnline() {
+export async function setDriverPresenceOnline(input?: { confirmed?: boolean }) {
   const token = readDriverBackendAccessToken();
   if (!isBackendAuthEnabled() || !token) return null;
-  return request<Record<string, unknown>>("/drivers/me/presence/online", {
+  return request<DriverBackendPresenceOnlineResult>("/drivers/me/presence/online", {
     method: "POST",
     headers: authHeaders(token),
+    body: input,
   });
 }
 
@@ -747,6 +798,16 @@ export async function getDriverDocumentStatus() {
   });
 }
 
+export async function uploadDriverIdentityPhoto(input: { imageUrl?: string; imageKey?: string; profilePhotoUrl?: string }) {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return null;
+  return request<DriverBackendIdentityPhotoResult>("/drivers/me/identity/photo", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: input,
+  });
+}
+
 export async function getDriverEarningsSummary(period = "week") {
   const token = readDriverBackendAccessToken();
   if (!isBackendAuthEnabled() || !token) return null;
@@ -798,6 +859,93 @@ export async function listDriverDeliveryOrders() {
   if (!isBackendAuthEnabled() || !token) return [];
   return request<DriverBackendDeliveryOrder[]>("/drivers/me/delivery/orders", {
     method: "GET",
+    headers: authHeaders(token),
+  });
+}
+
+export async function uploadFile(file: File, category: "image" | "document" | "face-capture" = "document") {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return null;
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("category", category);
+  return request<{ fileKey: string; fileUrl: string; originalFileName: string; mimeType: string; sizeBytes: number }>("/upload", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  });
+}
+
+export async function setDriverActiveVehicle(vehicleId: string | null) {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return null;
+  return request<{ activeVehicleId: string | null }>("/drivers/me/active-vehicle", {
+    method: "PATCH",
+    headers: authHeaders(token),
+    body: { vehicleId },
+  });
+}
+
+export async function saveDriverFaceCapture(input: {
+  frontImageKey?: string;
+  rightImageKey?: string;
+  leftImageKey?: string;
+  frontImageUrl?: string;
+  rightImageUrl?: string;
+  leftImageUrl?: string;
+}) {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return null;
+  return request<DriverBackendFaceCapture>("/drivers/me/identity/face-capture", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: input,
+  });
+}
+
+export async function getDriverFaceCapture() {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return null;
+  return request<DriverBackendFaceCapture>("/drivers/me/identity/face-capture", {
+    method: "GET",
+    headers: authHeaders(token),
+  });
+}
+
+export async function listDriverSocialLinks() {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return [];
+  return request<DriverBackendSocialLink[]>("/drivers/me/social-links", {
+    method: "GET",
+    headers: authHeaders(token),
+  });
+}
+
+export async function createDriverSocialLink(input: { platform: string; username: string; url: string }) {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return null;
+  return request<DriverBackendSocialLink>("/drivers/me/social-links", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: input,
+  });
+}
+
+export async function updateDriverSocialLink(linkId: string, input: Partial<{ platform: string; username: string; url: string }>) {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return null;
+  return request<DriverBackendSocialLink>(`/drivers/me/social-links/${linkId}`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+    body: input,
+  });
+}
+
+export async function deleteDriverSocialLink(linkId: string) {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return null;
+  return request<Record<string, unknown>>(`/drivers/me/social-links/${linkId}`, {
+    method: "DELETE",
     headers: authHeaders(token),
   });
 }

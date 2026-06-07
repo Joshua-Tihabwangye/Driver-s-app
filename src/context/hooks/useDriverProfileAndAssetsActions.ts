@@ -11,6 +11,7 @@ import {
   shouldUseDriverBackendWrites,
   updateDriverEmergencyContact as patchDriverEmergencyContact,
   uploadDriverVehicleDocument,
+  uploadFile,
 } from "../../services/api/driverApi";
 import { VEHICLE_DOCUMENT_API_TYPES } from "../../utils/mapBackendVehicleDocuments";
 
@@ -38,6 +39,7 @@ type UseDriverProfileAndAssetsActionsOptions = {
   setEmergencyContacts: Dispatch<SetStateAction<SharedContact[]>>;
   setVehicles: Dispatch<SetStateAction<Vehicle[]>>;
   resolveAccessoriesForVehicle: (vehicleType: Vehicle["type"], current?: Vehicle["accessories"]) => Vehicle["accessories"];
+  refreshBackendOnboardingState: () => Promise<void>;
 };
 
 export function useDriverProfileAndAssetsActions({
@@ -46,6 +48,7 @@ export function useDriverProfileAndAssetsActions({
   setEmergencyContacts,
   setVehicles,
   resolveAccessoriesForVehicle,
+  refreshBackendOnboardingState,
 }: UseDriverProfileAndAssetsActionsOptions) {
   const updateDriverProfile = useCallback((patch: DriverProfileLike) => {
     setDriverProfile((prev: any) => ({
@@ -64,11 +67,13 @@ export function useDriverProfileAndAssetsActions({
         district: patch.district,
         postalCode: patch.postalCode,
         landmark: patch.landmark,
-      }).catch((error) => {
-        console.warn("Driver backend profile update failed.", error);
-      });
+      })
+        .then(() => refreshBackendOnboardingState())
+        .catch((error) => {
+          console.warn("Driver backend profile update failed.", error);
+        });
     }
-  }, [setDriverProfile]);
+  }, [refreshBackendOnboardingState, setDriverProfile]);
 
   const updateDriverPreferences = useCallback((patch: DriverPreferencesLike) => {
     setDriverPreferences((prev: any) => ({
@@ -81,11 +86,13 @@ export function useDriverProfileAndAssetsActions({
         areaIds: patch.areaIds,
         serviceIds: patch.serviceIds,
         requirementIds: patch.requirementIds,
-      }).catch((error) => {
-        console.warn("Driver backend preferences update failed.", error);
-      });
+      })
+        .then(() => refreshBackendOnboardingState())
+        .catch((error) => {
+          console.warn("Driver backend preferences update failed.", error);
+        });
     }
-  }, [setDriverPreferences]);
+  }, [refreshBackendOnboardingState, setDriverPreferences]);
 
   const addEmergencyContact = useCallback((contact: Omit<SharedContact, "id" | "createdAt">) => {
     const tempId = `ec-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
@@ -121,22 +128,25 @@ export function useDriverProfileAndAssetsActions({
                 : entry,
             ),
           );
+          return refreshBackendOnboardingState();
         })
         .catch((error) => {
           console.warn("Driver backend emergency contact create failed.", error);
         });
     }
-  }, [setEmergencyContacts]);
+  }, [refreshBackendOnboardingState, setEmergencyContacts]);
 
   const removeEmergencyContact = useCallback((id: string) => {
     setEmergencyContacts((prev) => prev.filter((c) => c.id !== id));
 
     if (shouldUseDriverBackendWrites()) {
-      void deleteDriverEmergencyContact(id).catch((error) => {
-        console.warn("Driver backend emergency contact delete failed.", error);
-      });
+      void deleteDriverEmergencyContact(id)
+        .then(() => refreshBackendOnboardingState())
+        .catch((error) => {
+          console.warn("Driver backend emergency contact delete failed.", error);
+        });
     }
-  }, [setEmergencyContacts]);
+  }, [refreshBackendOnboardingState, setEmergencyContacts]);
 
   const updateEmergencyContact = useCallback((updated: SharedContact) => {
     setEmergencyContacts((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
@@ -146,11 +156,13 @@ export function useDriverProfileAndAssetsActions({
         name: updated.name,
         phone: updated.phone,
         relationship: updated.relationship,
-      }).catch((error) => {
-        console.warn("Driver backend emergency contact update failed.", error);
-      });
+      })
+        .then(() => refreshBackendOnboardingState())
+        .catch((error) => {
+          console.warn("Driver backend emergency contact update failed.", error);
+        });
     }
-  }, [setEmergencyContacts]);
+  }, [refreshBackendOnboardingState, setEmergencyContacts]);
 
   const updateVehicle = useCallback((id: string, patch: Partial<Vehicle>) => {
     setVehicles((prev) => prev.map((v) => (v.id === id ? { ...v, ...patch } : v)));
@@ -164,21 +176,46 @@ export function useDriverProfileAndAssetsActions({
         type: patch.type,
         status: patch.status as "active" | "inactive" | "maintenance" | undefined,
         accessories: patch.accessories,
-      }).catch((error) => {
-        console.warn("Driver backend vehicle update failed.", error);
-      });
+        imageKey: patch.imageKey,
+        imageUrl: patch.imageUrl,
+        batterySize: patch.batterySize,
+        color: patch.color,
+        range: patch.range,
+        isActive: patch.isActive,
+      })
+        .then(() => refreshBackendOnboardingState())
+        .catch((error) => {
+          console.warn("Driver backend vehicle update failed.", error);
+        });
 
       if (patch.vehicleDocs) {
-        (["insurance", "inspection"] as const).forEach((docKey) => {
+        (["insurance", "inspection"] as const).forEach(async (docKey) => {
           const group = patch.vehicleDocs?.[docKey];
+          const file = group?.file?.rawFile as File | undefined;
           const fileUrl = group?.file?.url?.trim() || "";
           const expiryDate = group?.expiryDate || group?.file?.expiryDate || "";
-          if (!fileUrl || fileUrl.startsWith("local://") || !expiryDate) {
+          if (!expiryDate) return;
+          let uploadedUrl = fileUrl;
+          let uploadedKey: string | undefined;
+          if (file && file.size > 0) {
+            try {
+              const uploadResult = await uploadFile(file, "document");
+              if (uploadResult) {
+                uploadedUrl = uploadResult.fileUrl;
+                uploadedKey = uploadResult.fileKey;
+              }
+            } catch (error) {
+              console.warn(`Driver vehicle document file upload failed (${docKey}).`, error);
+              return;
+            }
+          }
+          if (!uploadedUrl || uploadedUrl.startsWith("local://") || uploadedUrl.startsWith("data:")) {
             return;
           }
           void uploadDriverVehicleDocument(id, {
             documentType: VEHICLE_DOCUMENT_API_TYPES[docKey],
-            fileUrl,
+            fileUrl: uploadedUrl,
+            fileKey: uploadedKey,
             expiryDate,
           }).catch((error) => {
             console.warn(`Driver backend vehicle document upload failed (${docKey}).`, error);
@@ -186,7 +223,7 @@ export function useDriverProfileAndAssetsActions({
         });
       }
     }
-  }, [setVehicles]);
+  }, [refreshBackendOnboardingState, setVehicles]);
 
   const addVehicle = useCallback((vehicle: Vehicle) => {
     const accessories = resolveAccessoriesForVehicle(vehicle.type, vehicle.accessories);
@@ -201,21 +238,31 @@ export function useDriverProfileAndAssetsActions({
         type: vehicle.type,
         status: vehicle.status as "active" | "inactive" | "maintenance" | undefined,
         accessories,
-      }).catch((error) => {
-        console.warn("Driver backend vehicle create failed.", error);
-      });
+        imageKey: vehicle.imageKey,
+        imageUrl: vehicle.imageUrl,
+        batterySize: vehicle.batterySize,
+        color: vehicle.color,
+        range: vehicle.range,
+        isActive: vehicle.isActive,
+      })
+        .then(() => refreshBackendOnboardingState())
+        .catch((error) => {
+          console.warn("Driver backend vehicle create failed.", error);
+        });
     }
-  }, [resolveAccessoriesForVehicle, setVehicles]);
+  }, [refreshBackendOnboardingState, resolveAccessoriesForVehicle, setVehicles]);
 
   const deleteVehicle = useCallback((id: string) => {
     setVehicles((prev) => prev.filter((v) => v.id !== id));
 
     if (shouldUseDriverBackendWrites()) {
-      void deleteDriverVehicle(id).catch((error) => {
-        console.warn("Driver backend vehicle delete failed.", error);
-      });
+      void deleteDriverVehicle(id)
+        .then(() => refreshBackendOnboardingState())
+        .catch((error) => {
+          console.warn("Driver backend vehicle delete failed.", error);
+        });
     }
-  }, [setVehicles]);
+  }, [refreshBackendOnboardingState, setVehicles]);
 
   return {
     updateDriverProfile,

@@ -4,12 +4,13 @@ import {
   Info,
   WifiOff
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import OfflineConfirmModal from "../components/OfflineConfirmModal";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
 import { useDriverBackendEnabled } from "../context/hooks/useDriverBackendEnabled";
+import { ApiRequestError } from "../services/api/httpClient";
 import {
   areAllRequiredDocumentsCompliant,
   getDocumentExpiryStatus,
@@ -90,43 +91,53 @@ export default function OfflineDashboard() {
   }, [selectedVehicleIndex, vehicles]);
 
   const routeState = (location.state as
-    | { offlineGuardMessage?: string; blockedPath?: string }
+    | {
+        offlineGuardMessage?: string;
+        blockedPath?: string;
+        openGoOnlineConfirmation?: boolean;
+      }
     | null) || { offlineGuardMessage: "", blockedPath: "" };
   const hasOfflineGuardMessage =
     typeof routeState.offlineGuardMessage === "string" &&
     routeState.offlineGuardMessage.trim().length > 0;
-  const navigateToBlocker = (blocker: { id: string; route: string }) => {
-    if (blocker.id !== "documentsVerified") {
-      navigate(blocker.route);
+  useEffect(() => {
+    if (!routeState.openGoOnlineConfirmation) {
       return;
     }
 
-    const decision = resolveGoOnlineAttempt("/driver/dashboard/online");
-    navigate(decision.route, {
-      state: decision.allowed
-        ? undefined
-        : {
-            offlineGuardMessage: decision.message,
-            blockedPath: location.pathname,
-          },
+    setShowGoOnlineModal(true);
+    navigate(location.pathname, {
+      replace: true,
+      state: {
+        ...routeState,
+        openGoOnlineConfirmation: false,
+      },
     });
+  }, [location.pathname, navigate, routeState]);
+  const navigateToBlocker = (blocker: { id: string; route: string }) => {
+    navigate(blocker.route);
   };
-  const handleConfirmGoOnline = () => {
+  const handleConfirmGoOnline = async () => {
     setShowGoOnlineModal(false);
-    const decision = resolveGoOnlineAttempt("/driver/dashboard/online");
-    if (decision.allowed && !decision.requiresSelfie) {
-      setDriverOnline();
-      navigate("/driver/dashboard/online", { replace: true });
-      return;
+
+    try {
+      const result = await setDriverOnline({ confirmed: true });
+      navigate(result?.redirectPath || "/driver/dashboard/online", { replace: true });
+    } catch (error) {
+      const apiError = error instanceof ApiRequestError ? error : null;
+      const details =
+        apiError?.details && typeof apiError.details === "object"
+          ? (apiError.details as { redirectPath?: string })
+          : null;
+      navigate(details?.redirectPath || "/driver/dashboard/offline", {
+        replace: true,
+        state: {
+          offlineGuardMessage:
+            apiError?.message || "Unable to go online right now. Please review required actions.",
+          blockedPath: location.pathname,
+        },
+      });
     }
-    navigate(decision.route, {
-      state: decision.allowed
-        ? undefined
-        : {
-            offlineGuardMessage: decision.message,
-            blockedPath: location.pathname,
-          },
-    });
   };
   const handleGoOnline = () => {
     const decision = resolveGoOnlineAttempt("/driver/dashboard/online");
@@ -139,7 +150,9 @@ export default function OfflineDashboard() {
       });
       return;
     }
-    setShowGoOnlineModal(true);
+    if (decision.requiresConfirmation) {
+      setShowGoOnlineModal(true);
+    }
   };
 
   return (
@@ -168,17 +181,16 @@ export default function OfflineDashboard() {
 
           <button
             type="button"
-            onClick={driverBootstrapReady ? handleGoOnline : undefined}
-            disabled={!driverBootstrapReady}
+            onClick={handleGoOnline}
             className="relative z-10 w-full rounded-2xl bg-brand-active py-4 text-xs font-black text-slate-900 hover:bg-brand-active/90 active:scale-95 transition-all shadow-xl shadow-brand-active/20 uppercase tracking-widest disabled:opacity-60 disabled:cursor-wait"
           >
-            {driverBootstrapReady ? "Go Online" : "Loading..."}
+            Go Online
           </button>
           
           <p className="relative z-10 text-[11px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed">
             {canGoOnline
-              ? "Selfie verification runs first before you start receiving requests."
-              : "Selfie verification runs first. Missing checks are enforced after capture."}
+              ? "Confirm first, then you go online and start receiving requests."
+              : "Confirm first. Missing onboarding checks must be completed before you can go online."}
           </p>
         </section>
 

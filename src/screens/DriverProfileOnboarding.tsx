@@ -23,6 +23,12 @@ import StatusChip from "../components/StatusChip";
 import { useStore } from "../context/StoreContext";
 import { useDriverBackendEnabled } from "../context/hooks/useDriverBackendEnabled";
 import {
+  listDriverSocialLinks,
+  createDriverSocialLink,
+  updateDriverSocialLink,
+  deleteDriverSocialLink,
+} from "../services/api/driverApi";
+import {
   areAllRequiredDocumentsCompliant,
   getDocumentExpiryStatus,
   getRequiredDocumentSides,
@@ -91,12 +97,12 @@ export default function DriverProfileOnboarding() {
     canGoOnline,
     assignableJobTypes,
     driverProfile,
+    driverPreferences,
     driverProfilePhoto,
     onboardingBlockers,
     onboardingCheckpoints,
     setOnboardingCheckpoint,
     resolveGoOnlineAttempt,
-    setDriverOnline,
     vehicles,
     selectedVehicleIndex,
     emergencyContacts,
@@ -114,7 +120,8 @@ export default function DriverProfileOnboarding() {
    const [isSocialEditorOpen, setIsSocialEditorOpen] = useState(false);
    const [isSubmitting, setIsSubmitting] = useState(false);
    const [isInfoBreakdownsOpen, setIsInfoBreakdownsOpen] = useState(false);
-   const [socialLinks, setSocialLinks] = useState<SocialLinkEntry[]>(() => readStoredSocialLinks());
+   const [socialLinks, setSocialLinks] = useState<SocialLinkEntry[]>([]);
+  const [isSocialLoading, setIsSocialLoading] = useState(false);
    const driverDisplayName =
     driverProfile.fullName.trim().length > 0 ? driverProfile.fullName.trim() : "Driver";
   const driverCityLabel =
@@ -284,6 +291,16 @@ export default function DriverProfileOnboarding() {
         route: "/driver/register",
       },
       {
+        id: "operation-area",
+        label: "Operation Area",
+        detail:
+          driverPreferences.areaIds.length > 0
+            ? `${driverPreferences.areaIds.length} target area(s) selected.`
+            : "Select at least one target area to receive requests.",
+        present: driverPreferences.areaIds.length > 0,
+        route: "/driver/preferences",
+      },
+      {
         id: "documents-verified",
         label: "Documents Verification",
         detail: onboardingCheckpoints.documentsVerified
@@ -371,6 +388,7 @@ export default function DriverProfileOnboarding() {
     driverProfile.email,
     driverProfile.fullName,
     driverProfile.phone,
+    driverPreferences.areaIds.length,
     onboardingRoleLabel,
     effectiveDocumentsVerified,
     onboardingCheckpoints.emergencyContactReady,
@@ -423,23 +441,87 @@ export default function DriverProfileOnboarding() {
     [socialLinks]
   );
 
-  // Removed localStorage persistence for social links to prevent mock data behavior
+  // Fetch social links from backend when editor opens or on mount if backend enabled
+  useEffect(() => {
+    if (!driverBackendEnabled) return;
+    let cancelled = false;
+    listDriverSocialLinks().then((links) => {
+      if (cancelled) return;
+      if (links && links.length > 0) {
+        setSocialLinks(
+          links.map((link) => ({
+            id: link.id,
+            platform: link.platform,
+            username: link.username,
+            url: link.url,
+          }))
+        );
+      } else {
+        setSocialLinks([createSocialLinkEntry()]);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [driverBackendEnabled, isSocialEditorOpen]);
+
+  const syncSocialLinkToBackend = async (entry: SocialLinkEntry) => {
+    if (!driverBackendEnabled) return;
+    if (!entry.platform.trim() && !entry.username.trim() && !entry.url.trim()) return;
+    setIsSocialLoading(true);
+    try {
+      if (entry.id.startsWith("temp-")) {
+        const created = await createDriverSocialLink({
+          platform: entry.platform,
+          username: entry.username,
+          url: entry.url,
+        });
+        if (created) {
+          setSocialLinks((prev) =>
+            prev.map((e) => (e.id === entry.id ? { ...e, id: created.id } : e))
+          );
+        }
+      } else {
+        await updateDriverSocialLink(entry.id, {
+          platform: entry.platform,
+          username: entry.username,
+          url: entry.url,
+        });
+      }
+    } catch (error) {
+      console.warn("Social link sync failed", error);
+    } finally {
+      setIsSocialLoading(false);
+    }
+  };
 
   const updateSocialLink = (
     id: string,
     field: "platform" | "username" | "url",
     value: string
   ) => {
-    setSocialLinks((prev) =>
-      prev.map((entry) => (entry.id === id ? { ...entry, [field]: value } : entry))
-    );
+    setSocialLinks((prev) => {
+      const next = prev.map((entry) => (entry.id === id ? { ...entry, [field]: value } : entry));
+      const updated = next.find((e) => e.id === id);
+      if (updated) {
+        // Debounced sync could be added here; for now we sync on blur/save
+      }
+      return next;
+    });
   };
 
   const addSocialLink = () => {
-    setSocialLinks((prev) => [...prev, createSocialLinkEntry()]);
+    setSocialLinks((prev) => [...prev, { ...createSocialLinkEntry(), id: `temp-${Date.now()}` }]);
   };
 
-  const removeSocialLink = (id: string) => {
+  const removeSocialLink = async (id: string) => {
+    if (driverBackendEnabled && !id.startsWith("temp-")) {
+      try {
+        await deleteDriverSocialLink(id);
+      } catch (error) {
+        console.warn("Delete social link failed", error);
+      }
+    }
     setSocialLinks((prev) => {
       if (prev.length === 1) {
         return [{ ...prev[0], platform: "", username: "", url: "" }];
@@ -920,10 +1002,27 @@ export default function DriverProfileOnboarding() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setIsSocialEditorOpen(false)}
-                  className="w-full rounded-xl bg-orange-500 px-4 py-2 text-[11px] font-black uppercase tracking-widest text-white sm:w-auto"
+                  disabled={isSocialLoading}
+                  onClick={async () => {
+                    if (driverBackendEnabled) {
+                      setIsSocialLoading(true);
+                      try {
+                        await Promise.all(
+                          socialLinks
+                            .filter((e) => e.platform.trim() || e.username.trim() || e.url.trim())
+                            .map((entry) => syncSocialLinkToBackend(entry))
+                        );
+                      } catch (error) {
+                        console.warn("Social links batch sync failed", error);
+                      } finally {
+                        setIsSocialLoading(false);
+                      }
+                    }
+                    setIsSocialEditorOpen(false);
+                  }}
+                  className="w-full rounded-xl bg-orange-500 px-4 py-2 text-[11px] font-black uppercase tracking-widest text-white sm:w-auto disabled:opacity-60"
                 >
-                  Save & Close
+                  {isSocialLoading ? "Saving..." : "Save & Close"}
                 </button>
               </div>
             </div>
@@ -941,9 +1040,13 @@ export default function DriverProfileOnboarding() {
               }
               if (gatewayAction.kind === "online") {
                 const decision = resolveGoOnlineAttempt("/driver/dashboard/online");
-                if (decision.allowed && !decision.requiresSelfie) {
-                  setDriverOnline();
-                  navigate("/driver/dashboard/online", { replace: true });
+                if (decision.allowed) {
+                  navigate("/driver/dashboard/offline", {
+                    replace: true,
+                    state: {
+                      openGoOnlineConfirmation: true,
+                    },
+                  });
                   return;
                 }
                 navigate(decision.route, {

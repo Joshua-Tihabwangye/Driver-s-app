@@ -14,6 +14,25 @@ interface ApiEnvelope<T> {
   data?: T;
 }
 
+export class ApiRequestError extends Error {
+  status: number;
+  code?: string;
+  details?: unknown;
+
+  constructor(input: {
+    message: string;
+    status: number;
+    code?: string;
+    details?: unknown;
+  }) {
+    super(input.message);
+    this.name = "ApiRequestError";
+    this.status = input.status;
+    this.code = input.code;
+    this.details = input.details;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -64,14 +83,15 @@ export async function request<T = unknown>(
     options;
 
   const accessToken = _auth?.getAccessToken();
+  const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
   const res = await fetch(`${BACKEND_URL}${path}`, {
     method,
     headers: {
-      "Content-Type": "application/json",
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
       ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
       ...headers,
     },
-    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+    ...(body !== undefined ? { body: isFormData ? (body as FormData) : JSON.stringify(body) } : {}),
   });
 
   if (res.status === 401 && retryOnUnauthorized && _auth) {
@@ -151,5 +171,10 @@ function _parseJson<T>(text: string): T | null {
 
 async function _handleError(res: Response, parsed?: ApiEnvelope<unknown> | null): Promise<never> {
   const message = parsed?.message || `Request failed: ${res.status} ${res.statusText}`;
-  throw new Error(message);
+  throw new ApiRequestError({
+    message,
+    status: res.status,
+    code: parsed?.code,
+    details: parsed?.details,
+  });
 }

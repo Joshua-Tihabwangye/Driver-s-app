@@ -20,6 +20,7 @@ export interface DocumentUploadCopy {
   status: DocumentUploadStatus;
   fileName: string;
   fileUrl: string;
+  fileKey: string;
   error: string;
 }
 
@@ -37,6 +38,7 @@ const EMPTY_COPY: DocumentUploadCopy = {
   status: "Missing",
   fileName: "",
   fileUrl: "",
+  fileKey: "",
   error: "",
 };
 
@@ -117,9 +119,10 @@ function sanitizeCopy(raw: unknown, fallback: DocumentUploadCopy): DocumentUploa
   const fileName =
     typeof candidate.fileName === "string" ? candidate.fileName : fallback.fileName;
   const fileUrl = typeof candidate.fileUrl === "string" ? candidate.fileUrl : "";
+  const fileKey = typeof candidate.fileKey === "string" ? candidate.fileKey : "";
   const error = typeof candidate.error === "string" ? candidate.error : fallback.error;
 
-  return { status, fileName, fileUrl, error };
+  return { status, fileName, fileUrl, fileKey, error };
 }
 
 function sanitizeEntry(raw: unknown, fallback: DocumentUploadEntry): DocumentUploadEntry {
@@ -200,6 +203,7 @@ export function isAcceptedDocumentFile(file: File): boolean {
 }
 
 export function createLocalDocumentFileUrl(fileName: string): string {
+  // Deprecated: real uploads should be used instead of local placeholders
   const normalized = fileName.trim();
   return normalized ? `local://documents/${encodeURIComponent(normalized)}` : "";
 }

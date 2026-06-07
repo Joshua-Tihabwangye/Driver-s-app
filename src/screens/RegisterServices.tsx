@@ -19,9 +19,7 @@ import {
   loginDriverWithCanonicalBackendFlow,
 } from "../services/api/authApi";
 import {
-  getDriverOnboardingStatus,
   saveDriverBackendTokens,
-  setDriverPresenceOffline,
 } from "../services/api/driverApi";
 import { resolveRouteFromOnboardingStatus } from "../utils/onboardingRedirect";
 import {
@@ -140,7 +138,7 @@ function AppleLogoIcon({ className }: { className?: string }) {
 export default function RegisterServices() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const { updateDriverProfile, setOnboardingCheckpoint, setDriverOffline } = useStore();
+  const { setDriverOffline } = useStore();
 
   const authPrefill = useMemo(() => readAuthPrefill(), []);
   const [selectedService, setSelectedService] = useState<RegisterServiceKey | null>(() =>
@@ -150,8 +148,8 @@ export default function RegisterServices() {
     readSelectedRegisterService() ? "auth" : "service"
   );
   const [authMode, setAuthMode] = useState<AuthMode>("login");
-  const [identity, setIdentity] = useState("");
-  const [password, setPassword] = useState("");
+  const [identity, setIdentity] = useState(() => authPrefill.identity || authPrefill.email || "");
+  const [password, setPassword] = useState(() => authPrefill.password || "");
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [isSubmittingLogin, setIsSubmittingLogin] = useState(false);
@@ -219,21 +217,6 @@ export default function RegisterServices() {
     setIsSubmittingLogin(true);
     setLoginError("");
 
-    const completeLogin = (userData: { fullName: string; email: string; phone: string }) => {
-      saveSelectedRegisterService(selectedService);
-      updateDriverProfile({
-        fullName: userData.fullName,
-        email: userData.email,
-        phone: userData.phone,
-      });
-      login({
-        name: userData.fullName,
-        email: userData.email,
-        phone: userData.phone,
-        selectedService,
-      });
-    };
-
     if (!isBackendAuthEnabled()) {
       setLoginError("Authentication service is unavailable. Please try again later.");
       setIsSubmittingLogin(false);
@@ -241,6 +224,8 @@ export default function RegisterServices() {
     }
 
     let signedIn = false;
+    let sessionRedirect = "/driver/dashboard/offline";
+    let onboardingCompleted = false;
     try {
       const backendAuth = await loginDriverWithCanonicalBackendFlow({
         email: normalizedIdentity,
@@ -253,15 +238,16 @@ export default function RegisterServices() {
       }
       saveDriverBackendTokens(backendAuth.accessToken, backendAuth.refreshToken);
       saveAuthPrefill({ email: backendAuth.user.email, identity: backendAuth.user.email, password });
-      const fallbackName =
-        savedAccount?.fullName ||
-        backendAuth.user.email.split("@")[0] ||
-        "EVzone Driver";
-      completeLogin({
-        fullName: fallbackName,
+      const session = await login({
+        name: savedAccount?.fullName || "Unknown Driver",
         email: backendAuth.user.email,
         phone: savedAccount?.phone || "",
+        selectedService,
       });
+      sessionRedirect =
+        session?.defaultRedirect ||
+        resolveRouteFromOnboardingStatus(session?.onboarding);
+      onboardingCompleted = session?.onboarding?.onboardingCompleted === true;
       clearAuthPrefillPassword();
       signedIn = true;
     } catch (error) {
@@ -282,34 +268,16 @@ export default function RegisterServices() {
       return;
     }
 
-    let nextRoute = "/driver/dashboard/offline";
-    try {
-      const onboardingStatus = await getDriverOnboardingStatus();
-      nextRoute = resolveRouteFromOnboardingStatus(onboardingStatus);
-
-      if (onboardingStatus) {
-        const cp = onboardingStatus.checkpoints;
-        setOnboardingCheckpoint("roleSelected", onboardingStatus.hasSelectedServiceCategories);
-        setOnboardingCheckpoint("documentsVerified", onboardingStatus.hasRequiredDriverDocuments);
-        setOnboardingCheckpoint("identityVerified", cp?.identityVerified ?? onboardingStatus.hasProfile);
-        setOnboardingCheckpoint(
-          "vehicleReady",
-          onboardingStatus.hasActiveVehicle && onboardingStatus.hasRequiredVehicleDocuments,
-        );
-        setOnboardingCheckpoint("emergencyContactReady", cp?.emergencyContactReady ?? false);
-        setOnboardingCheckpoint("trainingCompleted", onboardingStatus.hasCompletedTutorials);
+    if (onboardingCompleted) {
+      try {
+        await setDriverOffline().catch(() => undefined);
+      } catch (error) {
+        console.warn("Failed to normalize driver presence after login.", error);
       }
-
-      if (onboardingStatus?.onboardingCompleted) {
-        await setDriverPresenceOffline().catch(() => undefined);
-        setDriverOffline();
-      }
-    } catch (error) {
-      console.warn("Failed to resolve driver post-login route.", error);
     }
     setIsSubmittingLogin(false);
 
-    navigate(nextRoute, {
+    navigate(sessionRedirect, {
       replace: true,
       state: {
         selectedService,

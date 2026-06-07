@@ -51,6 +51,7 @@ export interface VehicleDocumentFile {
   fileName: string;
   documentType?: string;
   expiryDate?: string;
+  rawFile?: File;
 }
 
 export interface VehicleDocumentGroup {
@@ -74,9 +75,12 @@ export interface Vehicle {
   type: string;
   status: "active" | "inactive" | "maintenance";
   imageUrl?: string;
+  imageKey?: string;
   accessories?: Record<string, "Available" | "Missing" | "Required">;
   batterySize?: string;
   range?: string;
+  color?: string;
+  isActive?: boolean;
   documentsUploaded?: boolean;
   vehicleDocs?: VehicleDocuments;
 }
