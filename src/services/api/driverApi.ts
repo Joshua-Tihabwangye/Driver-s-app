@@ -388,9 +388,8 @@ configureHttpClientAuth({
   clearSession: clearDriverSession,
   refresh: refreshDriverBackendTokens,
   onUnauthorized: () => {
-    if (typeof window !== "undefined") {
-      window.location.assign("/auth/login");
-    }
+    // Let the auth context reconcile the session state instead of forcing a
+    // hard navigation while the app is still bootstrapping.
   },
 });
 

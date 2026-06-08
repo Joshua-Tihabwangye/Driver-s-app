@@ -224,116 +224,120 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
         );
         setBootstrapReady(true);
 
-        const [backendJobsResult, backendTripsResult, backendActiveTripResult, backendContactsResult] = await Promise.allSettled([
-          listDriverJobs(),
-          listDriverTrips(),
-          getDriverActiveTrip(),
-          listDriverEmergencyContacts(),
-        ]);
+        if (profile?.status === "online") {
+          const [backendJobsResult, backendTripsResult, backendActiveTripResult, backendContactsResult] = await Promise.allSettled([
+            listDriverJobs(),
+            listDriverTrips(),
+            getDriverActiveTrip(),
+            listDriverEmergencyContacts(),
+          ]);
 
-        if (cancelled) {
-          return;
-        }
+          if (cancelled) {
+            return;
+          }
 
-        const backendJobs = backendJobsResult.status === "fulfilled" ? backendJobsResult.value : [];
-        const backendTrips =
-          backendTripsResult.status === "fulfilled"
-            ? backendTripsResult.value
-            : { items: [] };
-        const backendActiveTrip =
-          backendActiveTripResult.status === "fulfilled" ? backendActiveTripResult.value : null;
-        const backendContacts =
-          backendContactsResult.status === "fulfilled" ? backendContactsResult.value : [];
+          const backendJobs = backendJobsResult.status === "fulfilled" ? backendJobsResult.value : [];
+          const backendTrips =
+            backendTripsResult.status === "fulfilled"
+              ? backendTripsResult.value
+              : { items: [] };
+          const backendActiveTrip =
+            backendActiveTripResult.status === "fulfilled" ? backendActiveTripResult.value : null;
+          const backendContacts =
+            backendContactsResult.status === "fulfilled" ? backendContactsResult.value : [];
 
-        if (backendJobsResult.status === "rejected") {
-          console.warn("Driver jobs bootstrap sync failed.", backendJobsResult.reason);
-          setJobAccessError("Unable to sync jobs from backend right now.");
-        } else {
-          setJobAccessError(null);
-        }
+          if (backendJobsResult.status === "rejected") {
+            console.warn("Driver jobs bootstrap sync failed.", backendJobsResult.reason);
+            setJobAccessError("Unable to sync jobs from backend right now.");
+          } else {
+            setJobAccessError(null);
+          }
 
-        if (backendTripsResult.status === "rejected") {
-          console.warn("Driver trips bootstrap sync failed.", backendTripsResult.reason);
-        }
+          if (backendTripsResult.status === "rejected") {
+            console.warn("Driver trips bootstrap sync failed.", backendTripsResult.reason);
+          }
 
-        if (backendActiveTripResult.status === "rejected") {
-          console.warn("Driver active trip bootstrap sync failed.", backendActiveTripResult.reason);
-        }
+          if (backendActiveTripResult.status === "rejected") {
+            console.warn("Driver active trip bootstrap sync failed.", backendActiveTripResult.reason);
+          }
 
-        if (backendContactsResult.status === "rejected") {
-          console.warn("Driver emergency contacts bootstrap sync failed.", backendContactsResult.reason);
-        }
+          if (backendContactsResult.status === "rejected") {
+            console.warn("Driver emergency contacts bootstrap sync failed.", backendContactsResult.reason);
+          }
 
-        setJobs(
-          backendJobs.map((job) => ({
-            id: job.id,
-            from: job.pickup,
-            to: job.dropoff,
-            distance: "TBD",
-            duration: "TBD",
-            fare: "TBD",
-            jobType: mapBackendJobType(job.type),
-            status: mapBackendJobStatus(job.status),
-            requestedAt: job.requestedAt,
-          })),
-        );
+          setJobs(
+            backendJobs.map((job) => ({
+              id: job.id,
+              from: job.pickup,
+              to: job.dropoff,
+              distance: "TBD",
+              duration: "TBD",
+              fare: "TBD",
+              jobType: mapBackendJobType(job.type),
+              status: mapBackendJobStatus(job.status),
+              requestedAt: job.requestedAt,
+            })),
+          );
 
-        setTrips(
-          backendTrips.items.map((trip) => ({
-            id: trip.id,
-            from: trip.pickup,
-            to: trip.dropoff,
-            date: new Date(trip.requestedAt).toLocaleDateString(),
-            time: new Date(trip.requestedAt).toLocaleTimeString(),
-            amount: 0,
-            jobType: mapBackendJobType(trip.type),
-            status: mapBackendTripStatus(trip.status),
-            pickup: trip.pickup,
-            dropoff: trip.dropoff,
-            startedAt: trip.startedAt,
-            completedAt: trip.completedAt,
-          })),
-        );
+          setTrips(
+            backendTrips.items.map((trip) => ({
+              id: trip.id,
+              from: trip.pickup,
+              to: trip.dropoff,
+              date: new Date(trip.requestedAt).toLocaleDateString(),
+              time: new Date(trip.requestedAt).toLocaleTimeString(),
+              amount: 0,
+              jobType: mapBackendJobType(trip.type),
+              status: mapBackendTripStatus(trip.status),
+              pickup: trip.pickup,
+              dropoff: trip.dropoff,
+              startedAt: trip.startedAt,
+              completedAt: trip.completedAt,
+            })),
+          );
 
-        setEmergencyContacts(
-          backendContacts.map((contact) => ({
-            id: contact.id,
-            name: contact.name,
-            phone: contact.phone,
-            relationship: contact.relationship,
-            createdAt: Date.now(),
-          })),
-        );
+          setEmergencyContacts(
+            backendContacts.map((contact) => ({
+              id: contact.id,
+              name: contact.name,
+              phone: contact.phone,
+              relationship: contact.relationship,
+              createdAt: Date.now(),
+            })),
+          );
 
-        if (backendActiveTrip) {
-          setActiveTrip({
-            tripId: backendActiveTrip.id,
-            jobType: mapBackendJobType(backendActiveTrip.type),
-            stage: mapBackendTripStage(backendActiveTrip.status),
-            status:
-              backendActiveTrip.status === "completed"
-                ? "completed"
-                : backendActiveTrip.status === "cancelled"
-                  ? "cancelled"
-                  : "in_progress",
-            timestamps: {
-              acceptedAt: backendActiveTrip.requestedAt,
-              startedAt: backendActiveTrip.startedAt,
-              completedAt: backendActiveTrip.completedAt,
-              updatedAt: backendActiveTrip.updatedAt,
-            },
-          });
+          if (backendActiveTrip) {
+            setActiveTrip({
+              tripId: backendActiveTrip.id,
+              jobType: mapBackendJobType(backendActiveTrip.type),
+              stage: mapBackendTripStage(backendActiveTrip.status),
+              status:
+                backendActiveTrip.status === "completed"
+                  ? "completed"
+                  : backendActiveTrip.status === "cancelled"
+                    ? "cancelled"
+                    : "in_progress",
+              timestamps: {
+                acceptedAt: backendActiveTrip.requestedAt,
+                startedAt: backendActiveTrip.startedAt,
+                completedAt: backendActiveTrip.completedAt,
+                updatedAt: backendActiveTrip.updatedAt,
+              },
+            });
 
-          try {
-            const safetyState = await getDriverTripSafetyState(backendActiveTrip.id);
-            if (!cancelled && safetyState) {
-              setActiveRideRuntime(mapBackendSafetyStateToRuntime(safetyState));
+            try {
+              const safetyState = await getDriverTripSafetyState(backendActiveTrip.id);
+              if (!cancelled && safetyState) {
+                setActiveRideRuntime(mapBackendSafetyStateToRuntime(safetyState));
+              }
+            } catch (error) {
+              console.warn("Driver safety bootstrap sync failed.", error);
             }
-          } catch (error) {
-            console.warn("Driver safety bootstrap sync failed.", error);
+          } else {
+            setActiveRideRuntime(createDefaultActiveRideRuntime(null));
           }
         } else {
-          setActiveRideRuntime(createDefaultActiveRideRuntime(null));
+          setJobAccessError(null);
         }
       } catch (error) {
         console.warn("Driver backend bootstrap failed.", error);
