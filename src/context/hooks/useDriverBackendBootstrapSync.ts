@@ -189,6 +189,12 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
             type: vehicle.type,
             status: vehicle.status ?? "inactive",
             accessories: vehicle.accessories || {},
+            imageKey: vehicle.imageKey ?? "",
+            imageUrl: vehicle.imageUrl ?? "",
+            batterySize: vehicle.batterySize ?? "",
+            range: vehicle.range?.toString?.() ?? "",
+            color: vehicle.color ?? "",
+            isActive: Boolean(vehicle.isActive),
             vehicleDocs,
             documentsUploaded: Boolean(
               vehicleDocs.insurance?.file?.url && vehicleDocs.inspection?.file?.url,

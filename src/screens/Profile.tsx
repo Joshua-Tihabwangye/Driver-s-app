@@ -228,7 +228,7 @@ export default function Profile() {
               { label: "Full Name", value: profile.name, key: "name", icon: User },
               { label: "Primary Phone", value: profile.phone, key: "phone", icon: Phone },
               { label: "Official Email", value: profile.email, key: "email", icon: Mail },
-              { label: "Operational City", value: profile.city, key: "city", icon: MapPin },
+              { label: "Residence City", value: profile.city, key: "city", icon: MapPin },
             ].map((field) => (
               <div
                 key={field.key}
