@@ -34,20 +34,8 @@ export function resolveRouteFromLegacyCheckpoints(
     return "/driver/register";
   }
 
-  if (!checkpoints.identityVerified) {
+  if (!checkpoints.documentsVerified || !checkpoints.vehicleReady || !checkpoints.emergencyContactReady) {
     return "/driver/onboarding/profile";
-  }
-
-  if (!checkpoints.documentsVerified) {
-    return "/driver/dashboard/required-actions";
-  }
-
-  if (!checkpoints.vehicleReady) {
-    return "/driver/vehicles";
-  }
-
-  if (!checkpoints.emergencyContactReady) {
-    return "/driver/safety/emergency/contacts";
   }
 
   if (!checkpoints.trainingCompleted) {

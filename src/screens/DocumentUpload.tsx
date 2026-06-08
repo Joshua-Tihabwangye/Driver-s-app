@@ -331,6 +331,8 @@ export default function DocumentUpload() {
               fileName: file.name,
               fileUrl: "",
               fileKey: "",
+              mimeType: undefined,
+              sizeBytes: undefined,
               error: accepted
                 ? expiryValidation.error
                 : "Only PDF and image files are allowed. Re-upload this copy.",
@@ -362,6 +364,8 @@ export default function DocumentUpload() {
               fileName: file.name,
               fileUrl: uploadResult.fileUrl,
               fileKey: uploadResult.fileKey,
+              mimeType: uploadResult.mimeType,
+              sizeBytes: uploadResult.sizeBytes,
               error: "",
             },
           },
@@ -381,6 +385,8 @@ export default function DocumentUpload() {
               fileName: file.name,
               fileUrl: "",
               fileKey: "",
+              mimeType: undefined,
+              sizeBytes: undefined,
               error: error instanceof Error ? error.message : "Upload failed. Please try again.",
             },
           },
@@ -421,21 +427,23 @@ export default function DocumentUpload() {
         };
 
         for (const key of ["id", "license", "police"] as const) {
-          const side = docs[key].front.fileUrl ? "front" : docs[key].back.fileUrl ? "back" : "";
-          const fileUrl = docs[key].front.fileUrl || docs[key].back.fileUrl;
-          const fileKey = docs[key].front.fileKey || docs[key].back.fileKey;
-          if (!fileUrl || fileUrl.startsWith("local://") || fileUrl.startsWith("data:")) {
-            continue;
+          for (const side of getRequiredDocumentSides(key)) {
+            const copy = docs[key][side];
+            const fileUrl = copy.fileUrl;
+            if (!fileUrl || fileUrl.startsWith("local://") || fileUrl.startsWith("data:")) {
+              continue;
+            }
+            await createDriverDocument({
+              documentType: docTypeMap[key],
+              fileUrl,
+              fileKey: copy.fileKey,
+              originalFileName: copy.fileName,
+              mimeType: copy.mimeType,
+              sizeBytes: copy.sizeBytes,
+              side,
+              expiryDate: docs[key].expiryDate,
+            });
           }
-          await createDriverDocument({
-            documentType: docTypeMap[key],
-            fileUrl,
-            fileKey,
-            originalFileName: docs[key].front.fileName || docs[key].back.fileName,
-            mimeType: "",
-            side: side || undefined,
-            expiryDate: docs[key].expiryDate,
-          });
         }
       }
 

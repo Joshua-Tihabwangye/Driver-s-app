@@ -191,17 +191,21 @@ export default function VehicleDetails() {
     return newErrors.length === 0;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!validate()) return;
 
     if (isNew && draftVehicle) {
-      addVehicle({
+      const saved = await addVehicle({
         ...draftVehicle,
         status: "active"
       });
+      if (!saved) {
+        setErrors(["Vehicle details were not saved. Please try again."]);
+        return;
+      }
       setDraftVehicle(null);
     } else if (vehicleId) {
-      updateVehicle(vehicleId, {
+      const saved = await updateVehicle(vehicleId, {
         make: form.make,
         model: form.model,
         year: parseInt(form.year) || 2024,
@@ -212,8 +216,12 @@ export default function VehicleDetails() {
         imageUrl: form.imageUrl,
         vehicleDocs: form.vehicleDocs,
       });
+      if (!saved) {
+        setErrors(["Vehicle details were not saved. Please try again."]);
+        return;
+      }
     }
-    navigate("/driver/vehicles");
+    navigate("/driver/onboarding/profile");
   };
 
   const handleGoToAccessories = () => {

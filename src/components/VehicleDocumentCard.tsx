@@ -130,6 +130,9 @@ export default function VehicleDocumentCard({
           fileName: file.name,
           documentType: title.toLowerCase(),
           expiryDate,
+          mimeType: file.type,
+          sizeBytes: file.size,
+          rawFile: file,
         },
       });
     };

@@ -21,6 +21,8 @@ export interface DocumentUploadCopy {
   fileName: string;
   fileUrl: string;
   fileKey: string;
+  mimeType?: string;
+  sizeBytes?: number;
   error: string;
 }
 
@@ -120,9 +122,17 @@ function sanitizeCopy(raw: unknown, fallback: DocumentUploadCopy): DocumentUploa
     typeof candidate.fileName === "string" ? candidate.fileName : fallback.fileName;
   const fileUrl = typeof candidate.fileUrl === "string" ? candidate.fileUrl : "";
   const fileKey = typeof candidate.fileKey === "string" ? candidate.fileKey : "";
+  const mimeType =
+    typeof candidate.mimeType === "string" && candidate.mimeType.trim().length > 0
+      ? candidate.mimeType
+      : undefined;
+  const sizeBytes =
+    typeof candidate.sizeBytes === "number" && Number.isFinite(candidate.sizeBytes)
+      ? candidate.sizeBytes
+      : undefined;
   const error = typeof candidate.error === "string" ? candidate.error : fallback.error;
 
-  return { status, fileName, fileUrl, fileKey, error };
+  return { status, fileName, fileUrl, fileKey, mimeType, sizeBytes, error };
 }
 
 function sanitizeEntry(raw: unknown, fallback: DocumentUploadEntry): DocumentUploadEntry {

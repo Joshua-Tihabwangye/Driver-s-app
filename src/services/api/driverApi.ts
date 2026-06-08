@@ -462,7 +462,15 @@ export async function getDriverOnboardingStatus() {
 
 export async function uploadDriverVehicleDocument(
   vehicleId: string,
-  input: { documentType: string; fileUrl: string; fileKey?: string; expiryDate: string },
+  input: {
+    documentType: string;
+    fileUrl: string;
+    fileKey?: string;
+    originalFileName?: string;
+    mimeType?: string;
+    sizeBytes?: number;
+    expiryDate: string;
+  },
 ) {
   const token = readDriverBackendAccessToken();
   if (!isBackendAuthEnabled() || !token) return null;
