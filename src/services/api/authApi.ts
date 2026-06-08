@@ -48,7 +48,7 @@ export interface DriverBackendRegisterInput {
 }
 
 export interface DriverBackendLoginInput {
-  email: string;
+  identity: string;
   password: string;
 }
 
@@ -85,7 +85,7 @@ function normalizeIdentity(identity: string): string {
 }
 
 export function shouldUseBackendAuthIdentity(identity: string): boolean {
-  return isBackendAuthEnabled() && canUseBackendEmailIdentity(identity.trim());
+  return isBackendAuthEnabled() && identity.trim().length > 0;
 }
 
 async function runCanonicalBackendAuthRequest<T>(
@@ -175,9 +175,9 @@ export async function resetPasswordViaBackend(
 export async function loginDriverWithCanonicalBackendFlow(
   input: DriverBackendLoginInput,
 ): Promise<BackendAuthTokens | null> {
-  return runCanonicalBackendAuthRequest(input.email, (email) =>
+  return runCanonicalBackendAuthRequest(input.identity, (identity) =>
     loginDriverViaBackend({
-      email,
+      identity,
       password: input.password,
     }),
   );

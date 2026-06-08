@@ -73,12 +73,13 @@ export default function ManageVehicleDetails() {
     make: vehicle?.make || "",
     model: vehicle?.model || "",
     year: vehicle?.year?.toString() || "",
-    color: "", 
+    color: vehicle?.color || "", 
     plate: vehicle?.plate || "",
     batterySize: vehicle?.batterySize || "",
     range: vehicle?.range || "",
     type: (vehicle?.type?.toLowerCase() === "motorcycle" ? "motorcycle" : vehicle?.type?.toLowerCase()) || "car",
     imageUrl: vehicle?.imageUrl || "",
+    imageKey: vehicle?.imageKey || "",
     vehicleDocs: vehicle?.vehicleDocs || {},
   });
 
@@ -108,11 +109,12 @@ export default function ManageVehicleDetails() {
         batterySize: form.batterySize,
         range: form.range,
         imageUrl: form.imageUrl,
+        imageKey: form.imageKey,
         vehicleDocs: form.vehicleDocs,
         ...(typeChanged ? { accessories: getDefaultAccessoriesForType(updatedType) } : {})
       });
     }
-  }, [form.make, form.model, form.year, form.plate, form.type, form.batterySize, form.range, form.imageUrl, form.vehicleDocs]);
+  }, [form.make, form.model, form.year, form.plate, form.type, form.batterySize, form.range, form.imageUrl, form.imageKey, form.vehicleDocs]);
 
   // Load data for existing vehicle exactly once to avoid loop
   useEffect(() => {
@@ -121,12 +123,13 @@ export default function ManageVehicleDetails() {
         make: vehicle.make,
         model: vehicle.model,
         year: vehicle.year.toString(),
-        color: "", 
+        color: vehicle.color || "", 
         plate: vehicle.plate,
         batterySize: vehicle.batterySize || "",
         range: vehicle.range || "",
         type: (vehicle.type.toLowerCase() === "motorcycle" ? "motorcycle" : vehicle.type.toLowerCase()) || "car",
         imageUrl: vehicle.imageUrl || "",
+        imageKey: vehicle.imageKey || "",
         vehicleDocs: vehicle.vehicleDocs || {},
       });
     }
@@ -196,7 +199,8 @@ export default function ManageVehicleDetails() {
         batterySize: form.batterySize,
         range: form.range,
         type: form.type.charAt(0).toUpperCase() + form.type.slice(1),
-        imageUrl: form.imageUrl,
+        imageUrl: form.imageUrl || undefined,
+        imageKey: form.imageKey || undefined,
         vehicleDocs: form.vehicleDocs,
       });
       if (!saved) {
@@ -283,7 +287,7 @@ export default function ManageVehicleDetails() {
            <div className="space-y-6 bg-cream rounded-[2.5rem] border-2 border-brand-active/5 p-6 shadow-sm">
              <VehicleImageUpload 
                imageUrl={form.imageUrl} 
-               onChange={(val: string) => setForm(f => ({ ...f, imageUrl: val }))} 
+               onChange={(val: string, key?: string) => setForm(f => ({ ...f, imageUrl: val, imageKey: key || "" }))} 
              />
              <InputRow label="Manufacturer / Make" placeholder="e.g. BYD, Tesla, Rivian" value={form.make} onChange={(val: string) => setForm(f => ({ ...f, make: val }))} />
              <InputRow label="Commercial Model" placeholder="e.g. Dolphin, Model 3, R1T" value={form.model} onChange={(val: string) => setForm(f => ({ ...f, model: val }))} />

@@ -66,8 +66,9 @@ export function useDriverProfileAndAssetsActions({
 
     if (shouldUseDriverBackendWrites()) {
       try {
-        await patchDriverProfile({
+        const savedProfile = await patchDriverProfile({
           fullName: patch.fullName,
+          email: patch.email,
           phone: patch.phone,
           city: patch.city,
           country: patch.country,
@@ -77,7 +78,21 @@ export function useDriverProfileAndAssetsActions({
           postalCode: patch.postalCode,
           landmark: patch.landmark,
         });
-        await refreshBackendOnboardingState();
+        if (savedProfile) {
+          setDriverProfile((prev: any) => ({
+            ...prev,
+            fullName: savedProfile.fullName ?? prev.fullName,
+            email: savedProfile.email ?? prev.email,
+            phone: savedProfile.phone ?? prev.phone,
+            city: savedProfile.city ?? prev.city,
+            country: savedProfile.country ?? prev.country,
+            dob: savedProfile.dateOfBirth ?? prev.dob,
+            streetAddress: savedProfile.streetAddress ?? prev.streetAddress,
+            district: savedProfile.district ?? prev.district,
+            postalCode: savedProfile.postalCode ?? prev.postalCode,
+            landmark: savedProfile.landmark ?? prev.landmark,
+          }));
+        }
       } catch (error) {
         setDriverProfile(previousProfile);
         console.warn("Driver backend profile update failed.", error);
@@ -86,7 +101,7 @@ export function useDriverProfileAndAssetsActions({
     }
 
     return true;
-  }, [refreshBackendOnboardingState, setDriverProfile]);
+  }, [setDriverProfile]);
 
   const updateDriverPreferences = useCallback(async (patch: DriverPreferencesLike) => {
     let previousPreferences: any;
@@ -105,7 +120,9 @@ export function useDriverProfileAndAssetsActions({
           serviceIds: patch.serviceIds,
           requirementIds: patch.requirementIds,
         });
-        await refreshBackendOnboardingState();
+        void refreshBackendOnboardingState().catch((error) => {
+          console.warn("Driver backend preferences refresh failed.", error);
+        });
       } catch (error) {
         setDriverPreferences(previousPreferences);
         console.warn("Driver backend preferences update failed.", error);
@@ -196,7 +213,10 @@ export function useDriverProfileAndAssetsActions({
                 : entry,
             ),
           );
-          return refreshBackendOnboardingState();
+          void refreshBackendOnboardingState().catch((error) => {
+            console.warn("Driver backend emergency contact refresh failed.", error);
+          });
+          return;
         })
         .catch((error) => {
           console.warn("Driver backend emergency contact create failed.", error);
@@ -209,7 +229,11 @@ export function useDriverProfileAndAssetsActions({
 
     if (shouldUseDriverBackendWrites()) {
       void deleteDriverEmergencyContact(id)
-        .then(() => refreshBackendOnboardingState())
+        .then(() => {
+          void refreshBackendOnboardingState().catch((error) => {
+            console.warn("Driver backend emergency contact delete refresh failed.", error);
+          });
+        })
         .catch((error) => {
           console.warn("Driver backend emergency contact delete failed.", error);
         });
@@ -225,7 +249,11 @@ export function useDriverProfileAndAssetsActions({
         phone: updated.phone,
         relationship: updated.relationship,
       })
-        .then(() => refreshBackendOnboardingState())
+        .then(() => {
+          void refreshBackendOnboardingState().catch((error) => {
+            console.warn("Driver backend emergency contact update refresh failed.", error);
+          });
+        })
         .catch((error) => {
           console.warn("Driver backend emergency contact update failed.", error);
         });
@@ -257,7 +285,9 @@ export function useDriverProfileAndAssetsActions({
           isActive: patch.isActive,
         });
         await persistVehicleDocuments(id, patch.vehicleDocs);
-        await refreshBackendOnboardingState();
+        void refreshBackendOnboardingState().catch((error) => {
+          console.warn("Driver backend vehicle refresh failed.", error);
+        });
       } catch (error) {
         setVehicles(previousVehicles);
         console.warn("Driver backend vehicle update failed.", error);
@@ -299,7 +329,9 @@ export function useDriverProfileAndAssetsActions({
         }
         createdVehicleId = created.id;
         await persistVehicleDocuments(created.id, vehicle.vehicleDocs);
-        await refreshBackendOnboardingState();
+        void refreshBackendOnboardingState().catch((error) => {
+          console.warn("Driver backend vehicle create refresh failed.", error);
+        });
       } catch (error) {
         if (createdVehicleId) {
           await deleteDriverVehicle(createdVehicleId).catch(() => undefined);
@@ -323,7 +355,9 @@ export function useDriverProfileAndAssetsActions({
     if (shouldUseDriverBackendWrites()) {
       try {
         await deleteDriverVehicle(id);
-        await refreshBackendOnboardingState();
+        void refreshBackendOnboardingState().catch((error) => {
+          console.warn("Driver backend vehicle delete refresh failed.", error);
+        });
       } catch (error) {
         setVehicles(previousVehicles);
         console.warn("Driver backend vehicle delete failed.", error);

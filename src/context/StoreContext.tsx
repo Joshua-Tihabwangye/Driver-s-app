@@ -367,7 +367,7 @@ interface StoreContextType {
   setOnboardingCheckpoint: (
     checkpoint: OnboardingCheckpointId,
     isComplete?: boolean
-  ) => void;
+  ) => Promise<void>;
   setDriverOnline: (input?: { confirmed?: boolean }) => Promise<DriverBackendPresenceOnlineResult | null>;
   setDriverOffline: () => Promise<Record<string, unknown> | null>;
   resetOnboardingVehicleSetup: () => void;
@@ -2177,24 +2177,27 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [driverMapPreferences]);
 
   const setOnboardingCheckpoint = useCallback(
-    (checkpoint: OnboardingCheckpointId, isComplete = true) => {
+    async (checkpoint: OnboardingCheckpointId, isComplete = true) => {
       if (driverBackendEnabled) {
-        if (checkpoint === "trainingCompleted") {
-          void patchDriverProfile({ trainingCompleted: isComplete })
-            .then(() => refreshBackendOnboardingState())
-            .catch((error) => {
-              console.warn("Driver backend training checkpoint update failed.", error);
-            });
-        } else if (checkpoint === "identityVerified") {
-          void patchDriverProfile({ identityVerified: isComplete })
-            .then(() => refreshBackendOnboardingState())
-            .catch((error) => {
-              console.warn("Driver backend identity checkpoint update failed.", error);
-            });
-        } else {
-          void refreshBackendOnboardingState().catch((error) => {
-            console.warn("Driver backend onboarding refresh failed.", error);
-          });
+        try {
+          if (checkpoint === "trainingCompleted") {
+            await patchDriverProfile({ trainingCompleted: isComplete });
+            setOnboardingCheckpoints((prev) => ({
+              ...prev,
+              trainingCompleted: isComplete,
+            }));
+            return;
+          } else if (checkpoint === "identityVerified") {
+            await patchDriverProfile({ identityVerified: isComplete });
+            setOnboardingCheckpoints((prev) => ({
+              ...prev,
+              identityVerified: isComplete,
+            }));
+            return;
+          }
+          await refreshBackendOnboardingState();
+        } catch (error) {
+          console.warn(`Driver backend ${checkpoint} checkpoint update failed.`, error);
         }
         return;
       }
@@ -2220,7 +2223,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         if (result?.status === "online") {
           setDriverPresenceStatus("online");
           setJobAccessError(null);
-          await refreshBackendOnboardingState().catch(() => undefined);
         }
         return result;
       }
@@ -2240,7 +2242,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     if (shouldUseDriverBackendWrites()) {
       const result = await setDriverPresenceOffline();
       setDriverPresenceStatus("offline");
-      await refreshBackendOnboardingState().catch(() => undefined);
       return result;
     }
 
@@ -3492,20 +3493,22 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }));
 
       if (shouldUseDriverBackendWrites()) {
-        void patchDriverProfile({
-          serviceMode: input.coreRole,
-          roleSelected: true,
-        })
-          .then(() => refreshBackendOnboardingState())
+        void Promise.all([
+          patchDriverProfile({
+            serviceMode: input.coreRole,
+            roleSelected: true,
+          }),
+          patchDriverPreferences({
+            serviceIds: persistedServiceIds,
+          }),
+        ])
+          .then(() => {
+            void refreshBackendOnboardingState().catch((error) => {
+              console.warn("Driver backend role selection refresh failed.", error);
+            });
+          })
           .catch((error) => {
             console.warn("Driver backend role selection update failed.", error);
-          });
-        void patchDriverPreferences({
-          serviceIds: persistedServiceIds,
-        })
-          .then(() => refreshBackendOnboardingState())
-          .catch((error) => {
-            console.warn("Driver backend service preference update failed.", error);
           });
       }
 

@@ -212,7 +212,7 @@ export default function RegisterServices() {
       return;
     }
 
-    const normalizedIdentity = identity.trim().toLowerCase();
+    const normalizedIdentity = identity.trim();
     const savedAccount = readDriverAuthAccount();
     setIsSubmittingLogin(true);
     setLoginError("");
@@ -228,11 +228,11 @@ export default function RegisterServices() {
     let onboardingCompleted = false;
     try {
       const backendAuth = await loginDriverWithCanonicalBackendFlow({
-        email: normalizedIdentity,
+        identity: normalizedIdentity,
         password,
       });
       if (!backendAuth) {
-        setLoginError("Enter your account email to sign in.");
+        setLoginError("Enter your email or phone number to sign in.");
         setIsSubmittingLogin(false);
         return;
       }

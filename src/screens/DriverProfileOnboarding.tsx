@@ -114,6 +114,7 @@ export default function DriverProfileOnboarding() {
   const onboardingPrerequisitesComplete =
     onboardingCheckpoints.roleSelected &&
     effectiveDocumentsVerified &&
+    driverPreferences.areaIds.length > 0 &&
     onboardingCheckpoints.vehicleReady &&
     onboardingCheckpoints.emergencyContactReady;
    const [isSocialEditorOpen, setIsSocialEditorOpen] = useState(false);
@@ -269,7 +270,7 @@ export default function DriverProfileOnboarding() {
       },
       {
         id: "profile-city",
-        label: "Operational City",
+        label: "Residence City",
         detail:
           driverProfile.city.trim().length > 0
             ? driverProfile.city.trim()
@@ -326,7 +327,7 @@ export default function DriverProfileOnboarding() {
               if (selectedVehicleIndex === null) return "Vehicle selected but not set as active.";
               return "Vehicle setup incomplete.";
             })(),
-        present: onboardingCheckpoints.vehicleReady || vehicles.length > 0,
+        present: onboardingCheckpoints.vehicleReady,
         route: "/driver/vehicles",
       },
       {
@@ -403,14 +404,17 @@ export default function DriverProfileOnboarding() {
       null,
     [missingInfoItems]
   );
+  const nextRequiredBlocker = onboardingBlockers[0] || null;
 
   const gatewayAction = useMemo(() => {
-    if (nextMissingInfoItem) {
+    if (!canGoOnline && nextRequiredBlocker) {
       return {
         kind: "next-step",
         label: "Continue to the Next Step",
-        route: nextMissingInfoItem.route,
-        note: nextMissingInfoItem.detail || "Continue with the next onboarding requirement.",
+        route: nextRequiredBlocker.route,
+        note:
+          nextRequiredBlocker.description ||
+          "Continue with the next onboarding requirement.",
       };
     }
 
@@ -420,7 +424,7 @@ export default function DriverProfileOnboarding() {
       route: "/driver/dashboard/offline",
       note: "Onboarding is complete. Go to your dashboard and start work when you are ready.",
     };
-  }, [nextMissingInfoItem]);
+  }, [canGoOnline, nextRequiredBlocker]);
 
   const completedSocialLinksCount = useMemo(
     () =>
@@ -693,6 +697,8 @@ export default function DriverProfileOnboarding() {
                 ? "All onboarding requirements are complete. Use Go Online when ready."
                 : onboardingPrerequisitesComplete
                 ? "All prerequisites are complete. Continue to the dashboard to start working."
+                : nextRequiredBlocker
+                ? `Next required step: ${nextRequiredBlocker.title}.`
                 : nextMissingInfoItem
                 ? `Next required step: ${nextMissingInfoItem.label}.`
                 : `Complete ${blockerCount} required step${blockerCount === 1 ? "" : "s"} to unlock shifts.`}

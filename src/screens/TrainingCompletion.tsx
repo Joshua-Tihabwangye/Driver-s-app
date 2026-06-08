@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useAuth } from "../context/AuthContext";
@@ -14,24 +14,41 @@ export default function TrainingCompletion() {
   const { isLoggedIn, login } = useAuth();
   const { setOnboardingCheckpoint, setDriverOnline } = useStore();
   const [continueRequested, setContinueRequested] = useState(false);
+  const completionStartedRef = useRef(false);
 
   useEffect(() => {
-    setOnboardingCheckpoint("trainingCompleted", true);
+    void setOnboardingCheckpoint("trainingCompleted", true);
   }, [setOnboardingCheckpoint]);
 
   useEffect(() => {
-    if (!continueRequested || !isLoggedIn) {
+    if (!continueRequested || !isLoggedIn || completionStartedRef.current) {
       return;
     }
 
-    void setDriverOnline({ confirmed: true })
-      .then((result) => {
-        navigate(result?.redirectPath || "/driver/dashboard/online", { replace: true });
-      })
-      .catch(() => {
-        navigate("/driver/dashboard/offline", { replace: true });
-      });
-  }, [continueRequested, isLoggedIn, navigate, setDriverOnline]);
+    let cancelled = false;
+
+    const completeTrainingAndGoOnline = async () => {
+      completionStartedRef.current = true;
+      try {
+        await setOnboardingCheckpoint("trainingCompleted", true);
+        const result = await setDriverOnline({ confirmed: true });
+        if (!cancelled) {
+          navigate(result?.redirectPath || "/driver/dashboard/online", { replace: true });
+        }
+      } catch {
+        if (!cancelled) {
+          navigate("/driver/dashboard/offline", { replace: true });
+        }
+      } finally {
+      }
+    };
+
+    void completeTrainingAndGoOnline();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [continueRequested, isLoggedIn, navigate, setDriverOnline, setOnboardingCheckpoint]);
 
   const handleContinue = () => {
     setContinueRequested(true);
@@ -39,14 +56,6 @@ export default function TrainingCompletion() {
       void login();
       return;
     }
-
-    void setDriverOnline({ confirmed: true })
-      .then((result) => {
-        navigate(result?.redirectPath || "/driver/dashboard/online", { replace: true });
-      })
-      .catch(() => {
-        navigate("/driver/dashboard/offline", { replace: true });
-      });
   };
 
   return (

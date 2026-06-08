@@ -7,7 +7,7 @@ import {
   ShieldCheck,
   FileBadge2
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import VehicleDocumentCard from "../components/VehicleDocumentCard";
@@ -52,6 +52,25 @@ function InputRow({ label, placeholder, value, onChange }: any) {
   );
 }
 
+function createVehicleFormState(vehicle: any) {
+  return {
+    make: vehicle?.make || "",
+    model: vehicle?.model || "",
+    year: vehicle?.year?.toString?.() || "",
+    color: vehicle?.color || "",
+    plate: vehicle?.plate || "",
+    batterySize: vehicle?.batterySize || "",
+    range: vehicle?.range?.toString?.() || "",
+    type:
+      (vehicle?.type?.toLowerCase?.() === "motorcycle"
+        ? "motorcycle"
+        : vehicle?.type?.toLowerCase?.()) || "car",
+    imageUrl: vehicle?.imageUrl || "",
+    imageKey: vehicle?.imageKey || "",
+    vehicleDocs: vehicle?.vehicleDocs || {},
+  };
+}
+
 export default function VehicleDetails() {
   const { vehicleId } = useParams();
   const navigate = useNavigate();
@@ -70,18 +89,8 @@ export default function VehicleDetails() {
     ? draftVehicle 
     : (vehicles.find(v => v.id === vehicleId) || vehicles[0]);
 
-  const [form, setForm] = useState({
-    make: vehicle?.make || "",
-    model: vehicle?.model || "",
-    year: vehicle?.year?.toString() || "",
-    color: "", // placeholder
-    plate: vehicle?.plate || "",
-    batterySize: vehicle?.batterySize || "",
-    range: vehicle?.range || "",
-    type: (vehicle?.type?.toLowerCase() === "motorcycle" ? "motorcycle" : vehicle?.type?.toLowerCase()) || "car",
-    imageUrl: vehicle?.imageUrl || "",
-    vehicleDocs: vehicle?.vehicleDocs || {},
-  });
+  const [form, setForm] = useState(() => createVehicleFormState(vehicle));
+  const loadedVehicleIdRef = useRef<string | null>(isNew ? "new" : null);
 
   const [showDocs, setShowDocs] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
@@ -109,29 +118,27 @@ export default function VehicleDetails() {
         batterySize: form.batterySize,
         range: form.range,
         imageUrl: form.imageUrl,
+        imageKey: form.imageKey,
         vehicleDocs: form.vehicleDocs,
         // Reset accessories only if type actually changed and we are in draft mode
         ...(typeChanged ? { accessories: getDefaultAccessoriesForType(updatedType) } : {})
       });
     }
-  }, [form.make, form.model, form.year, form.plate, form.type, form.batterySize, form.range, form.imageUrl, form.vehicleDocs]);
+  }, [form.make, form.model, form.year, form.plate, form.type, form.batterySize, form.range, form.imageUrl, form.imageKey, form.vehicleDocs]);
 
   useEffect(() => {
-    if (!isNew && vehicle) {
-      setForm({
-        make: vehicle.make,
-        model: vehicle.model,
-        year: vehicle.year.toString(),
-        color: "", 
-        plate: vehicle.plate,
-        batterySize: vehicle.batterySize || "",
-        range: vehicle.range || "",
-        type: (vehicle.type.toLowerCase() === "motorcycle" ? "motorcycle" : vehicle.type.toLowerCase()) || "car",
-        imageUrl: vehicle.imageUrl || "",
-        vehicleDocs: vehicle.vehicleDocs || {},
-      });
+    if (isNew) {
+      return;
     }
-  }, [vehicle, isNew]);
+
+    const nextVehicleId = vehicle?.id ?? null;
+    if (!nextVehicleId || loadedVehicleIdRef.current === nextVehicleId) {
+      return;
+    }
+
+    loadedVehicleIdRef.current = nextVehicleId;
+    setForm(createVehicleFormState(vehicle));
+  }, [isNew, vehicle?.id]);
 
   const handleDelete = () => {
     if (isNew) {
@@ -213,7 +220,8 @@ export default function VehicleDetails() {
         batterySize: form.batterySize,
         range: form.range,
         type: form.type.charAt(0).toUpperCase() + form.type.slice(1),
-        imageUrl: form.imageUrl,
+        imageUrl: form.imageUrl || undefined,
+        imageKey: form.imageKey || undefined,
         vehicleDocs: form.vehicleDocs,
       });
       if (!saved) {
@@ -309,7 +317,7 @@ export default function VehicleDetails() {
            <div className="space-y-6 bg-cream rounded-[2.5rem] border-2 border-brand-active/5 p-6 shadow-sm">
              <VehicleImageUpload 
                imageUrl={form.imageUrl} 
-               onChange={(val: string) => setForm(f => ({ ...f, imageUrl: val }))} 
+               onChange={(val: string, key?: string) => setForm(f => ({ ...f, imageUrl: val, imageKey: key || "" }))} 
              />
              <InputRow 
                label="Manufacturer / Make" 
