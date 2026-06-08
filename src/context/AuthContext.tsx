@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { fetchDriverBackendSession, type DriverBackendSessionResponse } from "../services/api/authApi";
+import { ApiRequestError } from "../services/api/httpClient";
 import {
   clearDriverBackendTokens,
   DRIVER_BACKEND_AUTH_EVENT,
@@ -99,6 +100,23 @@ function clearStoredAuthState() {
   window.localStorage.removeItem(AUTH_USER_STORAGE_KEY);
 }
 
+function isSessionInvalidError(error: unknown): boolean {
+  if (error instanceof ApiRequestError) {
+    return error.status === 401 || error.status === 403;
+  }
+
+  if (error instanceof Error) {
+    return (
+      error.message === "Session expired" ||
+      error.message === "INVALID_REFRESH_TOKEN" ||
+      error.message === "INVALID_TOKEN" ||
+      error.message === "UNAUTHORIZED"
+    );
+  }
+
+  return false;
+}
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const storedUser = useMemo(() => readStoredAuthUser(), []);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -133,7 +151,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshSession = useCallback(
     async (fallbackUser?: Partial<AuthUser>) => {
-      if (!readDriverBackendAccessToken()) {
+      const hasToken = Boolean(readDriverBackendAccessToken());
+      if (!hasToken) {
         setIsLoggedIn(false);
         setUser(null);
         setOnboarding(null);
@@ -142,15 +161,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return null;
       }
 
-      const session = await fetchDriverBackendSession();
-      if (!session) {
-        throw new Error("Unable to load authenticated session.");
+      const optimisticUser =
+        fallbackUser || storedUser
+          ? buildAuthUser({
+              ...storedUser,
+              ...fallbackUser,
+              selectedService:
+                fallbackUser?.selectedService ?? storedUser?.selectedService ?? null,
+            })
+          : null;
+
+      if (optimisticUser) {
+        setUser(optimisticUser);
+        setIsLoggedIn(true);
       }
 
-      await applySession(session, fallbackUser);
-      return session;
+      try {
+        const session = await fetchDriverBackendSession();
+        if (!session) {
+          return null;
+        }
+
+        await applySession(session, fallbackUser);
+        return session;
+      } catch (error) {
+        if (isSessionInvalidError(error)) {
+          setIsLoggedIn(false);
+          setUser(null);
+          setOnboarding(null);
+          setDefaultRedirect(AUTHENTICATED_HOME_ROUTE);
+          clearStoredAuthState();
+          clearDriverBackendTokens();
+          return null;
+        }
+
+        // Keep the current auth/session state if the backend is temporarily
+        // unavailable. This prevents a refresh from becoming a logout.
+        if (!optimisticUser) {
+          setIsLoggedIn(true);
+        }
+        return null;
+      }
     },
-    [applySession],
+    [applySession, storedUser],
   );
 
   useEffect(() => {
@@ -171,17 +224,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
+      if (!cancelled) {
+        const optimisticUser = storedUser ? buildAuthUser(storedUser) : null;
+        if (optimisticUser) {
+          setUser(optimisticUser);
+        }
+        setIsLoggedIn(true);
+      }
+
       try {
         await refreshSession(storedUser ?? undefined);
-      } catch {
-        if (!cancelled) {
-          clearStoredAuthState();
-          clearDriverBackendTokens();
-          setIsLoggedIn(false);
-          setUser(null);
-          setOnboarding(null);
-          setDefaultRedirect(AUTHENTICATED_HOME_ROUTE);
-        }
       } finally {
         if (!cancelled) {
           setIsAuthReady(true);

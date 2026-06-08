@@ -6,11 +6,12 @@ import {
   ShieldCheck,
   Wifi,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import DriverMapSurface from "../components/DriverMapSurface";
 import OfflineConfirmModal from "../components/OfflineConfirmModal";
 import { useStore } from "../context/StoreContext";
+
+const DriverMapSurface = lazy(() => import("../components/DriverMapSurface"));
 
 function QuickAction({
   icon: Icon,
@@ -79,33 +80,50 @@ export default function OnlineMapView({
 
   return (
     <div className="flex flex-col h-full bg-transparent">
-      <DriverMapSurface
-        heightClass={showQuickActions ? "h-[460px]" : "h-[540px]"}
-        onBack={!homeMode ? () => navigate(-1) : undefined}
-        onSos={handleEmergencySos}
-        defaultZoom={12}
-        defaultTrafficOn
-        defaultAlertsOn={false}
-        defaultStationsOn={false}
-        stationMarkers={[]}
-        topBadge={(
-          <button
-            type="button"
-            onClick={() => setShowOfflineModal(true)}
-            className="inline-flex items-center rounded-full border border-slate-200 bg-white/96 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-800 shadow-lg backdrop-blur-sm"
+      <Suspense
+        fallback={
+          <div
+            className={`flex items-center justify-center rounded-[2rem] border border-slate-200 bg-[linear-gradient(130deg,rgba(235,242,250,0.96)_0%,rgba(226,244,239,0.96)_100%)] shadow-2xl ${showQuickActions ? "h-[460px]" : "h-[540px]"}`}
           >
-            <Wifi className="mr-2 h-3.5 w-3.5 animate-pulse text-[#15b79e]" />
-            Online
-          </button>
-        )}
-        markers={[]}
-      >
-        {!homeMode && (
-          <div className="absolute left-4 top-[96px] z-20 rounded-full border border-emerald-200 bg-white/92 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-emerald-700 shadow-lg backdrop-blur-sm">
-            Requests scanning active
+            <div className="rounded-3xl border border-white/70 bg-white/90 px-5 py-4 text-center shadow-xl">
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">
+                Loading map
+              </p>
+              <p className="mt-1 text-xs font-semibold text-slate-700">
+                Preparing online view...
+              </p>
+            </div>
           </div>
-        )}
-      </DriverMapSurface>
+        }
+      >
+        <DriverMapSurface
+          heightClass={showQuickActions ? "h-[460px]" : "h-[540px]"}
+          onBack={!homeMode ? () => navigate(-1) : undefined}
+          onSos={handleEmergencySos}
+          defaultZoom={12}
+          defaultTrafficOn
+          defaultAlertsOn={false}
+          defaultStationsOn={false}
+          stationMarkers={[]}
+          topBadge={(
+            <button
+              type="button"
+              onClick={() => setShowOfflineModal(true)}
+              className="inline-flex items-center rounded-full border border-slate-200 bg-white/96 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-800 shadow-lg backdrop-blur-sm"
+            >
+              <Wifi className="mr-2 h-3.5 w-3.5 animate-pulse text-[#15b79e]" />
+              Online
+            </button>
+          )}
+          markers={[]}
+        >
+          {!homeMode && (
+            <div className="absolute left-4 top-[96px] z-20 rounded-full border border-emerald-200 bg-white/92 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-emerald-700 shadow-lg backdrop-blur-sm">
+              Requests scanning active
+            </div>
+          )}
+        </DriverMapSurface>
+      </Suspense>
 
       <main className="flex-1 px-6 pt-5 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         <section className="space-y-1">

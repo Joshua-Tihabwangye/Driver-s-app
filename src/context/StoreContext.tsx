@@ -794,7 +794,7 @@ const ONBOARDING_CHECKPOINT_META: Record<
     route: "/driver/onboarding/profile",
   },
   operationArea: {
-    title: "Operation Area",
+    title: "Targeted Areas",
     description: "Select at least one target area where you want to receive requests.",
     route: "/driver/preferences",
   },
@@ -2223,6 +2223,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         if (result?.status === "online") {
           setDriverPresenceStatus("online");
           setJobAccessError(null);
+          setBackendBootstrapTrigger((prev) => prev + 1);
         }
         return result;
       }
@@ -2242,6 +2243,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     if (shouldUseDriverBackendWrites()) {
       const result = await setDriverPresenceOffline();
       setDriverPresenceStatus("offline");
+      setBackendBootstrapTrigger((prev) => prev + 1);
       return result;
     }
 
@@ -2427,7 +2429,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return [
         {
           id: "operationArea",
-          title: "Operation Area",
+          title: "Targeted Areas",
           description: "Select at least one target area where you want to receive requests.",
           route: "/driver/preferences",
         },

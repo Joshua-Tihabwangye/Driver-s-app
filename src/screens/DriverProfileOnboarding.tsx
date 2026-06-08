@@ -292,7 +292,7 @@ export default function DriverProfileOnboarding() {
       },
       {
         id: "operation-area",
-        label: "Operation Area",
+        label: "Targeted Areas",
         detail:
           driverPreferences.areaIds.length > 0
             ? `${driverPreferences.areaIds.length} target area(s) selected.`
