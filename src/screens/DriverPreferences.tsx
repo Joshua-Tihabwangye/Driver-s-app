@@ -256,7 +256,7 @@ export default function DriverPreferences() {
     ) {
       return returnTo;
     }
-    return "/driver/more";
+    return "/driver/onboarding/profile";
   }, [location.pathname, location.state]);
 
   useEffect(() => {
@@ -321,7 +321,7 @@ export default function DriverPreferences() {
     navigate(redirectAfterSave, { replace: true });
   };
 
-  const handleSavePreferences = () => {
+  const handleSavePreferences = async () => {
     const selectedTaskKeys = (Object.keys(taskCategories) as TaskCategoryKey[]).filter(
       (key) => taskCategories[key]
     );
@@ -345,11 +345,15 @@ export default function DriverPreferences() {
     }
 
     setSharedRidesEnabled(sharedRidesDraft && taskCategories.ride);
-    updateDriverPreferences({
+    const saved = await updateDriverPreferences({
       areaIds: selectedAreaIds,
       serviceIds: selectedServiceIds,
       requirementIds: selectedRequirementIds.filter((id) => id !== "shared"),
     });
+    if (!saved) {
+      setTaskCategoryError("Preferences were not saved. Check your connection and try again.");
+      return;
+    }
     navigate(redirectAfterSave, { replace: true });
   };
 

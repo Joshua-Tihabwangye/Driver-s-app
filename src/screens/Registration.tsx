@@ -181,7 +181,7 @@ export default function Registration() {
         password,
         selectedService,
       });
-      updateDriverProfile({
+      const profileSaved = await updateDriverProfile({
         fullName: fullName.trim(),
         phone: phone.trim(),
         city: city.trim(),
@@ -192,6 +192,10 @@ export default function Registration() {
         postalCode: postalCode.trim(),
         landmark: landmark.trim(),
       });
+      if (!profileSaved) {
+        setErrorMessage("Your profile details were not saved. Please try again.");
+        return;
+      }
       saveAuthPrefill({ email: email.trim().toLowerCase(), identity: email.trim().toLowerCase(), password });
     } catch (error) {
       const message =

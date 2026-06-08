@@ -114,7 +114,6 @@ export default function DriverProfileOnboarding() {
   const onboardingPrerequisitesComplete =
     onboardingCheckpoints.roleSelected &&
     effectiveDocumentsVerified &&
-    onboardingCheckpoints.identityVerified &&
     onboardingCheckpoints.vehicleReady &&
     onboardingCheckpoints.emergencyContactReady;
    const [isSocialEditorOpen, setIsSocialEditorOpen] = useState(false);
@@ -318,15 +317,6 @@ export default function DriverProfileOnboarding() {
         route: "/driver/onboarding/profile/documents/upload",
       },
       {
-        id: "identity-verified",
-        label: "Identity Verification",
-        detail: onboardingCheckpoints.identityVerified
-          ? "Identity checks are completed."
-          : "Profile picture is missing.",
-        present: onboardingCheckpoints.identityVerified,
-        route: "/driver/preferences/identity/upload-image",
-      },
-      {
         id: "vehicle-ready",
         label: "Vehicle Setup",
         detail: onboardingCheckpoints.vehicleReady
@@ -392,7 +382,6 @@ export default function DriverProfileOnboarding() {
     onboardingRoleLabel,
     effectiveDocumentsVerified,
     onboardingCheckpoints.emergencyContactReady,
-    onboardingCheckpoints.identityVerified,
     onboardingCheckpoints.roleSelected,
     onboardingCheckpoints.trainingCompleted,
     onboardingCheckpoints.vehicleReady,

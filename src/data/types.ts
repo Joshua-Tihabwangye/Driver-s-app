@@ -51,6 +51,9 @@ export interface VehicleDocumentFile {
   fileName: string;
   documentType?: string;
   expiryDate?: string;
+  fileKey?: string;
+  mimeType?: string;
+  sizeBytes?: number;
   rawFile?: File;
 }
 

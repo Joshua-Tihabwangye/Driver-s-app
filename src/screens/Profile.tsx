@@ -83,13 +83,17 @@ export default function Profile() {
     });
   }, [driverProfile, isEditing]);
 
-  const handleSave = () => {
-    updateDriverProfile({
+  const handleSave = async () => {
+    const saved = await updateDriverProfile({
       fullName: profile.name.trim(),
       phone: profile.phone.trim(),
       email: profile.email.trim(),
       city: profile.city.trim(),
     });
+    if (!saved) {
+      setPhonebookMessage("Profile changes were not saved. Please try again.");
+      return;
+    }
     setIsEditing(false);
   };
 

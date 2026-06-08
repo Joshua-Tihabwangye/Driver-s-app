@@ -359,9 +359,9 @@ interface StoreContextType {
   addRevenueEvent: (event: RevenueEvent) => void;
   updateDriverRoleConfig: (input: DriverRoleUpdateInput) => DriverRoleUpdateResult;
   setDriverProfile: (profile: DriverProfile) => void;
-  updateDriverProfile: (patch: Partial<DriverProfile>) => void;
+  updateDriverProfile: (patch: Partial<DriverProfile>) => Promise<boolean>;
   setDriverPreferences: (preferences: DriverPreferences) => void;
-  updateDriverPreferences: (patch: Partial<DriverPreferences>) => void;
+  updateDriverPreferences: (patch: Partial<DriverPreferences>) => Promise<boolean>;
   setDriverProfilePhoto: (photo: string | null) => void;
   enableDualMode: () => void;
   setOnboardingCheckpoint: (
@@ -393,9 +393,9 @@ interface StoreContextType {
   vehicles: Vehicle[];
   draftVehicle: Vehicle | null;
   setDraftVehicle: (vehicle: Vehicle | null) => void;
-  updateVehicle: (id: string, patch: Partial<Vehicle>) => void;
-  addVehicle: (vehicle: Vehicle) => void;
-  deleteVehicle: (id: string) => void;
+  updateVehicle: (id: string, patch: Partial<Vehicle>) => Promise<boolean>;
+  addVehicle: (vehicle: Vehicle) => Promise<boolean>;
+  deleteVehicle: (id: string) => Promise<boolean>;
   toggleVehicleAccessory: (vehicleId: string, accessoryName: string) => void;
   resetVehicleAccessories: (vehicleId: string) => void;
   getDefaultAccessoriesForType: (type: string) => Record<string, "Available" | "Missing" | "Required">;
@@ -422,7 +422,6 @@ const DEFAULT_PROGRAM_FLAGS: DriverProgramFlags = {
 const ONBOARDING_CHECKPOINT_ORDER: OnboardingCheckpointId[] = [
   "roleSelected",
   "documentsVerified",
-  "identityVerified",
   "vehicleReady",
   "emergencyContactReady",
   "trainingCompleted",
@@ -2444,14 +2443,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     : canGoOnline;
   const localProfileStageReady =
     onboardingCheckpoints.documentsVerified === true &&
-    onboardingCheckpoints.identityVerified === true &&
     onboardingCheckpoints.emergencyContactReady === true &&
     driverPreferences.areaIds.length > 0;
   const localPrimaryOnboardingRoute = !onboardingCheckpoints.roleSelected
     ? "/driver/register"
-    : !onboardingCheckpoints.vehicleReady
-      ? "/driver/vehicles"
-      : !localProfileStageReady
+    : !localProfileStageReady || !onboardingCheckpoints.vehicleReady
         ? "/driver/onboarding/profile"
         : !onboardingCheckpoints.trainingCompleted
           ? "/driver/training/intro"
