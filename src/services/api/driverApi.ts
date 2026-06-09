@@ -120,6 +120,8 @@ export interface DriverBackendCapabilities {
   sharedRidesEnabled: boolean;
 }
 
+export { isBackendAuthEnabled };
+
 export interface DriverBackendNotification {
   id: string;
   title: string;
