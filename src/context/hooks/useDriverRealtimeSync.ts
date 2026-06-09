@@ -18,6 +18,14 @@ type UseDriverRealtimeSyncInput = {
   setJobs: Dispatch<SetStateAction<Job[]>>;
   setTrips: Dispatch<SetStateAction<TripRecord[]>>;
   setActiveTrip: Dispatch<SetStateAction<ActiveTripStateLike>>;
+  setDeliveryWorkflow: Dispatch<
+    SetStateAction<{
+      activeJobId: string | null;
+      routeId: string;
+      stopId: string;
+      stage: "idle" | "accepted" | "pickup_confirmed" | "qr_verified" | "in_delivery" | "dropoff_confirmed";
+    }>
+  >;
   mapBackendJobType: (value: string) => Job["jobType"];
   mapBackendJobStatus: (value: string) => Job["status"];
   mapBackendTripStatus: (value: string) => TripRecord["status"];
@@ -29,6 +37,7 @@ export function useDriverRealtimeSync({
   setJobs,
   setTrips,
   setActiveTrip,
+  setDeliveryWorkflow,
   mapBackendJobType,
   mapBackendJobStatus,
   mapBackendTripStatus,
@@ -44,6 +53,7 @@ export function useDriverRealtimeSync({
     const handleJobAvailable = (payload: {
       jobId?: string;
       orderId?: string;
+      requestId?: string;
       tripId?: string;
       routeId?: string;
       pickup?: string;
@@ -54,13 +64,16 @@ export function useDriverRealtimeSync({
       requestedAt?: number;
       fareEstimate?: number;
       distanceMeters?: number;
+      serviceType?: string;
     }) => {
-      const jobId = payload.jobId || payload.orderId || payload.tripId;
+      const jobId = payload.jobId || payload.orderId || payload.requestId || payload.tripId;
       if (!jobId) return;
       setJobs((prev) => {
         const existingIndex = prev.findIndex((job) => job.id === jobId);
         const inferredJobType =
-          payload.routeId && !payload.tripId
+          payload.serviceType
+            ? mapBackendJobType(payload.serviceType)
+            : payload.routeId && !payload.tripId
             ? "delivery"
             : mapBackendJobType(payload.type || "ride");
         const nextJob: Job = {
@@ -89,6 +102,78 @@ export function useDriverRealtimeSync({
 
     const handleJobOfferUpdated = (payload: { jobId: string; status: string }) => {
       setJobs((prev) => prev.map((job) => (job.id === payload.jobId ? { ...job, status: mapBackendJobStatus(payload.status) } : job)));
+    };
+
+    const handleDeliveryRouteUpdated = (payload: {
+      orderId: string;
+      routeId: string;
+      orderStatus: string;
+      routeStatus: string;
+      stage: "accepted" | "pickup_confirmed" | "qr_verified" | "in_delivery" | "dropoff_confirmed" | "cancelled";
+      nextStopId?: string;
+    }) => {
+      setJobs((prev) =>
+        prev.map((job) =>
+          job.id === payload.orderId ? { ...job, routeId: payload.routeId, status: mapBackendJobStatus(payload.orderStatus) } : job,
+        ),
+      );
+      setDeliveryWorkflow((prev) => ({
+        ...prev,
+        activeJobId: payload.orderId,
+        routeId: payload.routeId,
+        stopId: payload.nextStopId || prev.stopId,
+        stage: payload.stage === "cancelled" ? "idle" : payload.stage,
+      }));
+    };
+
+    const handleServiceRequestUpdated = (payload: {
+      requestId: string;
+      serviceType: string;
+      status: string;
+      pickup?: string;
+      dropoff?: string;
+      requestedAt: number;
+      updatedAt: number;
+    }) => {
+      handleJobAvailable({
+        requestId: payload.requestId,
+        serviceType: payload.serviceType,
+        pickup: payload.pickup,
+        dropoff: payload.dropoff,
+        requestedAt: payload.requestedAt,
+      });
+      setJobs((prev) =>
+        prev.map((job) =>
+          job.id === payload.requestId ? { ...job, status: mapBackendJobStatus(payload.status) } : job,
+        ),
+      );
+      setActiveTrip((prev) => {
+        if (prev.tripId !== payload.requestId) {
+          return prev;
+        }
+        if (payload.status === "completed") {
+          return {
+            ...prev,
+            stage: "completed",
+            status: "completed",
+            timestamps: { ...prev.timestamps, updatedAt: payload.updatedAt },
+          };
+        }
+        if (payload.status === "cancelled") {
+          return {
+            ...prev,
+            stage: "cancelled",
+            status: "cancelled",
+            timestamps: { ...prev.timestamps, updatedAt: payload.updatedAt },
+          };
+        }
+        return {
+          ...prev,
+          stage: "in_progress",
+          status: "in_progress",
+          timestamps: { ...prev.timestamps, updatedAt: payload.updatedAt },
+        };
+      });
     };
 
     const statusFromEventName: Record<string, string> = {
@@ -133,8 +218,10 @@ export function useDriverRealtimeSync({
     };
 
     let cancelled = false;
-    let jobAvailableEvents = uniqueEvents(["job.offer.new", "delivery.order.new"]);
+    let jobAvailableEvents = uniqueEvents(["job.offer.new", "delivery.order.new", "service.request.new"]);
     let jobOfferUpdatedEvents = uniqueEvents(["job.offer.updated"]);
+    let deliveryRouteUpdatedEvents = uniqueEvents(["delivery.route.updated"]);
+    let serviceRequestUpdatedEvents = uniqueEvents(["service.request.updated"]);
     let tripStatusEvents = uniqueEvents([
       "trip.driver.assigned",
       "trip.driver.arriving",
@@ -154,8 +241,11 @@ export function useDriverRealtimeSync({
           jobAvailableEvents = uniqueEvents([
             server.JOB_OFFER_NEW,
             server.DELIVERY_ORDER_NEW,
+            server.SERVICE_REQUEST_NEW,
           ]);
           jobOfferUpdatedEvents = uniqueEvents([server.JOB_OFFER_UPDATED]);
+          deliveryRouteUpdatedEvents = uniqueEvents([server.DELIVERY_ROUTE_UPDATED]);
+          serviceRequestUpdatedEvents = uniqueEvents([server.SERVICE_REQUEST_UPDATED]);
           tripStatusEvents = uniqueEvents([
             server.TRIP_DRIVER_ASSIGNED,
             server.TRIP_DRIVER_ARRIVING,
@@ -164,8 +254,10 @@ export function useDriverRealtimeSync({
             server.TRIP_COMPLETED,
             server.TRIP_CANCELLED,
           ]);
-          if (jobAvailableEvents.length === 0) jobAvailableEvents = uniqueEvents(["job.offer.new", "delivery.order.new"]);
+          if (jobAvailableEvents.length === 0) jobAvailableEvents = uniqueEvents(["job.offer.new", "delivery.order.new", "service.request.new"]);
           if (jobOfferUpdatedEvents.length === 0) jobOfferUpdatedEvents = uniqueEvents(["job.offer.updated"]);
+          if (deliveryRouteUpdatedEvents.length === 0) deliveryRouteUpdatedEvents = uniqueEvents(["delivery.route.updated"]);
+          if (serviceRequestUpdatedEvents.length === 0) serviceRequestUpdatedEvents = uniqueEvents(["service.request.updated"]);
           if (tripStatusEvents.length === 0) {
             tripStatusEvents = uniqueEvents([
               "trip.driver.assigned",
@@ -184,6 +276,8 @@ export function useDriverRealtimeSync({
       if (!cancelled) {
         jobAvailableEvents.forEach((eventName) => socket.on(eventName, handleJobAvailable));
         jobOfferUpdatedEvents.forEach((eventName) => socket.on(eventName, handleJobOfferUpdated));
+        deliveryRouteUpdatedEvents.forEach((eventName) => socket.on(eventName, handleDeliveryRouteUpdated));
+        serviceRequestUpdatedEvents.forEach((eventName) => socket.on(eventName, handleServiceRequestUpdated));
         tripStatusEvents.forEach((eventName) => {
           socket.on(eventName, (payload: { tripId?: string; id?: string; newStatus?: string; status?: string; timestamp?: number; updatedAt?: number }) =>
             handleTripStatusEvent(eventName, payload || {}),
@@ -199,8 +293,10 @@ export function useDriverRealtimeSync({
       cancelled = true;
       jobAvailableEvents.forEach((eventName) => socket.off(eventName, handleJobAvailable));
       jobOfferUpdatedEvents.forEach((eventName) => socket.off(eventName, handleJobOfferUpdated));
+      deliveryRouteUpdatedEvents.forEach((eventName) => socket.off(eventName, handleDeliveryRouteUpdated));
+      serviceRequestUpdatedEvents.forEach((eventName) => socket.off(eventName, handleServiceRequestUpdated));
       tripStatusEvents.forEach((eventName) => socket.off(eventName));
       socket.disconnect();
     };
-  }, [driverBackendEnabled, mapBackendJobStatus, mapBackendJobType, mapBackendTripStage, mapBackendTripStatus, setActiveTrip, setJobs, setTrips]);
+  }, [driverBackendEnabled, mapBackendJobStatus, mapBackendJobType, mapBackendTripStage, mapBackendTripStatus, setActiveTrip, setDeliveryWorkflow, setJobs, setTrips]);
 }

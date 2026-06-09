@@ -2,13 +2,17 @@ import { useEffect } from "react";
 import { deriveRoleConfigFromPersistedDriverService } from "../../utils/taskCategories";
 import { mapBackendVehicleDocuments } from "../../utils/mapBackendVehicleDocuments";
 import {
+  getDriverActiveDelivery,
+  getDriverActiveServiceRequest,
   getDriverActiveTrip,
   getDriverOnboardingStatus,
   getDriverPreferences,
   getDriverProfile,
   getDriverTripSafetyState,
+  listDriverDeliveryOrders,
   listDriverEmergencyContacts,
   listDriverJobs,
+  listDriverServiceRequests,
   listDriverTrips,
   listDriverVehicles,
 } from "../../services/api/driverApi";
@@ -35,6 +39,7 @@ type UseDriverBackendBootstrapSyncOptions = {
   setTrips: AnySetter;
   setEmergencyContacts: AnySetter;
   setActiveTrip: AnySetter;
+  setDeliveryWorkflow: AnySetter;
   setActiveRideRuntime: AnySetter;
   setJobAccessError: AnySetter;
   mapBackendJobType: (value: string) => any;
@@ -44,6 +49,7 @@ type UseDriverBackendBootstrapSyncOptions = {
   mapBackendSafetyStateToRuntime: (value: any) => any;
   createDefaultActiveRideRuntime: (tripId: string | null) => any;
   defaultActiveTrip: any;
+  defaultDeliveryWorkflow: any;
 };
 
 export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrapSyncOptions): void {
@@ -65,6 +71,7 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
     setTrips,
     setEmergencyContacts,
     setActiveTrip,
+    setDeliveryWorkflow,
     setActiveRideRuntime,
     setJobAccessError,
     mapBackendJobType,
@@ -74,6 +81,7 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
     mapBackendSafetyStateToRuntime,
     createDefaultActiveRideRuntime,
     defaultActiveTrip,
+    defaultDeliveryWorkflow,
   } = options;
 
   useEffect(() => {
@@ -225,10 +233,23 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
         setBootstrapReady(true);
 
         if (profile?.status === "online") {
-          const [backendJobsResult, backendTripsResult, backendActiveTripResult, backendContactsResult] = await Promise.allSettled([
+          const [
+            backendJobsResult,
+            backendDeliveryOrdersResult,
+            backendServiceRequestsResult,
+            backendTripsResult,
+            backendActiveTripResult,
+            backendActiveDeliveryResult,
+            backendActiveServiceRequestResult,
+            backendContactsResult,
+          ] = await Promise.allSettled([
             listDriverJobs(),
+            listDriverDeliveryOrders(),
+            listDriverServiceRequests(),
             listDriverTrips(),
             getDriverActiveTrip(),
+            getDriverActiveDelivery(),
+            getDriverActiveServiceRequest(),
             listDriverEmergencyContacts(),
           ]);
 
@@ -237,12 +258,20 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
           }
 
           const backendJobs = backendJobsResult.status === "fulfilled" ? backendJobsResult.value : [];
+          const backendDeliveryOrders =
+            backendDeliveryOrdersResult.status === "fulfilled" ? backendDeliveryOrdersResult.value : [];
+          const backendServiceRequests =
+            backendServiceRequestsResult.status === "fulfilled" ? backendServiceRequestsResult.value : [];
           const backendTrips =
             backendTripsResult.status === "fulfilled"
               ? backendTripsResult.value
               : { items: [] };
           const backendActiveTrip =
             backendActiveTripResult.status === "fulfilled" ? backendActiveTripResult.value : null;
+          const backendActiveDelivery =
+            backendActiveDeliveryResult.status === "fulfilled" ? backendActiveDeliveryResult.value : null;
+          const backendActiveServiceRequest =
+            backendActiveServiceRequestResult.status === "fulfilled" ? backendActiveServiceRequestResult.value : null;
           const backendContacts =
             backendContactsResult.status === "fulfilled" ? backendContactsResult.value : [];
 
@@ -266,15 +295,54 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
           }
 
           setJobs(
-            backendJobs.map((job) => ({
+            [
+              ...backendJobs.map((job) => ({
+                id: job.id,
+                tripId: job.tripId,
+                routeId: job.routeId,
+                from: job.pickup,
+                to: job.dropoff,
+                distance: "TBD",
+                duration: "TBD",
+                fare: "TBD",
+                jobType: mapBackendJobType(job.type),
+                status: mapBackendJobStatus(job.status),
+                requestedAt: job.requestedAt,
+              })),
+              ...backendDeliveryOrders.map((order) => ({
+                id: order.id,
+                routeId: order.routeId,
+                from: order.pickupAddress,
+                to: order.dropoffAddress,
+                distance: "TBD",
+                duration: "TBD",
+                fare: "TBD",
+                jobType: mapBackendJobType("delivery"),
+                status: mapBackendJobStatus(order.status),
+                requestedAt: Date.now(),
+              })),
+              ...backendServiceRequests.map((request) => ({
+                id: request.requestId,
+                from: request.pickup || "Pickup",
+                to: request.dropoff || "Dropoff",
+                distance: "TBD",
+                duration: "TBD",
+                fare: "TBD",
+                jobType: mapBackendJobType(request.serviceType),
+                status: mapBackendJobStatus(request.status),
+                requestedAt: request.requestedAt,
+              })),
+            ].map((job) => ({
               id: job.id,
-              from: job.pickup,
-              to: job.dropoff,
-              distance: "TBD",
-              duration: "TBD",
-              fare: "TBD",
-              jobType: mapBackendJobType(job.type),
-              status: mapBackendJobStatus(job.status),
+              tripId: (job as any).tripId,
+              routeId: (job as any).routeId,
+              from: job.from,
+              to: job.to,
+              distance: job.distance,
+              duration: job.duration,
+              fare: job.fare,
+              jobType: job.jobType,
+              status: job.status,
               requestedAt: job.requestedAt,
             })),
           );
@@ -333,7 +401,41 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
             } catch (error) {
               console.warn("Driver safety bootstrap sync failed.", error);
             }
+            setDeliveryWorkflow(defaultDeliveryWorkflow);
+          } else if (backendActiveDelivery) {
+            setActiveTrip(defaultActiveTrip);
+            setDeliveryWorkflow({
+              activeJobId: backendActiveDelivery.orderId,
+              routeId: backendActiveDelivery.routeId,
+              stopId: backendActiveDelivery.nextStopId || defaultDeliveryWorkflow.stopId,
+              stage: backendActiveDelivery.stage,
+            });
+            setActiveRideRuntime(createDefaultActiveRideRuntime(null));
+          } else if (backendActiveServiceRequest) {
+            setDeliveryWorkflow(defaultDeliveryWorkflow);
+            setActiveTrip({
+              tripId: backendActiveServiceRequest.requestId,
+              jobType: mapBackendJobType(backendActiveServiceRequest.serviceType),
+              stage: "in_progress",
+              status:
+                backendActiveServiceRequest.status === "completed"
+                  ? "completed"
+                  : backendActiveServiceRequest.status === "cancelled"
+                    ? "cancelled"
+                    : "in_progress",
+              timestamps: {
+                acceptedAt: backendActiveServiceRequest.requestedAt,
+                startedAt: backendActiveServiceRequest.updatedAt,
+                completedAt:
+                  backendActiveServiceRequest.status === "completed"
+                    ? backendActiveServiceRequest.updatedAt
+                    : undefined,
+                updatedAt: backendActiveServiceRequest.updatedAt,
+              },
+            });
+            setActiveRideRuntime(createDefaultActiveRideRuntime(backendActiveServiceRequest.requestId));
           } else {
+            setDeliveryWorkflow(defaultDeliveryWorkflow);
             setActiveRideRuntime(createDefaultActiveRideRuntime(null));
           }
         } else {
@@ -372,12 +474,14 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
     setDriverProfilePhoto,
     setDriverRoleSelection,
     setEmergencyContacts,
+    setDeliveryWorkflow,
     setJobAccessError,
     setJobs,
     setOnboardingCheckpoints,
     setSelectedVehicleIndex,
     setTrips,
     setVehicles,
+    defaultDeliveryWorkflow,
   ]);
 
   useEffect(() => {
@@ -388,10 +492,54 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
     let cancelled = false;
     const syncFromBackend = async () => {
       try {
-        const backendActiveTrip = await getDriverActiveTrip();
+        const [backendActiveTrip, backendActiveDelivery, backendActiveServiceRequest] = await Promise.all([
+          getDriverActiveTrip(),
+          getDriverActiveDelivery(),
+          getDriverActiveServiceRequest(),
+        ]);
         if (cancelled) return;
 
         if (!backendActiveTrip) {
+          if (backendActiveDelivery) {
+            setActiveTrip(defaultActiveTrip);
+            setDeliveryWorkflow({
+              activeJobId: backendActiveDelivery.orderId,
+              routeId: backendActiveDelivery.routeId,
+              stopId: backendActiveDelivery.nextStopId || defaultDeliveryWorkflow.stopId,
+              stage: backendActiveDelivery.stage,
+            });
+            setActiveRideRuntime((prev: any) =>
+              prev.tripId === null ? prev : createDefaultActiveRideRuntime(null),
+            );
+            return;
+          }
+
+          if (backendActiveServiceRequest) {
+            setDeliveryWorkflow(defaultDeliveryWorkflow);
+            setActiveTrip({
+              tripId: backendActiveServiceRequest.requestId,
+              jobType: mapBackendJobType(backendActiveServiceRequest.serviceType),
+              stage: "in_progress",
+              status:
+                backendActiveServiceRequest.status === "completed"
+                  ? "completed"
+                  : backendActiveServiceRequest.status === "cancelled"
+                    ? "cancelled"
+                    : "in_progress",
+              timestamps: {
+                acceptedAt: backendActiveServiceRequest.requestedAt,
+                startedAt: backendActiveServiceRequest.updatedAt,
+                completedAt:
+                  backendActiveServiceRequest.status === "completed"
+                    ? backendActiveServiceRequest.updatedAt
+                    : undefined,
+                updatedAt: backendActiveServiceRequest.updatedAt,
+              },
+            });
+            return;
+          }
+
+          setDeliveryWorkflow(defaultDeliveryWorkflow);
           setActiveTrip((prev: any) => (prev.stage === "idle" ? prev : defaultActiveTrip));
           setActiveRideRuntime((prev: any) =>
             prev.tripId === null &&
@@ -463,6 +611,7 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
     mapBackendTripStage,
     setActiveRideRuntime,
     setActiveTrip,
+    setDeliveryWorkflow,
     setBootstrapReady,
     setDriverPreferences,
     setDriverPresenceStatus,
@@ -478,5 +627,6 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
     setSelectedVehicleIndex,
     setTrips,
     setVehicles,
+    defaultDeliveryWorkflow,
   ]);
 }
