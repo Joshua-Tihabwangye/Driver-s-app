@@ -31,6 +31,11 @@ import {
 import { OFFLINE_JOB_ACCESS_ERROR } from "../utils/offlineAccess";
 import {
   acceptDriverJob,
+  acceptDriverDeliveryOrder,
+  acceptDriverServiceRequest,
+  completeDriverDeliveryRoute,
+  completeDriverServiceRequest,
+  confirmDriverDeliveryPickup,
   DRIVER_BACKEND_AUTH_EVENT,
   DriverBackendPresenceOnlineResult,
   DriverBackendTripSafetyState,
@@ -46,6 +51,7 @@ import {
   sendDriverLocationHeartbeat,
   setDriverPresenceOffline,
   setDriverPresenceOnline,
+  startDriverDeliveryRoute,
   patchDriverPreferences,
   patchDriverProfile,
   shouldUseDriverBackendWrites,
@@ -57,6 +63,7 @@ import {
   setDriverActiveVehicle,
   listDriverVehicles,
   listDriverDocuments,
+  verifyDriverDeliveryQr,
 } from "../services/api/driverApi";
 import { useDriverBackendEnabled } from "./hooks/useDriverBackendEnabled";
 import { useDriverBackendBootstrapSync } from "./hooks/useDriverBackendBootstrapSync";
@@ -611,8 +618,17 @@ function mapBackendJobType(type: string): JobCategory {
 function mapBackendJobStatus(status: string): JobStatus {
   switch (status) {
     case "accepted":
+    case "active":
+    case "dispatched":
       return "attended";
     case "in_progress":
+    case "picked_up":
+    case "in_transit":
+    case "out_for_delivery":
+    case "pickup_confirmed":
+    case "qr_verified":
+    case "arrived":
+    case "en_route":
       return "in-progress";
     case "completed":
       return "completed";
@@ -2046,6 +2062,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setTrips,
     setEmergencyContacts,
     setActiveTrip,
+    setDeliveryWorkflow,
     setActiveRideRuntime,
     setJobAccessError,
     mapBackendJobType,
@@ -2055,6 +2072,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     mapBackendSafetyStateToRuntime,
     createDefaultActiveRideRuntime,
     defaultActiveTrip: DEFAULT_ACTIVE_TRIP,
+    defaultDeliveryWorkflow: DEFAULT_DELIVERY_WORKFLOW,
   });
 
   useDriverRealtimeSync({
@@ -2062,6 +2080,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setJobs,
     setTrips,
     setActiveTrip: setActiveTrip as any,
+    setDeliveryWorkflow,
     mapBackendJobType,
     mapBackendJobStatus,
     mapBackendTripStatus,
@@ -3151,9 +3170,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
 
     if (shouldUseDriverBackendWrites()) {
-      void tripComplete(tripId).catch((error) => {
-        console.warn("Driver backend trip complete failed.", error);
-      });
+      if (relatedJob?.jobType === "rental" || relatedJob?.jobType === "tour" || relatedJob?.jobType === "ambulance") {
+        void completeDriverServiceRequest(tripId).catch((error) => {
+          console.warn("Driver backend service completion failed.", error);
+        });
+      } else {
+        void tripComplete(tripId).catch((error) => {
+          console.warn("Driver backend trip complete failed.", error);
+        });
+      }
     }
 
     return tripId;
@@ -3677,8 +3702,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       });
 
       if (shouldUseDriverBackendWrites()) {
-        void acceptDriverJob(jobId).catch((error) => {
-          console.warn("Driver backend job accept failed.", error);
+        void acceptDriverDeliveryOrder(jobId).catch((error) => {
+          console.warn("Driver backend delivery accept failed.", error);
         });
       }
 
@@ -3705,7 +3730,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         stage: "pickup_confirmed",
       };
     });
-  }, [driverPresenceStatus]);
+    if (shouldUseDriverBackendWrites() && deliveryWorkflow.routeId) {
+      void confirmDriverDeliveryPickup(deliveryWorkflow.routeId).catch((error) => {
+        console.warn("Driver backend delivery pickup confirm failed.", error);
+      });
+    }
+  }, [deliveryWorkflow.routeId, driverPresenceStatus]);
 
   const verifyDeliveryQr = useCallback(() => {
     if (driverPresenceStatus !== "online") {
@@ -3725,7 +3755,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         stage: "qr_verified",
       };
     });
-  }, [driverPresenceStatus]);
+    if (shouldUseDriverBackendWrites() && deliveryWorkflow.routeId) {
+      void verifyDriverDeliveryQr(
+        deliveryWorkflow.routeId,
+        deliveryWorkflow.activeJobId || deliveryWorkflow.routeId,
+      ).catch((error) => {
+        console.warn("Driver backend delivery QR verify failed.", error);
+      });
+    }
+  }, [deliveryWorkflow.activeJobId, deliveryWorkflow.routeId, driverPresenceStatus]);
 
   const startDeliveryRoute = useCallback(() => {
     if (driverPresenceStatus !== "online") {
@@ -3745,7 +3783,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         stage: "in_delivery",
       };
     });
-  }, [driverPresenceStatus]);
+    if (shouldUseDriverBackendWrites() && deliveryWorkflow.routeId) {
+      void startDriverDeliveryRoute(deliveryWorkflow.routeId).catch((error) => {
+        console.warn("Driver backend delivery start failed.", error);
+      });
+    }
+  }, [deliveryWorkflow.routeId, driverPresenceStatus]);
 
   const confirmDeliveryDropoff = useCallback(() => {
     if (driverPresenceStatus !== "online") {
@@ -3829,7 +3872,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         });
       }
     }
-  }, [deliveryWorkflow.activeJobId, deliveryWorkflow.stage, driverPresenceStatus, jobs]);
+    if (shouldUseDriverBackendWrites() && deliveryWorkflow.routeId) {
+      void completeDriverDeliveryRoute(deliveryWorkflow.routeId).catch((error) => {
+        console.warn("Driver backend delivery complete failed.", error);
+      });
+    }
+  }, [deliveryWorkflow.activeJobId, deliveryWorkflow.routeId, deliveryWorkflow.stage, driverPresenceStatus, jobs]);
 
   const resetDeliveryWorkflow = useCallback(() => {
     setDeliveryWorkflow(DEFAULT_DELIVERY_WORKFLOW);
@@ -3971,8 +4019,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setActiveRideRuntime(createDefaultActiveRideRuntime(jobId));
 
       if (shouldUseDriverBackendWrites()) {
-        void acceptDriverJob(jobId).catch((error) => {
-          console.warn("Driver backend job accept failed.", error);
+        void acceptDriverServiceRequest(jobId).catch((error) => {
+          console.warn("Driver backend service request accept failed.", error);
         });
       }
 

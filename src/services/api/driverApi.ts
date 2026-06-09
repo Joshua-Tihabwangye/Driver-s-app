@@ -89,6 +89,8 @@ export interface DriverBackendJob {
   pickup: string;
   dropoff: string;
   requestedAt: number;
+  tripId?: string;
+  routeId?: string;
 }
 
 export interface DriverBackendTrip {
@@ -276,6 +278,38 @@ export interface DriverBackendDeliveryOrder {
   routeId: string;
   pickupAddress: string;
   dropoffAddress: string;
+}
+
+export interface DriverBackendDeliveryRouteState {
+  orderId: string;
+  routeId: string;
+  driverId?: string | null;
+  riderId?: string | null;
+  orderStatus: string;
+  routeStatus: string;
+  stage:
+    | "accepted"
+    | "pickup_confirmed"
+    | "qr_verified"
+    | "in_delivery"
+    | "dropoff_confirmed"
+    | "cancelled";
+  updatedAt: number;
+  nextStopId?: string;
+  remainingStops?: number;
+}
+
+export interface DriverBackendServiceRequest {
+  requestId: string;
+  driverId?: string | null;
+  riderId: string;
+  serviceType: "rental" | "tour" | "ambulance";
+  status: string;
+  pickup?: string;
+  dropoff?: string;
+  requestedAt: number;
+  updatedAt: number;
+  meta?: Record<string, unknown>;
 }
 
 export interface DriverBackendWalletSummary {
@@ -542,6 +576,106 @@ export async function listDriverJobs() {
   if (!isBackendAuthEnabled() || !token) return [];
   return request<DriverBackendJob[]>("/drivers/me/jobs", {
     method: "GET",
+    headers: authHeaders(token),
+  });
+}
+
+export async function listDriverDeliveryOrders() {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return [];
+  return request<DriverBackendDeliveryOrder[]>("/drivers/me/delivery/orders", {
+    method: "GET",
+    headers: authHeaders(token),
+  });
+}
+
+export async function getDriverActiveDelivery() {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return null;
+  return request<DriverBackendDeliveryRouteState | null>("/drivers/me/delivery/active", {
+    method: "GET",
+    headers: authHeaders(token),
+  });
+}
+
+export async function acceptDriverDeliveryOrder(orderId: string) {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return null;
+  return request<DriverBackendDeliveryOrder>(`/drivers/me/delivery/orders/${orderId}/accept`, {
+    method: "POST",
+    headers: authHeaders(token),
+  });
+}
+
+export async function confirmDriverDeliveryPickup(routeId: string) {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return null;
+  return request<Record<string, unknown>>(`/drivers/me/delivery/routes/${routeId}/pickup-confirm`, {
+    method: "POST",
+    headers: authHeaders(token),
+  });
+}
+
+export async function verifyDriverDeliveryQr(routeId: string, qrValue: string) {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return null;
+  return request<Record<string, unknown>>(`/drivers/me/delivery/routes/${routeId}/qr-verify`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: { qrValue },
+  });
+}
+
+export async function startDriverDeliveryRoute(routeId: string) {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return null;
+  return request<Record<string, unknown>>(`/drivers/me/delivery/routes/${routeId}/start`, {
+    method: "POST",
+    headers: authHeaders(token),
+  });
+}
+
+export async function completeDriverDeliveryRoute(routeId: string) {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return null;
+  return request<Record<string, unknown>>(`/drivers/me/delivery/routes/${routeId}/dropoff-complete`, {
+    method: "POST",
+    headers: authHeaders(token),
+  });
+}
+
+export async function listDriverServiceRequests() {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return [];
+  return request<DriverBackendServiceRequest[]>("/drivers/me/service-requests", {
+    method: "GET",
+    headers: authHeaders(token),
+  });
+}
+
+export async function getDriverActiveServiceRequest() {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return null;
+  return request<DriverBackendServiceRequest | null>("/drivers/me/service-requests/active", {
+    method: "GET",
+    headers: authHeaders(token),
+  });
+}
+
+export async function acceptDriverServiceRequest(requestId: string) {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return null;
+  return request<DriverBackendServiceRequest>(`/drivers/me/service-requests/${requestId}/accept`, {
+    method: "POST",
+    headers: authHeaders(token),
+  });
+}
+
+export async function completeDriverServiceRequest(requestId: string) {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return null;
+  return request<DriverBackendServiceRequest>(`/drivers/me/service-requests/${requestId}/complete`, {
+    method: "POST",
     headers: authHeaders(token),
   });
 }
@@ -856,15 +990,6 @@ export async function listDriverCashoutRequests() {
   const token = readDriverBackendAccessToken();
   if (!isBackendAuthEnabled() || !token) return [];
   return request<DriverBackendCashoutRequest[]>("/drivers/me/cashout/requests", {
-    method: "GET",
-    headers: authHeaders(token),
-  });
-}
-
-export async function listDriverDeliveryOrders() {
-  const token = readDriverBackendAccessToken();
-  if (!isBackendAuthEnabled() || !token) return [];
-  return request<DriverBackendDeliveryOrder[]>("/drivers/me/delivery/orders", {
     method: "GET",
     headers: authHeaders(token),
   });
