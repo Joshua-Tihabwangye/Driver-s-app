@@ -33,6 +33,8 @@ export interface SharedContact {
 
 export interface Job {
   id: string;
+  tripId?: string;
+  routeId?: string;
   from: string;
   to: string;
   distance: string;

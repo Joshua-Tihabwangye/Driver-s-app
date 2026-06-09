@@ -63,6 +63,7 @@ import { useDriverBackendBootstrapSync } from "./hooks/useDriverBackendBootstrap
 import { useDriverLocalPersistence } from "./hooks/useDriverLocalPersistence";
 import { useDriverRealtimeSync } from "./hooks/useDriverRealtimeSync";
 import { useDriverProfileAndAssetsActions } from "./hooks/useDriverProfileAndAssetsActions";
+import { createDriverSocket } from "../services/driverSocket";
 
 export interface DashboardMetrics {
   onlineTime: string;
@@ -2701,7 +2702,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [activeTrip]);
 
   const reportActiveRideMovementSample = useCallback((sample: Omit<ActiveRideLocationSample, "timestamp"> & { timestamp?: number }): void => {
-    if (activeTrip.stage !== "in_progress") return;
+    const rideTrackingActive = activeTrip.stage === "in_progress";
+    const deliveryTrackingActive = deliveryWorkflow.stage === "in_delivery";
+    if (!rideTrackingActive && !deliveryTrackingActive) return;
     
     setActiveRideRuntime((prev) => {
         const timestamp = sample.timestamp || Date.now();
@@ -2752,23 +2755,38 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
         return {
             ...prev,
-            tripId: activeTrip.tripId,
+            tripId: activeTrip.tripId ?? prev.tripId,
             lastKnownLocation: newLocation,
             lastMovementAt,
             safetyCheck
         };
     });
+    const timestamp = sample.timestamp || Date.now();
+    if (driverBackendEnabled) {
+      const socket = createDriverSocket();
+      if (!socket.connected) {
+        socket.connect();
+      }
+      socket.emit("location.update", {
+        tripId: rideTrackingActive ? activeTrip.tripId ?? undefined : undefined,
+        routeId: deliveryTrackingActive ? deliveryWorkflow.routeId || undefined : undefined,
+        latitude: sample.latitude,
+        longitude: sample.longitude,
+        accuracy: sample.accuracy,
+        timestamp,
+      });
+    }
     if (shouldUseDriverBackendWrites()) {
       void sendDriverLocationHeartbeat({
         latitude: sample.latitude,
         longitude: sample.longitude,
         accuracy: sample.accuracy,
-        timestamp: sample.timestamp || Date.now(),
+        timestamp,
       }).catch((error) => {
         console.warn("Driver location heartbeat failed.", error);
       });
     }
-  }, [activeTrip]);
+  }, [activeTrip, deliveryWorkflow, driverBackendEnabled]);
 
   const respondToSafetyCheck = useCallback((actor: RideSafetyActor, action: RideSafetyAction): boolean => {
     
@@ -3653,7 +3671,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
       setDeliveryWorkflow({
         activeJobId: jobId,
-        routeId: SAMPLE_IDS.route,
+        routeId: targetJob.routeId || SAMPLE_IDS.route,
         stopId: SAMPLE_IDS.stop,
         stage: "accepted",
       });
