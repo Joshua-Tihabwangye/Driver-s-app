@@ -38,49 +38,41 @@ export function useDriverRealtimeSync({
     if (!driverBackendEnabled) return;
 
     const socket = createDriverSocket();
-    const driverEventAliases: Record<string, string[]> = {
-      "job.offered": ["job.offer.new"],
-      "job.offer.new": ["job.offered"],
-      "trip.state.changed": ["trip.driver.assigned", "trip.driver.arriving", "trip.arrived", "trip.started", "trip.completed", "trip.cancelled"],
-      "trip.driver.assigned": ["trip.state.changed"],
-      "trip.driver.arriving": ["trip.state.changed"],
-      "trip.arrived": ["trip.state.changed"],
-      "trip.started": ["trip.state.changed"],
-      "trip.completed": ["trip.state.changed"],
-      "trip.cancelled": ["trip.state.changed"],
-    };
+    const uniqueEvents = (events: Array<string | undefined>) =>
+      Array.from(new Set(events.filter((eventName): eventName is string => Boolean(eventName))));
 
-    const normalizeDriverEvents = (events: string[]) => {
-      const normalized = new Set<string>();
-      events.forEach((eventName) => {
-        if (!eventName) return;
-        normalized.add(eventName);
-        (driverEventAliases[eventName] || []).forEach((alias) => normalized.add(alias));
-      });
-      return Array.from(normalized);
-    };
-
-    const handleJobOffered = (payload: {
+    const handleJobAvailable = (payload: {
       jobId?: string;
+      orderId?: string;
       tripId?: string;
+      routeId?: string;
       pickup?: string;
       dropoff?: string;
+      pickupAddress?: string;
+      dropoffAddress?: string;
       type?: string;
       requestedAt?: number;
       fareEstimate?: number;
+      distanceMeters?: number;
     }) => {
-      const jobId = payload.jobId || payload.tripId;
+      const jobId = payload.jobId || payload.orderId || payload.tripId;
       if (!jobId) return;
       setJobs((prev) => {
         const existingIndex = prev.findIndex((job) => job.id === jobId);
+        const inferredJobType =
+          payload.routeId && !payload.tripId
+            ? "delivery"
+            : mapBackendJobType(payload.type || "ride");
         const nextJob: Job = {
           id: jobId,
-          from: payload.pickup || "Pickup",
-          to: payload.dropoff || "Dropoff",
+          tripId: payload.tripId,
+          routeId: payload.routeId,
+          from: payload.pickup || payload.pickupAddress || "Pickup",
+          to: payload.dropoff || payload.dropoffAddress || "Dropoff",
           distance: "TBD",
           duration: "TBD",
           fare: payload.fareEstimate ? String(payload.fareEstimate) : "TBD",
-          jobType: mapBackendJobType(payload.type || "ride"),
+          jobType: inferredJobType,
           status: "pending",
           requestedAt: payload.requestedAt || Date.now(),
         };
@@ -141,9 +133,16 @@ export function useDriverRealtimeSync({
     };
 
     let cancelled = false;
-    let jobOfferedEvents = normalizeDriverEvents(["job.offered"]);
-    let jobOfferUpdatedEvents = normalizeDriverEvents(["job.offer.updated"]);
-    let tripStatusEvents = normalizeDriverEvents(["trip.state.changed"]);
+    let jobAvailableEvents = uniqueEvents(["job.offer.new", "delivery.order.new"]);
+    let jobOfferUpdatedEvents = uniqueEvents(["job.offer.updated"]);
+    let tripStatusEvents = uniqueEvents([
+      "trip.driver.assigned",
+      "trip.driver.arriving",
+      "trip.arrived",
+      "trip.started",
+      "trip.completed",
+      "trip.cancelled",
+    ]);
 
     const bootstrapRealtime = async () => {
       try {
@@ -151,14 +150,31 @@ export function useDriverRealtimeSync({
         if (response.ok) {
           const payload = await response.json();
           const data = (payload?.data || payload) as { driver?: { server?: Record<string, string> } };
-          const backendEvents = Object.values(data?.driver?.server || {}).filter((value): value is string => typeof value === "string" && value.length > 0);
-          if (backendEvents.length > 0) {
-            jobOfferedEvents = normalizeDriverEvents(backendEvents.filter((eventName) => eventName.includes("job.offer") || eventName === "job.offered"));
-            jobOfferUpdatedEvents = normalizeDriverEvents(backendEvents.filter((eventName) => eventName === "job.offer.updated"));
-            tripStatusEvents = normalizeDriverEvents(backendEvents.filter((eventName) => eventName.startsWith("trip.")));
-            if (jobOfferedEvents.length === 0) jobOfferedEvents = normalizeDriverEvents(["job.offered"]);
-            if (jobOfferUpdatedEvents.length === 0) jobOfferUpdatedEvents = normalizeDriverEvents(["job.offer.updated"]);
-            if (tripStatusEvents.length === 0) tripStatusEvents = normalizeDriverEvents(["trip.state.changed"]);
+          const server = data?.driver?.server || {};
+          jobAvailableEvents = uniqueEvents([
+            server.JOB_OFFER_NEW,
+            server.DELIVERY_ORDER_NEW,
+          ]);
+          jobOfferUpdatedEvents = uniqueEvents([server.JOB_OFFER_UPDATED]);
+          tripStatusEvents = uniqueEvents([
+            server.TRIP_DRIVER_ASSIGNED,
+            server.TRIP_DRIVER_ARRIVING,
+            server.TRIP_ARRIVED,
+            server.TRIP_STARTED,
+            server.TRIP_COMPLETED,
+            server.TRIP_CANCELLED,
+          ]);
+          if (jobAvailableEvents.length === 0) jobAvailableEvents = uniqueEvents(["job.offer.new", "delivery.order.new"]);
+          if (jobOfferUpdatedEvents.length === 0) jobOfferUpdatedEvents = uniqueEvents(["job.offer.updated"]);
+          if (tripStatusEvents.length === 0) {
+            tripStatusEvents = uniqueEvents([
+              "trip.driver.assigned",
+              "trip.driver.arriving",
+              "trip.arrived",
+              "trip.started",
+              "trip.completed",
+              "trip.cancelled",
+            ]);
           }
         }
       } catch {
@@ -166,7 +182,7 @@ export function useDriverRealtimeSync({
       }
 
       if (!cancelled) {
-        jobOfferedEvents.forEach((eventName) => socket.on(eventName, handleJobOffered));
+        jobAvailableEvents.forEach((eventName) => socket.on(eventName, handleJobAvailable));
         jobOfferUpdatedEvents.forEach((eventName) => socket.on(eventName, handleJobOfferUpdated));
         tripStatusEvents.forEach((eventName) => {
           socket.on(eventName, (payload: { tripId?: string; id?: string; newStatus?: string; status?: string; timestamp?: number; updatedAt?: number }) =>
@@ -181,7 +197,7 @@ export function useDriverRealtimeSync({
 
     return () => {
       cancelled = true;
-      jobOfferedEvents.forEach((eventName) => socket.off(eventName, handleJobOffered));
+      jobAvailableEvents.forEach((eventName) => socket.off(eventName, handleJobAvailable));
       jobOfferUpdatedEvents.forEach((eventName) => socket.off(eventName, handleJobOfferUpdated));
       tripStatusEvents.forEach((eventName) => socket.off(eventName));
       socket.disconnect();
