@@ -1,4 +1,5 @@
 import { isBackendAuthEnabled } from "./authApi";
+import { API_BASE_URL } from "./config";
 import { request, configureHttpClientAuth, type TokenRefreshResult } from "./httpClient";
 
 const AUTH_STORAGE_KEY = "isLoggedIn";
@@ -6,6 +7,7 @@ const AUTH_USER_STORAGE_KEY = "evz_auth_user";
 export const DRIVER_BACKEND_ACCESS_TOKEN_KEY = "evz_backend_access_token";
 export const DRIVER_BACKEND_REFRESH_TOKEN_KEY = "evz_backend_refresh_token";
 export const DRIVER_BACKEND_AUTH_EVENT = "evzone:driver-backend-auth";
+export const DRIVER_BACKEND_CAPABILITIES_EVENT = "evzone:driver-backend-capabilities";
 
 export interface DriverBackendProfile {
   id?: string;
@@ -112,6 +114,10 @@ export interface DriverBackendTripActionResult {
   updatedAt: number;
   startedAt?: number;
   completedAt?: number;
+}
+
+export interface DriverBackendCapabilities {
+  sharedRidesEnabled: boolean;
 }
 
 export interface DriverBackendNotification {
@@ -431,6 +437,50 @@ export function shouldUseDriverBackendWrites(): boolean {
   return isBackendAuthEnabled() && Boolean(readDriverBackendAccessToken());
 }
 
+let runtimeDriverBackendCapabilities: DriverBackendCapabilities = {
+  sharedRidesEnabled: false,
+};
+let runtimeDriverBackendCapabilitiesPromise: Promise<DriverBackendCapabilities> | null = null;
+
+export function getDriverBackendCapabilities(): DriverBackendCapabilities {
+  return runtimeDriverBackendCapabilities;
+}
+
+export async function loadDriverBackendCapabilities(force = false): Promise<DriverBackendCapabilities> {
+  if (typeof window === "undefined" || !isBackendAuthEnabled()) {
+    return runtimeDriverBackendCapabilities;
+  }
+
+  if (!force && runtimeDriverBackendCapabilitiesPromise) {
+    return runtimeDriverBackendCapabilitiesPromise;
+  }
+
+  runtimeDriverBackendCapabilitiesPromise = (async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/compat/flags/driver`);
+      if (!response.ok) {
+        throw new Error(`Capability request failed with status ${response.status}`);
+      }
+
+      const payload = await response.json() as {
+        data?: { capabilities?: Partial<DriverBackendCapabilities> };
+        capabilities?: Partial<DriverBackendCapabilities>;
+      };
+      const sharedRidesEnabled =
+        payload.data?.capabilities?.sharedRidesEnabled ??
+        payload.capabilities?.sharedRidesEnabled ??
+        runtimeDriverBackendCapabilities.sharedRidesEnabled;
+      runtimeDriverBackendCapabilities = { sharedRidesEnabled: Boolean(sharedRidesEnabled) };
+      window.dispatchEvent(new CustomEvent(DRIVER_BACKEND_CAPABILITIES_EVENT));
+      return runtimeDriverBackendCapabilities;
+    } catch {
+      return runtimeDriverBackendCapabilities;
+    }
+  })();
+
+  return runtimeDriverBackendCapabilitiesPromise;
+}
+
 export async function getDriverProfile() {
   const token = readDriverBackendAccessToken();
   if (!isBackendAuthEnabled() || !token) return null;
@@ -683,7 +733,7 @@ export async function completeDriverServiceRequest(requestId: string) {
 export async function acceptDriverJob(jobId: string) {
   const token = readDriverBackendAccessToken();
   if (!isBackendAuthEnabled() || !token) return null;
-  return request<DriverBackendJob>(`/drivers/me/jobs/${jobId}/accept`, {
+  return request<{ job: DriverBackendJob; trip?: DriverBackendTrip }>(`/drivers/me/jobs/${jobId}/accept`, {
     method: "POST",
     headers: authHeaders(token),
   });

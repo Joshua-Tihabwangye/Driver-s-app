@@ -66,6 +66,7 @@ import {
   verifyDriverDeliveryQr,
 } from "../services/api/driverApi";
 import { useDriverBackendEnabled } from "./hooks/useDriverBackendEnabled";
+import { useDriverSharedRidesEnabled } from "./hooks/useDriverBackendCapabilities";
 import { useDriverBackendBootstrapSync } from "./hooks/useDriverBackendBootstrapSync";
 import { useDriverLocalPersistence } from "./hooks/useDriverLocalPersistence";
 import { useDriverRealtimeSync } from "./hooks/useDriverRealtimeSync";
@@ -1779,6 +1780,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   );
 
   const [activeRideRuntime, setActiveRideRuntime] = useState<ActiveRideRuntimeState>(() => readStoredActiveRideRuntime());
+  const driverBackendEnabled = useDriverBackendEnabled();
+  const driverSharedRidesEnabled = useDriverSharedRidesEnabled();
+
+  useEffect(() => {
+    if (driverBackendEnabled) {
+      setSharedRidesEnabled(driverSharedRidesEnabled);
+    }
+  }, [driverBackendEnabled, driverSharedRidesEnabled]);
 
   useEffect(() => {
     if (typeof window === "undefined" || DRIVER_BACKEND_ONLY_MODE || shouldUseDriverBackendWrites()) return;
@@ -1885,8 +1894,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }
     }
   }, []);
-
-  const driverBackendEnabled = useDriverBackendEnabled();
 
   // Sync active vehicle selection to backend
   const syncActiveVehicleToBackend = useCallback(async (vehicleId: string | null) => {
@@ -3903,11 +3910,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const canAcceptJobType = useCallback(
     (jobType: JobCategory) => {
       if (jobType === "shared") {
-        return rideCapable && sharedRidesEnabled;
+        const sharedRideGate = driverBackendEnabled ? driverSharedRidesEnabled : sharedRidesEnabled;
+        return rideCapable && sharedRideGate;
       }
       return assignableJobTypes.includes(jobType);
     },
-    [assignableJobTypes, rideCapable, sharedRidesEnabled]
+    [assignableJobTypes, driverBackendEnabled, driverSharedRidesEnabled, rideCapable, sharedRidesEnabled]
   );
 
   useEffect(() => {
@@ -4029,23 +4037,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [jobs, canAcceptJobType, activeTrip, completeActiveTrip, canAccessOrdersWithCurrentDocuments]
   );
   // acceptSharedJob: Accepts a pending shared ride job.
-  // FIX: Previously this required canAcceptJobType("shared") which in turn
-  // required sharedRidesEnabled === true. But sharedRidesEnabled defaults to
-  // false, so shared jobs visible in the incoming request screen could never
-  // be accepted — the handler returned false and redirected to /driver/jobs/list.
-  // Now we auto-enable shared rides when the driver explicitly accepts a shared job,
-  // since reaching the accept handler means the job was already presented to them.
-  // Also applies the same stale-trip guard fix as acceptRideJob.
+  // Shared jobs now honor the backend capability gate first, then fall back to
+  // the local preference only in backend-disabled/demo mode.
   const acceptSharedJob = useCallback(
     (jobId: string) => {
       if (!canAccessOrdersWithCurrentDocuments()) {
         return false;
       }
-
-      // If the driver is accepting a shared job, they clearly want shared rides.
-      // Auto-enable if not already enabled, so canAcceptJobType("shared") passes.
-      if (!sharedRidesEnabled) {
-        setSharedRidesEnabled(true);
+      if (!canAcceptJobType("shared")) {
+        return false;
       }
 
       const targetJob = jobs.find(
@@ -4097,13 +4097,35 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       });
       setActiveRideRuntime(createDefaultActiveRideRuntime(null));
       if (shouldUseDriverBackendWrites()) {
-        void acceptDriverJob(jobId).catch((error) => {
-          console.warn("Driver backend job accept failed.", error);
-        });
+        void acceptDriverJob(jobId)
+          .then((response) => {
+            const backendTrip = response?.trip;
+            if (!backendTrip) {
+              return;
+            }
+
+            setActiveTrip((prev) => ({
+              ...prev,
+              tripId: backendTrip.id,
+              status: backendTrip.status === "completed"
+                ? "completed"
+                : backendTrip.status === "cancelled"
+                  ? "cancelled"
+                  : "in_progress",
+              timestamps: {
+                ...prev.timestamps,
+                acceptedAt: prev.timestamps.acceptedAt ?? now,
+                updatedAt: Date.now(),
+              },
+            }));
+          })
+          .catch((error) => {
+            console.warn("Driver backend job accept failed.", error);
+          });
       }
       return true;
     },
-    [jobs, activeTrip, sharedRidesEnabled, completeActiveTrip, canAccessOrdersWithCurrentDocuments]
+    [jobs, activeTrip, completeActiveTrip, canAccessOrdersWithCurrentDocuments, canAcceptJobType, driverBackendEnabled, driverSharedRidesEnabled, sharedRidesEnabled]
   );
   const completeActiveSharedTrip = useCallback(() => {
     if (driverPresenceStatus !== "online") {
