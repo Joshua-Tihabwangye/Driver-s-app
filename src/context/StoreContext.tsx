@@ -65,6 +65,7 @@ import {
   listDriverDocuments,
   verifyDriverDeliveryQr,
 } from "../services/api/driverApi";
+import { hydrateSharedTripFromBackendTrip } from "../utils/sharedTripHydrator";
 import { useDriverBackendEnabled } from "./hooks/useDriverBackendEnabled";
 import { useDriverSharedRidesEnabled } from "./hooks/useDriverBackendCapabilities";
 import { useDriverBackendBootstrapSync } from "./hooks/useDriverBackendBootstrapSync";
@@ -4011,6 +4012,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             if (!backendTrip) {
               return;
             }
+            const hydratedSharedTrip = hydrateSharedTripFromBackendTrip(backendTrip);
 
             setActiveTrip((prev) => ({
               ...prev,
@@ -4033,8 +4035,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                 updatedAt: Date.now(),
               },
             }));
-            setActiveSharedTrip(null);
-            setActiveRideRuntime(createDefaultActiveRideRuntime(null));
+            setActiveSharedTrip(hydratedSharedTrip);
+            setActiveRideRuntime(createDefaultActiveRideRuntime(backendTrip.id));
           })
           .catch((error) => {
             console.warn("Driver backend job accept failed.", error);

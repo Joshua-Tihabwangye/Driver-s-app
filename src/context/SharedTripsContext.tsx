@@ -1,5 +1,7 @@
 import { createContext, ReactNode, useContext, useCallback, useMemo } from "react";
 import type { SharedTrip } from "../data/types";
+import { hydrateSharedTripFromBackendTrip } from "../utils/sharedTripHydrator";
+import { getDriverTrip } from "../services/api/driverApi";
 import { useStore } from "./StoreContext";
 
 interface SharedTripsContextType {
@@ -8,7 +10,7 @@ interface SharedTripsContextType {
   activeSharedTrip: SharedTrip | null;
   setActiveSharedTrip: (trip: SharedTrip | null) => void;
   acceptSharedJob: (jobId: string) => boolean;
-  hydrateSharedTripById: (jobId: string) => boolean;
+  hydrateSharedTripById: (jobId: string) => Promise<boolean>;
 
   // Actions
   arriveAtCurrentStop: () => void;
@@ -152,16 +154,26 @@ export function SharedTripsProvider({ children }: { children: ReactNode }) {
   } = useStore();
 
   const hydrateSharedTripById = useCallback(
-    (jobId: string) => {
-      if (!jobId) {
+    async (tripId: string) => {
+      if (!tripId) {
         return false;
       }
-      if (activeSharedTrip?.id === jobId) {
+      if (activeSharedTrip?.id === tripId) {
         return true;
       }
-      return acceptSharedJob(jobId);
+      try {
+        const backendTrip = await getDriverTrip(tripId);
+        const hydratedTrip = hydrateSharedTripFromBackendTrip(backendTrip);
+        if (!hydratedTrip) {
+          return false;
+        }
+        setActiveSharedTrip(hydratedTrip);
+        return true;
+      } catch {
+        return false;
+      }
     },
-    [acceptSharedJob, activeSharedTrip?.id]
+    [activeSharedTrip?.id, setActiveSharedTrip]
   );
 
   const canMutateSharedChain = useCallback(
