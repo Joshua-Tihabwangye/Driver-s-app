@@ -44,6 +44,7 @@ export default function ActiveSharedTrip() {
   const scannerVideoRef = useRef<HTMLVideoElement | null>(null);
   const scannerStreamRef = useRef<MediaStream | null>(null);
   const [showMatchPrompt, setShowMatchPrompt] = useState(false);
+  const [isHydratingSharedTrip, setIsHydratingSharedTrip] = useState(() => Boolean(routeTripId));
   const completedTripRef = useRef<string | null>(null);
   const lastPromptTimeRef = useRef<number>(Date.now());
 
@@ -59,10 +60,12 @@ export default function ActiveSharedTrip() {
     }
 
     if (activeSharedTrip?.id === routeTripId) {
+      setIsHydratingSharedTrip(false);
       return;
     }
 
     if (activeTrip.tripId === routeTripId && activeTrip.status === "completed") {
+      setIsHydratingSharedTrip(false);
       navigate(`/driver/trip/${routeTripId}/completed`, {
         replace: true,
         state: {
@@ -73,7 +76,17 @@ export default function ActiveSharedTrip() {
       return;
     }
 
-    hydrateSharedTripById(routeTripId);
+    let cancelled = false;
+    setIsHydratingSharedTrip(true);
+    void hydrateSharedTripById(routeTripId).finally(() => {
+      if (!cancelled) {
+        setIsHydratingSharedTrip(false);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [
     routeTripId,
     activeSharedTrip?.id,
@@ -234,6 +247,18 @@ export default function ActiveSharedTrip() {
   }, [verificationMethod, verifyingStopId, stopScanner]);
 
   if (!activeSharedTrip || (routeTripId && activeSharedTrip.id !== routeTripId)) {
+    if (isHydratingSharedTrip) {
+      return (
+        <div className="flex flex-col h-full bg-slate-50 items-center justify-center p-6 text-center space-y-4">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-slate-900" />
+          <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight">Syncing Shared Trip</h2>
+          <p className="text-sm text-slate-500 max-w-sm">
+            Loading the trip chain from backend state.
+          </p>
+        </div>
+      );
+    }
+
     return (
       <div className="flex flex-col h-full bg-slate-50 items-center justify-center p-6 text-center space-y-4">
         <AlertCircle className="h-10 w-10 text-slate-400" />

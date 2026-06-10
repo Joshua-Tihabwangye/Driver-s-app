@@ -93,6 +93,7 @@ export interface DriverBackendJob {
   requestedAt: number;
   tripId?: string;
   routeId?: string;
+  route?: unknown;
 }
 
 export interface DriverBackendTrip {
@@ -106,6 +107,14 @@ export interface DriverBackendTrip {
   startedAt?: number;
   completedAt?: number;
   otpCode?: string;
+  route?: unknown;
+}
+
+export interface DriverBackendSharedTripRoutePayload {
+  kind?: "shared_trip";
+  tripId?: string;
+  routeId?: string;
+  sharedTrip?: Record<string, unknown>;
 }
 
 export interface DriverBackendTripActionResult {
