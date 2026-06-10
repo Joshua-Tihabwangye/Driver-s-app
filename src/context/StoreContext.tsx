@@ -15,7 +15,7 @@ import type {
   TourSegment,
   TourSegmentStatus,
 } from "../data/types";
-import { MOCK_EARNINGS, MOCK_COMPLETED_TRIPS, MOCK_SHARED_TRIPS, MOCK_DASHBOARD_STATS } from "../data/mockData";
+import { MOCK_EARNINGS, MOCK_COMPLETED_TRIPS, MOCK_DASHBOARD_STATS } from "../data/mockData";
 import { SAMPLE_IDS } from "../data/constants";
 import { getAssignableJobTypesFromRoleConfig, getPersistedServiceIdsFromRoleConfig } from "../utils/taskCategories";
 import {
@@ -1525,83 +1525,6 @@ function withStageTimestamp(
 
 function stripSharedStopsSuffix(destination: string): string {
   return destination.replace(/\s*\(\+\d+\s*stops?\)\s*$/i, "").trim();
-}
-
-function parseSharedFareAmount(fare: string, fallback: number): number {
-  const parsed = Number.parseFloat(fare.replace(/[^\d.]/g, ""));
-  return Number.isFinite(parsed) ? parsed : fallback;
-}
-
-function createSharedTripFromJob(job: Job): SharedTrip {
-  const template = MOCK_SHARED_TRIPS.find((trip) => trip.id === job.id) || MOCK_SHARED_TRIPS[0];
-  const passengerIdMap = new Map<string, string>();
-  const stopIdMap = new Map<string, string>();
-
-  const passengers = template.passengers.map((passenger, index) => {
-    const nextPassengerId = `${job.id}-p-${index + 1}`;
-    passengerIdMap.set(passenger.id, nextPassengerId);
-    return {
-      ...passenger,
-      id: nextPassengerId,
-      status: "queued" as const,
-      joinedSequence: index + 1,
-    };
-  });
-
-  const stops = template.stops.map((stop, index) => {
-    const nextStopId = `${job.id}-s-${index + 1}`;
-    stopIdMap.set(stop.id, nextStopId);
-
-    const isFirstPickup = index === 0 && stop.type === "pickup";
-    const firstDropoffIndex = template.stops.findIndex((entry) => entry.type === "dropoff");
-    const isFirstDropoff = stop.type === "dropoff" && index === firstDropoffIndex;
-
-    return {
-      ...stop,
-      id: nextStopId,
-      passengerId: passengerIdMap.get(stop.passengerId) || stop.passengerId,
-      address: isFirstPickup
-        ? job.from
-        : isFirstDropoff
-        ? stripSharedStopsSuffix(job.to)
-        : stop.address,
-      status: "upcoming" as const,
-      waitTimerStartedAt: undefined,
-      sequenceOrder: index + 1,
-    };
-  });
-
-  const normalizedPassengers = passengers.map((passenger) => ({
-    ...passenger,
-    pickupStopId: stopIdMap.get(passenger.pickupStopId) || passenger.pickupStopId,
-    dropoffStopId: stopIdMap.get(passenger.dropoffStopId) || passenger.dropoffStopId,
-  }));
-
-  const earningsBreakdown = template.earningsBreakdown.map((item, index) => ({
-    ...item,
-    id: `${job.id}-eb-${index + 1}`,
-    passengerId: item.passengerId ? passengerIdMap.get(item.passengerId) : undefined,
-    status: "pending" as const,
-  }));
-
-  return {
-    ...template,
-    id: job.id,
-    status: "accepted",
-    chainStatus: "active",
-    occupiedSeats: 0,
-    allowAdditionalMatches: true,
-    estimatedTotalEarnings: parseSharedFareAmount(
-      job.fare,
-      template.estimatedTotalEarnings
-    ),
-    currentStopIndex: 0,
-    earningsBreakdown,
-    passengers: normalizedPassengers,
-    stops,
-    startedAt: Date.now(),
-    completedAt: undefined,
-  };
 }
 
 function mapSharedEarningTypeToRevenueType(
@@ -4081,21 +4004,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           job.id === jobId ? { ...job, status: "attended" } : job
         )
       );
-      // Create the shared trip chain and set it as the active shared trip
-      setActiveSharedTrip(createSharedTripFromJob(targetJob));
-      // Set the active trip state for routing — shared trips use "shared_active" stage
-      setActiveTrip({
-        tripId: jobId,
-        jobType: "shared",
-        stage: "shared_active",
-        status: "in_progress",
-        timestamps: {
-          acceptedAt: now,
-          startedAt: now,
-          updatedAt: now,
-        },
-      });
-      setActiveRideRuntime(createDefaultActiveRideRuntime(null));
       if (shouldUseDriverBackendWrites()) {
         void acceptDriverJob(jobId)
           .then((response) => {
@@ -4107,6 +4015,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             setActiveTrip((prev) => ({
               ...prev,
               tripId: backendTrip.id,
+              jobType: "shared",
+              stage: backendTrip.status === "completed"
+                ? "completed"
+                : backendTrip.status === "cancelled"
+                  ? "cancelled"
+                  : "shared_active",
               status: backendTrip.status === "completed"
                 ? "completed"
                 : backendTrip.status === "cancelled"
@@ -4115,9 +4029,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
               timestamps: {
                 ...prev.timestamps,
                 acceptedAt: prev.timestamps.acceptedAt ?? now,
+                startedAt: prev.timestamps.startedAt ?? now,
                 updatedAt: Date.now(),
               },
             }));
+            setActiveSharedTrip(null);
+            setActiveRideRuntime(createDefaultActiveRideRuntime(null));
           })
           .catch((error) => {
             console.warn("Driver backend job accept failed.", error);

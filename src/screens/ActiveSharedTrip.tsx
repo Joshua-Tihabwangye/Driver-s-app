@@ -140,25 +140,8 @@ export default function ActiveSharedTrip() {
 
   // Co-rider Match Simulation logic
   useEffect(() => {
-    if (!activeSharedTrip || isChainCompleted || showMatchPrompt) return;
-    if (!activeSharedTrip.allowAdditionalMatches) return;
-    if (activeSharedTrip.occupiedSeats >= activeSharedTrip.seatCapacity) return;
-
-    // Check every 5 seconds if we should show a match
-    const interval = setInterval(() => {
-      const now = Date.now();
-      // Only prompt if it's been at least 15 seconds since the last prompt/action
-      if (now - lastPromptTimeRef.current > 15000) {
-        // 40% chance of a match every check
-        if (Math.random() > 0.6) {
-          setShowMatchPrompt(true);
-          lastPromptTimeRef.current = now;
-        }
-      }
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [activeSharedTrip, isChainCompleted, showMatchPrompt]);
+    return;
+  }, []);
 
   const handleOtpChange = (index: number, value: string) => {
     if (!/^[0-9]?$/.test(value)) return;
