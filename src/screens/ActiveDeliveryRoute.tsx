@@ -8,12 +8,12 @@ import {
   Package,
   Share2
 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import DriverMapSurface from "../components/DriverMapSurface";
 import SlideToConfirm from "../components/SlideToConfirm";
 import { SAMPLE_IDS } from "../data/constants";
-import { MOCK_DELIVERY_ROUTES } from "../data/mockData";
+import { getDriverDeliveryRoute } from "../services/api/driverApi";
 import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – ActiveDeliveryRoute Active Delivery Route Screen (v2)
@@ -87,24 +87,47 @@ export default function ActiveDeliveryRoute() {
   const navigate = useNavigate();
   const { routeId } = useParams();
   const { deliveryWorkflow, deliveryStageAtLeast } = useStore();
+  const [backendRoute, setBackendRoute] = useState<any | null>(null);
 
   useEffect(() => {
     if (!deliveryStageAtLeast("in_delivery")) {
       navigate("/driver/delivery/pickup/confirmed", { replace: true });
     }
   }, [deliveryStageAtLeast, navigate]);
-  
-  // Resolve data via mock data
-  const route =
-    MOCK_DELIVERY_ROUTES[
-      (routeId || deliveryWorkflow.routeId) as keyof typeof MOCK_DELIVERY_ROUTES
-    ] ||
-    MOCK_DELIVERY_ROUTES[SAMPLE_IDS.route as keyof typeof MOCK_DELIVERY_ROUTES];
+
+  useEffect(() => {
+    let cancelled = false;
+    const resolvedRouteId = routeId || deliveryWorkflow.routeId;
+    if (!resolvedRouteId) {
+      setBackendRoute(null);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    void getDriverDeliveryRoute(resolvedRouteId)
+      .then((route) => {
+        if (!cancelled) {
+          setBackendRoute(route);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setBackendRoute(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [deliveryWorkflow.routeId, routeId]);
+
+  const routeStops = Array.isArray(backendRoute?.stops) ? (backendRoute.stops as any[]) : [];
   const nextStop =
-    route?.stops?.find((stop) => /deliver/i.test(stop.detail)) ||
-    route?.stops?.find((stop) => stop.status === "current") ||
-    route?.stops?.find((stop) => stop.status === "upcoming") ||
-    route?.stops?.[0];
+    routeStops.find((stop) => /deliver/i.test(String(stop.detail || stop.address || stop.label || ""))) ||
+    routeStops.find((stop) => stop.status === "current") ||
+    routeStops.find((stop) => stop.status === "upcoming") ||
+    routeStops[0];
   const activeStopId = nextStop?.id || deliveryWorkflow.stopId;
 
   const sanitizePhone = (phone: string) => (phone || "").replace(/[^\d+]/g, "");
@@ -126,7 +149,7 @@ export default function ActiveDeliveryRoute() {
       <DriverMapSurface
         heightClass="h-[460px]"
         onBack={() => navigate(-1)}
-        routePath="M14 82 C 28 70, 40 64, 52 52 S 72 34, 86 20"
+        routePath=""
         routeColor="#15b79e"
         routeStrokeWidth={3.2}
         routeDasharray="8 5"
@@ -180,7 +203,7 @@ export default function ActiveDeliveryRoute() {
               Grouped Route
             </span>
             <p className="text-[11px] text-slate-400 font-medium leading-relaxed max-w-[240px]">
-              You have {route?.stops?.length} stops on this route. Follow the suggested order to
+              You have {routeStops.length} stops on this route. Follow the suggested order to
               minimise backtracking.
             </p>
           </div>
@@ -223,7 +246,7 @@ export default function ActiveDeliveryRoute() {
             />
           ) : (
             <div className="rounded-2xl border border-slate-100 bg-slate-50 p-6 text-center text-slate-500 text-[11px]">
-              No pending stops found.
+              No active stops found.
             </div>
           )}
           

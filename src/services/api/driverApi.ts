@@ -120,6 +120,8 @@ export interface DriverBackendCapabilities {
   sharedRidesEnabled: boolean;
 }
 
+export { isBackendAuthEnabled };
+
 export interface DriverBackendNotification {
   id: string;
   title: string;
@@ -303,6 +305,15 @@ export interface DriverBackendDeliveryRouteState {
   updatedAt: number;
   nextStopId?: string;
   remainingStops?: number;
+}
+
+export interface DriverBackendDeliveryRoute {
+  id: string;
+  driverId: string;
+  orderId: string;
+  status: string;
+  stops?: unknown;
+  updatedAt?: number;
 }
 
 export interface DriverBackendServiceRequest {
@@ -648,6 +659,15 @@ export async function getDriverActiveDelivery() {
   });
 }
 
+export async function getDriverDeliveryRoute(routeId: string) {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return null;
+  return request<DriverBackendDeliveryRoute>(`/drivers/me/delivery/routes/${routeId}`, {
+    method: "GET",
+    headers: authHeaders(token),
+  });
+}
+
 export async function acceptDriverDeliveryOrder(orderId: string) {
   const token = readDriverBackendAccessToken();
   if (!isBackendAuthEnabled() || !token) return null;
@@ -762,6 +782,15 @@ export async function getDriverActiveTrip() {
   const token = readDriverBackendAccessToken();
   if (!isBackendAuthEnabled() || !token) return null;
   return request<DriverBackendTrip | null>("/drivers/me/trips/active", {
+    method: "GET",
+    headers: authHeaders(token),
+  });
+}
+
+export async function getDriverTrip(tripId: string) {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return null;
+  return request<DriverBackendTrip>(`/drivers/me/trips/${tripId}`, {
     method: "GET",
     headers: authHeaders(token),
   });

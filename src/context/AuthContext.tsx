@@ -4,6 +4,7 @@ import { ApiRequestError } from "../services/api/httpClient";
 import {
   clearDriverBackendTokens,
   DRIVER_BACKEND_AUTH_EVENT,
+  isBackendAuthEnabled,
   getDriverProfile,
   readDriverBackendAccessToken,
 } from "../services/api/driverApi";
@@ -266,6 +267,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const session = await refreshSession(input);
         setIsAuthReady(true);
         return session;
+      }
+
+      if (isBackendAuthEnabled()) {
+        setIsLoggedIn(false);
+        setIsAuthReady(true);
+        setUser(null);
+        setOnboarding(null);
+        setDefaultRedirect(AUTHENTICATED_HOME_ROUTE);
+        clearStoredAuthState();
+        return null;
       }
 
       const nextUser = buildAuthUser(input);
