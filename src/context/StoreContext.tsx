@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext, useState, useMemo, useCallback, useEffect } from "react";
+import { createContext, ReactNode, useContext, useState, useMemo, useCallback, useEffect, type Dispatch, type SetStateAction } from "react";
 import type {
   Job,
   TripRecord,
@@ -361,6 +361,7 @@ interface StoreContextType {
   updateJobStatus: (id: string, status: Job["status"]) => void;
   updateTourSegmentStatus: (jobId: string, segmentId: string, status: TourSegment["status"]) => void;
   addSharedContactToJob: (jobId: string, contact: SharedContact) => boolean;
+  setActiveTrip: Dispatch<SetStateAction<ActiveTripState>>;
   setActiveSharedTrip: (trip: SharedTrip | null) => void;
   updateActiveSharedTrip: (updater: (prev: SharedTrip) => SharedTrip) => void;
   acceptSharedJob: (jobId: string) => boolean;
@@ -4150,14 +4151,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       };
     });
 
-    if (shouldUseDriverBackendWrites()) {
+    if (shouldUseDriverBackendWrites() && activeTrip.status !== "completed") {
       void tripComplete(activeSharedTrip.id).catch((error) => {
         console.warn("Driver backend shared trip complete failed.", error);
       });
     }
 
     return activeSharedTrip.id;
-  }, [activeSharedTrip, driverPresenceStatus, jobs]);
+  }, [activeSharedTrip, activeTrip.status, driverPresenceStatus, jobs]);
   const filteredTrips = useMemo(
     () => trips.filter((trip) => assignableJobTypes.includes(trip.jobType)),
     [trips, assignableJobTypes]
@@ -4313,6 +4314,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       addJob,
       updateJobStatus,
       addSharedContactToJob,
+      setActiveTrip,
       setActiveSharedTrip,
       updateActiveSharedTrip,
       // Use the real acceptSharedJob that sets activeSharedTrip + activeTrip state
@@ -4411,6 +4413,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       addJob,
       updateJobStatus,
       addSharedContactToJob,
+      setActiveTrip,
       updateActiveSharedTrip,
       acceptSharedJob,
       completeActiveSharedTrip,
