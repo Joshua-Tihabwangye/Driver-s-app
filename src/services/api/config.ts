@@ -6,8 +6,12 @@ function parseBooleanFlag(value: string | undefined, fallback = false): boolean 
   return normalized === "true" || normalized === "1" || normalized === "yes";
 }
 
+const IS_NON_PROD = (env.MODE?.trim().toLowerCase() ?? "development") !== "production";
+
 function normalizeApiBaseUrl(raw: string | undefined): string {
-  const base = (raw || "http://127.0.0.1:3001/api/v1").trim().replace(/\/+$/, "");
+  const fallback = IS_NON_PROD ? "http://127.0.0.1:3001/api/v1" : "";
+  const base = (raw || fallback).trim().replace(/\/+$/, "");
+  if (!base) return "";
   return /\/api\/v1$/i.test(base) ? base : `${base}/api/v1`;
 }
 
@@ -21,5 +25,23 @@ export function getBackendEnabled(): boolean {
 export const BACKEND_FLAG_EVENT = "evzone:backend_flag_changed";
 export const API_BASE_URL = normalizeApiBaseUrl(backendBaseUrlEnv);
 export const SOCKET_BASE_URL =
-  (env.VITE_SOCKET_BASE_URL || API_BASE_URL.replace(/\/api\/v1\/?$/, "")).replace(/\/+$/, "");
+  (env.VITE_SOCKET_BASE_URL || (API_BASE_URL ? API_BASE_URL.replace(/\/api\/v1\/?$/, "") : "")).replace(/\/+$/, "");
 export const SOCKET_PATH = env.VITE_SOCKET_PATH || "/socket.io";
+
+export function getApiBaseUrl(): string {
+  if (!API_BASE_URL) {
+    throw new Error(
+      "VITE_BACKEND_BASE_URL must be configured to the backend origin, for example https://your-backend-domain.com/api/v1.",
+    );
+  }
+  return API_BASE_URL;
+}
+
+export function getSocketBaseUrl(): string {
+  if (!SOCKET_BASE_URL) {
+    throw new Error(
+      "VITE_SOCKET_BASE_URL must be configured to the backend origin without /api/v1.",
+    );
+  }
+  return SOCKET_BASE_URL;
+}
