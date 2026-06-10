@@ -180,7 +180,7 @@ export default function ActiveSharedTrip() {
       
       if (passengerForStop) {
         hasAutoVerifiedRef.current = true;
-        markRiderOnboard(passengerForStop.id);
+        markRiderOnboard(passengerForStop.id, otpCode.join(""));
         
         // Reset state
         setVerifyingStopId(null);
@@ -606,7 +606,7 @@ export default function ActiveSharedTrip() {
                               type="button"
                               onClick={() => {
                                 if (passengerForStop) {
-                                  markRiderOnboard(passengerForStop.id);
+                                  markRiderOnboard(passengerForStop.id, otpCode.join(""));
                                   setVerifyingStopId(null);
                                   stopScanner();
                                 }

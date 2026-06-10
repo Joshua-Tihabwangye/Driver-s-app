@@ -1,7 +1,14 @@
 import { createContext, ReactNode, useContext, useCallback, useMemo } from "react";
 import type { SharedTrip } from "../data/types";
 import { hydrateSharedTripFromBackendTrip } from "../utils/sharedTripHydrator";
-import { getDriverTrip } from "../services/api/driverApi";
+import {
+  getDriverTrip,
+  shouldUseDriverBackendWrites,
+  tripArrive,
+  tripComplete,
+  tripStart,
+  tripVerifyOtp,
+} from "../services/api/driverApi";
 import { useStore } from "./StoreContext";
 
 interface SharedTripsContextType {
@@ -14,7 +21,7 @@ interface SharedTripsContextType {
 
   // Actions
   arriveAtCurrentStop: () => void;
-  markRiderOnboard: (passengerId: string) => void;
+  markRiderOnboard: (passengerId: string, otp?: string) => void;
   markRiderNoShow: (passengerId: string) => void;
   markRiderDroppedOff: (passengerId: string) => void;
   simulateNewMatch: () => void;
@@ -149,9 +156,64 @@ export function SharedTripsProvider({ children }: { children: ReactNode }) {
     activeTrip,
     activeSharedTrip,
     setActiveSharedTrip,
+    setActiveTrip,
     updateActiveSharedTrip,
     acceptSharedJob,
   } = useStore();
+
+  const hydrateSharedTripSession = useCallback(
+    async (tripId: string) => {
+      const backendTrip = await getDriverTrip(tripId);
+      const hydratedTrip = hydrateSharedTripFromBackendTrip(backendTrip);
+      if (backendTrip) {
+        setActiveTrip((prev) => ({
+          ...prev,
+          tripId: backendTrip.id,
+          jobType: "shared",
+          stage:
+            backendTrip.status === "completed"
+              ? "completed"
+              : backendTrip.status === "cancelled"
+                ? "cancelled"
+                : "shared_active",
+          status:
+            backendTrip.status === "completed"
+              ? "completed"
+              : backendTrip.status === "cancelled"
+                ? "cancelled"
+                : "in_progress",
+          timestamps: {
+            ...prev.timestamps,
+            acceptedAt: prev.timestamps.acceptedAt ?? backendTrip.requestedAt ?? Date.now(),
+            arrivedAt:
+              backendTrip.status === "arrived" ||
+              backendTrip.status === "in_progress" ||
+              backendTrip.status === "completed"
+                ? prev.timestamps.arrivedAt ?? Date.now()
+                : prev.timestamps.arrivedAt,
+            startedAt:
+              backendTrip.status === "in_progress" || backendTrip.status === "completed"
+                ? prev.timestamps.startedAt ?? backendTrip.startedAt ?? Date.now()
+                : prev.timestamps.startedAt,
+            completedAt:
+              backendTrip.status === "completed"
+                ? prev.timestamps.completedAt ?? backendTrip.completedAt ?? Date.now()
+                : prev.timestamps.completedAt,
+            cancelledAt:
+              backendTrip.status === "cancelled"
+                ? prev.timestamps.cancelledAt ?? backendTrip.completedAt ?? Date.now()
+                : prev.timestamps.cancelledAt,
+            updatedAt: Date.now(),
+          },
+        }));
+      }
+      if (hydratedTrip) {
+        setActiveSharedTrip(hydratedTrip);
+      }
+      return hydratedTrip;
+    },
+    [setActiveSharedTrip, setActiveTrip]
+  );
 
   const hydrateSharedTripById = useCallback(
     async (tripId: string) => {
@@ -186,28 +248,135 @@ export function SharedTripsProvider({ children }: { children: ReactNode }) {
   );
 
   const arriveAtCurrentStop = useCallback(() => {
-    return;
-  }, []);
+    if (!activeSharedTrip) {
+      return;
+    }
+
+    if (!shouldUseDriverBackendWrites()) {
+      updateActiveSharedTrip((trip) => {
+        if (!trip) return trip;
+        const nextStops = trip.stops.map((stop, index) =>
+          index === trip.currentStopIndex ? { ...stop, status: "current" as const, waitTimerStartedAt: stop.waitTimerStartedAt ?? Date.now() } : stop
+        );
+        return {
+          ...trip,
+          stops: nextStops,
+          currentStopIndex: trip.currentStopIndex,
+        };
+      });
+      return;
+    }
+
+    void tripArrive(activeSharedTrip.id)
+      .then(() => hydrateSharedTripSession(activeSharedTrip.id))
+      .catch(() => {
+        return;
+      });
+  }, [activeSharedTrip, hydrateSharedTripSession, updateActiveSharedTrip]);
 
   const markRiderOnboard = useCallback(
-    (_passengerId: string) => {
-      return;
+    (passengerId: string, otp?: string) => {
+      if (!activeSharedTrip) {
+        return;
+      }
+
+      if (!shouldUseDriverBackendWrites()) {
+        updateActiveSharedTrip((trip) => {
+          if (!trip) return trip;
+          const nextStops = trip.stops.map((stop, index) =>
+            index === trip.currentStopIndex ? { ...stop, status: "completed" as const } : stop
+          );
+          const nextTrip = advanceStopIndex({
+            ...trip,
+            passengers: trip.passengers.map((passenger) =>
+              passenger.id === passengerId ? { ...passenger, status: "onboard" as const } : passenger
+            ),
+            stops: nextStops,
+          });
+          return nextTrip;
+        });
+        return;
+      }
+
+      void (async () => {
+        if (otp && otp.trim().length > 0) {
+          await tripVerifyOtp(activeSharedTrip.id, otp);
+        }
+        await tripStart(activeSharedTrip.id);
+        await hydrateSharedTripSession(activeSharedTrip.id);
+      })().catch(() => {
+        return;
+      });
     },
-    []
+    [activeSharedTrip, hydrateSharedTripSession, updateActiveSharedTrip]
   );
 
   const markRiderNoShow = useCallback(
-    (_passengerId: string) => {
-      return;
+    (passengerId: string) => {
+      if (!activeSharedTrip) {
+        return;
+      }
+
+      updateActiveSharedTrip((trip) => {
+        if (!trip) return trip;
+        const nextStops = trip.stops.map((stop, index) =>
+          index === trip.currentStopIndex ? { ...stop, status: "skipped" as const } : stop
+        );
+        return advanceStopIndex({
+          ...trip,
+          passengers: trip.passengers.map((passenger) =>
+            passenger.id === passengerId ? { ...passenger, status: "no_show" as const } : passenger
+          ),
+          stops: nextStops,
+        });
+      });
     },
-    []
+    [activeSharedTrip, updateActiveSharedTrip]
   );
 
   const markRiderDroppedOff = useCallback(
-    (_passengerId: string) => {
-      return;
+    (passengerId: string) => {
+      if (!activeSharedTrip) {
+        return;
+      }
+
+      if (!shouldUseDriverBackendWrites()) {
+        updateActiveSharedTrip((trip) => {
+          if (!trip) return trip;
+          const nextStops = trip.stops.map((stop, index) =>
+            index === trip.currentStopIndex ? { ...stop, status: "completed" as const } : stop
+          );
+          return advanceStopIndex({
+            ...trip,
+            passengers: trip.passengers.map((passenger) =>
+              passenger.id === passengerId ? { ...passenger, status: "dropped_off" as const } : passenger
+            ),
+            stops: nextStops,
+          });
+        });
+        return;
+      }
+
+      setActiveTrip((prev) => ({
+        ...prev,
+        tripId: activeSharedTrip.id,
+        jobType: "shared",
+        stage: "completed",
+        status: "completed",
+        timestamps: {
+          ...prev.timestamps,
+          completedAt: prev.timestamps.completedAt ?? Date.now(),
+          updatedAt: Date.now(),
+        },
+      }));
+
+      void tripComplete(activeSharedTrip.id)
+        .then(() => hydrateSharedTripSession(activeSharedTrip.id))
+        .catch(() => {
+          return;
+        });
     },
-    []
+    [activeSharedTrip, hydrateSharedTripSession, setActiveTrip, updateActiveSharedTrip]
   );
 
   const toggleAllowMatches = useCallback(() => {
