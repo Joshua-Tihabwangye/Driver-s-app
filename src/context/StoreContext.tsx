@@ -39,9 +39,7 @@ import {
   DRIVER_BACKEND_AUTH_EVENT,
   DriverBackendPresenceOnlineResult,
   DriverBackendTripSafetyState,
-  getDriverOnboardingStatus,
-  getDriverPreferences,
-  getDriverProfile,
+  getDriverBootstrap,
   rejectDriverJob,
   readDriverBackendAccessToken,
   requestTemporaryStop,
@@ -61,8 +59,6 @@ import {
   tripComplete,
   tripStart,
   setDriverActiveVehicle,
-  listDriverVehicles,
-  listDriverDocuments,
   verifyDriverDeliveryQr,
 } from "../services/api/driverApi";
 import { hydrateSharedTripFromBackendTrip } from "../utils/sharedTripHydrator";
@@ -419,6 +415,7 @@ interface StoreContextType {
   resolveJobAccessAttempt: (nextRoute?: string) => JobAccessDecision;
   resolveGoOnlineAttempt: (nextRoute?: string) => GoOnlineDecision;
   driverBootstrapReady: boolean;
+  refreshBackendOnboardingState: () => Promise<void>;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -1849,13 +1846,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const [profile, preferences, onboardingStatus, backendVehicles, backendDocuments] = await Promise.all([
-      getDriverProfile().catch(() => null),
-      getDriverPreferences().catch(() => null),
-      getDriverOnboardingStatus().catch(() => null),
-      listDriverVehicles().catch(() => []),
-      listDriverDocuments().catch(() => []),
-    ]);
+    // Single consolidated bootstrap call — eliminates 5-request waterfall
+    const bootstrapData = await getDriverBootstrap().catch(() => null);
+    if (!bootstrapData) return;
+
+    const { profile, preferences, onboardingStatus, vehicles: backendVehicles, documents: backendDocuments } = bootstrapData;
 
     if (profile) {
       const backendPhoto = typeof profile.profilePhoto === "string" ? profile.profilePhoto.trim() : "";
@@ -1949,6 +1944,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
     setDriverBootstrapReady(true);
   }, [driverBackendEnabled]);
+
 
   const setDriverProfilePhoto = useCallback((photo: string | null) => {
     const normalizedPhoto = typeof photo === "string" && photo.trim().length > 0 ? photo : null;
@@ -4369,6 +4365,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       clearJobAccessError,
       resolveJobAccessAttempt,
       resolveGoOnlineAttempt,
+      refreshBackendOnboardingState,
     }),
     [
       periodFilter,
@@ -4461,6 +4458,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       clearJobAccessError,
       resolveJobAccessAttempt,
       resolveGoOnlineAttempt,
+      refreshBackendOnboardingState,
     ]
   );
 
