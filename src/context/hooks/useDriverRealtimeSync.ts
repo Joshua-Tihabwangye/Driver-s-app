@@ -1,5 +1,4 @@
 import { useEffect, type Dispatch, type SetStateAction } from "react";
-import { API_BASE_URL } from "../../services/api/config";
 import { createDriverSocket } from "../../services/driverSocket";
 import type { Job, TripRecord } from "../../data/types";
 
@@ -74,8 +73,8 @@ export function useDriverRealtimeSync({
           payload.serviceType
             ? mapBackendJobType(payload.serviceType)
             : payload.routeId && !payload.tripId
-            ? "delivery"
-            : mapBackendJobType(payload.type || "ride");
+              ? "delivery"
+              : mapBackendJobType(payload.type || "ride");
         const nextJob: Job = {
           id: jobId,
           tripId: payload.tripId,
@@ -218,11 +217,13 @@ export function useDriverRealtimeSync({
     };
 
     let cancelled = false;
-    let jobAvailableEvents = uniqueEvents(["job.offer.new", "delivery.order.new", "service.request.new"]);
-    let jobOfferUpdatedEvents = uniqueEvents(["job.offer.updated"]);
-    let deliveryRouteUpdatedEvents = uniqueEvents(["delivery.route.updated"]);
-    let serviceRequestUpdatedEvents = uniqueEvents(["service.request.updated"]);
-    let tripStatusEvents = uniqueEvents([
+    // Phase 1.5 — event names are hardcoded from events.contract.ts.
+    // No pre-flight HTTP fetch needed; connect socket directly.
+    const jobAvailableEvents = uniqueEvents(["job.offer.new", "delivery.order.new", "service.request.new"]);
+    const jobOfferUpdatedEvents = uniqueEvents(["job.offer.updated"]);
+    const deliveryRouteUpdatedEvents = uniqueEvents(["delivery.route.updated"]);
+    const serviceRequestUpdatedEvents = uniqueEvents(["service.request.updated"]);
+    const tripStatusEvents = uniqueEvents([
       "trip.driver.assigned",
       "trip.driver.arriving",
       "trip.arrived",
@@ -231,63 +232,26 @@ export function useDriverRealtimeSync({
       "trip.cancelled",
     ]);
 
-    const bootstrapRealtime = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/compat/realtime/events`);
-        if (response.ok) {
-          const payload = await response.json();
-          const data = (payload?.data || payload) as { driver?: { server?: Record<string, string> } };
-          const server = data?.driver?.server || {};
-          jobAvailableEvents = uniqueEvents([
-            server.JOB_OFFER_NEW,
-            server.DELIVERY_ORDER_NEW,
-            server.SERVICE_REQUEST_NEW,
-          ]);
-          jobOfferUpdatedEvents = uniqueEvents([server.JOB_OFFER_UPDATED]);
-          deliveryRouteUpdatedEvents = uniqueEvents([server.DELIVERY_ROUTE_UPDATED]);
-          serviceRequestUpdatedEvents = uniqueEvents([server.SERVICE_REQUEST_UPDATED]);
-          tripStatusEvents = uniqueEvents([
-            server.TRIP_DRIVER_ASSIGNED,
-            server.TRIP_DRIVER_ARRIVING,
-            server.TRIP_ARRIVED,
-            server.TRIP_STARTED,
-            server.TRIP_COMPLETED,
-            server.TRIP_CANCELLED,
-          ]);
-          if (jobAvailableEvents.length === 0) jobAvailableEvents = uniqueEvents(["job.offer.new", "delivery.order.new", "service.request.new"]);
-          if (jobOfferUpdatedEvents.length === 0) jobOfferUpdatedEvents = uniqueEvents(["job.offer.updated"]);
-          if (deliveryRouteUpdatedEvents.length === 0) deliveryRouteUpdatedEvents = uniqueEvents(["delivery.route.updated"]);
-          if (serviceRequestUpdatedEvents.length === 0) serviceRequestUpdatedEvents = uniqueEvents(["service.request.updated"]);
-          if (tripStatusEvents.length === 0) {
-            tripStatusEvents = uniqueEvents([
-              "trip.driver.assigned",
-              "trip.driver.arriving",
-              "trip.arrived",
-              "trip.started",
-              "trip.completed",
-              "trip.cancelled",
-            ]);
-          }
-        }
-      } catch {
-        // keep defaults
-      }
-
-      if (!cancelled) {
-        jobAvailableEvents.forEach((eventName) => socket.on(eventName, handleJobAvailable));
-        jobOfferUpdatedEvents.forEach((eventName) => socket.on(eventName, handleJobOfferUpdated));
-        deliveryRouteUpdatedEvents.forEach((eventName) => socket.on(eventName, handleDeliveryRouteUpdated));
-        serviceRequestUpdatedEvents.forEach((eventName) => socket.on(eventName, handleServiceRequestUpdated));
-        tripStatusEvents.forEach((eventName) => {
-          socket.on(eventName, (payload: { tripId?: string; id?: string; newStatus?: string; status?: string; timestamp?: number; updatedAt?: number }) =>
-            handleTripStatusEvent(eventName, payload || {}),
-          );
-        });
-        socket.connect();
-      }
-    };
-
-    void bootstrapRealtime();
+    if (!cancelled) {
+      jobAvailableEvents.forEach((eventName) => socket.on(eventName, handleJobAvailable));
+      jobOfferUpdatedEvents.forEach((eventName) => socket.on(eventName, handleJobOfferUpdated));
+      deliveryRouteUpdatedEvents.forEach((eventName) => socket.on(eventName, handleDeliveryRouteUpdated));
+      serviceRequestUpdatedEvents.forEach((eventName) => socket.on(eventName, handleServiceRequestUpdated));
+      tripStatusEvents.forEach((eventName) => {
+        socket.on(
+          eventName,
+          (payload: {
+            tripId?: string;
+            id?: string;
+            newStatus?: string;
+            status?: string;
+            timestamp?: number;
+            updatedAt?: number;
+          }) => handleTripStatusEvent(eventName, payload || {}),
+        );
+      });
+      socket.connect();
+    }
 
     return () => {
       cancelled = true;

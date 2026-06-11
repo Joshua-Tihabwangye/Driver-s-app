@@ -296,6 +296,8 @@ export default function DriverMapSurface({
   const [alertCardVisible, setAlertCardVisible] = useState(alertsOn);
   const [isLocating, setIsLocating] = useState(false);
   const [hint, setHint] = useState<string | null>(floatingHint);
+  // Phase 5.2 — track driver's own GPS position for the self-pin
+  const [selfPosition, setSelfPosition] = useState<LatLng | null>(null);
 
   const { isLoaded, loadError } = useJsApiLoader({
     id: "evzone-driver-google-map-script",
@@ -315,6 +317,19 @@ export default function DriverMapSurface({
   useEffect(() => {
     if (alertsOn) setAlertCardVisible(true);
   }, [alertsOn]);
+
+  // Phase 5.2 — watch live GPS so the blue self-pin stays current
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) return;
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        setSelfPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      },
+      undefined,
+      { enableHighAccuracy: true, maximumAge: 10000 },
+    );
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, []);
 
   useEffect(() => {
     if (!mapRef) return;
@@ -498,6 +513,29 @@ export default function DriverMapSurface({
                 />
               );
             })}
+            {/* Phase 5.2 — driver self-pin: blue pulsing dot at current GPS position */}
+            {selfPosition && (() => {
+              const googleMaps = (window as any).google?.maps;
+              return (
+                <MarkerF
+                  position={selfPosition}
+                  title="Your location"
+                  icon={
+                    googleMaps
+                      ? {
+                          path: googleMaps.SymbolPath.CIRCLE,
+                          scale: 9,
+                          fillColor: "#4285F4",
+                          fillOpacity: 1,
+                          strokeColor: "#ffffff",
+                          strokeOpacity: 1,
+                          strokeWeight: 2.5,
+                        }
+                      : undefined
+                  }
+                />
+              );
+            })()}
           </GoogleMap>
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(130deg,rgba(190,241,230,0.85)_0%,rgba(220,236,248,0.95)_54%,rgba(235,242,250,0.98)_100%)] p-4 text-center">

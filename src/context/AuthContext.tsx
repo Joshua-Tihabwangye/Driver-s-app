@@ -5,7 +5,6 @@ import {
   clearDriverBackendTokens,
   DRIVER_BACKEND_AUTH_EVENT,
   isBackendAuthEnabled,
-  getDriverProfile,
   readDriverBackendAccessToken,
 } from "../services/api/driverApi";
 
@@ -132,11 +131,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       session: DriverBackendSessionResponse,
       fallbackUser?: Partial<AuthUser>,
     ) => {
-      const profile = await getDriverProfile().catch(() => null);
+      // Phase 1.4 — use session data directly instead of making a separate
+      // getDriverProfile() call. The bootstrap hook fetches the full profile
+      // separately, so the extra round-trip here is pure overhead.
       const nextUser = buildAuthUser({
-        name: profile?.fullName?.trim() || fallbackUser?.name || "Unknown Driver",
+        name: fallbackUser?.name || session.user.email?.split("@")[0] || "Driver",
         email: session.user.email || fallbackUser?.email || "",
-        phone: profile?.phone || session.user.phone || fallbackUser?.phone || "",
+        phone: session.user.phone || fallbackUser?.phone || "",
         selectedService:
           fallbackUser?.selectedService ?? storedUser?.selectedService ?? null,
       });

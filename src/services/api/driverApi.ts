@@ -84,6 +84,24 @@ export interface DriverBackendVehicle extends DriverBackendVehiclePayload {
   documents?: Record<string, unknown> | null;
 }
 
+export interface DriverBackendDocument {
+  id: string;
+  userId?: string;
+  userType?: string;
+  documentType: string;
+  side?: string | null;
+  fileUrl: string;
+  fileKey?: string | null;
+  originalFileName?: string | null;
+  mimeType?: string | null;
+  sizeBytes?: number | null;
+  expiryDate?: string | null;
+  status: string;
+  rejectionReason?: string | null;
+  uploadedAt?: string | null;
+  createdAt?: string | null;
+}
+
 export interface DriverBackendJob {
   id: string;
   type: string;
@@ -213,17 +231,7 @@ export interface DriverBackendTripSafetyState {
   } | null;
 }
 
-export interface DriverBackendDocument {
-  id: string;
-  userId: string;
-  userType: string;
-  documentType: string;
-  fileUrl: string;
-  fileKey?: string | null;
-  expiryDate: string;
-  status: "pending" | "under_review" | "verified" | "rejected";
-  rejectionReason?: string | null;
-}
+
 
 export interface DriverBackendDocumentInput {
   documentType: string;
@@ -305,12 +313,12 @@ export interface DriverBackendDeliveryRouteState {
   orderStatus: string;
   routeStatus: string;
   stage:
-    | "accepted"
-    | "pickup_confirmed"
-    | "qr_verified"
-    | "in_delivery"
-    | "dropoff_confirmed"
-    | "cancelled";
+  | "accepted"
+  | "pickup_confirmed"
+  | "qr_verified"
+  | "in_delivery"
+  | "dropoff_confirmed"
+  | "cancelled";
   updatedAt: number;
   nextStopId?: string;
   remainingStops?: number;
@@ -558,6 +566,22 @@ export async function getDriverOnboardingStatus() {
   const token = readDriverBackendAccessToken();
   if (!isBackendAuthEnabled() || !token) return null;
   return request<DriverBackendOnboardingStatus>("/drivers/me/onboarding/status", {
+    method: "GET",
+    headers: authHeaders(token),
+  });
+}
+
+export async function getDriverBootstrap() {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return null;
+  return request<{
+    profile: DriverBackendProfile;
+    preferences: Required<DriverBackendPreferencesPatch>;
+    onboardingStatus: DriverBackendOnboardingStatus;
+    vehicles: DriverBackendVehicle[];
+    documents: DriverBackendDocument[];
+    presence: { status: string };
+  }>("/drivers/me/bootstrap", {
     method: "GET",
     headers: authHeaders(token),
   });

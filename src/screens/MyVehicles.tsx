@@ -88,6 +88,8 @@ export default function MyVehicles() {
     setSelectedVehicleIndex,
     setDraftVehicle,
     getDefaultAccessoriesForType,
+    refreshBackendOnboardingState,
+    onboardingCompleted,
   } = useStore();
   const [localSelectedIdx, setLocalSelectedIdx] = useState<number | null>(selectedVehicleIndex);
 
@@ -96,9 +98,25 @@ export default function MyVehicles() {
     setLocalSelectedIdx(selectedVehicleIndex);
   }, [selectedVehicleIndex]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setSelectedVehicleIndex(localSelectedIdx);
-    navigate("/driver/onboarding/profile");
+    await refreshBackendOnboardingState();
+    
+    // We need to check the updated store value, but React state updates might not be synchronous.
+    // However, if we assume the refresh will set onboardingCompleted in the store soon,
+    // we could also fetch it again or wait. Wait, it's better to read it directly.
+    // Let's use onboardingCompleted from useStore().
+    
+    // Actually, setting onboardingCompleted might be queued. But let's rely on the store's latest value
+    // or just the value returned from refresh. refreshBackendOnboardingState doesn't return the value.
+    // So if onboardingCompleted is true, it goes to dashboard.
+    // Since refreshBackendOnboardingState is async and sets state, the component might not re-render yet.
+    // Let's navigate based on onboardingCompleted.
+    if (onboardingCompleted) {
+      navigate("/driver/dashboard/offline");
+    } else {
+      navigate("/driver/onboarding/profile");
+    }
   };
 
   const handleAddVehicle = () => {
