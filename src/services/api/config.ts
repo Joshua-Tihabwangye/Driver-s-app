@@ -21,6 +21,34 @@ function normalizeApiBaseUrl(raw: string | undefined): string {
   return /\/api\/v1$/i.test(base) ? base : `${base}/api/v1`;
 }
 
+function isInvalidProductionOrigin(value: string): boolean {
+  try {
+    const parsed = new URL(value);
+    return !["http:", "https:"].includes(parsed.protocol) ||
+      ["localhost", "127.0.0.1", "::1"].includes(parsed.hostname);
+  } catch {
+    return true;
+  }
+}
+
+function assertValidProductionOrigin(value: string, name: string): string {
+  if (!IS_NON_PROD) {
+    if (!value) {
+      throw new Error(
+        `${name} is missing in production. Set it to the public backend origin before deploying.`,
+      );
+    }
+
+    if (isInvalidProductionOrigin(value)) {
+      throw new Error(
+        `${name} must be an absolute public backend origin in production. Set it to something like https://api.evzone.app or https://api.evzone.app/api/v1 before deploying.`,
+      );
+    }
+  }
+
+  return value;
+}
+
 const backendBaseUrlEnv = env.VITE_BACKEND_BASE_URL ?? env.VITE_BACKEND_URL ?? env.VITE_API_BASE_URL;
 const backendEnabledEnv = env.VITE_BACKEND_ENABLED ?? env.VITE_USE_BACKEND;
 
@@ -29,7 +57,10 @@ export function getBackendEnabled(): boolean {
 }
 
 export const BACKEND_FLAG_EVENT = "evzone:backend_flag_changed";
-export const API_BASE_URL = normalizeApiBaseUrl(backendBaseUrlEnv);
+export const API_BASE_URL = assertValidProductionOrigin(
+  normalizeApiBaseUrl(backendBaseUrlEnv),
+  "VITE_BACKEND_BASE_URL",
+);
 export const SOCKET_BASE_URL = (() => {
   const value = (env.VITE_SOCKET_BASE_URL || (IS_NON_PROD ? API_BASE_URL.replace(/\/api\/v1\/?$/, "") : "")).trim().replace(/\/+$/, "");
   if (!value) {
@@ -37,7 +68,7 @@ export const SOCKET_BASE_URL = (() => {
       "VITE_SOCKET_BASE_URL must be configured to the backend origin without /api/v1.",
     );
   }
-  return value;
+  return assertValidProductionOrigin(value, "VITE_SOCKET_BASE_URL");
 })();
 export const SOCKET_PATH = env.VITE_SOCKET_PATH || "/socket.io";
 
