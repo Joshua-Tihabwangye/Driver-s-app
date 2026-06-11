@@ -1854,6 +1854,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
     if (profile) {
       const backendPhoto = typeof profile.profilePhoto === "string" ? profile.profilePhoto.trim() : "";
+      const backendDocumentsReady =
+        onboardingStatus?.hasRequiredDriverDocuments === true &&
+        onboardingStatus?.hasRequiredVehicleDocuments === true;
+      const effectivePresenceStatus =
+        profile.status === "online" && backendDocumentsReady ? "online" : "offline";
       setDriverProfile((prev) => ({
         ...prev,
         fullName: profile.fullName || prev.fullName,
@@ -1868,7 +1873,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         landmark: profile.landmark || prev.landmark,
       }));
       setDriverProfilePhotoState(backendPhoto.length > 0 ? backendPhoto : null);
-      setDriverPresenceStatus(profile.status === "online" ? "online" : "offline");
+      setDriverPresenceStatus(effectivePresenceStatus);
 
       // Restore active vehicle from backend
       if (profile.activeVehicleId && backendVehicles && backendVehicles.length > 0) {
@@ -2294,6 +2299,37 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }
 
       if (driverBackendEnabled) {
+        if (onboardingCheckpoints.documentsVerified !== true) {
+          return {
+            allowed: false,
+            requiresConfirmation: false,
+            route: "/driver/dashboard/required-actions",
+            message: DOCUMENT_EXPIRED_API_ERROR,
+          };
+        }
+
+        if (driverPreferences.areaIds.length === 0) {
+          return {
+            allowed: false,
+            requiresConfirmation: false,
+            route: ONBOARDING_CHECKPOINT_META.operationArea.route,
+            message: ONBOARDING_CHECKPOINT_META.operationArea.description,
+          };
+        }
+
+        const nextBackendCheckpointBlockerId = ONBOARDING_CHECKPOINT_ORDER.find(
+          (checkpointId) => checkpointId !== "documentsVerified" && !onboardingCheckpoints[checkpointId],
+        );
+        if (nextBackendCheckpointBlockerId) {
+          const blockerMeta = ONBOARDING_CHECKPOINT_META[nextBackendCheckpointBlockerId];
+          return {
+            allowed: false,
+            requiresConfirmation: false,
+            route: blockerMeta.route,
+            message: blockerMeta.description,
+          };
+        }
+
         return {
           allowed: true,
           requiresConfirmation: true,
@@ -2322,7 +2358,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         message: GO_ONLINE_CONFIRMATION_MESSAGE,
       };
     },
-    [driverBackendEnabled, driverBootstrapReady, onboardingCheckpoints]
+    [driverBackendEnabled, driverBootstrapReady, driverPreferences.areaIds.length, onboardingCheckpoints]
   );
 
   const canAccessOrdersWithCurrentDocuments = useCallback(() => {

@@ -182,6 +182,7 @@ export default function OfflineDashboard() {
           <button
             type="button"
             onClick={handleGoOnline}
+            disabled={!canGoOnline}
             className="relative z-10 w-full rounded-2xl bg-brand-active py-4 text-xs font-black text-slate-900 hover:bg-brand-active/90 active:scale-95 transition-all shadow-xl shadow-brand-active/20 uppercase tracking-widest disabled:opacity-60 disabled:cursor-wait"
           >
             Go Online
