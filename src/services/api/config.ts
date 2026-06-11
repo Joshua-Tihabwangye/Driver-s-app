@@ -62,13 +62,11 @@ export const API_BASE_URL = assertValidProductionOrigin(
   "VITE_BACKEND_BASE_URL",
 );
 export const SOCKET_BASE_URL = (() => {
-  const value = (env.VITE_SOCKET_BASE_URL || (IS_NON_PROD ? API_BASE_URL.replace(/\/api\/v1\/?$/, "") : "")).trim().replace(/\/+$/, "");
-  if (!value) {
-    throw new Error(
-      "VITE_SOCKET_BASE_URL must be configured to the backend origin without /api/v1.",
-    );
+  const raw = env.VITE_SOCKET_BASE_URL?.trim().replace(/\/+$/, "");
+  if (!raw) {
+    return API_BASE_URL.replace(/\/api\/v1\/?$/, "");
   }
-  return assertValidProductionOrigin(value, "VITE_SOCKET_BASE_URL");
+  return assertValidProductionOrigin(raw, "VITE_SOCKET_BASE_URL");
 })();
 export const SOCKET_PATH = env.VITE_SOCKET_PATH || "/socket.io";
 
