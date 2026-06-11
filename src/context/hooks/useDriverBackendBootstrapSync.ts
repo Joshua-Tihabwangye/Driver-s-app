@@ -115,6 +115,11 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
         if (profile) {
           const backendPhoto =
             typeof profile.profilePhoto === "string" ? profile.profilePhoto.trim() : "";
+          const backendDocumentsReady =
+            onboardingStatus?.hasRequiredDriverDocuments === true &&
+            onboardingStatus?.hasRequiredVehicleDocuments === true;
+          const effectivePresenceStatus =
+            profile.status === "online" && backendDocumentsReady ? "online" : "offline";
           setDriverProfile((prev: any) => ({
             ...prev,
             fullName: profile.fullName || prev.fullName,
@@ -129,7 +134,7 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
             landmark: profile.landmark || prev.landmark,
           }));
           setDriverProfilePhoto(backendPhoto.length > 0 ? backendPhoto : null);
-          setDriverPresenceStatus(profile.status === "online" ? "online" : "offline");
+          setDriverPresenceStatus(effectivePresenceStatus);
         }
 
         // ── Hydrate preferences ──────────────────────────────────────────
@@ -230,7 +235,11 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
 
         // Phase 1.3 — Wave 2: only load jobs/trips/deliveries when driver is online.
         // When offline, skip entirely to avoid 8 extra API calls on every app load.
-        if (profile?.status === "online") {
+        if (
+          profile?.status === "online" &&
+          onboardingStatus?.hasRequiredDriverDocuments === true &&
+          onboardingStatus?.hasRequiredVehicleDocuments === true
+        ) {
           await loadOnlineData({
             cancelled,
             setJobs,
