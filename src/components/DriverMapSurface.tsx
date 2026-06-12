@@ -455,11 +455,13 @@ export default function DriverMapSurface({
             options={{
               disableDefaultUI: true,
               clickableIcons: false,
-              gestureHandling: "greedy",
+              gestureHandling: "auto",
               mapTypeControl: false,
               fullscreenControl: false,
               zoomControl: false,
               streetViewControl: false,
+              rotateControl: false,
+              tilt: 0,
               mapTypeId: layer === "terrain" ? "terrain" : "roadmap",
               styles: layer === "night" ? NIGHT_MAP_STYLES : [],
             }}
