@@ -608,6 +608,28 @@ export async function uploadDriverVehicleDocument(
   });
 }
 
+export async function patchDriverVehicleDocument(
+  vehicleId: string,
+  documentId: string,
+  patch: {
+    fileUrl?: string;
+    fileKey?: string;
+    expiryDate?: string;
+    status?: string;
+  },
+) {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return null;
+  return request<Record<string, unknown>>(
+    `/drivers/me/vehicles/${vehicleId}/documents/${documentId}`,
+    {
+      method: "PATCH",
+      headers: authHeaders(token),
+      body: patch,
+    },
+  );
+}
+
 export async function setDriverPresenceOnline(input?: { confirmed?: boolean }) {
   const token = readDriverBackendAccessToken();
   if (!isBackendAuthEnabled() || !token) return null;
