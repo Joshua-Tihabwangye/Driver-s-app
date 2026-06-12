@@ -68,27 +68,32 @@ export default function OfflineDashboard() {
     blocker.id === "documentsVerified" ? !documentsVerified : true
   );
 
+  // Show the expired-docs banner immediately when backend reports docs not verified,
+  // without waiting for localStorage to hydrate.
   const hasExpiredDocuments = useMemo(() => {
+    // Backend source — most reliable, available right after bootstrap
+    if (driverBackendEnabled && driverBootstrapReady) {
+      return onboardingCheckpoints.documentsVerified === false;
+    }
+
+    // Fallback: check localStorage personal + vehicle docs
     const personalDocs = readStoredDocumentState();
     const personalExpired = (["id", "license", "police"] as const).some(
       (key) => getDocumentExpiryStatus(personalDocs[key].expiryDate) === "expired",
     );
-
     const activeVehicle =
       selectedVehicleIndex !== null &&
       selectedVehicleIndex >= 0 &&
       selectedVehicleIndex < vehicles.length
         ? vehicles[selectedVehicleIndex]
         : vehicles[0];
-
     const vehicleExpired = (["insurance", "inspection"] as const).some((docKey) => {
       const group = activeVehicle?.vehicleDocs?.[docKey];
       const expiryDate = group?.expiryDate || group?.file?.expiryDate || "";
       return getDocumentExpiryStatus(expiryDate) === "expired";
     });
-
     return personalExpired || vehicleExpired;
-  }, [selectedVehicleIndex, vehicles]);
+  }, [driverBackendEnabled, driverBootstrapReady, onboardingCheckpoints.documentsVerified, selectedVehicleIndex, vehicles]);
 
   const routeState = (location.state as
     | {

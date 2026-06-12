@@ -2,10 +2,12 @@ import {
   AlertTriangle,
   BookOpenCheck,
   Car,
+  CheckCircle2,
   ClipboardCheck,
   FileBadge2,
   FileText,
   IdCard,
+  Loader2,
   ShieldCheck,
   Upload,
   Users,
@@ -21,7 +23,14 @@ import {
 } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useDriverBackendEnabled } from "../context/hooks/useDriverBackendEnabled";
-import { listDriverDocuments, createDriverDocument } from "../services/api/driverApi";
+import {
+  listDriverDocuments,
+  createDriverDocument,
+  updateDriverDocument,
+  patchDriverVehicleDocument,
+  uploadDriverVehicleDocument,
+  listDriverVehicles,
+} from "../services/api/driverApi";
 import type { VehicleDocumentGroup, VehicleDocuments } from "../data/types";
 import PageHeader from "../components/PageHeader";
 import VehicleDocumentCard from "../components/VehicleDocumentCard";
@@ -241,6 +250,7 @@ export default function RequiredActionsDashboard() {
     selectedVehicleIndex,
     setSelectedVehicleIndex,
     updateVehicle,
+    refreshBackendOnboardingState,
   } = useStore();
 
   const [personalDocs, setPersonalDocs] = useState<DocumentUploadState>(() =>
@@ -252,7 +262,125 @@ export default function RequiredActionsDashboard() {
     police: "",
   });
 
+  // "Update all documents" button state
+  const [updateStatus, setUpdateStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [updateMessage, setUpdateMessage] = useState("");
+
   const allPersonalDocsCompliant = areAllRequiredDocumentsCompliant(personalDocs);
+
+  // ── Update all documents to backend ───────────────────────────────────────
+  const handleUpdateAllDocuments = async () => {
+    if (!driverBackendEnabled) {
+      setUpdateMessage("Backend not connected.");
+      setUpdateStatus("error");
+      return;
+    }
+
+    setUpdateStatus("loading");
+    setUpdateMessage("");
+
+    const docTypeMap: Record<DocumentUploadKey, string> = {
+      id: "national_id_or_passport",
+      license: "drivers_license",
+      police: "conduct_clearance",
+    };
+
+    let succeeded = 0;
+    let failed = 0;
+
+    try {
+      // 1. Fetch existing backend documents so we can PATCH (not re-POST)
+      const existing = await listDriverDocuments();
+      const byType = new Map(existing.map((d) => [d.documentType, d]));
+
+      // 2. Sync personal documents
+      const personalKeys: DocumentUploadKey[] = ["id", "license", "police"];
+      for (const key of personalKeys) {
+        const entry = personalDocs[key];
+        const fileUrl = entry.front.fileUrl || entry.back.fileUrl;
+        if (!fileUrl || !entry.expiryDate) continue;
+
+        const docType = docTypeMap[key];
+        const existingDoc = byType.get(docType);
+        try {
+          if (existingDoc) {
+            await updateDriverDocument(existingDoc.id, {
+              fileUrl,
+              expiryDate: entry.expiryDate,
+            });
+          } else {
+            await createDriverDocument({ documentType: docType, fileUrl, expiryDate: entry.expiryDate });
+          }
+          succeeded++;
+        } catch {
+          failed++;
+        }
+      }
+
+      // 3. Sync vehicle documents
+      if (activeVehicle) {
+        const vehicleKeys: Array<"insurance" | "inspection"> = ["insurance", "inspection"];
+        // Fetch existing vehicle documents
+        let existingVehicleDocs: Array<{ id: string; documentType: string }> = [];
+        try {
+          const vehicleList = await listDriverVehicles();
+          const backendVehicle = vehicleList.find((v) => v.id === activeVehicle.id);
+          existingVehicleDocs = (backendVehicle as any)?.vehicleDocuments ?? [];
+        } catch { /* best effort */ }
+
+        const vehicleDocByType = new Map(existingVehicleDocs.map((d) => [d.documentType, d]));
+
+        for (const key of vehicleKeys) {
+          const group = activeVehicle.vehicleDocs?.[key];
+          const fileUrl = group?.file?.url || group?.file?.fileUrl || "";
+          const expiryDate = group?.expiryDate || group?.file?.expiryDate || "";
+          if (!fileUrl || !expiryDate) continue;
+
+          const docType = key === "insurance" ? "insurance" : "inspection";
+          const existingVehicleDoc = vehicleDocByType.get(docType);
+          try {
+            if (existingVehicleDoc) {
+              await patchDriverVehicleDocument(activeVehicle.id, existingVehicleDoc.id, {
+                fileUrl,
+                expiryDate,
+              });
+            } else {
+              await uploadDriverVehicleDocument(activeVehicle.id, {
+                documentType: docType,
+                fileUrl,
+                expiryDate,
+              });
+            }
+            succeeded++;
+          } catch {
+            failed++;
+          }
+        }
+      }
+
+      if (failed === 0 && succeeded > 0) {
+        setUpdateStatus("success");
+        setUpdateMessage(`${succeeded} document${succeeded > 1 ? "s" : ""} updated successfully. You can now go online.`);
+        // Refresh onboarding state so the go-online gate sees fresh data
+        await refreshBackendOnboardingState?.();
+      } else if (succeeded > 0) {
+        setUpdateStatus("success");
+        setUpdateMessage(`${succeeded} updated, ${failed} failed. Check your files and try again.`);
+      } else {
+        setUpdateStatus("error");
+        setUpdateMessage("No documents were updated. Ensure files and expiry dates are set.");
+      }
+    } catch {
+      setUpdateStatus("error");
+      setUpdateMessage("Update failed. Check your connection and try again.");
+    }
+
+    // Auto-clear the message after 6 seconds
+    setTimeout(() => {
+      setUpdateStatus("idle");
+      setUpdateMessage("");
+    }, 6000);
+  };
 
   useEffect(() => {
     if (!driverBackendEnabled) {
@@ -713,6 +841,42 @@ export default function RequiredActionsDashboard() {
             </>
           )}
         </section>
+
+        {/* ── Update all documents button ─────────────────────────────── */}
+        {driverBackendEnabled ? (
+          <section className="space-y-3 pt-1">
+            {updateMessage ? (
+              <div
+                className={`flex items-start gap-3 rounded-2xl border px-4 py-3 text-[11px] font-bold leading-relaxed ${
+                  updateStatus === "success"
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                    : "border-red-200 bg-red-50 text-red-700"
+                }`}
+              >
+                {updateStatus === "success" ? (
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                ) : (
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
+                )}
+                <span>{updateMessage}</span>
+              </div>
+            ) : null}
+
+            <button
+              type="button"
+              onClick={handleUpdateAllDocuments}
+              disabled={updateStatus === "loading"}
+              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-active py-4 text-sm font-black uppercase tracking-widest text-slate-900 shadow-xl shadow-brand-active/20 transition-all active:scale-[0.98] disabled:cursor-wait disabled:opacity-70"
+            >
+              {updateStatus === "loading" ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <CheckCircle2 className="h-4 w-4" />
+              )}
+              {updateStatus === "loading" ? "Updating…" : "Update All Documents"}
+            </button>
+          </section>
+        ) : null}
 
         <section className="space-y-4 pb-12 pt-1">
           <div className="px-1">
