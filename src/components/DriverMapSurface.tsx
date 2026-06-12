@@ -455,7 +455,8 @@ export default function DriverMapSurface({
             options={{
               disableDefaultUI: true,
               clickableIcons: false,
-              gestureHandling: "auto",
+              // Allow one-finger pan on touch devices and preserve pinch zoom.
+              gestureHandling: "greedy",
               mapTypeControl: false,
               fullscreenControl: false,
               zoomControl: false,
