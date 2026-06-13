@@ -332,7 +332,7 @@ export default function RequiredActionsDashboard() {
 
         for (const key of vehicleKeys) {
           const group = activeVehicle.vehicleDocs?.[key];
-          const fileUrl = group?.file?.url || group?.file?.fileUrl || "";
+          const fileUrl = group?.file?.url || "";
           const expiryDate = group?.expiryDate || group?.file?.expiryDate || "";
           if (!fileUrl || !expiryDate) continue;
 

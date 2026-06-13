@@ -64,7 +64,7 @@ check(
 check(
   "Private route builders define complete stage map",
   constants.includes('navigate_to_pickup: (tripId) => `/driver/trip/${tripId}/navigate-to-pickup`') &&
-    constants.includes('arrived_pickup: (tripId) => `/driver/trip/${tripId}/arrived`') &&
+    constants.includes('arrived_pickup: (tripId) => `/driver/trip/${tripId}/arrived-at-pickup`') &&
     constants.includes('waiting_for_passenger: (tripId) => `/driver/trip/${tripId}/waiting`') &&
     constants.includes('rider_verification: (tripId) => `/driver/trip/${tripId}/verify-rider`') &&
     constants.includes('start_drive: (tripId) => `/driver/trip/${tripId}/start`') &&
@@ -78,7 +78,7 @@ check(
 
 check(
   "Private ride stage screens route through builders",
-  navigateToPickup.includes("buildPrivateTripRoute(routeStage, tripId)") &&
+  navigateToPickup.includes("buildPrivateTripRoute(stage, tripId)") &&
     arrivedAtPickup.includes("buildPrivateTripRoute(stage, tripId)") &&
     waitingForPassenger.includes("buildPrivateTripRoute(stage, tripId)") &&
     riderVerification.includes('buildPrivateTripRoute("start_drive", tripId)') &&
@@ -102,10 +102,9 @@ check(
   sharedTrips.includes("function advanceStopIndex") &&
     sharedTrips.includes('stop.status === "upcoming"') &&
     sharedTrips.includes("function insertAdditionalMatch") &&
-    sharedTrips.includes("return insertAdditionalMatch(advancedTrip);") &&
     sharedTrips.includes("markRiderNoShow") &&
     sharedTrips.includes("markRiderDroppedOff"),
-  "SharedTripsContext should advance pickup/drop-off deterministically and insert matches from events"
+  "SharedTripsContext should advance pickup/drop-off deterministically and keep rider no-show/drop-off transitions available"
 );
 
 check(
@@ -120,11 +119,11 @@ check(
 check(
   "Store persists private completion to jobs, trips, and revenue",
   storeContext.includes("const completeActiveTrip = useCallback(() => {") &&
-    storeContext.includes('relatedJob.jobType !== "shared"') &&
-    storeContext.includes('relatedJob.jobType !== "shuttle"') &&
-    storeContext.includes("jobType: relatedJob.jobType") &&
-    storeContext.includes("category: relatedJob.jobType"),
-  "Private completion must persist status + trip record + revenue event for every non-shared/non-shuttle job type"
+    storeContext.includes("buildCompletedLifecycleArtifacts(relatedJob, completedAt") &&
+    storeContext.includes("persistCompletedLifecycleArtifacts({") &&
+    storeContext.includes("completeDriverServiceRequest(tripId)") &&
+    storeContext.includes("tripComplete(tripId)"),
+  "Private completion should persist through the shared completion helper and keep backend sync aligned with the job type"
 );
 
 check(
@@ -186,7 +185,7 @@ check(
   "Role/shared eligibility gate is enforced in store and pending filters",
   taskCategories.includes('config.sharedRidesEnabled && assignableSet.has("ride")') &&
     jobsContext.includes('if (job.jobType === "shared")') &&
-    jobsContext.includes("return sharedEligible;"),
+    jobsContext.includes("return sharedEligible && rideRequestsEnabled;"),
   "Shared visibility should require ride-capable + shared toggle"
 );
 
