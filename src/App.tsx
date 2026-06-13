@@ -124,7 +124,7 @@ function RequireOnlineForJobs({
   const location = useLocation();
 
   if (!driverBootstrapReady) {
-    return <>{children}</>;
+    return null;
   }
 
   const isOffline = driverPresenceStatus === "offline";

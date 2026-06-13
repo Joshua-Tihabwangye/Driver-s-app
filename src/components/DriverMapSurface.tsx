@@ -1,11 +1,14 @@
 import {
   AlertTriangle,
   BatteryCharging,
+  Compass,
   ChevronLeft,
   Layers3,
   Minus,
   Navigation,
   Plus,
+  RotateCcw,
+  RotateCw,
   X,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -185,6 +188,11 @@ function clamp(value: number) {
   return Math.min(0.98, Math.max(0.02, value));
 }
 
+function normalizeBearing(value: number) {
+  const next = value % 360;
+  return next < 0 ? next + 360 : next;
+}
+
 function areLatLngClose(a: LatLng, b: LatLng, tolerance = 0.000001) {
   return Math.abs(a.lat - b.lat) <= tolerance && Math.abs(a.lng - b.lng) <= tolerance;
 }
@@ -291,6 +299,10 @@ export default function DriverMapSurface({
   const [trafficOn, setTrafficOn] = useState(defaultTrafficOn);
   const [center, setCenter] = useState<LatLng>(DEFAULT_CENTER);
   const [mapRef, setMapRef] = useState<any>(null);
+  const [isFollowingDevice, setIsFollowingDevice] = useState(true);
+  const [isOnline, setIsOnline] = useState(() =>
+    typeof navigator === "undefined" ? true : navigator.onLine
+  );
   const alertsOn = driverMapPreferences.alertsOn ?? defaultAlertsOn;
   const stationsOn = driverMapPreferences.stationsOn ?? defaultStationsOn;
   const [alertCardVisible, setAlertCardVisible] = useState(alertsOn);
@@ -318,18 +330,38 @@ export default function DriverMapSurface({
     if (alertsOn) setAlertCardVisible(true);
   }, [alertsOn]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
   // Phase 5.2 — watch live GPS so the blue self-pin stays current
   useEffect(() => {
     if (typeof navigator === "undefined" || !navigator.geolocation) return;
     const watchId = navigator.geolocation.watchPosition(
       (pos) => {
-        setSelfPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        const nextPosition = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setSelfPosition(nextPosition);
+        if (isFollowingDevice) {
+          setCenter(nextPosition);
+          if (mapRef) mapRef.panTo(nextPosition);
+        }
       },
       undefined,
       { enableHighAccuracy: true, maximumAge: 10000 },
     );
     return () => navigator.geolocation.clearWatch(watchId);
-  }, []);
+  }, [isFollowingDevice, mapRef]);
 
   useEffect(() => {
     if (!mapRef) return;
@@ -342,9 +374,16 @@ export default function DriverMapSurface({
     mapRef.setMapTypeId(mapTypeId);
     mapRef.setOptions({
       styles: layer === "night" ? NIGHT_MAP_STYLES : [],
-      heading: bearing,
+      heading: normalizeBearing(bearing),
     });
   }, [mapRef, layer, bearing]);
+
+  useEffect(() => {
+    if (!mapRef) return;
+    mapRef.setOptions({
+      heading: normalizeBearing(bearing),
+    });
+  }, [mapRef, bearing]);
 
   const cycleLayer = () => {
     setLayer((current) => {
@@ -354,12 +393,24 @@ export default function DriverMapSurface({
     });
   };
 
+  const rotateMap = (delta: number) => {
+    setIsFollowingDevice(false);
+    setBearing((current) => normalizeBearing(current + delta));
+  };
+
+  const resetBearing = () => {
+    setIsFollowingDevice(false);
+    setBearing(0);
+    setHint("Orientation reset");
+  };
+
   const recenterToDevice = () => {
-    if (!navigator.geolocation) {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
       setHint("Location unavailable");
       return;
     }
     setIsLocating(true);
+    setIsFollowingDevice(true);
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const nextCenter = {
@@ -405,6 +456,25 @@ export default function DriverMapSurface({
       onClick: recenterToDevice,
       tone: "accent",
     },
+    {
+      id: "rotate-left",
+      icon: RotateCcw,
+      ariaLabel: "Rotate map counterclockwise",
+      onClick: () => rotateMap(-15),
+    },
+    {
+      id: "rotate-right",
+      icon: RotateCw,
+      ariaLabel: "Rotate map clockwise",
+      onClick: () => rotateMap(15),
+    },
+    {
+      id: "reset-bearing",
+      icon: Compass,
+      ariaLabel: "Reset map orientation",
+      onClick: resetBearing,
+      tone: "dark",
+    },
   ];
 
   const mergedMarkers = useMemo(
@@ -424,7 +494,15 @@ export default function DriverMapSurface({
   }, [layer]);
 
   const hasUsableMapsKey = Boolean(googleMapsApiKey);
-  const canRenderGoogleMap = hasUsableMapsKey && isLoaded && !loadError;
+  const hasGeolocation = typeof navigator !== "undefined" && Boolean(navigator.geolocation);
+  const mapLoadFailure = !hasUsableMapsKey
+    ? "missing-key"
+    : loadError
+      ? "load-error"
+      : !isOnline
+        ? "offline"
+        : null;
+  const canRenderGoogleMap = hasUsableMapsKey && isLoaded && !loadError && isOnline;
 
   return (
     <section
@@ -438,6 +516,7 @@ export default function DriverMapSurface({
             zoom={zoom}
             onLoad={(map) => setMapRef(map)}
             onUnmount={() => setMapRef(null)}
+            onDragStart={() => setIsFollowingDevice(false)}
             onZoomChanged={() => {
               if (!mapRef) return;
               const nextZoom = mapRef.getZoom();
@@ -542,9 +621,27 @@ export default function DriverMapSurface({
           </GoogleMap>
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(130deg,rgba(190,241,230,0.85)_0%,rgba(220,236,248,0.95)_54%,rgba(235,242,250,0.98)_100%)] p-4 text-center">
-            <p className="rounded-2xl border border-amber-300/70 bg-white/90 px-4 py-3 text-xs font-semibold text-slate-700 shadow-lg">
-              Google Maps is not loaded. Set a valid `VITE_GOOGLE_MAPS_API_KEY` to render live maps.
-            </p>
+            <div className="max-w-sm rounded-3xl border border-amber-300/70 bg-white/94 px-5 py-4 shadow-lg">
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">
+                {mapLoadFailure === "missing-key"
+                  ? "Maps key missing"
+                  : mapLoadFailure === "load-error"
+                    ? "Maps load failed"
+                    : "Offline mode"}
+              </p>
+              <p className="mt-2 text-xs font-semibold text-slate-700">
+                {mapLoadFailure === "missing-key"
+                  ? "Set a valid `VITE_GOOGLE_MAPS_API_KEY` to render live maps."
+                  : mapLoadFailure === "load-error"
+                    ? "Google Maps could not load. Check the API key, billing, and network access."
+                    : "The live map is paused until the network returns."}
+              </p>
+              {!hasGeolocation ? (
+                <p className="mt-2 text-[11px] font-semibold text-amber-700">
+                  Location services are unavailable on this device, so live recentering is disabled.
+                </p>
+              ) : null}
+            </div>
           </div>
         )}
       </div>
@@ -602,6 +699,18 @@ export default function DriverMapSurface({
         ))}
       </div>
 
+      {!canRenderGoogleMap && hasGeolocation && mapLoadFailure === "offline" ? (
+        <div className="absolute left-1/2 top-[74px] z-30 -translate-x-1/2 rounded-full border border-amber-300/70 bg-white/96 px-4 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-amber-700 shadow-lg backdrop-blur-sm">
+          Offline. Live map updates will resume when the connection returns.
+        </div>
+      ) : null}
+
+      {canRenderGoogleMap && !hasGeolocation ? (
+        <div className="absolute left-1/2 top-[74px] z-30 -translate-x-1/2 rounded-full border border-amber-300/70 bg-white/96 px-4 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-amber-700 shadow-lg backdrop-blur-sm">
+          Location services unavailable. Recenter is disabled until GPS is available.
+        </div>
+      ) : null}
+
       {children}
 
       {hint ? (
@@ -654,7 +763,7 @@ export default function DriverMapSurface({
         {bottomRightSlot || (
           <div className="shrink-0 self-start rounded-xl border border-slate-200 bg-white/95 px-3 py-2.5 text-right shadow-lg backdrop-blur-sm sm:self-auto">
             <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-600">
-              Z{zoom} · {layerLabel.toUpperCase()} · T:{trafficOn ? "ON" : "OFF"} · A:{alertsOn ? "ON" : "OFF"} · {bearing}DEG
+              Z{zoom} · {layerLabel.toUpperCase()} · T:{trafficOn ? "ON" : "OFF"} · A:{alertsOn ? "ON" : "OFF"} · {normalizeBearing(bearing)}DEG
             </p>
           </div>
         )}

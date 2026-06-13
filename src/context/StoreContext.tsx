@@ -1164,6 +1164,104 @@ function buildFallbackTripFeedback(trip: TripRecord): TripFeedback {
   };
 }
 
+type CompletedLifecycleArtifacts = {
+  trip: TripRecord;
+  revenueEvents: RevenueEvent[];
+  feedback: TripFeedback;
+};
+
+function buildCompletedLifecycleArtifacts(
+  job: Job,
+  completedAt: number,
+  overrides?: {
+    amount?: number;
+    details?: TripRecord["details"];
+    feedbackReview?: string;
+    feedbackRating?: number;
+  }
+): CompletedLifecycleArtifacts {
+  const amount = overrides?.amount ?? resolveJobRevenueAmount(job);
+  const defaultDetails: TripRecord["details"] =
+    job.jobType === "delivery"
+      ? {
+          package: {
+            name: job.itemType || "General Parcel",
+            type: job.itemType || "Box",
+            weight: "2.5 kg",
+            recipient: "Customer",
+            sender: "Merchant",
+            proofType: "signature",
+          },
+        }
+      : job.jobType === "rental"
+        ? {
+            rental: {
+              customerName: "David W.",
+              billedDuration: job.duration || "4 Hours",
+              usageKm: job.distance || "0 km",
+              condition: "Verified Clean",
+              rate: "$12.50 / Hr",
+            },
+          }
+        : job.jobType === "tour"
+          ? {
+              tour: {
+                groupName: "Tour Group",
+                itinerary: [
+                  { label: "Pickup", time: "09:00 AM", note: job.from },
+                  { label: "Final Drop-off", time: "03:00 PM", note: job.to },
+                ],
+                notes: "All scheduled checkpoints completed.",
+              },
+            }
+          : job.jobType === "ambulance"
+            ? {
+                ambulance: {
+                  missionType: "Emergency Dispatch",
+                  responseTime: "2 min dash",
+                  careNotes: "Patient stabilized during transit.",
+                },
+              }
+            : undefined;
+
+  return {
+    trip: {
+      id: job.id,
+      from: job.from,
+      to: job.to,
+      date: new Date(completedAt).toISOString().slice(0, 10),
+      time: new Date(completedAt).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      amount: Number(amount.toFixed(2)),
+      jobType: job.jobType,
+      status: "completed",
+      distance: job.distance,
+      duration: job.duration,
+      details: overrides?.details ?? defaultDetails,
+    },
+    revenueEvents: [
+      {
+        id: `rev-${job.id}-${job.jobType}`,
+        tripId: job.id,
+        timestamp: completedAt,
+        type: revenueTypeForJobType(job.jobType),
+        amount,
+        label: labelForJobType(job.jobType),
+        category: job.jobType,
+      },
+    ],
+    feedback: {
+      tripId: job.id,
+      rating: overrides?.feedbackRating ?? 5,
+      review: overrides?.feedbackReview ?? buildFallbackFeedbackReview(job.jobType),
+      submittedAt: completedAt,
+      jobType: job.jobType,
+    },
+  };
+}
+
 function readStoredTripFeedbacks(sourceTrips: TripRecord[]): TripFeedback[] {
   if (DRIVER_BACKEND_ONLY_MODE) {
     return [];
@@ -2019,6 +2117,55 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     mapBackendTripStatus,
     mapBackendTripStage,
   });
+
+  useEffect(() => {
+    if (!driverBackendEnabled || typeof window === "undefined") {
+      return undefined;
+    }
+
+    const refreshDriverConnection = () => {
+      if (!readDriverBackendAccessToken()) {
+        return;
+      }
+      const socket = createDriverSocket();
+      if (!socket.connected) {
+        socket.connect();
+      }
+      setBackendBootstrapTrigger((prev) => prev + 1);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        refreshDriverConnection();
+      }
+    };
+
+    const handleFocus = () => {
+      refreshDriverConnection();
+    };
+
+    const handleOnline = () => {
+      refreshDriverConnection();
+    };
+
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        refreshDriverConnection();
+      }
+    };
+
+    window.addEventListener("focus", handleFocus);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("pageshow", handlePageShow);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("pageshow", handlePageShow);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [driverBackendEnabled]);
 
   const setMapAlertsEnabled = useCallback((enabled: boolean) => {
     setDriverMapPreferences((prev) =>
@@ -2928,6 +3075,34 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [activeTrip.tripId]);
 
 
+  const persistCompletedLifecycleArtifacts = useCallback((artifacts: CompletedLifecycleArtifacts) => {
+    setJobs((prev) =>
+      prev.map((job) =>
+        job.id === artifacts.trip.id ? { ...job, status: "completed" } : job
+      )
+    );
+    setTrips((prev) => {
+      if (prev.some((entry) => entry.id === artifacts.trip.id)) {
+        return prev;
+      }
+      return [artifacts.trip, ...prev];
+    });
+    setRevenueEvents((prev) => {
+      const existingIds = new Set(prev.map((entry) => entry.id));
+      const nextEvents = artifacts.revenueEvents.filter((event) => !existingIds.has(event.id));
+      if (nextEvents.length === 0) {
+        return prev;
+      }
+      return [...nextEvents, ...prev];
+    });
+    setTripFeedbacks((prev) => {
+      if (prev.some((entry) => entry.tripId === artifacts.feedback.tripId)) {
+        return prev;
+      }
+      return [artifacts.feedback, ...prev];
+    });
+  }, []);
+
   const addJob = useCallback((job: Job) => setJobs(prev => [job, ...prev]), []);
 
   const transitionActiveTripStage = useCallback(
@@ -3027,6 +3202,25 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const tripId = activeTrip.tripId;
     const completedAt = Date.now();
     const relatedJob = jobs.find((job) => job.id === tripId);
+    const completionArtifacts =
+      relatedJob &&
+      relatedJob.jobType !== "shared" &&
+      relatedJob.jobType !== "shuttle"
+      ? buildCompletedLifecycleArtifacts(relatedJob, completedAt, {
+          details: relatedJob.jobType === "tour"
+            ? {
+                tour: {
+                  groupName: "Tour Group",
+                  itinerary: [
+                    { label: "Pickup", time: "09:00 AM", note: relatedJob.from },
+                    { label: "Final Drop-off", time: "03:00 PM", note: relatedJob.to },
+                  ],
+                  notes: "All scheduled checkpoints completed.",
+                },
+              }
+            : undefined,
+        })
+      : null;
 
     setActiveTrip((prev) => ({
       ...prev,
@@ -3038,103 +3232,25 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         updatedAt: completedAt,
       },
     }));
-
-    setJobs((prev) =>
-      prev.map((job) =>
-        job.id === tripId ? { ...job, status: "completed" } : job
-      )
-    );
     setActiveRideRuntime(createDefaultActiveRideRuntime(null));
 
-    if (
-      relatedJob &&
-      relatedJob.jobType !== "shared" &&
-      relatedJob.jobType !== "shuttle"
-    ) {
-      const amount = resolveJobRevenueAmount(relatedJob);
-
-      const completedTripRecord: TripRecord = {
-        id: tripId,
-        from: relatedJob.from,
-        to: relatedJob.to,
-        date: new Date(completedAt).toISOString().slice(0, 10),
-        time: new Date(completedAt).toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        amount,
-        jobType: relatedJob.jobType,
-        status: "completed",
-        distance: relatedJob.distance,
-        duration: relatedJob.duration,
-        startedAt: activeTrip.timestamps.startedAt,
-        completedAt,
-        details: {
-          package: relatedJob.jobType === "delivery" ? {
-            name: relatedJob.itemType || "General Parcel",
-            type: relatedJob.itemType || "Box",
-            weight: "2.5 kg", // Placeholder for now
-            recipient: "Customer",
-            sender: "Merchant",
-            proofType: "signature"
-          } : undefined,
-          rental: relatedJob.jobType === "rental" ? {
-            customerName: "David W.",
-            billedDuration: relatedJob.duration || "4 Hours",
-            usageKm: relatedJob.distance || "0 km",
-            condition: "Verified Clean",
-            rate: "$12.50 / Hr"
-          } : undefined,
-          tour: relatedJob.jobType === "tour" ? {
-            groupName: "Smith Family",
-            itinerary: [
-              { label: "Pickup", time: "09:00 AM", note: relatedJob.from },
-              { label: "Final Drop-off", time: "03:00 PM", note: relatedJob.to }
-            ],
-            notes: "Scenic route requested."
-          } : undefined,
-          ambulance: relatedJob.jobType === "ambulance" ? {
-            missionType: "Emergency Dispatch",
-            responseTime: "2 min dash",
-            careNotes: "Patient stabilized during transit."
-          } : undefined,
-        }
-      };
-
-      setTrips((prev) => {
-        if (prev.some((trip) => trip.id === tripId)) {
-          return prev;
-        }
-        return [completedTripRecord, ...prev];
-      });
-
-      const revenueEvent: RevenueEvent = {
-        id: `rev-${tripId}-${relatedJob.jobType}`,
-        tripId,
-        timestamp: completedAt,
-        type: revenueTypeForJobType(relatedJob.jobType),
-        amount,
-        label: labelForJobType(relatedJob.jobType),
-        category: relatedJob.jobType,
-      };
-
-      setRevenueEvents((prev) => {
-        if (prev.some((event) => event.id === revenueEvent.id)) {
-          return prev;
-        }
-        return [revenueEvent, ...prev];
-      });
-
-      setTripFeedbacks((prev) => {
-        if (prev.some((entry) => entry.tripId === tripId)) {
-          return prev;
-        }
-        return [buildFallbackTripFeedback(completedTripRecord), ...prev];
+    if (completionArtifacts) {
+      persistCompletedLifecycleArtifacts({
+        ...completionArtifacts,
+        trip: {
+          ...completionArtifacts.trip,
+          startedAt: activeTrip.timestamps.startedAt,
+          completedAt,
+        },
       });
     }
 
     if (shouldUseDriverBackendWrites()) {
-      if (relatedJob?.jobType === "rental" || relatedJob?.jobType === "tour" || relatedJob?.jobType === "ambulance") {
+      if (
+        relatedJob?.jobType === "rental" ||
+        relatedJob?.jobType === "tour" ||
+        relatedJob?.jobType === "ambulance"
+      ) {
         void completeDriverServiceRequest(tripId).catch((error) => {
           console.warn("Driver backend service completion failed.", error);
         });
@@ -3146,7 +3262,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
 
     return tripId;
-  }, [activeTrip, driverPresenceStatus, jobs]);
+  }, [activeTrip, driverPresenceStatus, jobs, persistCompletedLifecycleArtifacts]);
 
   const cancelActiveTrip = useCallback((
     reasonStage: "cancel_reason" | "cancel_no_show" = "cancel_reason"
@@ -3302,11 +3418,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const updateTourSegmentStatus = useCallback((jobId: string, segmentId: string, status: TourSegmentStatus) => {
-    let completion: {
-      trip: TripRecord;
-      revenue: RevenueEvent;
-      feedback: TripFeedback;
-    } | null = null;
+    let completion: CompletedLifecycleArtifacts | null = null;
 
     setJobs((prev) =>
       prev.map((job) => {
@@ -3332,50 +3444,25 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
         if (allCompleted && job.status !== "completed") {
           const completedAt = Date.now();
-          const amount = resolveJobRevenueAmount(job);
-          completion = {
-            trip: {
-              id: job.id,
-              from: job.from,
-              to: job.to,
-              date: new Date(completedAt).toISOString().slice(0, 10),
-              time: new Date(completedAt).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              }),
-              amount,
-              jobType: "tour",
-              status: "completed",
-              distance: job.distance,
-              duration: job.duration,
-              completedAt,
-              details: {
-                tour: {
-                  groupName: "Tour Group",
-                  itinerary: nextSegments.map((segment) => ({
-                    label: segment.title,
-                    time: segment.time,
-                    note: segment.description,
-                  })),
-                  notes: "All scheduled checkpoints completed.",
-                },
+          const completionArtifacts = buildCompletedLifecycleArtifacts(job, completedAt, {
+            details: {
+              tour: {
+                groupName: "Tour Group",
+                itinerary: nextSegments.map((segment) => ({
+                  label: segment.title,
+                  time: segment.time,
+                  note: segment.description,
+                })),
+                notes: "All scheduled checkpoints completed.",
               },
             },
-            revenue: {
-              id: `rev-${job.id}-tour-segments`,
-              tripId: job.id,
-              timestamp: completedAt,
-              type: "base",
-              amount,
-              label: "Tour",
-              category: "tour",
-            },
-            feedback: {
-              tripId: job.id,
-              rating: 5,
-              review: "Tour checkpoints completed successfully.",
-              submittedAt: completedAt,
-              jobType: "tour",
+            feedbackReview: "Tour checkpoints completed successfully.",
+          });
+          completion = {
+            ...completionArtifacts,
+            trip: {
+              ...completionArtifacts.trip,
+              completedAt,
             },
           };
         }
@@ -3393,26 +3480,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
     const resolvedCompletion = completion;
 
-    setTrips((prev) => {
-      if (prev.some((trip) => trip.id === resolvedCompletion.trip.id)) {
-        return prev;
-      }
-      return [resolvedCompletion.trip, ...prev];
-    });
-
-    setRevenueEvents((prev) => {
-      if (prev.some((event) => event.id === resolvedCompletion.revenue.id)) {
-        return prev;
-      }
-      return [resolvedCompletion.revenue, ...prev];
-    });
-
-    setTripFeedbacks((prev) => {
-      if (prev.some((entry) => entry.tripId === resolvedCompletion.feedback.tripId)) {
-        return prev;
-      }
-      return [resolvedCompletion.feedback, ...prev];
-    });
+    persistCompletedLifecycleArtifacts(resolvedCompletion);
 
     setActiveTrip((prev) => {
       if (prev.tripId !== jobId || prev.jobType !== "tour") {
@@ -3430,7 +3498,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         },
       };
     });
-  }, []);
+  }, [persistCompletedLifecycleArtifacts]);
   const addSharedContactToJob = useCallback((jobId: string, contact: SharedContact) => {
     const hasJob = jobs.some((job) => job.id === jobId);
     if (!hasJob) {
@@ -3779,60 +3847,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           job.jobType === "delivery"
       );
 
-      setJobs((prev) =>
-        prev.map((job) =>
-          job.id === deliveryWorkflow.activeJobId
-            ? { ...job, status: "completed" }
-            : job
-        )
-      );
-
       if (relatedJob) {
-        const amount = resolveJobRevenueAmount(relatedJob);
-        const tripId = relatedJob.id;
-        const completedTripRecord: TripRecord = {
-          id: tripId,
-          from: relatedJob.from,
-          to: relatedJob.to,
-          date: new Date(completedAt).toISOString().slice(0, 10),
-          time: new Date(completedAt).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-          amount,
-          jobType: "delivery",
-          status: "completed",
-          distance: relatedJob.distance,
-          duration: relatedJob.duration,
-        };
-
-        const revenueEvent: RevenueEvent = {
-          id: `rev-${tripId}-delivery`,
-          tripId,
-          timestamp: completedAt,
-          type: revenueTypeForJobType("delivery"),
-          amount,
-          label: labelForJobType("delivery"),
-          category: "delivery",
-        };
-
-        setTrips((prev) => {
-          if (prev.some((trip) => trip.id === tripId)) {
-            return prev;
-          }
-          return [completedTripRecord, ...prev];
-        });
-        setRevenueEvents((prev) => {
-          if (prev.some((event) => event.id === revenueEvent.id)) {
-            return prev;
-          }
-          return [revenueEvent, ...prev];
-        });
-        setTripFeedbacks((prev) => {
-          if (prev.some((entry) => entry.tripId === tripId)) {
-            return prev;
-          }
-          return [buildFallbackTripFeedback(completedTripRecord), ...prev];
+        const completionArtifacts = buildCompletedLifecycleArtifacts(relatedJob, completedAt);
+        persistCompletedLifecycleArtifacts({
+          ...completionArtifacts,
+          trip: {
+            ...completionArtifacts.trip,
+            startedAt: activeTrip.timestamps.startedAt,
+            completedAt,
+          },
         });
       }
     }
@@ -3841,7 +3864,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         console.warn("Driver backend delivery complete failed.", error);
       });
     }
-  }, [deliveryWorkflow.activeJobId, deliveryWorkflow.routeId, deliveryWorkflow.stage, driverPresenceStatus, jobs]);
+  }, [activeTrip.timestamps.startedAt, deliveryWorkflow.activeJobId, deliveryWorkflow.routeId, deliveryWorkflow.stage, driverPresenceStatus, jobs, persistCompletedLifecycleArtifacts]);
 
   const resetDeliveryWorkflow = useCallback(() => {
     setDeliveryWorkflow(DEFAULT_DELIVERY_WORKFLOW);
@@ -4139,32 +4162,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       })
     );
 
-    setJobs((prev) =>
-      prev.map((job) =>
-        job.id === activeSharedTrip.id ? { ...job, status: "completed" } : job
-      )
-    );
-    setTrips((prev) => {
-      if (prev.some((trip) => trip.id === completedTripRecord.id)) {
-        return prev;
-      }
-      return [completedTripRecord, ...prev];
-    });
-    setRevenueEvents((prev) => {
-      const existingIds = new Set(prev.map((event) => event.id));
-      const nextEvents = completionRevenueEvents.filter(
-        (event) => !existingIds.has(event.id)
-      );
-      if (nextEvents.length === 0) {
-        return prev;
-      }
-      return [...nextEvents, ...prev];
-    });
-    setTripFeedbacks((prev) => {
-      if (prev.some((entry) => entry.tripId === completedTripRecord.id)) {
-        return prev;
-      }
-      return [buildFallbackTripFeedback(completedTripRecord), ...prev];
+    persistCompletedLifecycleArtifacts({
+      trip: completedTripRecord,
+      revenueEvents: completionRevenueEvents,
+      feedback: buildFallbackTripFeedback(completedTripRecord),
     });
     setActiveTrip((prev) => {
       if (prev.tripId !== activeSharedTrip.id) {
@@ -4190,7 +4191,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
 
     return activeSharedTrip.id;
-  }, [activeSharedTrip, activeTrip.status, driverPresenceStatus, jobs]);
+  }, [activeSharedTrip, activeTrip.status, driverPresenceStatus, jobs, persistCompletedLifecycleArtifacts]);
   const filteredTrips = useMemo(
     () => trips.filter((trip) => assignableJobTypes.includes(trip.jobType)),
     [trips, assignableJobTypes]

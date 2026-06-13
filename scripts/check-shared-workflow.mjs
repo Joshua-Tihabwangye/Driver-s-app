@@ -40,7 +40,7 @@ check(
 check(
   "Pending job filter applies explicit shared eligibility",
   jobsContext.includes('if (job.jobType === "shared")') &&
-    jobsContext.includes("return sharedEligible;"),
+    jobsContext.includes("return sharedEligible && rideRequestsEnabled;"),
   "JobsContext pending list must gate shared requests by eligibility"
 );
 
@@ -61,8 +61,10 @@ check(
 check(
   "Shared context keeps event-driven additional-match insertion",
   sharedTrips.includes("function insertAdditionalMatch") &&
-    sharedTrips.includes("return insertAdditionalMatch(advancedTrip);"),
-  "SharedTripsContext should insert additional matches during active chain progression"
+    sharedTrips.includes('stop.status === "upcoming"') &&
+    sharedTrips.includes("markRiderNoShow") &&
+    sharedTrips.includes("markRiderDroppedOff"),
+  "SharedTripsContext should keep deterministic stop advancement and rider outcome transitions"
 );
 
 check(

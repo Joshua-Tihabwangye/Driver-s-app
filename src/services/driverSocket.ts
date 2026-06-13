@@ -12,6 +12,11 @@ export function createDriverSocket(): DriverSocket {
       path: SOCKET_PATH,
       transports: ["websocket"],
       autoConnect: false,
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 10000,
       withCredentials: false,
       auth: {
         token: readDriverBackendAccessToken(),
