@@ -60,6 +60,7 @@ interface VehicleDocumentCardProps {
   title: string;
   subtitle: string;
   documentGroup?: VehicleDocumentGroup;
+  saveError?: string;
   onChange: (group: VehicleDocumentGroup) => void;
 }
 
@@ -68,6 +69,7 @@ export default function VehicleDocumentCard({
   title,
   subtitle,
   documentGroup = {},
+  saveError = "",
   onChange,
 }: VehicleDocumentCardProps) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -75,6 +77,9 @@ export default function VehicleDocumentCard({
   const expiryDate = documentGroup.expiryDate || "";
   const expiryStatus = getDocumentExpiryStatus(expiryDate);
   const daysUntilExpiry = getDaysUntilExpiry(expiryDate);
+  const effectiveStatus = saveError ? "Rejected" : documentGroup.file ? "Uploaded" : "Missing";
+  const effectiveError = saveError || fileError;
+  const hasError = Boolean(effectiveError);
 
   const expiryPalette =
     expiryStatus === "valid"
@@ -161,7 +166,13 @@ export default function VehicleDocumentCard({
   };
 
   return (
-    <div className="rounded-2xl border-2 border-brand-secondary/10 bg-cream px-3 py-3 shadow-sm hover:border-brand-secondary/30 transition-all">
+    <div
+      className={`rounded-2xl border-2 bg-cream px-3 py-3 shadow-sm transition-all ${
+        hasError
+          ? "border-red-300 hover:border-red-400"
+          : "border-brand-secondary/10 hover:border-brand-secondary/30"
+      }`}
+    >
       <div className="mb-2 flex items-center space-x-3">
         <div className="flex h-9 w-9 items-center justify-center rounded-full border border-orange-100 bg-white shadow-sm flex-shrink-0">
           <Icon className="h-4 w-4 text-brand-secondary" />
@@ -174,9 +185,9 @@ export default function VehicleDocumentCard({
 
       <CopyRow
         label="Document Copy"
-        status={documentGroup.file ? "Uploaded" : "Missing"}
+        status={effectiveStatus}
         fileName={documentGroup.file?.fileName || ""}
-        error={fileError}
+        error={effectiveError}
         onClick={() => inputRef.current?.click()}
       />
 

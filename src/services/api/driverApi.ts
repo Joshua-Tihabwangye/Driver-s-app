@@ -614,6 +614,9 @@ export async function patchDriverVehicleDocument(
   patch: {
     fileUrl?: string;
     fileKey?: string;
+    originalFileName?: string;
+    mimeType?: string;
+    sizeBytes?: number;
     expiryDate?: string;
     status?: string;
   },

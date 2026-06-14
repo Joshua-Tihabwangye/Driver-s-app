@@ -30,6 +30,7 @@ import {
   patchDriverVehicleDocument,
   uploadDriverVehicleDocument,
   listDriverVehicles,
+  uploadFile,
 } from "../services/api/driverApi";
 import type { VehicleDocumentGroup, VehicleDocuments } from "../data/types";
 import PageHeader from "../components/PageHeader";
@@ -175,6 +176,34 @@ function PersonalCopyRow({ label, copy, onClick }: PersonalCopyRowProps) {
   );
 }
 
+function getDocumentDisplayName(
+  originalFileName: string | null | undefined,
+  fallbackFileName: string,
+  documentType: string,
+): string {
+  const trimmedOriginal = typeof originalFileName === "string" ? originalFileName.trim() : "";
+  if (trimmedOriginal) {
+    return trimmedOriginal;
+  }
+
+  const trimmedFallback = typeof fallbackFileName === "string" ? fallbackFileName.trim() : "";
+  if (trimmedFallback) {
+    return trimmedFallback;
+  }
+
+  return documentType;
+}
+
+function getErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof Error && error.message.trim().length > 0) {
+    return error.message.trim();
+  }
+  if (typeof error === "string" && error.trim().length > 0) {
+    return error.trim();
+  }
+  return fallback;
+}
+
 function ExpiryStatusBadge({
   status,
   daysUntilExpiry,
@@ -261,6 +290,10 @@ export default function RequiredActionsDashboard() {
     license: "",
     police: "",
   });
+  const [vehicleSaveErrors, setVehicleSaveErrors] = useState<Record<"insurance" | "inspection", string>>({
+    insurance: "",
+    inspection: "",
+  });
 
   // "Update all documents" button state
   const [updateStatus, setUpdateStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -287,33 +320,115 @@ export default function RequiredActionsDashboard() {
 
     let succeeded = 0;
     let failed = 0;
+    const nextVehicleErrors: Record<"insurance" | "inspection", string> = {
+      insurance: "",
+      inspection: "",
+    };
 
     try {
       // 1. Fetch existing backend documents so we can PATCH (not re-POST)
       const existing = await listDriverDocuments();
-      const byType = new Map(existing.map((d) => [d.documentType, d]));
+      const byTypeAndSide = new Map(
+        existing.map((d) => [
+          `${d.documentType}:${typeof d.side === "string" && d.side.trim().length > 0 ? d.side : "front"}`,
+          d,
+        ]),
+      );
 
       // 2. Sync personal documents
       const personalKeys: DocumentUploadKey[] = ["id", "license", "police"];
       for (const key of personalKeys) {
         const entry = personalDocs[key];
-        const fileUrl = entry.front.fileUrl || entry.back.fileUrl;
-        if (!fileUrl || !entry.expiryDate) continue;
-
-        const docType = docTypeMap[key];
-        const existingDoc = byType.get(docType);
-        try {
-          if (existingDoc) {
-            await updateDriverDocument(existingDoc.id, {
-              fileUrl,
-              expiryDate: entry.expiryDate,
-            });
-          } else {
-            await createDriverDocument({ documentType: docType, fileUrl, expiryDate: entry.expiryDate });
+        for (const side of getRequiredDocumentSides(key)) {
+          const copy = entry[side];
+          let fileUrl = copy.fileUrl;
+          let fileKey = copy.fileKey || "";
+          let originalFileName = copy.fileName || "";
+          let mimeType = copy.mimeType;
+          let sizeBytes = copy.sizeBytes;
+          if (!fileUrl || !entry.expiryDate) {
+            continue;
           }
-          succeeded++;
-        } catch {
-          failed++;
+
+          if ((fileUrl.startsWith("local://") || fileUrl.startsWith("data:")) && copy.rawFile) {
+            const uploadResult = await uploadFile(copy.rawFile, "document");
+            if (!uploadResult) {
+              throw new Error("Failed to upload document file.");
+            }
+            fileUrl = uploadResult.fileUrl;
+            fileKey = uploadResult.fileKey;
+            originalFileName = uploadResult.originalFileName || originalFileName;
+            mimeType = uploadResult.mimeType;
+            sizeBytes = uploadResult.sizeBytes;
+          } else if (fileUrl.startsWith("local://") || fileUrl.startsWith("data:")) {
+            throw new Error("Selected file is missing. Please pick it again.");
+          }
+
+          const docType = docTypeMap[key];
+          const existingDoc = byTypeAndSide.get(`${docType}:${side}`) || byTypeAndSide.get(`${docType}:front`);
+          try {
+            if (existingDoc) {
+              await updateDriverDocument(existingDoc.id, {
+                fileUrl,
+                fileKey: fileKey || undefined,
+                expiryDate: entry.expiryDate,
+                originalFileName: originalFileName || undefined,
+                mimeType,
+                sizeBytes,
+              });
+            } else {
+              await createDriverDocument({
+                documentType: docType,
+                fileUrl,
+                fileKey: fileKey || undefined,
+                originalFileName: originalFileName || undefined,
+                mimeType,
+                sizeBytes,
+                side,
+                expiryDate: entry.expiryDate,
+              });
+            }
+            succeeded++;
+            setPersonalDocs((prev) => {
+              const next = {
+                ...prev,
+                [key]: {
+                  ...prev[key],
+                  [side]: {
+                    ...prev[key][side],
+                    status: "Uploaded" as const,
+                    fileUrl,
+                    fileKey,
+                    fileName: originalFileName || prev[key][side].fileName,
+                    mimeType,
+                    sizeBytes,
+                    rawFile: undefined,
+                    error: "",
+                  },
+                },
+              };
+              persistDocumentState(next);
+              return next;
+            });
+          } catch (error) {
+            failed++;
+            const message = getErrorMessage(error, "Failed to save this document.");
+            setPersonalDocs((prev) => {
+              const next = {
+                ...prev,
+                [key]: {
+                  ...prev[key],
+                  [side]: {
+                    ...prev[key][side],
+                    status: "Rejected" as const,
+                    error: message,
+                  },
+                },
+              };
+              persistDocumentState(next);
+              return next;
+            });
+          }
         }
       }
 
@@ -332,9 +447,27 @@ export default function RequiredActionsDashboard() {
 
         for (const key of vehicleKeys) {
           const group = activeVehicle.vehicleDocs?.[key];
-          const fileUrl = group?.file?.url || "";
+          let fileUrl = group?.file?.url || "";
           const expiryDate = group?.expiryDate || group?.file?.expiryDate || "";
           if (!fileUrl || !expiryDate) continue;
+          let originalFileName = group?.file?.fileName || undefined;
+          let fileKey = group?.file?.fileKey;
+          let mimeType = group?.file?.mimeType;
+          let sizeBytes = group?.file?.sizeBytes;
+          const rawFile = group?.file?.rawFile as File | undefined;
+          if ((fileUrl.startsWith("local://") || fileUrl.startsWith("data:")) && rawFile) {
+            const uploadResult = await uploadFile(rawFile, "document");
+            if (!uploadResult) {
+              throw new Error("Failed to upload vehicle document.");
+            }
+            fileUrl = uploadResult.fileUrl;
+            fileKey = uploadResult.fileKey;
+            originalFileName = uploadResult.originalFileName || originalFileName;
+            mimeType = uploadResult.mimeType;
+            sizeBytes = uploadResult.sizeBytes;
+          } else if (fileUrl.startsWith("local://") || fileUrl.startsWith("data:")) {
+            throw new Error("Selected vehicle document is missing. Please pick it again.");
+          }
 
           const docType = key === "insurance" ? "insurance" : "inspection";
           const existingVehicleDoc = vehicleDocByType.get(docType);
@@ -342,21 +475,33 @@ export default function RequiredActionsDashboard() {
             if (existingVehicleDoc) {
               await patchDriverVehicleDocument(activeVehicle.id, existingVehicleDoc.id, {
                 fileUrl,
+                fileKey: fileKey || undefined,
                 expiryDate,
+                originalFileName,
+                mimeType,
+                sizeBytes,
               });
             } else {
               await uploadDriverVehicleDocument(activeVehicle.id, {
                 documentType: docType,
                 fileUrl,
+                fileKey: fileKey || undefined,
+                originalFileName,
+                mimeType,
+                sizeBytes,
                 expiryDate,
               });
             }
             succeeded++;
-          } catch {
+            nextVehicleErrors[key] = "";
+          } catch (error) {
             failed++;
+            nextVehicleErrors[key] = getErrorMessage(error, "Failed to save this vehicle document.");
           }
         }
       }
+
+      setVehicleSaveErrors(nextVehicleErrors);
 
       if (failed === 0 && succeeded > 0) {
         setUpdateStatus("success");
@@ -365,7 +510,7 @@ export default function RequiredActionsDashboard() {
         await refreshBackendOnboardingState?.();
       } else if (succeeded > 0) {
         setUpdateStatus("success");
-        setUpdateMessage(`${succeeded} updated, ${failed} failed. Check your files and try again.`);
+        setUpdateMessage(`${succeeded} updated, ${failed} failed. Failed documents are marked in red below.`);
       } else {
         setUpdateStatus("error");
         setUpdateMessage("No documents were updated. Ensure files and expiry dates are set.");
@@ -406,9 +551,15 @@ export default function RequiredActionsDashboard() {
             const expiryDate = doc.expiryDate
               ? new Date(doc.expiryDate).toISOString().slice(0, 10)
               : next[key].expiryDate;
+            const fileName = getDocumentDisplayName(
+              doc.originalFileName,
+              next[key].front.fileName || next[key].back.fileName || "",
+              documentType,
+            );
+            const side = doc.side === "back" ? "back" : "front";
             const copy = {
               status: "Uploaded" as const,
-              fileName: doc.fileUrl.split("/").pop() || doc.documentType,
+              fileName,
               fileUrl: doc.fileUrl,
               fileKey: doc.fileKey || "",
               error: "",
@@ -416,10 +567,10 @@ export default function RequiredActionsDashboard() {
             next[key] = {
               ...next[key],
               expiryDate,
-              front: { ...copy },
-              back: key === "police" ? next[key].back : { ...copy },
+              [side]: { ...copy },
             };
           });
+          persistDocumentState(next);
           return next;
         });
       } catch (error) {
@@ -482,31 +633,6 @@ export default function RequiredActionsDashboard() {
     }
   };
 
-  const syncPersonalDocumentToBackend = async (key: DocumentUploadKey, state: DocumentUploadState) => {
-    if (!driverBackendEnabled) return;
-    const entry = state[key];
-    const isComplete = isDocumentEntryComplete(key, entry);
-    const expiryValidation = validateDocumentExpiryDate(entry.expiryDate);
-
-    if (isComplete && expiryValidation.valid) {
-      try {
-        const docTypeMap: Record<DocumentUploadKey, string> = {
-          id: "national_id_or_passport",
-          license: "drivers_license",
-          police: "conduct_clearance",
-        };
-        const fileUrl = entry.front.fileUrl || entry.back.fileUrl;
-        await createDriverDocument({
-          documentType: docTypeMap[key],
-          fileUrl,
-          expiryDate: entry.expiryDate,
-        });
-      } catch (error) {
-        console.warn(`Failed to sync personal document ${key} to backend:`, error);
-      }
-    }
-  };
-
   const handlePersonalExpiryDate = (key: DocumentUploadKey, value: string) => {
     setPersonalDocs((prev) => {
       const next = {
@@ -517,7 +643,6 @@ export default function RequiredActionsDashboard() {
         },
       };
       persistDocumentState(next);
-      void syncPersonalDocumentToBackend(key, next);
       return next;
     });
 
@@ -559,6 +684,7 @@ export default function RequiredActionsDashboard() {
                 status: "Uploaded" as const,
                 fileName: file.name,
                 fileUrl: createLocalDocumentFileUrl(file.name),
+                rawFile: file,
                 error: "",
               }
             : {
@@ -572,7 +698,6 @@ export default function RequiredActionsDashboard() {
         },
       };
       persistDocumentState(next);
-      void syncPersonalDocumentToBackend(key, next);
       return next;
     });
 
@@ -827,6 +952,7 @@ export default function RequiredActionsDashboard() {
                     title="Proof of Insurance"
                     subtitle="Upload one clear copy"
                     documentGroup={activeVehicle.vehicleDocs?.insurance}
+                    saveError={vehicleSaveErrors.insurance}
                     onChange={(group) => handleVehicleDocUpdate("insurance", group)}
                   />
                   <VehicleDocumentCard
@@ -834,6 +960,7 @@ export default function RequiredActionsDashboard() {
                     title="Vehicle Inspection Report"
                     subtitle="Upload one clear copy"
                     documentGroup={activeVehicle.vehicleDocs?.inspection}
+                    saveError={vehicleSaveErrors.inspection}
                     onChange={(group) => handleVehicleDocUpdate("inspection", group)}
                   />
                 </>

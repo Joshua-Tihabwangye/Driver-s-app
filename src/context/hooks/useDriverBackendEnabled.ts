@@ -3,7 +3,12 @@ import { BACKEND_FLAG_EVENT } from "../../services/api/config";
 import { DRIVER_BACKEND_AUTH_EVENT, shouldUseDriverBackendWrites } from "../../services/api/driverApi";
 
 export function useDriverBackendEnabled(): boolean {
-  const [driverBackendEnabled, setDriverBackendEnabled] = useState(() => shouldUseDriverBackendWrites());
+  // Read synchronously so the initial value is correct without waiting for
+  // a useEffect + event. This prevents the bootstrap hook from running twice
+  // (once with enabled=false then again when the auth event fires).
+  const [driverBackendEnabled, setDriverBackendEnabled] = useState(
+    () => shouldUseDriverBackendWrites()
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
@@ -14,7 +19,6 @@ export function useDriverBackendEnabled(): boolean {
 
     window.addEventListener(BACKEND_FLAG_EVENT, syncBackendFlag as EventListener);
     window.addEventListener(DRIVER_BACKEND_AUTH_EVENT, syncBackendFlag as EventListener);
-    syncBackendFlag();
 
     return () => {
       window.removeEventListener(BACKEND_FLAG_EVENT, syncBackendFlag as EventListener);
