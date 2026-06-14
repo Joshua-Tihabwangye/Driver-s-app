@@ -1,4 +1,4 @@
-import { buildPrivateTripRoute } from "../data/constants";
+import { buildDriverLifecycleRoute } from "../data/constants";
 import {
 AlertTriangle,
 ChevronLeft,
@@ -47,7 +47,7 @@ export default function CancelDetails() {
       navigate("/driver/jobs/list");
       return;
     }
-    navigate(buildPrivateTripRoute("cancel_reason", tripId), {
+    navigate(buildDriverLifecycleRoute("cancel_reason", tripId), {
       state: {
         reason: selectedReason,
         notes,

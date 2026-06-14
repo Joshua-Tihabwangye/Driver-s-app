@@ -1,4 +1,4 @@
-import { buildPrivateTripRoute } from "../data/constants";
+import { buildDriverLifecycleRoute } from "../data/constants";
 import {
   Clock,
   Copy,
@@ -149,7 +149,7 @@ export default function RiderVerification() {
       transitionActiveTripStage("rider_verified");
     }
 
-    navigate(buildPrivateTripRoute("start_drive", tripId));
+    navigate(buildDriverLifecycleRoute("start_drive", tripId));
   };
 
   useEffect(() => {
@@ -248,7 +248,7 @@ export default function RiderVerification() {
     }
 
     stopCameraStream();
-    navigate(buildPrivateTripRoute("cancel_reason", tripId));
+    navigate(buildDriverLifecycleRoute("cancel_reason", tripId));
   };
 
   const shareBody =

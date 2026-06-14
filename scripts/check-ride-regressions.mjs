@@ -78,15 +78,15 @@ check(
 
 check(
   "Private ride stage screens route through builders",
-  navigateToPickup.includes("buildPrivateTripRoute(stage, tripId)") &&
-    arrivedAtPickup.includes("buildPrivateTripRoute(stage, tripId)") &&
-    waitingForPassenger.includes("buildPrivateTripRoute(stage, tripId)") &&
-    riderVerification.includes('buildPrivateTripRoute("start_drive", tripId)') &&
-    startDrive.includes('buildPrivateTripRoute("in_progress", tripId)') &&
-    rideInProgress.includes('buildPrivateTripRoute("completed", tripId)') &&
-    cancelReason.includes('buildPrivateTripRoute("cancel_details", tripId)') &&
-    cancelNoShow.includes('buildPrivateTripRoute("waiting_for_passenger", tripId)') &&
-    cancelDetails.includes('buildPrivateTripRoute("cancel_reason", tripId)'),
+  navigateToPickup.includes("buildDriverLifecycleRoute(stage, tripId)") &&
+    arrivedAtPickup.includes("buildDriverLifecycleRoute(stage, tripId)") &&
+    waitingForPassenger.includes("buildDriverLifecycleRoute(stage, tripId)") &&
+    riderVerification.includes('buildDriverLifecycleRoute("start_drive", tripId)') &&
+    startDrive.includes('buildDriverLifecycleRoute("in_progress", tripId)') &&
+    rideInProgress.includes('buildDriverLifecycleRoute("completed", tripId)') &&
+    cancelReason.includes('buildDriverLifecycleRoute("cancel_details", tripId)') &&
+    cancelNoShow.includes('buildDriverLifecycleRoute("waiting_for_passenger", tripId)') &&
+    cancelDetails.includes('buildDriverLifecycleRoute("cancel_reason", tripId)'),
   "Private flow screens should progress through canonical route builders"
 );
 
@@ -199,11 +199,11 @@ check(
   "Rental lifecycle uses selected job id, canonical navigation, and completion persistence",
   /const ensureRental[A-Za-z]+ = \(\) =>/.test(rentalOverview) &&
     rentalOverview.includes('acceptSpecializedJob(jobId, "rental")') &&
-    rentalOverview.includes('buildPrivateTripRoute("navigation", activeRentalTripId)') &&
+    rentalOverview.includes('buildDriverLifecycleRoute("navigation", activeRentalTripId)') &&
     rentalOverview.includes("completeActiveTrip()") &&
     rentalOverview.includes("updateJobStatus(completedTripId, \"completed\")") &&
     rentalOverview.includes("completeTrip(") &&
-    rentalOverview.includes('buildPrivateTripRoute("completed", completedTripId)'),
+    rentalOverview.includes('buildDriverLifecycleRoute("completed", completedTripId)'),
   "Rental flow should remain data-backed end-to-end"
 );
 

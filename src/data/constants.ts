@@ -79,6 +79,15 @@ export function buildPrivateTripRoute(
   return PRIVATE_TRIP_ROUTE_BUILDERS[stage](tripId);
 }
 
+export type DriverLifecycleRouteStage = PrivateTripStageRoute;
+
+export function buildDriverLifecycleRoute(
+  stage: DriverLifecycleRouteStage,
+  tripId: string
+): string {
+  return buildPrivateTripRoute(stage, tripId);
+}
+
 // ── Route Map for Job Types ──────────────────────────────
 export const JOB_DETAIL_ROUTE_BUILDERS: Record<
   JobCategory | "default",

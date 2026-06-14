@@ -1,4 +1,4 @@
-import { buildPrivateTripRoute } from "../data/constants";
+import { buildDriverLifecycleRoute } from "../data/constants";
 import {
   ChevronLeft,
   Clock,
@@ -16,6 +16,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import DriverMapSurface from "../components/DriverMapSurface";
 import SlideToConfirm from "../components/SlideToConfirm";
 import { useStore } from "../context/StoreContext";
+import { resolveDriverTripPresentation } from "../utils/driverTripPresentation";
 
 // EVzone Driver App – RideInProgress Driver App – Ride in Progress (v2)
 // Main in-trip screen while driving with rider on board, now job-type aware for:
@@ -34,6 +35,8 @@ export default function RideInProgress() {
   const { tripId: routeTripId } = useParams();
   const {
     activeTrip,
+    jobs,
+    trips,
     activeRideRuntime,
     getActiveRideElapsedSeconds,
     requestTemporaryStopDuringActiveRide,
@@ -43,9 +46,16 @@ export default function RideInProgress() {
     completeActiveTrip,
   } = useStore();
   const tripId = routeTripId || activeTrip.tripId;
-
-  // Use the REAL job type from activeTrip, not a local preview toggle
-  const jobType = activeTrip.jobType || "ride";
+  const tripPresentation = resolveDriverTripPresentation({
+    tripId,
+    jobType: activeTrip.jobType,
+    jobs,
+    trips,
+  });
+  const jobType = tripPresentation.jobType;
+  const routeSummary = tripPresentation.routeSummary;
+  const timingSummary = tripPresentation.timingSummary;
+  const fareSummary = tripPresentation.fareSummary;
 
   useEffect(() => {
     if (tripState === "active") {
@@ -74,16 +84,6 @@ export default function RideInProgress() {
     return () => window.clearTimeout(confirmationTimer);
   }, [activeRideRuntime.temporaryStop.status, respondToTemporaryStopRequest]);
 
-  const jobTypeLabelMap = {
-    ride: "Ride",
-    delivery: "Delivery",
-    rental: "Rental",
-    tour: "Tour",
-    ambulance: "Ambulance",
-    shared: "Shared",
-    shuttle: "Shuttle",
-  };
-
   const formatElapsedTime = (totalSeconds: number): string => {
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
@@ -97,16 +97,16 @@ export default function RideInProgress() {
     5 - Math.floor((nowMs - stopRequestedAt) / 1000)
   );
   // Base values from original Ride flow
-  let titleText = "To · Bugolobi";
-  let subtitleText = "6.2 km · 13 min remaining";
-  let rightLine1 = "7.20 (est.)";
+  let titleText = routeSummary;
+  let subtitleText = timingSummary;
+  let rightLine1 = fareSummary ?? "Live";
   let rightLine2 = `Time in trip: ${formatElapsedTime(elapsedInTripSeconds)}`;
 
   if (tripState === "reached") {
     titleText = "Destination Reached";
     subtitleText = "Ready to drop off";
-    rightLine1 = "7.20 (total)";
-    rightLine2 = "Arrived at location";
+    rightLine1 = fareSummary ? `${fareSummary} total` : "Trip complete";
+    rightLine2 = tripPresentation.destinationLabel;
   }
 
   const handleEndTrip = () => {
@@ -119,7 +119,7 @@ export default function RideInProgress() {
       completeActiveTrip();
     }
 
-    navigate(buildPrivateTripRoute("completed", tripId), {
+    navigate(buildDriverLifecycleRoute("completed", tripId), {
       state: {
         jobType,
         tripId,
@@ -157,10 +157,10 @@ export default function RideInProgress() {
         infoCard={(
           <div className="rounded-[1.5rem] border border-white/70 bg-white/92 p-4 shadow-xl backdrop-blur-sm">
             <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
-              Route Monitor
+              Live telemetry
             </p>
             <p className="mt-1 text-[11px] font-bold uppercase tracking-tight text-slate-700">
-              Live navigation, alerts, and support tools stay active during the trip.
+              {routeSummary}
             </p>
           </div>
         )}
@@ -185,7 +185,7 @@ export default function RideInProgress() {
       <main className="flex-1 px-6 pt-5 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         <section className="space-y-1">
           <p className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">
-            Driver · {jobTypeLabelMap[jobType] || "Ride"}
+            Driver · {tripPresentation.jobTypeLabel}
           </p>
           <h1 className="text-lg font-black text-slate-900 uppercase tracking-tight">
             Ride in progress

@@ -21,6 +21,7 @@ const rideInProgress = read("src/screens/RideInProgress.tsx");
 const startDrive = read("src/screens/StartDrive.tsx");
 const waitingForPassenger = read("src/screens/WaitingForPassenger.tsx");
 const activeSharedTrip = read("src/screens/ActiveSharedTrip.tsx");
+const driverTripPresentation = read("src/utils/driverTripPresentation.ts");
 
 check(
   "Driver map surface exposes explicit rotate + reset controls",
@@ -96,12 +97,32 @@ check(
 );
 
 check(
+  "Start and in-progress screens resolve live job data instead of demo copy",
+  startDrive.includes("resolveDriverTripPresentation") &&
+    startDrive.includes("tripPresentation.routeSummary") &&
+    rideInProgress.includes("resolveDriverTripPresentation") &&
+    rideInProgress.includes("tripPresentation.routeSummary"),
+  "Driver trip screens should derive copy from live job/trip data and avoid hard-coded demo payloads"
+);
+
+check(
   "Map-heavy driver screens still advance canonical trip lifecycle transitions",
   rideInProgress.includes("completeActiveTrip()") &&
     startDrive.includes('transitionActiveTripStage("in_progress")') &&
+    startDrive.includes("buildDriverLifecycleRoute") &&
     waitingForPassenger.includes('transitionActiveTripStage(transitionTarget)') &&
     activeSharedTrip.includes("completeActiveSharedTrip()"),
   "Driver map screens should keep routing through canonical lifecycle state transitions"
+);
+
+check(
+  "Driver trip presentation helper centralizes live summaries",
+  driverTripPresentation.includes("resolveDriverTripPresentation") &&
+    driverTripPresentation.includes("routeSummary") &&
+    driverTripPresentation.includes("timingSummary") &&
+    driverTripPresentation.includes("originLabel") &&
+    driverTripPresentation.includes("destinationLabel"),
+  "Live job and trip summaries should come from one backend-backed helper"
 );
 
 console.log("\nDriver regression checks passed.");

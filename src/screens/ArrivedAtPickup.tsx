@@ -1,4 +1,4 @@
-import { buildPrivateTripRoute } from "../data/constants";
+import { buildDriverLifecycleRoute } from "../data/constants";
 import {
   Clock,
   MapPin,
@@ -10,6 +10,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import DriverMapSurface from "../components/DriverMapSurface";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
+import { resolveDriverTripPresentation } from "../utils/driverTripPresentation";
 
 // EVzone Driver App – ArrivedAtPickup Driver App – Arrived at Pickup Point (v2)
 // State after the driver marks "I've arrived" at the pickup location, with
@@ -26,10 +27,15 @@ export default function ArrivedAtPickup() {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const navigate = useNavigate();
   const { tripId: routeTripId } = useParams();
-  const { activeTrip, transitionActiveTripStage, respondToSafetyCheck } = useStore();
+  const { activeTrip, jobs, trips, transitionActiveTripStage, respondToSafetyCheck } = useStore();
   const tripId = routeTripId || activeTrip.tripId;
-  // Use the REAL job type from activeTrip, not a local preview toggle
-  const jobType = activeTrip.jobType || "ride";
+  const tripPresentation = resolveDriverTripPresentation({
+    tripId,
+    jobType: activeTrip.jobType,
+    jobs,
+    trips,
+  });
+  const jobType = tripPresentation.jobType;
 
   const navigateToStage = (
     stage: "cancel_reason" | "waiting_for_passenger",
@@ -45,7 +51,7 @@ export default function ArrivedAtPickup() {
       transitionActiveTripStage(transitionStage);
     }
 
-    navigate(buildPrivateTripRoute(stage, tripId));
+    navigate(buildDriverLifecycleRoute(stage, tripId));
   };
 
   useEffect(() => {
@@ -82,25 +88,21 @@ export default function ArrivedAtPickup() {
   const headerTitle = isAmbulance
     ? "On scene at patient location"
     : isRental
-    ? "Arrived at rental pickup"
-    : isTour
-    ? "Arrived at tour pickup location"
-    : "Arrived at pickup";
+      ? "Arrived at rental pickup"
+      : isTour
+        ? "Arrived at tour pickup location"
+        : "Arrived at pickup";
 
-  // Summary card title & text vary per job type
-  let summaryTitle = "Waiting at Acacia Mall";
-  let summaryText = "Please look for the rider near the main entrance.";
+  const summaryTitle = tripPresentation.routeSummary;
+  let summaryText = tripPresentation.timingSummary;
   let timeLabel = `Waiting: ${formatTime(elapsedSeconds)}`;
 
   if (isRental) {
-    summaryTitle = "Arrived at rental pickup";
-    summaryText = "Waiting for client at hotel lobby.";
+    summaryText = `Rental flow active · ${tripPresentation.statusSummary}`;
   } else if (isTour) {
-    summaryTitle = "Arrived at tour pickup location";
-    summaryText = "Please look for the guests near the agreed meeting point.";
+    summaryText = `Tour flow active · ${tripPresentation.statusSummary}`;
   } else if (isAmbulance) {
-    summaryTitle = "On scene at patient location";
-    summaryText = "Stay with the patient and follow dispatch or medical instructions.";
+    summaryText = `Ambulance run active · ${tripPresentation.statusSummary}`;
     timeLabel = `On scene: ${formatTime(elapsedSeconds)}`;
   }
 

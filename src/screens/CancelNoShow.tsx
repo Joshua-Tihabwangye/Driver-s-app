@@ -1,4 +1,4 @@
-import { buildPrivateTripRoute } from "../data/constants";
+import { buildDriverLifecycleRoute } from "../data/constants";
 import {
 Clock,
 Map,
@@ -27,7 +27,7 @@ export default function CancelNoShow() {
       navigate("/driver/jobs/list");
       return;
     }
-    navigate(buildPrivateTripRoute("waiting_for_passenger", tripId));
+    navigate(buildDriverLifecycleRoute("waiting_for_passenger", tripId));
   };
 
   const handleConfirmAbort = () => {

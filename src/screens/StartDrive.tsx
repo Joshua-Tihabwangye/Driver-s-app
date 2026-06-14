@@ -1,4 +1,4 @@
-import { buildPrivateTripRoute } from "../data/constants";
+import { buildDriverLifecycleRoute } from "../data/constants";
 import {
 Clock,
 MapPin,
@@ -10,6 +10,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import DriverMapSurface from "../components/DriverMapSurface";
 import SlideToConfirm from "../components/SlideToConfirm";
 import { useStore } from "../context/StoreContext";
+import { resolveDriverTripPresentation } from "../utils/driverTripPresentation";
 
 // EVzone Driver App – StartDrive Driver App – Start Drive (v2)
 // Screen shown just before starting the trip, after rider verification.
@@ -26,10 +27,18 @@ import { useStore } from "../context/StoreContext";
 export default function StartDrive() {
   const navigate = useNavigate();
   const { tripId: routeTripId } = useParams();
-  const { activeTrip, transitionActiveTripStage } = useStore();
+  const { activeTrip, jobs, trips, transitionActiveTripStage } = useStore();
   const tripId = routeTripId || activeTrip.tripId;
-  // Use the REAL job type from activeTrip, not a local preview toggle
-  const jobType = (activeTrip.jobType || "ride") as string;
+  const tripPresentation = resolveDriverTripPresentation({
+    tripId,
+    jobType: activeTrip.jobType,
+    jobs,
+    trips,
+  });
+  const jobType = tripPresentation.jobType;
+  const routeSummary = tripPresentation.routeSummary;
+  const jobTiming = tripPresentation.timingSummary;
+  const fareSummary = tripPresentation.fareSummary;
 
   const handleStart = () => {
     if (!tripId) {
@@ -42,7 +51,7 @@ export default function StartDrive() {
       transitionActiveTripStage("in_progress");
     }
 
-    navigate(buildPrivateTripRoute("in_progress", tripId));
+    navigate(buildDriverLifecycleRoute("in_progress", tripId));
   };
 
   const handleBackToVerification = () => {
@@ -51,17 +60,7 @@ export default function StartDrive() {
       return;
     }
 
-    navigate(buildPrivateTripRoute("rider_verification", tripId));
-  };
-
-  const jobTypeLabelMap: Record<string, string> = {
-    ride: "Ride",
-    delivery: "Delivery",
-    rental: "Rental",
-    tour: "Tour",
-    ambulance: "Ambulance",
-    shared: "Shared",
-    shuttle: "Shuttle",
+    navigate(buildDriverLifecycleRoute("rider_verification", tripId));
   };
 
   const isRental = jobType === "rental";
@@ -86,24 +85,8 @@ export default function StartDrive() {
     ? "Start patient transport"
     : "Start trip";
 
-  // Right-hand summary tweaks for demo purposes
-  let rightTop = "7.20 (est.)";
-  let rightBottom = "9.1 km · 21 min";
-
-  if (jobType === "delivery") {
-    rightTop = "3.80 (est.)";
-    rightBottom = "Food delivery · 3.2 km · 15–20 min";
-  } else if (isRental) {
-    rightTop = "Rental · 09:00–18:00";
-    rightBottom = "Hotel → City / On-call";
-  } else if (isTour) {
-    rightTop = "Tour · Day 2 of 5";
-    rightBottom = "Today’s segment: Airport pickup";
-  } else if (isAmbulance) {
-    // Ambulance: hide fare, show time/distance instead in copy
-    rightTop = "Dispatch: 02:10 ago";
-    rightBottom = "En route to patient / hospital";
-  }
+  const topSummary = fareSummary ? `Fare • ${fareSummary}` : tripPresentation.jobTypeLabel;
+  const bottomSummary = jobTiming;
 
   // Pickup / drop-off copy can stay mostly ride-like for now; this can be expanded later
 
@@ -131,10 +114,10 @@ export default function StartDrive() {
         infoCard={(
           <div className="rounded-[1.5rem] border border-white/70 bg-white/92 p-4 shadow-xl backdrop-blur-sm">
             <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
-              Start Vector
+              Live dispatch
             </p>
             <p className="mt-1 text-[11px] font-bold uppercase tracking-tight text-slate-700">
-              Route checks are complete and the first leg is ready.
+              {routeSummary}
             </p>
           </div>
         )}
@@ -148,7 +131,7 @@ export default function StartDrive() {
       <main className="flex-1 px-6 pt-5 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         <section className="space-y-1">
           <p className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">
-            Driver · {jobTypeLabelMap[jobType]}
+            Driver · {tripPresentation.jobTypeLabel}
           </p>
           <h1 className="text-lg font-black text-slate-900 uppercase tracking-tight">
             {headerTitle}
@@ -175,15 +158,15 @@ export default function StartDrive() {
             <div className="flex flex-col items-end text-slate-900">
                {!isAmbulance && (
                 <span className="text-base font-black text-orange-500 uppercase tracking-tight">
-                  ${rightTop}
+                  {topSummary}
                 </span>
                )}
                {isAmbulance && (
                 <span className="text-sm font-black text-orange-500 uppercase tracking-tight">
-                  {rightTop}
+                  {topSummary}
                 </span>
                )}
-               <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">{rightBottom}</span>
+               <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">{bottomSummary}</span>
             </div>
           </div>
 
@@ -193,11 +176,7 @@ export default function StartDrive() {
               <div className="flex flex-col">
                 <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Origin</span>
                 <p className="text-xs font-black uppercase tracking-tight text-slate-900">
-                  {isAmbulance
-                    ? "Acacia Road"
-                    : jobType === "delivery"
-                    ? "Burger Hub"
-                    : "Acacia Mall"}
+                  {tripPresentation.originLabel}
                 </p>
               </div>
             </div>
@@ -206,7 +185,7 @@ export default function StartDrive() {
               <div className="flex flex-col">
                 <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Destination</span>
                 <p className="text-xs font-black uppercase tracking-tight text-slate-900">
-                  {isAmbulance ? "City General Hospital" : "Bugolobi"}
+                  {tripPresentation.destinationLabel}
                 </p>
               </div>
             </div>

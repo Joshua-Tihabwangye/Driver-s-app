@@ -9,8 +9,9 @@ import { useEffect,useMemo,useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import DriverMapSurface from "../components/DriverMapSurface";
 import PageHeader from "../components/PageHeader";
-import { buildPrivateTripRoute } from "../data/constants";
+import { buildDriverLifecycleRoute } from "../data/constants";
 import { useStore } from "../context/StoreContext";
+import { resolveDriverTripPresentation } from "../utils/driverTripPresentation";
 
 // EVzone Driver App – AmbulanceJobStatus Ambulance Job Status Screen (v2)
 // In-progress view tailored for Ambulance runs.
@@ -64,6 +65,12 @@ export default function AmbulanceJobStatus() {
         : null,
     [jobs, jobId]
   );
+  const tripPresentation = resolveDriverTripPresentation({
+    tripId: jobId || null,
+    jobType: "ambulance",
+    jobs,
+    trips,
+  });
   const isThisAmbulanceJobActive = Boolean(
     jobId &&
       activeTrip.tripId === jobId &&
@@ -190,7 +197,7 @@ export default function AmbulanceJobStatus() {
       }
     }
 
-    navigate(buildPrivateTripRoute("completed", completedTripId), {
+    navigate(buildDriverLifecycleRoute("completed", completedTripId), {
       state: { jobType: "ambulance", tripId: completedTripId },
     });
   };
@@ -233,7 +240,7 @@ export default function AmbulanceJobStatus() {
     <div className="flex flex-col min-h-full bg-[#fcf8f8]">
       <PageHeader 
         title="Ambulance Status" 
-        subtitle="Active Mission" 
+        subtitle={`${tripPresentation.routeSummary} · ${tripPresentation.timingSummary}`} 
         onBack={() => navigate(-1)} 
         rightAction={
           <div className="flex items-center rounded-2xl bg-red-500/10 px-4 py-1.5 backdrop-blur-md border border-red-500/20">
@@ -257,7 +264,7 @@ export default function AmbulanceJobStatus() {
           infoCard={(
             <div className="rounded-[1.4rem] border border-red-200 bg-white/94 px-4 py-3 shadow-lg">
               <p className="text-[10px] font-black uppercase tracking-[0.16em] text-red-600">
-                Mission Route
+                Live Mission Route
               </p>
               <p className="mt-1 text-[10px] font-bold uppercase tracking-tight text-slate-700">
                 Ambulance corridor guidance active.
