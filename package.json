@@ -11,6 +11,7 @@
     "preview": "vite preview",
     "typecheck": "tsc -b",
     "check:driver-regression": "node scripts/check-driver-regressions.mjs",
+    "check:driver-lifecycle": "node scripts/check-driver-lifecycle-regressions.mjs",
     "check:shared-workflow": "node scripts/check-shared-workflow.mjs",
     "check:route-hygiene": "node scripts/check-route-hygiene.mjs",
     "check:ride-regression": "node scripts/check-ride-regressions.mjs",

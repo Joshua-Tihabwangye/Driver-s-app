@@ -1,4 +1,4 @@
-import { buildPrivateTripRoute } from "../data/constants";
+import { buildDriverLifecycleRoute } from "../data/constants";
 import {
 Clock,
 MapPin,
@@ -9,6 +9,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import DriverMapSurface from "../components/DriverMapSurface";
 import SlideToConfirm from "../components/SlideToConfirm";
 import { useStore } from "../context/StoreContext";
+import { resolveDriverTripPresentation } from "../utils/driverTripPresentation";
 
 // EVzone Driver App – NavigateToPickup Driver App – Navigate to Pick-Up Location (v2)
 // Navigate-to-pickup view with job type awareness and special variants for
@@ -25,11 +26,15 @@ import { useStore } from "../context/StoreContext";
 export default function NavigateToPickup() {
   const navigate = useNavigate();
   const { tripId: routeTripId } = useParams();
-  const { activeTrip, transitionActiveTripStage } = useStore();
+  const { activeTrip, jobs, trips, transitionActiveTripStage } = useStore();
   const tripId = routeTripId || activeTrip.tripId;
-  // Use the REAL job type from activeTrip state, not a local preview toggle.
-  // This ensures state transitions work for all job types (ride, delivery, rental, etc.)
-  const jobType = activeTrip.jobType || "ride";
+  const tripPresentation = resolveDriverTripPresentation({
+    tripId,
+    jobType: activeTrip.jobType,
+    jobs,
+    trips,
+  });
+  const jobType = tripPresentation.jobType;
 
   const navigateToTripStage = (
     stage: "waiting_for_passenger" | "cancel_reason"
@@ -46,7 +51,7 @@ export default function NavigateToPickup() {
       transitionActiveTripStage(stage);
     }
 
-    navigate(buildPrivateTripRoute(stage, tripId));
+    navigate(buildDriverLifecycleRoute(stage, tripId));
   };
 
   const handleOpenNavigation = () => {
@@ -55,17 +60,7 @@ export default function NavigateToPickup() {
       return;
     }
 
-    navigate(buildPrivateTripRoute("navigation", tripId));
-  };
-
-  const jobTypeLabelMap: Record<string, string> = {
-    ride: "Ride",
-    delivery: "Delivery",
-    rental: "Rental",
-    tour: "Tour",
-    ambulance: "Ambulance",
-    shared: "Shared",
-    shuttle: "Shuttle",
+    navigate(buildDriverLifecycleRoute("navigation", tripId));
   };
 
   const isRental = jobType === "rental";
@@ -75,18 +70,12 @@ export default function NavigateToPickup() {
   // Pickup text varies slightly by job type
   const pickupTitle = isAmbulance
     ? "Patient location"
-    : jobType === "delivery"
-    ? "Pickup · Burger Hub, Acacia Mall"
-    : "Pickup · Acacia Mall";
+    : `Pickup · ${tripPresentation.originLabel}`;
 
-  const pickupSub = isAmbulance
-    ? "En route to patient · 0.7 km away"
-    : "4 min · 1.6 km away";
+  const pickupSub = tripPresentation.timingSummary;
 
-  const rentalExtra = isRental ? "Rental window: 09:00–18:00" : null;
-  const tourExtra = isTour
-    ? "Today: Day 1 of 3 · Segment: Airport pickup"
-    : null;
+  const rentalExtra = isRental ? tripPresentation.routeSummary : null;
+  const tourExtra = isTour ? tripPresentation.routeSummary : null;
 
   return (
     <div className="flex flex-col min-h-full">
@@ -140,7 +129,7 @@ export default function NavigateToPickup() {
       <main className="flex-1 px-6 pt-5 pb-16 overflow-y-auto scrollbar-hide space-y-6">
         <section className="space-y-1">
           <p className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">
-            Driver · {jobTypeLabelMap[jobType]}
+            Driver · {tripPresentation.jobTypeLabel}
           </p>
           <h1 className="text-lg font-black text-slate-900 uppercase tracking-tight">
             Navigate to pickup

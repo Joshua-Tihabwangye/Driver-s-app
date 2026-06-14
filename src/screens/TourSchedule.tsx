@@ -13,6 +13,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
 import { TourSegmentStatus } from "../data/types";
+import { resolveDriverTripPresentation } from "../utils/driverTripPresentation";
 
 // EVzone Driver App – TourSchedule
 // Multi-stop tour schedule with granular segment lifecycle (Preparing -> Navigating -> Arrived -> Activity -> Completed)
@@ -86,6 +87,12 @@ export default function TourSchedule() {
   const tour = useMemo(() => {
     return jobs.find((j) => j.id === tourId && j.jobType === "tour");
   }, [jobs, tourId]);
+  const tripPresentation = resolveDriverTripPresentation({
+    tripId: tourId || null,
+    jobType: "tour",
+    jobs,
+    trips: [],
+  });
 
   const segments = tour?.segments || [];
   const completedCount = segments.filter((s) => s.status === "completed").length;
@@ -138,7 +145,7 @@ export default function TourSchedule() {
     <div className="flex flex-col h-full ">
       <PageHeader
         title="Today's Tour"
-        subtitle={tour.from + " · Day 2"}
+        subtitle={`${tripPresentation.routeSummary} · ${tour.duration || "Live schedule"}`}
         onBack={() => navigate(-1)}
       />
 

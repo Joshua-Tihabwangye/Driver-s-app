@@ -2,6 +2,7 @@ import { execSync } from "node:child_process";
 
 const checks = [
   "node scripts/check-driver-regressions.mjs",
+  "node scripts/check-driver-lifecycle-regressions.mjs",
   "node scripts/check-route-hygiene.mjs",
   "node scripts/check-ride-regressions.mjs",
   "node scripts/check-shared-workflow.mjs",

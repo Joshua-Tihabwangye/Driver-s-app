@@ -1,4 +1,4 @@
-import { buildPrivateTripRoute } from "../data/constants";
+import { buildDriverLifecycleRoute } from "../data/constants";
 import {
   Clock,
   MapPin,
@@ -10,6 +10,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import DriverMapSurface from "../components/DriverMapSurface";
 import SlideToConfirm from "../components/SlideToConfirm";
 import { useStore } from "../context/StoreContext";
+import { resolveDriverTripPresentation } from "../utils/driverTripPresentation";
 
 // EVzone Driver App – WaitingForPassenger Driver App – Waiting for Passenger (v2)
 // State when the driver is at pickup and waiting, with timer and no-show option.
@@ -35,10 +36,15 @@ export default function WaitingForPassenger() {
   const [waitingSeconds, setWaitingSeconds] = useState(0);
   const navigate = useNavigate();
   const { tripId: routeTripId } = useParams();
-  const { activeTrip, transitionActiveTripStage } = useStore();
+  const { activeTrip, jobs, trips, transitionActiveTripStage } = useStore();
   const tripId = routeTripId || activeTrip.tripId;
-  // Use the REAL job type from activeTrip, not a local preview toggle
-  const jobType = activeTrip.jobType || "ride";
+  const tripPresentation = resolveDriverTripPresentation({
+    tripId,
+    jobType: activeTrip.jobType,
+    jobs,
+    trips,
+  });
+  const jobType = tripPresentation.jobType;
 
   const sanitizePhone = (phone) => (phone || "").replace(/[^\d+]/g, "");
   const handleCall = (phone) => {
@@ -49,14 +55,6 @@ export default function WaitingForPassenger() {
     const target = sanitizePhone(phone);
     if (target) window.open(`sms:${target}`);
   };
-
-  const jobTypeLabelMap = {
-    ride: "Ride",
-    delivery: "Delivery",
-    rental: "Rental",
-    tour: "Tour",
-    ambulance: "Ambulance"
-};
 
   const isRental = jobType === "rental";
   const isTour = jobType === "tour";
@@ -83,7 +81,7 @@ export default function WaitingForPassenger() {
       const transitionTarget = stage === "rider_verification" ? "rider_verified" : "cancel_no_show";
       transitionActiveTripStage(transitionTarget);
     }
-    navigate(buildPrivateTripRoute(stage, tripId));
+    navigate(buildDriverLifecycleRoute(stage, tripId));
   };
 
   // Header title varies slightly by job type
@@ -96,19 +94,16 @@ export default function WaitingForPassenger() {
     : "Waiting for passenger";
 
   // Summary card wording per job type
-  let summaryTitle = "Waiting at Acacia Mall";
-  let summaryText = "Let the rider know exactly where you\'re parked.";
+  const summaryTitle = tripPresentation.routeSummary;
+  let summaryText = tripPresentation.timingSummary;
   let timerLabel = isAmbulance ? "On scene time" : "Waiting time";
 
   if (isRental) {
-    summaryTitle = "Waiting for client at hotel lobby";
-    summaryText = "Let the client know you are in the hotel lobby or at the agreed spot.";
+    summaryText = `Rental flow active · ${tripPresentation.statusSummary}`;
   } else if (isTour) {
-    summaryTitle = "Waiting at tour pickup location";
-    summaryText = "Let the guests know exactly where you are waiting.";
+    summaryText = `Tour flow active · ${tripPresentation.statusSummary}`;
   } else if (isAmbulance) {
-    summaryTitle = "On scene at patient location";
-    summaryText = "Stay with the patient and follow instructions from dispatch or medical staff.";
+    summaryText = `Ambulance run active · ${tripPresentation.statusSummary}`;
   }
 
   return (
@@ -143,7 +138,7 @@ export default function WaitingForPassenger() {
       <main className="flex-1 px-6 pt-5 pb-16 space-y-6">
         <section className="space-y-1">
           <p className="text-[10px] tracking-[0.2em] font-black uppercase text-slate-400">
-            Driver · {jobTypeLabelMap[jobType] || "Ride"}
+            Driver · {tripPresentation.jobTypeLabel}
           </p>
           <h1 className="text-lg font-black text-slate-900 uppercase tracking-tight">
             {headerTitle}

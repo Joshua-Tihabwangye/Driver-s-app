@@ -1,4 +1,4 @@
-import { buildPrivateTripRoute } from "../data/constants";
+import { buildDriverLifecycleRoute } from "../data/constants";
 import {
 AlertTriangle,
 ChevronLeft,
@@ -72,7 +72,7 @@ export default function CancelReason() {
       transitionActiveTripStage("cancel_reason");
     }
 
-    navigate(buildPrivateTripRoute("cancel_details", tripId), {
+    navigate(buildDriverLifecycleRoute("cancel_details", tripId), {
       state: {
         reason: selectedReason,
         notes,
@@ -87,7 +87,7 @@ export default function CancelReason() {
     }
 
     const resumeStage = resolveResumeStage();
-    navigate(buildPrivateTripRoute(resumeStage, tripId));
+    navigate(buildDriverLifecycleRoute(resumeStage, tripId));
   };
 
   return (

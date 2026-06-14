@@ -1,4 +1,4 @@
-import { buildPrivateTripRoute } from "../data/constants";
+import { buildDriverLifecycleRoute } from "../data/constants";
 import {
 Car,
 ChevronLeft,
@@ -14,6 +14,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
+import { resolveDriverTripPresentation } from "../utils/driverTripPresentation";
 
 // EVzone Driver App – RentalJobOverview Rental Job Overview / On Rental Screen (v1)
 // Long-duration rental view for chauffeur / car rental jobs.
@@ -65,6 +66,12 @@ export default function RentalJobOverview() {
         : null,
     [jobs, jobId]
   );
+  const tripPresentation = resolveDriverTripPresentation({
+    tripId: jobId || null,
+    jobType: "rental",
+    jobs,
+    trips,
+  });
   const isThisRentalActive = Boolean(
     jobId &&
       activeTrip.tripId === jobId &&
@@ -130,7 +137,7 @@ export default function RentalJobOverview() {
     if (!activeRentalTripId) {
       return;
     }
-    navigate(buildPrivateTripRoute("navigation", activeRentalTripId), {
+    navigate(buildDriverLifecycleRoute("navigation", activeRentalTripId), {
       state: {
         jobType: "rental",
         tripId: activeRentalTripId,
@@ -200,7 +207,7 @@ export default function RentalJobOverview() {
       }
     }
 
-    navigate(buildPrivateTripRoute("completed", completedTripId), {
+    navigate(buildDriverLifecycleRoute("completed", completedTripId), {
       state: { jobType: "rental", tripId: completedTripId },
     });
   };
@@ -229,12 +236,12 @@ export default function RentalJobOverview() {
                  Rental Window
                </span>
                <p className="text-lg font-black text-white">
-                 09:00 – 18:00
+                 {rentalJob.duration || "Live rental window"}
                </p>
             </div>
             <div className="text-right">
                <p className="text-lg font-black text-white">
-                 $64.80
+                 {rentalJob.fare}
                </p>
                <span className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">
                  Est. Earnings
@@ -246,6 +253,9 @@ export default function RentalJobOverview() {
              <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
                Job Status
              </span>
+             <p className="text-[11px] font-bold text-slate-300 uppercase tracking-tight">
+               {tripPresentation.routeSummary}
+             </p>
              <div className="flex flex-wrap gap-2">
                 {STATUSES.map((label) => (
                   <StatusChip

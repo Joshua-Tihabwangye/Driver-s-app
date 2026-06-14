@@ -69,7 +69,7 @@ check(
 
 check(
   "NavigateToPickup intentionally links to navigation stage",
-  navigateToPickup.includes('buildPrivateTripRoute("navigation", tripId)'),
+  navigateToPickup.includes('buildDriverLifecycleRoute("navigation", tripId)'),
   "NavigateToPickup should provide intentional inbound to /driver/trip/:tripId/navigation"
 );
 
@@ -91,8 +91,8 @@ check(
   "Rental overview links to canonical trip routes (no sample ids)",
   /const ensureRental[A-Za-z]+ = \(\) =>/.test(rentalJobOverview) &&
     rentalJobOverview.includes('acceptSpecializedJob(jobId, "rental")') &&
-    rentalJobOverview.includes('buildPrivateTripRoute("navigation", activeRentalTripId)') &&
-    rentalJobOverview.includes('buildPrivateTripRoute("completed", completedTripId)') &&
+    rentalJobOverview.includes('buildDriverLifecycleRoute("navigation", activeRentalTripId)') &&
+    rentalJobOverview.includes('buildDriverLifecycleRoute("completed", completedTripId)') &&
     !rentalJobOverview.includes("SAMPLE_IDS"),
   "Rental overview should resolve real rental job ids and route through canonical builders"
 );
