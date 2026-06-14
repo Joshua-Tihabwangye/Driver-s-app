@@ -61,10 +61,36 @@ const SENSITIVE_ONBOARDING_IDS = new Set([
 
 const PHONE_WIDTH_MEDIA = "(max-width: 640px)";
 
+function LoadingScreen() {
+  return (
+    <div
+      style={{
+        minHeight: "100dvh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "#0f172a",
+      }}
+    >
+      <div
+        style={{
+          width: 36,
+          height: 36,
+          borderRadius: "50%",
+          border: "3px solid rgba(255,255,255,0.15)",
+          borderTopColor: "#38bdf8",
+          animation: "spin 0.75s linear infinite",
+        }}
+      />
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
+}
+
 function GuestOnlyRoute({ children }: { children: ReactNode }) {
   const { isAuthReady, isLoggedIn, defaultRedirect } = useAuth();
   if (!isAuthReady) {
-    return null;
+    return <LoadingScreen />;
   }
   if (isLoggedIn) {
     return <Navigate to={defaultRedirect || AUTHENTICATED_HOME_ROUTE} replace />;
@@ -78,7 +104,7 @@ function RequireAuth({ children }: { children: ReactNode }) {
   const location = useLocation();
 
   if (!isAuthReady) {
-    return null;
+    return <LoadingScreen />;
   }
 
   if (!isLoggedIn) {
@@ -99,8 +125,10 @@ function RequireOnboarding({ children }: { children: ReactNode }) {
   const { driverBootstrapReady, onboardingCompleted, primaryOnboardingRoute } = useStore();
   const location = useLocation();
 
+  // Show a loading spinner while the first bootstrap is in flight.
+  // Returning null causes a black screen; a spinner is far better UX.
   if (!driverBootstrapReady) {
-    return null;
+    return <LoadingScreen />;
   }
 
   if (!onboardingCompleted) {
@@ -124,7 +152,7 @@ function RequireOnlineForJobs({
   const location = useLocation();
 
   if (!driverBootstrapReady) {
-    return null;
+    return <LoadingScreen />;
   }
 
   const isOffline = driverPresenceStatus === "offline";

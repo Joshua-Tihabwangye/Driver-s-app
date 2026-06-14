@@ -24,6 +24,7 @@ export interface DocumentUploadCopy {
   mimeType?: string;
   sizeBytes?: number;
   error: string;
+  rawFile?: File;
 }
 
 export interface DocumentUploadEntry {
@@ -193,7 +194,25 @@ export function persistDocumentState(nextState: DocumentUploadState): void {
     return;
   }
 
-  window.localStorage.setItem(DOCUMENT_UPLOAD_STATE_KEY, JSON.stringify(nextState));
+  const serializableState: DocumentUploadState = {
+    id: {
+      ...nextState.id,
+      front: { ...nextState.id.front },
+      back: { ...nextState.id.back },
+    },
+    license: {
+      ...nextState.license,
+      front: { ...nextState.license.front },
+      back: { ...nextState.license.back },
+    },
+    police: {
+      ...nextState.police,
+      front: { ...nextState.police.front },
+      back: { ...nextState.police.back },
+    },
+  };
+
+  window.localStorage.setItem(DOCUMENT_UPLOAD_STATE_KEY, JSON.stringify(serializableState));
 }
 
 export function resetStoredDocumentState(): DocumentUploadState {

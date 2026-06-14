@@ -1880,9 +1880,30 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [driverPresenceStatus, setDriverPresenceStatus] = useState<DriverPresenceStatus>(() =>
     readStoredDriverPresenceStatus()
   );
-  const [onboardingCompleted, setOnboardingCompleted] = useState<boolean>(false);
+  const [onboardingCompleted, setOnboardingCompleted] = useState<boolean>(() => {
+    // Seed from localStorage so a fully-onboarded driver isn't redirected to
+    // the onboarding route during the bootstrap loading window.
+    if (typeof window === "undefined") return false;
+    try {
+      return window.localStorage.getItem("driver_onboarding_completed") === "true";
+    } catch {
+      return false;
+    }
+  });
   const [backendPrimaryOnboardingRoute, setBackendPrimaryOnboardingRoute] =
     useState<string>("/driver/onboarding/profile");
+
+  // Persist onboardingCompleted so it can seed the initial state on the next load,
+  // preventing the RequireOnboarding guard from briefly redirecting a fully-onboarded
+  // driver to the onboarding route during the bootstrap loading window.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem("driver_onboarding_completed", String(onboardingCompleted));
+    } catch {
+      // ignore storage errors
+    }
+  }, [onboardingCompleted]);
   // True once the first backend bootstrap has completed (or failed).
   // Guards navigation guards that would otherwise fire before we know the real status.
   const [driverBootstrapReady, setDriverBootstrapReady] = useState<boolean>(
@@ -2319,11 +2340,32 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const setDriverOnline = useCallback(
     async (input?: { confirmed?: boolean }) => {
       if (shouldUseDriverBackendWrites()) {
-        const result = await setDriverPresenceOnline(input);
-        if (result?.status === "online") {
+        // Optimistic update: flip the UI to online immediately so the button
+        // and status indicator respond without waiting for the server round-trip.
+        // The server call validates onboarding/documents and persists the state;
+        // if it rejects, we roll back and surface the error to the caller.
+        if (input?.confirmed) {
           setDriverPresenceStatus("online");
           setJobAccessError(null);
+        }
+
+        let result: DriverBackendPresenceOnlineResult | null = null;
+        try {
+          result = await setDriverPresenceOnline(input);
+        } catch (err) {
+          // Roll back the optimistic update on failure.
+          if (input?.confirmed) {
+            setDriverPresenceStatus("offline");
+          }
+          throw err;
+        }
+
+        if (result?.status === "online") {
+          // Status already set optimistically — just trigger the data sync.
           setBackendBootstrapTrigger((prev) => prev + 1);
+        } else if (input?.confirmed && result?.status !== "online") {
+          // Server returned something other than online — roll back.
+          setDriverPresenceStatus("offline");
         }
         return result;
       }

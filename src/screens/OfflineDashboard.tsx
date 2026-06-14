@@ -59,7 +59,23 @@ export default function OfflineDashboard() {
     vehicles,
     selectedVehicleIndex,
     driverBootstrapReady,
+    refreshBackendOnboardingState,
   } = useStore();
+
+  // Refresh onboarding/document status when the driver lands on this screen,
+  // but only if we haven't bootstrapped recently (not on every mount).
+  // Use a ref to track whether this screen has already refreshed in this session.
+  useEffect(() => {
+    if (!driverBackendEnabled || !driverBootstrapReady) return;
+    // Only refresh if we haven't refreshed in the last 30 seconds
+    const lastRefreshKey = "driver_offline_dash_last_refresh";
+    const lastRefresh = Number(sessionStorage.getItem(lastRefreshKey) ?? 0);
+    const now = Date.now();
+    if (now - lastRefresh < 30_000) return;
+    sessionStorage.setItem(lastRefreshKey, String(now));
+    void refreshBackendOnboardingState();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [driverBackendEnabled, driverBootstrapReady]);
 
   const documentsVerified = driverBackendEnabled
     ? onboardingCheckpoints.documentsVerified === true
@@ -207,15 +223,16 @@ export default function OfflineDashboard() {
             className="w-full rounded-3xl border border-red-200 bg-red-50 p-4 text-left transition-all hover:border-red-300 active:scale-[0.99]"
           >
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-600">
-              Expired Documents
+              Documents Need Attention
             </p>
             <p className="mt-1 text-[11px] font-bold leading-relaxed text-red-700">
-              One or more required documents are expired. Tap to review and update them.
+              One or more required documents have expired. Tap to review and update them.
             </p>
           </button>
         ) : null}
 
-        {hasOfflineGuardMessage ? (
+        {/* Only show the access-restricted message when canGoOnline is still false */}
+        {hasOfflineGuardMessage && !canGoOnline ? (
           <section className="rounded-3xl border border-orange-200 bg-orange-50 p-4 space-y-2">
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-600">
               Access Restricted

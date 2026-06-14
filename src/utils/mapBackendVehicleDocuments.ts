@@ -25,7 +25,10 @@ function readEntry(
       continue;
     }
 
-    const fileName = fileUrl.split("/").pop() || `${key}-document`;
+    const originalFileName =
+      typeof entry.originalFileName === "string" ? entry.originalFileName.trim() : "";
+    const fileName =
+      originalFileName || (typeof entry.fileName === "string" ? entry.fileName.trim() : "") || `${key}-document`;
     return {
       documentType: key,
       expiryDate,
@@ -34,6 +37,9 @@ function readEntry(
         fileName,
         documentType: key,
         expiryDate,
+        fileKey: typeof entry.fileKey === "string" ? entry.fileKey : undefined,
+        mimeType: typeof entry.mimeType === "string" ? entry.mimeType : undefined,
+        sizeBytes: typeof entry.sizeBytes === "number" ? entry.sizeBytes : undefined,
       },
     };
   }

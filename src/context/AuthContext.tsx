@@ -119,8 +119,22 @@ function isSessionInvalidError(error: unknown): boolean {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const storedUser = useMemo(() => readStoredAuthUser(), []);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isAuthReady, setIsAuthReady] = useState(() => !readDriverBackendAccessToken());
+  // Optimistic login: if we have both a cached user and a token, consider the
+  // user logged in immediately so the route guards pass without waiting for
+  // the session fetch. The session fetch corrects this if the token is invalid.
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    return Boolean(readStoredAuthUser()) && Boolean(readDriverBackendAccessToken());
+  });
+  // Start as ready when we have cached user data so the app renders immediately
+  // instead of showing a black screen while the session API call completes.
+  // The session fetch still runs in the background to validate the token.
+  const [isAuthReady, setIsAuthReady] = useState(() => {
+    const hasCachedUser = Boolean(readStoredAuthUser());
+    const hasToken = Boolean(readDriverBackendAccessToken());
+    // If we have a cached user AND a token, render immediately (optimistic).
+    // If we only have a token (no cached user), we must wait for session.
+    return hasCachedUser || !hasToken;
+  });
   const [user, setUser] = useState<AuthUser | null>(storedUser);
   const [onboarding, setOnboarding] =
     useState<DriverBackendSessionResponse["onboarding"]>(null);
@@ -214,9 +228,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const syncSession = async () => {
       const hasToken = Boolean(readDriverBackendAccessToken());
       if (!hasToken) {
-        if (cancelled) {
-          return;
-        }
+        if (cancelled) return;
         setIsLoggedIn(false);
         setUser(null);
         setOnboarding(null);
@@ -226,16 +238,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
-      if (!cancelled) {
-        const optimisticUser = storedUser ? buildAuthUser(storedUser) : null;
-        if (optimisticUser) {
-          setUser(optimisticUser);
+      // Fast path: we already have a cached user and a token.
+      // Mark auth as ready immediately — the StoreContext bootstrap will
+      // fetch fresh profile/onboarding data in parallel, so calling
+      // /auth/session here just doubles the DB load on every page load.
+      if (storedUser) {
+        if (!cancelled) {
+          setUser(buildAuthUser(storedUser));
+          setIsLoggedIn(true);
+          setIsAuthReady(true);
         }
-        setIsLoggedIn(true);
+        // Still refresh in the background to catch token expiry,
+        // but don't block rendering on it.
+        refreshSession(storedUser).catch(() => {});
+        return;
       }
 
+      // Slow path: no cached user, must fetch session to get user data.
+      if (!cancelled) {
+        setIsLoggedIn(true);
+      }
       try {
-        await refreshSession(storedUser ?? undefined);
+        await refreshSession(undefined);
       } finally {
         if (!cancelled) {
           setIsAuthReady(true);

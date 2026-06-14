@@ -56,6 +56,8 @@ export interface RequestOptions {
   headers?: Record<string, string>;
   body?: unknown;
   retryOnUnauthorized?: boolean;
+  /** Timeout in ms. Defaults to 30 000. Use 0 to disable. */
+  timeoutMs?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -79,20 +81,31 @@ export async function request<T = unknown>(
   path: string,
   options: RequestOptions = {}
 ): Promise<T> {
-  const { method = "GET", headers = {}, body, retryOnUnauthorized = true } =
+  const { method = "GET", headers = {}, body, retryOnUnauthorized = true, timeoutMs = 30_000 } =
     options;
 
   const accessToken = _auth?.getAccessToken();
   const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
-  const res = await fetch(`${BACKEND_URL}${path}`, {
-    method,
-    headers: {
-      ...(isFormData ? {} : { "Content-Type": "application/json" }),
-      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-      ...headers,
-    },
-    ...(body !== undefined ? { body: isFormData ? (body as FormData) : JSON.stringify(body) } : {}),
-  });
+
+  // Abort after timeoutMs so a Neon cold-start or network issue doesn't hang the UI.
+  const controller = new AbortController();
+  const timeoutId = timeoutMs > 0 ? setTimeout(() => controller.abort(), timeoutMs) : undefined;
+
+  let res: Response;
+  try {
+    res = await fetch(`${BACKEND_URL}${path}`, {
+      method,
+      signal: controller.signal,
+      headers: {
+        ...(isFormData ? {} : { "Content-Type": "application/json" }),
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        ...headers,
+      },
+      ...(body !== undefined ? { body: isFormData ? (body as FormData) : JSON.stringify(body) } : {}),
+    });
+  } finally {
+    if (timeoutId !== undefined) clearTimeout(timeoutId);
+  }
 
   if (res.status === 401 && retryOnUnauthorized && _auth) {
     // Try a token refresh then retry the original request once.
