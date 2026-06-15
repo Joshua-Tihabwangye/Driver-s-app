@@ -1,5 +1,6 @@
 import { useEffect, type Dispatch, type SetStateAction } from "react";
 import { createDriverSocket } from "../../services/driverSocket";
+import { DRIVER_BACKEND_AUTH_EVENT, readDriverBackendAccessToken } from "../../services/api/driverApi";
 import type { Job, TripRecord } from "../../data/types";
 
 type ActiveTripStateLike = {
@@ -46,6 +47,20 @@ export function useDriverRealtimeSync({
     if (!driverBackendEnabled) return;
 
     const socket = createDriverSocket();
+    const refreshSocketAuth = () => {
+      const token = readDriverBackendAccessToken();
+      socket.auth = { token };
+
+      if (!token) {
+        socket.disconnect();
+        return;
+      }
+
+      if (socket.connected) {
+        socket.disconnect();
+      }
+      socket.connect();
+    };
     const uniqueEvents = (events: Array<string | undefined>) =>
       Array.from(new Set(events.filter((eventName): eventName is string => Boolean(eventName))));
 
@@ -250,6 +265,9 @@ export function useDriverRealtimeSync({
           }) => handleTripStatusEvent(eventName, payload || {}),
         );
       });
+      if (typeof window !== "undefined") {
+        window.addEventListener(DRIVER_BACKEND_AUTH_EVENT, refreshSocketAuth as EventListener);
+      }
       socket.connect();
     }
 
@@ -260,6 +278,9 @@ export function useDriverRealtimeSync({
       deliveryRouteUpdatedEvents.forEach((eventName) => socket.off(eventName, handleDeliveryRouteUpdated));
       serviceRequestUpdatedEvents.forEach((eventName) => socket.off(eventName, handleServiceRequestUpdated));
       tripStatusEvents.forEach((eventName) => socket.off(eventName));
+      if (typeof window !== "undefined") {
+        window.removeEventListener(DRIVER_BACKEND_AUTH_EVENT, refreshSocketAuth as EventListener);
+      }
       socket.disconnect();
     };
   }, [driverBackendEnabled, mapBackendJobStatus, mapBackendJobType, mapBackendTripStage, mapBackendTripStatus, setActiveTrip, setDeliveryWorkflow, setJobs, setTrips]);
