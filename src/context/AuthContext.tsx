@@ -6,6 +6,7 @@ import {
   DRIVER_BACKEND_AUTH_EVENT,
   isBackendAuthEnabled,
   readDriverBackendAccessToken,
+  readDriverBackendRefreshToken,
 } from "../services/api/driverApi";
 
 export const AUTH_STORAGE_KEY = "isLoggedIn";
@@ -123,14 +124,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // user logged in immediately so the route guards pass without waiting for
   // the session fetch. The session fetch corrects this if the token is invalid.
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    return Boolean(readStoredAuthUser()) && Boolean(readDriverBackendAccessToken());
+    return Boolean(readStoredAuthUser()) && (Boolean(readDriverBackendAccessToken()) || Boolean(readDriverBackendRefreshToken()));
   });
   // Start as ready when we have cached user data so the app renders immediately
   // instead of showing a black screen while the session API call completes.
   // The session fetch still runs in the background to validate the token.
   const [isAuthReady, setIsAuthReady] = useState(() => {
     const hasCachedUser = Boolean(readStoredAuthUser());
-    const hasToken = Boolean(readDriverBackendAccessToken());
+    const hasToken = Boolean(readDriverBackendAccessToken()) || Boolean(readDriverBackendRefreshToken());
     // If we have a cached user AND a token, render immediately (optimistic).
     // If we only have a token (no cached user), we must wait for session.
     return hasCachedUser || !hasToken;
@@ -167,7 +168,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshSession = useCallback(
     async (fallbackUser?: Partial<AuthUser>) => {
-      const hasToken = Boolean(readDriverBackendAccessToken());
+      const hasToken = Boolean(readDriverBackendAccessToken()) || Boolean(readDriverBackendRefreshToken());
       if (!hasToken) {
         setIsLoggedIn(false);
         setUser(null);
@@ -226,7 +227,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let cancelled = false;
 
     const syncSession = async () => {
-      const hasToken = Boolean(readDriverBackendAccessToken());
+      const hasToken = Boolean(readDriverBackendAccessToken()) || Boolean(readDriverBackendRefreshToken());
       if (!hasToken) {
         if (cancelled) return;
         setIsLoggedIn(false);
@@ -288,7 +289,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = useCallback(
     async (input?: Partial<AuthUser>) => {
-      if (readDriverBackendAccessToken()) {
+      if (readDriverBackendAccessToken() || readDriverBackendRefreshToken()) {
         const session = await refreshSession(input);
         setIsAuthReady(true);
         return session;

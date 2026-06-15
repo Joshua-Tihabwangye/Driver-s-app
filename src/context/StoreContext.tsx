@@ -1938,7 +1938,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   // Sync active vehicle selection to backend
   const syncActiveVehicleToBackend = useCallback(async (vehicleId: string | null) => {
-    if (!driverBackendEnabled || !readDriverBackendAccessToken()) return;
+    if (!shouldUseDriverBackendWrites()) return;
     try {
       await setDriverActiveVehicle(vehicleId);
     } catch (error) {
@@ -1961,7 +1961,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshBackendOnboardingState = useCallback(async () => {
-    if (!driverBackendEnabled || !readDriverBackendAccessToken()) {
+    if (!shouldUseDriverBackendWrites()) {
       return;
     }
 
@@ -2145,7 +2145,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
 
     const refreshDriverConnection = () => {
-      if (!readDriverBackendAccessToken()) {
+      if (!shouldUseDriverBackendWrites()) {
         return;
       }
       const socket = createDriverSocket();

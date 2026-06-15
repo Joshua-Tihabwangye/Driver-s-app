@@ -462,7 +462,7 @@ configureHttpClientAuth({
 });
 
 export function shouldUseDriverBackendWrites(): boolean {
-  return isBackendAuthEnabled() && Boolean(readDriverBackendAccessToken());
+  return isBackendAuthEnabled() && (Boolean(readDriverBackendAccessToken()) || Boolean(readDriverBackendRefreshToken()));
 }
 
 let runtimeDriverBackendCapabilities: DriverBackendCapabilities = {
