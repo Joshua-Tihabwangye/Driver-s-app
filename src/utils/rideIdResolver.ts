@@ -1,7 +1,6 @@
 import type { Job } from "../data/types";
-import { SAMPLE_IDS } from "../data/constants";
 
-export const FALLBACK_SHARE_RIDE_ID = SAMPLE_IDS.ride;
+export const FALLBACK_SHARE_RIDE_ID = "";
 
 export function resolveSafetyRideId(
   jobs: Job[] | undefined,

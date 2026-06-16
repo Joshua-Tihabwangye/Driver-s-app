@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { GoogleMap, MarkerF, OverlayViewF, TrafficLayer, useJsApiLoader } from "@react-google-maps/api";
+import { PolylineF } from "@react-google-maps/api";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { useStore } from "../context/StoreContext";
@@ -49,6 +50,7 @@ type DriverMapSurfaceProps = {
   heightClass?: string;
   className?: string;
   routePath?: string;
+  routePoints?: LatLng[];
   routeColor?: string;
   routeStrokeWidth?: number;
   routeDasharray?: string;
@@ -272,6 +274,7 @@ export default function DriverMapSurface({
   heightClass = "h-[460px]",
   className = "",
   routePath,
+  routePoints = [],
   routeColor = "#14c8a8",
   routeStrokeWidth = 2.5,
   routeDasharray = "5 4",
@@ -292,7 +295,13 @@ export default function DriverMapSurface({
   stationMarkers = DEFAULT_EV_STATION_MARKERS,
   children,
 }: DriverMapSurfaceProps) {
-  const { driverMapPreferences, setMapAlertsEnabled, setMapStationsEnabled } = useStore();
+  const {
+    driverMapPreferences,
+    driverPresenceStatus,
+    reportActiveRideMovementSample,
+    setMapAlertsEnabled,
+    setMapStationsEnabled,
+  } = useStore();
   const [zoom, setZoom] = useState(defaultZoom);
   const [bearing, setBearing] = useState(defaultBearing);
   const [layer, setLayer] = useState<MapLayerMode>(defaultLayer);
@@ -352,6 +361,14 @@ export default function DriverMapSurface({
       (pos) => {
         const nextPosition = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         setSelfPosition(nextPosition);
+        if (driverPresenceStatus === "online") {
+          reportActiveRideMovementSample({
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+            accuracy: pos.coords.accuracy,
+            timestamp: Date.now(),
+          });
+        }
         if (isFollowingDevice) {
           setCenter(nextPosition);
           if (mapRef) mapRef.panTo(nextPosition);
@@ -361,7 +378,7 @@ export default function DriverMapSurface({
       { enableHighAccuracy: true, maximumAge: 10000 },
     );
     return () => navigator.geolocation.clearWatch(watchId);
-  }, [isFollowingDevice, mapRef]);
+  }, [driverPresenceStatus, isFollowingDevice, mapRef, reportActiveRideMovementSample]);
 
   useEffect(() => {
     if (!mapRef) return;
@@ -618,6 +635,17 @@ export default function DriverMapSurface({
                 />
               );
             })()}
+            {routePoints.length >= 2 ? (
+              <PolylineF
+                path={routePoints}
+                options={{
+                  strokeColor: routeColor,
+                  strokeOpacity: trafficOn ? 0.95 : 0.6,
+                  strokeWeight: Math.max(3, routeStrokeWidth + 1),
+                  geodesic: false,
+                }}
+              />
+            ) : null}
           </GoogleMap>
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(130deg,rgba(190,241,230,0.85)_0%,rgba(220,236,248,0.95)_54%,rgba(235,242,250,0.98)_100%)] p-4 text-center">

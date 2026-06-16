@@ -13,10 +13,32 @@ import {
   listDriverServiceRequests,
   listDriverTrips,
 } from "../../services/api/driverApi";
+import {
+  buildBackendJobPresentation,
+  extractBackendRoutePoints,
+  formatBackendFare,
+} from "../../utils/backendJobPresentation";
 
 const SELECTED_VEHICLE_STORAGE_KEY = "driver_selected_vehicle";
 
 type AnySetter<T = any> = (value: T | ((prev: T) => T)) => void;
+
+function toEpochMillis(value: unknown): number {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === "string" && value.trim().length > 0) {
+    const parsed = Date.parse(value);
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
+    const numeric = Number(value);
+    if (Number.isFinite(numeric)) {
+      return numeric;
+    }
+  }
+  return Date.now();
+}
 
 type UseDriverBackendBootstrapSyncOptions = {
   driverBackendEnabled: boolean;
@@ -34,6 +56,7 @@ type UseDriverBackendBootstrapSyncOptions = {
   setSelectedVehicleIndex: AnySetter;
   setJobs: AnySetter;
   setTrips: AnySetter;
+  setRevenueEvents: AnySetter;
   setEmergencyContacts: AnySetter;
   setActiveTrip: AnySetter;
   setDeliveryWorkflow: AnySetter;
@@ -66,6 +89,7 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
     setSelectedVehicleIndex,
     setJobs,
     setTrips,
+    setRevenueEvents,
     setEmergencyContacts,
     setActiveTrip,
     setDeliveryWorkflow,
@@ -244,6 +268,7 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
             cancelled,
             setJobs,
             setTrips,
+            setRevenueEvents,
             setEmergencyContacts,
             setActiveTrip,
             setDeliveryWorkflow,
@@ -329,13 +354,13 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
                     ? "cancelled"
                     : "in_progress",
               timestamps: {
-                acceptedAt: backendActiveServiceRequest.requestedAt,
-                startedAt: backendActiveServiceRequest.updatedAt,
+                acceptedAt: toEpochMillis(backendActiveServiceRequest.requestedAt),
+                startedAt: toEpochMillis(backendActiveServiceRequest.updatedAt),
                 completedAt:
                   backendActiveServiceRequest.status === "completed"
-                    ? backendActiveServiceRequest.updatedAt
+                    ? toEpochMillis(backendActiveServiceRequest.updatedAt)
                     : undefined,
-                updatedAt: backendActiveServiceRequest.updatedAt,
+                updatedAt: toEpochMillis(backendActiveServiceRequest.updatedAt),
               },
             });
             return;
@@ -366,10 +391,10 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
                   : "in_progress",
             timestamps: {
               ...prev.timestamps,
-              acceptedAt: backendActiveTrip.requestedAt,
-              startedAt: backendActiveTrip.startedAt,
-              completedAt: backendActiveTrip.completedAt,
-              updatedAt: backendActiveTrip.updatedAt,
+              acceptedAt: toEpochMillis(backendActiveTrip.requestedAt),
+              startedAt: backendActiveTrip.startedAt ? toEpochMillis(backendActiveTrip.startedAt) : undefined,
+              completedAt: backendActiveTrip.completedAt ? toEpochMillis(backendActiveTrip.completedAt) : undefined,
+              updatedAt: toEpochMillis(backendActiveTrip.updatedAt),
             },
           };
 
@@ -412,6 +437,7 @@ async function loadOnlineData(opts: {
   cancelled: boolean;
   setJobs: AnySetter;
   setTrips: AnySetter;
+  setRevenueEvents: AnySetter;
   setEmergencyContacts: AnySetter;
   setActiveTrip: AnySetter;
   setDeliveryWorkflow: AnySetter;
@@ -430,6 +456,7 @@ async function loadOnlineData(opts: {
     cancelled,
     setJobs,
     setTrips,
+    setRevenueEvents,
     setEmergencyContacts,
     setActiveTrip,
     setDeliveryWorkflow,
@@ -517,41 +544,55 @@ async function loadOnlineData(opts: {
 
   setJobs(
     [
-      ...backendJobs.map((job: any) => ({
-        id: job.id,
-        tripId: job.tripId,
-        routeId: job.routeId,
-        from: job.pickup,
-        to: job.dropoff,
-        distance: "TBD",
-        duration: "TBD",
-        fare: "TBD",
-        jobType: mapBackendJobType(job.type),
-        status: mapBackendJobStatus(job.status),
-        requestedAt: job.requestedAt,
-      })),
+      ...backendJobs.map((job: any) => {
+        const presentation = buildBackendJobPresentation({
+          route: job.route,
+          estimatedFare: job.estimatedFare,
+        });
+        const requestedAt = toEpochMillis(job.requestedAt);
+        return {
+          id: job.id,
+          tripId: job.tripId,
+          routeId: job.routeId,
+          from: job.pickup,
+          to: job.dropoff,
+          distance: presentation.distance,
+          duration: presentation.duration,
+          fare: presentation.fare,
+          jobType: mapBackendJobType(job.type),
+          status: mapBackendJobStatus(job.status),
+          requestedAt,
+          riderName: job.riderName || undefined,
+          riderPhone: job.riderPhone || undefined,
+          pickupLocation: job.pickupLocation || null,
+          dropoffLocation: job.dropoffLocation || null,
+          routePoints: extractBackendRoutePoints(job.route),
+        };
+      }),
       ...backendDeliveryOrders.map((order: any) => ({
         id: order.id,
         routeId: order.routeId,
         from: order.pickupAddress,
         to: order.dropoffAddress,
-        distance: "TBD",
-        duration: "TBD",
-        fare: "TBD",
+        distance: "",
+        duration: "",
+        fare: formatBackendFare(order.fare),
         jobType: mapBackendJobType("delivery"),
         status: mapBackendJobStatus(order.status),
         requestedAt: Date.now(),
+        pickupLocation: order.pickup || null,
+        dropoffLocation: order.dropoff || null,
       })),
       ...backendServiceRequests.map((request: any) => ({
         id: request.requestId,
         from: request.pickup || "Pickup",
         to: request.dropoff || "Dropoff",
-        distance: "TBD",
-        duration: "TBD",
-        fare: "TBD",
+        distance: "",
+        duration: "",
+        fare: "",
         jobType: mapBackendJobType(request.serviceType),
         status: mapBackendJobStatus(request.status),
-        requestedAt: request.requestedAt,
+        requestedAt: toEpochMillis(request.requestedAt),
       })),
     ].map((job: any) => ({
       id: job.id,
@@ -565,24 +606,63 @@ async function loadOnlineData(opts: {
       jobType: job.jobType,
       status: job.status,
       requestedAt: job.requestedAt,
+      riderName: job.riderName,
+      riderPhone: job.riderPhone,
+      pickupLocation: job.pickupLocation,
+      dropoffLocation: job.dropoffLocation,
+      routePoints: job.routePoints,
     })),
   );
 
   setTrips(
-    (backendTrips.items ?? []).map((trip: any) => ({
-      id: trip.id,
-      from: trip.pickup,
-      to: trip.dropoff,
-      date: new Date(trip.requestedAt).toLocaleDateString(),
-      time: new Date(trip.requestedAt).toLocaleTimeString(),
-      amount: 0,
-      jobType: mapBackendJobType(trip.type),
-      status: mapBackendTripStatus(trip.status),
-      pickup: trip.pickup,
-      dropoff: trip.dropoff,
-      startedAt: trip.startedAt,
-      completedAt: trip.completedAt,
-    })),
+    (backendTrips.items ?? []).map((trip: any) => {
+      const presentation = buildBackendJobPresentation({
+        route: trip.route,
+        estimatedFare: trip.fare,
+      });
+      const requestedAt = toEpochMillis(trip.requestedAt);
+      const updatedAt = toEpochMillis(trip.updatedAt);
+      const startedAt = trip.startedAt ? toEpochMillis(trip.startedAt) : undefined;
+      const completedAt = trip.completedAt ? toEpochMillis(trip.completedAt) : undefined;
+      return {
+        id: trip.id,
+        from: trip.pickup,
+        to: trip.dropoff,
+        date: new Date(requestedAt).toLocaleDateString(),
+        time: new Date(requestedAt).toLocaleTimeString(),
+        amount: formatBackendFare(trip.fare) || 0,
+        jobType: mapBackendJobType(trip.type),
+        status: mapBackendTripStatus(trip.status),
+        pickup: trip.pickup,
+        dropoff: trip.dropoff,
+        distance: presentation.distance,
+        duration: presentation.duration,
+        requestedAt,
+        updatedAt,
+        startedAt,
+        completedAt,
+        riderName: trip.riderName || undefined,
+        riderPhone: trip.riderPhone || undefined,
+        pickupLocation: trip.pickupLocation || null,
+        dropoffLocation: trip.dropoffLocation || null,
+        routePoints: extractBackendRoutePoints(trip.route),
+        otpCode: trip.otpCode || undefined,
+      };
+    }),
+  );
+
+  setRevenueEvents(
+    (backendTrips.items ?? [])
+      .filter((trip: any) => Number.isFinite(Number(trip.fare ?? 0)) && Number(trip.fare ?? 0) > 0)
+      .map((trip: any) => ({
+        id: `trip-fare-${trip.id}`,
+        tripId: trip.id,
+        timestamp: trip.completedAt ? toEpochMillis(trip.completedAt) : toEpochMillis(trip.updatedAt),
+        type: "base",
+        amount: Number(trip.fare ?? 0),
+        label: "Trip fare",
+        category: mapBackendJobType(trip.type),
+      })),
   );
 
   setEmergencyContacts(
@@ -607,10 +687,10 @@ async function loadOnlineData(opts: {
             ? "cancelled"
             : "in_progress",
       timestamps: {
-        acceptedAt: backendActiveTrip.requestedAt,
-        startedAt: backendActiveTrip.startedAt,
-        completedAt: backendActiveTrip.completedAt,
-        updatedAt: backendActiveTrip.updatedAt,
+        acceptedAt: toEpochMillis(backendActiveTrip.requestedAt),
+        startedAt: backendActiveTrip.startedAt ? toEpochMillis(backendActiveTrip.startedAt) : undefined,
+        completedAt: backendActiveTrip.completedAt ? toEpochMillis(backendActiveTrip.completedAt) : undefined,
+        updatedAt: toEpochMillis(backendActiveTrip.updatedAt),
       },
     });
 
@@ -645,13 +725,13 @@ async function loadOnlineData(opts: {
             ? "cancelled"
             : "in_progress",
       timestamps: {
-        acceptedAt: backendActiveServiceRequest.requestedAt,
-        startedAt: backendActiveServiceRequest.updatedAt,
+        acceptedAt: toEpochMillis(backendActiveServiceRequest.requestedAt),
+        startedAt: toEpochMillis(backendActiveServiceRequest.updatedAt),
         completedAt:
           backendActiveServiceRequest.status === "completed"
-            ? backendActiveServiceRequest.updatedAt
+            ? toEpochMillis(backendActiveServiceRequest.updatedAt)
             : undefined,
-        updatedAt: backendActiveServiceRequest.updatedAt,
+        updatedAt: toEpochMillis(backendActiveServiceRequest.updatedAt),
       },
     });
     setActiveRideRuntime(createDefaultActiveRideRuntime(backendActiveServiceRequest.requestId));

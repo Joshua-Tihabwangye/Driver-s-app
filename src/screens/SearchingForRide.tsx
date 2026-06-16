@@ -6,6 +6,7 @@ XCircle
 import { useNavigate } from "react-router-dom";
 import DriverMapSurface from "../components/DriverMapSurface";
 import PageHeader from "../components/PageHeader";
+import { useJobs } from "../context/JobsContext";
 
 // EVzone Driver App – SearchingForRide Driver App – Searching for Ride (v1)
 // Map view showing searching state while the system looks for a ride request.
@@ -14,6 +15,7 @@ import PageHeader from "../components/PageHeader";
 
 export default function SearchingForRide() {
   const navigate = useNavigate();
+  const { pendingCount } = useJobs();
   return (
     <div className="flex flex-col h-full ">
       {/* Hide scrollbar */}
@@ -33,7 +35,7 @@ export default function SearchingForRide() {
           <div className="rounded-[1.5rem] border border-slate-800/10 bg-[#0b1e3a]/92 px-4 py-4 text-[11px] font-black uppercase tracking-widest text-emerald-300 shadow-2xl backdrop-blur-md">
             <div className="flex items-center justify-center">
               <Loader2 className="mr-3 h-5 w-5 animate-spin" />
-              Searching for nearby riders...
+              Checking live dispatch queue...
             </div>
           </div>
         )}
@@ -42,17 +44,7 @@ export default function SearchingForRide() {
             id: "search-center",
             positionClass: "left-[30%] top-[52%]",
             tone: "driver",
-            label: "Searching",
-          },
-          {
-            id: "candidate-1",
-            positionClass: "left-[22%] top-[30%]",
-            tone: "danger",
-          },
-          {
-            id: "candidate-2",
-            positionClass: "right-[22%] top-[46%]",
-            tone: "warning",
+            label: "Live queue",
           },
         ]}
       />
@@ -76,21 +68,23 @@ export default function SearchingForRide() {
             </div>
             <div className="flex-1 space-y-1">
               <p className="font-black text-sm text-slate-900 uppercase tracking-tight">
-                Search Progress
+                Live Request Queue
               </p>
               <p className="text-[11px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed">
-                Currently searching for the best ride match in your area. This usually takes between 60-180 seconds.
+                {pendingCount > 0
+                  ? `${pendingCount} real request${pendingCount === 1 ? "" : "s"} available now.`
+                  : "No live requests are available right now. Stay online and the queue will update automatically."}
               </p>
             </div>
           </div>
 
           <button 
             type="button"
-            onClick={() => navigate("/driver/dashboard/online")}
+            onClick={() => navigate("/driver/jobs/list")}
             className="w-full rounded-2xl py-5 text-xs font-black uppercase tracking-[0.2em] shadow-xl bg-white text-red-500 border border-red-50 active:scale-95 transition-all flex items-center justify-center"
           >
             <XCircle className="h-5 w-5 mr-3" />
-            Cancel Search
+            Open Live Requests
           </button>
         </section>
       </main>

@@ -9,6 +9,11 @@ export interface DriverTripPresentation {
   originLabel: string;
   destinationLabel: string;
   statusSummary: string;
+  riderName: string;
+  riderPhone: string;
+  pickupLocation: Job["pickupLocation"] | TripRecord["pickupLocation"] | null;
+  dropoffLocation: Job["dropoffLocation"] | TripRecord["dropoffLocation"] | null;
+  routePoints: Job["routePoints"] | TripRecord["routePoints"];
 }
 
 const JOB_TYPE_LABELS: Record<JobCategory, string> = {
@@ -75,6 +80,8 @@ export function resolveDriverTripPresentation(input: {
     job?.status ||
     trip?.status ||
     "Live dispatch";
+  const riderName = job?.riderName || trip?.riderName || "Rider";
+  const riderPhone = job?.riderPhone || trip?.riderPhone || "";
 
   return {
     jobType,
@@ -85,6 +92,10 @@ export function resolveDriverTripPresentation(input: {
     originLabel,
     destinationLabel,
     statusSummary,
+    riderName,
+    riderPhone,
+    pickupLocation: job?.pickupLocation || trip?.pickupLocation || null,
+    dropoffLocation: job?.dropoffLocation || trip?.dropoffLocation || null,
+    routePoints: job?.routePoints || trip?.routePoints || [],
   };
 }
-

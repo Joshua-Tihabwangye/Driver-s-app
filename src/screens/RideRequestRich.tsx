@@ -18,16 +18,6 @@ import type { JobCategory } from "../data/types";
 // Supports multiple job types: Ride / Delivery / Rental / Tour / Ambulance / Shuttle.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-const JOB_TYPES: JobCategory[] = [
-  "ride",
-  "shared",
-  "delivery",
-  "rental",
-  "tour",
-  "ambulance",
-  "shuttle",
-];
-
 type RequestRouteState = {
   jobType?: JobCategory;
   jobId?: string;
@@ -105,7 +95,6 @@ export default function RideRequestRich() {
     respondToSafetyCheck,
   } = useStore();
   const [timeLeft, setTimeLeft] = useState(20);
-  // Preview-only job type toggle so you can see all states in the canvas
   const [jobType, setJobType] = useState<JobCategory>(routeState?.jobType || "ride");
   const requestedJobId = routeState?.jobId;
 
@@ -147,14 +136,16 @@ export default function RideRequestRich() {
   const isTour = jobType === "tour";
   const isShuttle = jobType === "shuttle";
   const isShared = jobType === "shared";
+  const selectedJob = resolveRequestedJob(jobType);
+  const liveSummary = [selectedJob?.distance, selectedJob?.duration].filter(Boolean).join(" · ");
 
-  let headerTitle = "Sarah L · 4.88 ★";
-  let rightTop = "$7.20 (est.)";
-  let rightBottom = "9.1 km · 21 min";
-  let pickupLabel = "Pickup · Garden City";
-  let pickupSub = "4 min away · 1.6 km";
-  let dropLabel = "Drop-off · Bugolobi";
-  let dropSub = "Residential · usual demand";
+  let headerTitle = selectedJob?.riderName || "Ride request";
+  let rightTop = selectedJob?.fare || "Fare pending";
+  let rightBottom = liveSummary || "Route pending";
+  let pickupLabel = `Pickup · ${selectedJob?.from || "Pickup"}`;
+  let pickupSub = selectedJob?.distance || "Awaiting live distance";
+  let dropLabel = `Drop-off · ${selectedJob?.to || "Drop-off"}`;
+  let dropSub = selectedJob?.duration || "Awaiting live duration";
 
   if (jobType === "delivery") {
     headerTitle = "Food delivery";
@@ -193,13 +184,23 @@ export default function RideRequestRich() {
     dropLabel = "Open Shuttle Driver App";
     dropSub = "Route & students shown in shuttle app";
   } else if (isShared) {
-    headerTitle = "Sarah L. (1 seat) · 4.88 ★";
-    rightTop = "$6.50 (est. total)";
-    rightBottom = "2 pickups likely";
-    pickupLabel = "Pickup 1 · Acacia Mall";
-    pickupSub = "3 min away · +2 min wait max";
-    dropLabel = "Drop-off 1 · Bugolobi";
-    dropSub = "Route optimized for matches";
+    headerTitle = selectedJob?.riderName || "Shared ride request";
+    rightTop = selectedJob?.fare || "Shared ride";
+    rightBottom = liveSummary || "Dynamic matching";
+    pickupLabel = `Pickup · ${selectedJob?.from || "Pickup"}`;
+    pickupSub = selectedJob?.distance || "Awaiting live distance";
+    dropLabel = `Drop-off · ${selectedJob?.to || "Drop-off"}`;
+    dropSub = selectedJob?.duration || "Awaiting live duration";
+  }
+
+  if (selectedJob) {
+    headerTitle = `${jobType === "delivery" ? "Delivery" : jobType === "shared" ? "Shared Ride" : "Ride"} request`;
+    rightTop = selectedJob.fare || rightTop;
+    rightBottom = liveSummary || rightBottom;
+    pickupLabel = `${jobType === "ambulance" ? "Patient location" : "Pickup"} · ${selectedJob.from}`;
+    pickupSub = selectedJob.distance || pickupSub;
+    dropLabel = `${jobType === "ambulance" ? "Destination" : "Drop-off"} · ${selectedJob.to}`;
+    dropSub = selectedJob.duration || dropSub;
   }
 
   const primaryCta = isShuttle ? "Open Shuttle Driver App" : "Accept";
@@ -216,7 +217,10 @@ export default function RideRequestRich() {
       return;
     }
 
-    window.location.href = "tel:+256700000111";
+    const riderPhone = (selectedJob?.riderPhone || "").replace(/[^\d+]/g, "");
+    if (riderPhone) {
+      window.location.href = `tel:${riderPhone}`;
+    }
   };
 
   const handleEmergencySos = () => {
@@ -231,7 +235,6 @@ export default function RideRequestRich() {
       return;
     }
 
-    const selectedJob = resolveRequestedJob(jobType);
     if (!selectedJob) {
       navigate("/driver/jobs/list");
       return;
@@ -280,10 +283,13 @@ export default function RideRequestRich() {
       return;
     }
 
-    navigate(buildAcceptedJobRoute(jobType, selectedJob.id), {
+    const acceptedRouteId =
+      jobType === "ride" ? selectedJob.tripId || selectedJob.id : selectedJob.id;
+
+    navigate(buildAcceptedJobRoute(jobType, acceptedRouteId), {
       state: {
         jobType,
-        jobId: selectedJob.id,
+        jobId: acceptedRouteId,
       },
     });
   };
@@ -310,25 +316,6 @@ export default function RideRequestRich() {
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
-        {/* Job type selector (preview only) */}
-        <section className="bg-slate-100/50 backdrop-blur-sm rounded-3xl p-2 border border-slate-100">
-          <div className="flex flex-wrap gap-1.5 justify-center">
-            {JOB_TYPES.map((type) => (
-              <button
-                key={type}
-                onClick={() => setJobType(type)}
-                className={`rounded-full px-3 py-1 border text-[9px] font-black uppercase tracking-wider transition-all ${
-                  jobType === type
-                    ? "bg-orange-500 border-orange-500 text-white shadow-md shadow-orange-500/20"
-                    : "bg-white border-slate-200 text-slate-400 hover:border-slate-300"
-                }`}
-              >
-                {type}
-              </button>
-            ))}
-          </div>
-        </section>
-
         <DriverMapSurface
           heightClass="h-[320px]"
           compact
@@ -337,13 +324,14 @@ export default function RideRequestRich() {
           routeColor={isAmbulance ? "#dc4d46" : "#15b79e"}
           routeStrokeWidth={2.6}
           routeDasharray="5 4"
+          routePoints={selectedJob?.routePoints || []}
           infoCard={(
             <div className="rounded-[1.4rem] border border-white/70 bg-white/92 p-3 shadow-xl backdrop-blur-sm">
               <p className={`text-[10px] font-black uppercase tracking-[0.16em] ${isAmbulance ? "text-red-600" : "text-[#0f766e]"}`}>
                 Incoming Match
               </p>
               <p className="mt-1 text-[10px] font-bold uppercase tracking-tight text-slate-700">
-                Preview pickup and final route before accepting.
+                Review the live pickup and destination before accepting.
               </p>
             </div>
           )}
@@ -351,6 +339,7 @@ export default function RideRequestRich() {
             {
               id: "pickup",
               positionClass: "left-[20%] top-[22%]",
+              position: selectedJob?.pickupLocation || undefined,
               tone: isAmbulance ? "danger" : "driver",
               label: "Pickup",
               icon: MapPin,
@@ -358,6 +347,7 @@ export default function RideRequestRich() {
             {
               id: "destination",
               positionClass: "right-[18%] bottom-[24%]",
+              position: selectedJob?.dropoffLocation || undefined,
               tone: "warning",
               label: "Final",
               icon: MapPin,
@@ -417,16 +407,17 @@ export default function RideRequestRich() {
             <div className="flex items-center justify-between pt-2 text-[10px] font-black text-slate-400 uppercase tracking-widest relative z-10">
               <span className="inline-flex items-center">
                 <Clock className="h-3.5 w-3.5 mr-2" />
-                Intercept Target: 19:05
+                {rightBottom || "Live route pending"}
               </span>
               {!isShuttle && (
                 <button
                   type="button"
                   onClick={handleSignal}
                   className="inline-flex items-center rounded-full border border-slate-700 px-3 py-1 text-[10px] hover:bg-white/5 transition-colors"
+                  disabled={!selectedJob?.riderPhone}
                 >
                   <Phone className="h-3.5 w-3.5 mr-2" />
-                  Signal
+                  {selectedJob?.riderPhone ? "Call" : "No phone"}
                 </button>
               )}
             </div>

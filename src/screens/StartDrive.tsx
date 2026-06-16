@@ -100,7 +100,7 @@ export default function StartDrive() {
       <DriverMapSurface
         heightClass="h-[460px]"
         onBack={() => navigate(-1)}
-        routePath="M20 80 C 35 70, 45 60, 60 45 S 80 30, 88 22"
+        routePoints={tripPresentation.routePoints || []}
         routeColor={isAmbulance ? "#dc4d46" : "#15b79e"}
         routeStrokeWidth={2.4}
         routeDasharray="5 3"
@@ -123,7 +123,14 @@ export default function StartDrive() {
         )}
         markers={[
           { id: "driver", positionClass: "left-[16%] bottom-[20%]", tone: "driver", icon: Navigation },
-          { id: "destination", positionClass: "right-[16%] top-[22%]", tone: isAmbulance ? "danger" : "warning", label: "Start", icon: MapPin },
+          {
+            id: "destination",
+            positionClass: "right-[16%] top-[22%]",
+            position: tripPresentation.dropoffLocation || undefined,
+            tone: isAmbulance ? "danger" : "warning",
+            label: "Start",
+            icon: MapPin,
+          },
         ]}
       />
 
@@ -148,10 +155,10 @@ export default function StartDrive() {
               <div className="flex flex-col">
                 <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-500">Customer Profile</span>
                 <p className="text-sm font-black uppercase tracking-tight text-slate-900">
-                  {isAmbulance ? "Emergency Case" : "John K"}
+                  {isAmbulance ? "Emergency Case" : tripPresentation.riderName}
                 </p>
                 <p className="text-[11px] text-slate-400 font-bold uppercase tracking-tight">
-                  {isAmbulance ? "Code 1 dispatch" : "Verified customer"}
+                  {isAmbulance ? "Code 1 dispatch" : "Verified rider"}
                 </p>
               </div>
             </div>
@@ -194,7 +201,7 @@ export default function StartDrive() {
           <div className="flex items-center justify-between border-t border-orange-50 pt-6">
             <div className="flex items-center space-x-2 text-[10px] text-slate-400 font-black uppercase tracking-tight">
                <Clock className="h-4 w-4 text-orange-500" />
-               <span>ETA: 21 min</span>
+               <span>{bottomSummary || "Live route pending"}</span>
             </div>
             <div className="flex items-center space-x-2 text-[10px] text-orange-600 font-black uppercase tracking-tight">
                <ShieldCheck className="h-4 w-4" />

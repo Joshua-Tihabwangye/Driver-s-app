@@ -19,6 +19,10 @@ function toAmount(value: string | number): number {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function formatUgx(value: number): string {
+  return `UGX ${Math.round(value).toLocaleString()}`;
+}
+
 export default function RideDetails() {
   const { tripId } = useParams();
   const navigate = useNavigate();
@@ -79,7 +83,7 @@ export default function RideDetails() {
             Private Ride
           </span>
           <span className="text-4xl font-black text-slate-900 tracking-tighter">
-            ${total.toFixed(2)}
+            {formatUgx(total)}
           </span>
           <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
             {trip.status}
@@ -93,7 +97,7 @@ export default function RideDetails() {
             </div>
             <div className="flex flex-col">
               <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Passenger</span>
-              <span className="text-sm font-black text-slate-900">Recorded Rider</span>
+              <span className="text-sm font-black text-slate-900">{trip.riderName || "Rider"}</span>
             </div>
           </div>
           <div className="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 flex items-center space-x-3">
@@ -172,7 +176,7 @@ export default function RideDetails() {
                 className="flex justify-between items-center text-sm font-bold text-slate-600"
               >
                 <span>{row.label}</span>
-                <span>${row.amount.toFixed(2)}</span>
+                <span>{formatUgx(row.amount)}</span>
               </div>
             ))
           ) : (
@@ -183,7 +187,7 @@ export default function RideDetails() {
           <div className="pt-3 border-t border-slate-100 flex justify-between items-center">
             <span className="text-sm font-black text-slate-900">Total Earnings</span>
             <span className="text-lg font-black text-emerald-600">
-              ${total.toFixed(2)}
+              {formatUgx(total)}
             </span>
           </div>
           <div className="flex items-center space-x-2 text-[10px] text-slate-400 font-bold uppercase pt-2">

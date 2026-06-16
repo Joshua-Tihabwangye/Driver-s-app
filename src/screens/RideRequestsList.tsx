@@ -55,6 +55,15 @@ function RequestCard({ job, onClick }: { job: any, onClick: (j: any) => void }) 
     );
   };
 
+  const renderFare = () => {
+    const normalizedFare = typeof fare === "string" ? fare.trim() : String(fare ?? "");
+    if (!normalizedFare) return "Fare pending";
+    if (/^(UGX|\$|Tour|Shuttle|—)/i.test(normalizedFare)) {
+      return normalizedFare;
+    }
+    return `UGX ${normalizedFare}`;
+  };
+
   return (
     <button
       type="button"
@@ -81,8 +90,8 @@ function RequestCard({ job, onClick }: { job: any, onClick: (j: any) => void }) 
         </div>
         <div className="flex flex-col items-end shrink-0">
           <span className={`text-lg font-black tracking-tight flex flex-col items-end ${isShared ? 'text-orange-600' : 'text-slate-900 dark:text-white'}`}>
-            {fare !== "Shuttle" && fare !== "Tour" && fare !== "—" ? `$${fare}` : fare}
-            {isShared && <span className="text-[9px] text-slate-500 font-bold uppercase mt-0.5">Est. Total</span>}
+            {renderFare()}
+            {isShared && <span className="text-[9px] text-slate-500 font-bold uppercase mt-0.5">Live Estimate</span>}
           </span>
           <span className="text-[9px] text-emerald-500 font-bold mt-1 uppercase">{timeAgo()}</span>
         </div>
@@ -100,12 +109,12 @@ function RequestCard({ job, onClick }: { job: any, onClick: (j: any) => void }) 
       {isShared && (
         <div className="w-full bg-white/60 rounded-xl p-3 border border-orange-500/10 flex justify-between items-center mt-2">
            <div className="flex flex-col">
-             <span className="text-[9px] uppercase font-bold text-slate-500">Base Fare</span>
-             <span className="text-[11px] font-black text-slate-800">$6.50</span>
+             <span className="text-[9px] uppercase font-bold text-slate-500">Live Fare</span>
+             <span className="text-[11px] font-black text-slate-800">{renderFare()}</span>
            </div>
            <div className="flex flex-col text-right">
-             <span className="text-[9px] uppercase font-bold text-slate-500">Max Add-ons</span>
-             <span className="text-[11px] font-black text-emerald-600">+$8.90 potential</span>
+             <span className="text-[9px] uppercase font-bold text-slate-500">Route</span>
+             <span className="text-[11px] font-black text-emerald-600">{distance || "Pending"} · {duration || "Pending"}</span>
            </div>
         </div>
       )}

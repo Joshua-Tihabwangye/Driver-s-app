@@ -159,7 +159,7 @@ export default function OnlineMapView({
                 icon={Navigation}
                 label="Scan Riders"
                 sub="Find Jobs"
-                onClick={() => navigate("/driver/map/searching")}
+                onClick={() => navigate("/driver/jobs/list")}
               />
               <QuickAction
                 icon={AlertTriangle}
