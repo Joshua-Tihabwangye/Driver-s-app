@@ -36,6 +36,7 @@ import {
   completeDriverServiceRequest,
   confirmDriverDeliveryPickup,
   DRIVER_BACKEND_AUTH_EVENT,
+  DriverBackendPresenceOnlineInput,
   DriverBackendPresenceOnlineResult,
   DriverBackendTripSafetyState,
   getDriverBootstrap,
@@ -374,7 +375,7 @@ interface StoreContextType {
     checkpoint: OnboardingCheckpointId,
     isComplete?: boolean
   ) => Promise<void>;
-  setDriverOnline: (input?: { confirmed?: boolean }) => Promise<DriverBackendPresenceOnlineResult | null>;
+  setDriverOnline: (input?: DriverBackendPresenceOnlineInput) => Promise<DriverBackendPresenceOnlineResult | null>;
   setDriverOffline: () => Promise<Record<string, unknown> | null>;
   resetOnboardingVehicleSetup: () => void;
   acceptRideJob: (jobId: string) => boolean;
@@ -2092,6 +2093,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   useDriverRealtimeSync({
     driverBackendEnabled,
+    activeTripId: activeTrip?.tripId ?? null,
     setJobs,
     setTrips,
     setActiveTrip: setActiveTrip as any,
@@ -2301,7 +2303,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   );
 
   const setDriverOnline = useCallback(
-    async (input?: { confirmed?: boolean }) => {
+    async (input?: DriverBackendPresenceOnlineInput) => {
       if (shouldUseDriverBackendWrites()) {
         // Optimistic update: flip the UI to online immediately so the button
         // and status indicator respond without waiting for the server round-trip.

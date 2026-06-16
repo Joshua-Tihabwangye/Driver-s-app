@@ -13,6 +13,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
+import { createDriverSocket } from "../services/driverSocket";
+import { rejectDriverJob } from "../services/api/driverApi";
 import type { JobCategory } from "../data/types";
 
 // EVzone Driver App – RideRequestIncoming Driver App – Ride Request Incoming (v2)
@@ -148,7 +150,10 @@ export default function RideRequestIncoming() {
   }, [jobs, requestedJobId]);
 
   useEffect(() => {
-    if (timeLeft <= 0) return;
+    if (timeLeft <= 0) {
+      void performDecline("expired");
+      return;
+    }
     const id = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
     return () => clearTimeout(id);
   }, [timeLeft]);
@@ -246,6 +251,17 @@ export default function RideRequestIncoming() {
     }
   };
 
+  const emitJobOfferResponse = (action: "accept" | "reject", reason?: string) => {
+    const socket = createDriverSocket();
+    if (socket.connected && selectedJob) {
+      socket.emit("job.offer.response", {
+        jobId: selectedJob.id,
+        action,
+        ...(reason ? { reason } : {}),
+      });
+    }
+  };
+
   const handleAccept = () => {
     clearJobAccessError();
     if (isShuttle) {
@@ -298,6 +314,8 @@ export default function RideRequestIncoming() {
       return;
     }
 
+    emitJobOfferResponse("accept");
+
     const acceptedRouteId =
       jobType === "ride" ? selectedJob.tripId || selectedJob.id : selectedJob.id;
 
@@ -309,11 +327,23 @@ export default function RideRequestIncoming() {
     });
   };
 
-  const handleDecline = () => {
+  const performDecline = async (reason?: string) => {
+    emitJobOfferResponse("reject", reason);
+    if (selectedJob && jobType === "ride") {
+      try {
+        await rejectDriverJob(selectedJob.id, reason);
+      } catch {
+        // Best-effort: the socket event above already signals intent.
+      }
+    }
     if (jobType === "delivery") {
       resetDeliveryWorkflow();
     }
     navigate("/driver/jobs/list");
+  };
+
+  const handleDecline = () => {
+    void performDecline("driver_declined");
   };
 
   return (

@@ -189,6 +189,11 @@ export interface DriverBackendLocationHeartbeatInput {
   timestamp?: number;
 }
 
+export interface DriverBackendPresenceOnlineInput {
+  confirmed?: boolean;
+  location?: DriverBackendLocationHeartbeatInput;
+}
+
 export interface DriverBackendTripSafetyState {
   tripId: string;
   temporaryStop: {
@@ -381,9 +386,9 @@ export interface DriverBackendWalletEvent {
 }
 
 export interface DriverBackendCashoutRequestInput {
+  methodId: string;
   amount: number;
-  method: string;
-  destination: string;
+  idempotencyKey?: string;
 }
 
 export interface DriverBackendCashoutRequest {
@@ -648,7 +653,7 @@ export async function patchDriverVehicleDocument(
   );
 }
 
-export async function setDriverPresenceOnline(input?: { confirmed?: boolean }) {
+export async function setDriverPresenceOnline(input?: DriverBackendPresenceOnlineInput) {
   const token = readDriverBackendAccessToken();
   if (!isBackendAuthEnabled() || !token) return null;
   return request<DriverBackendPresenceOnlineResult>("/drivers/me/presence/online", {
