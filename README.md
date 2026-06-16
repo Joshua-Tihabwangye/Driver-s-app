@@ -1,112 +1,65 @@
-# EVzone Driver App – Supervisor Preview (D01–D102, `.jsx` screens)
+# EVzone Driver App
 
-This project is a **Create React App (CRA)** setup using:
+A React 18 + TypeScript + Vite web app for the EVzone Driver app.
 
-- **JavaScript** (no TypeScript)
-- **React**
-- **Material UI (MUI)** for theming
-- **Tailwind CSS** utility classes
-- **lucide-react** icons
+## Tech stack
 
-It exposes a **supervisor preview** that lets you choose any of the **D01–D102**
-driver screens from a dropdown and see it rendered inside a 375×812 mobile frame.
+- React 18.2
+- TypeScript 5.x
+- Vite 5
+- react-router-dom v6
+- MUI v5 + Tailwind CSS 3
+- `@react-google-maps/api` for maps
+- `socket.io-client` for realtime updates
 
-All 102 screens are represented as individual **`.jsx` files** under
-`src/screens/` (e.g. `D01.jsx`, `D42.jsx`, `D100.jsx`), ready for you to
-replace their placeholder content with your full canvases.
-
-## Getting started
+## Quick start
 
 ```bash
 npm install
-npm start
+npm run dev
 ```
 
-Then open your browser at http://localhost:3000/
+Then open http://localhost:5174 in your browser.
 
-- Use the dropdown at the top to select any Dxx screen.
-- The selected screen component is rendered below in the EVzone phone frame.
+## Environment variables
 
-## Project structure
+Copy `.env.example` to `.env.local` and configure:
 
-- `public/`
-  - `index.html` – standard CRA entry HTML
+```bash
+VITE_BACKEND_BASE_URL=http://localhost:3000/api/v1
+VITE_SOCKET_BASE_URL=http://localhost:3000
+VITE_GOOGLE_MAPS_API_KEY=...
+VITE_BACKEND_ENABLED=true
+```
 
-- `src/`
-  - `index.js` – React entry point (JS, as CRA expects)
-  - `index.css` – Tailwind directives + global utilities (e.g. `scrollbar-hide`)
-  - `theme.js` – MUI theme with EVzone colors
-  - `App.jsx` – supervisor shell with the **D01–D102** selector
-  - `components/`
-    - `PhoneFrame.jsx` – generic 375x812 phone frame shell
-    - `BottomNav.jsx` – shared bottom navigation bar
-  - `screens/`
-    - `D01.jsx` … `D102.jsx` – **one React component per screen**, all authored as `.jsx`
+## Backend integration
 
-Each `Dxx.jsx` file currently renders a **safe placeholder**:
+The app communicates with the EVzone backend (`/home/developer/Projects/backend`):
 
-- Header with:
-  - Subtitle: `EVzone Driver App`
-  - Screen title (e.g. `Driver App – Ride Request Incoming`)
-  - The `Dxx` ID in EVzone green
-- A centered body with:
-  - A line showing `{Dxx} – {title}`
-  - Placeholder text explaining that this is where your final JSX canvas should go
-  - The filename (`src/screens/Dxx.jsx`) so your team can find it quickly
-- The shared `BottomNav` at the bottom.
+- REST API under `/api/v1`
+- Socket.io namespace `/driver`
+- JWT stored in `localStorage`
 
-## Tailwind
+Key driver flow screens:
+- `/driver/dashboard/offline` – go online
+- `/driver/jobs/incoming` – incoming ride request
+- `/driver/trip/:tripId/navigate-to-pickup` – accepted trip
+- `/driver/trip/:tripId/verify-rider` – OTP verification
+- `/driver/trip/:tripId/in-progress` – active trip
 
-Tailwind is configured via:
+## Map interaction
 
-- `tailwind.config.js` – `content` points to `./src/**/*.{js,jsx}` and defines:
+- Two-finger pinch/rotate gestures work when `gestureHandling` is set to `"auto"`.
+- Custom rotate buttons provide a one-finger rotation fallback.
+- Tap the locate button to recenter on the driver's GPS position.
 
-  - `evzone.green` – `#03CD8C`
-  - `evzone.orange` – `#F77F00`
-  - `evzone.navy` – `#0f172a`
+## Scripts
 
-- `postcss.config.js` – Tailwind + Autoprefixer plugins
-- `src/index.css` – includes Tailwind directives and a `scrollbar-hide` utility so
-  phone-frame `<main>` areas are swipe-scrollable without visible scrollbars.
+- `npm run dev` – start Vite dev server
+- `npm run build` – production build
+- `npm run typecheck` – run TypeScript without emit
 
-## MUI theme & EVzone colors
+## Notes
 
-The theme in `src/theme.js` defines:
-
-- Primary: `#03CD8C` (EVzone green)
-- Secondary: `#F77F00` (EVzone orange)
-- Background default: `#0f172a` (dark navy)
-- Buttons: rounded, pill-shaped
-
-`index.js` wraps the app in a `ThemeProvider` + `CssBaseline` so any MUI
-components you add will use this theme.
-
-## How to plug in your real `.jsx` canvases
-
-For each designed canvas (for example, the actual file you have for D42, D72, D100, etc.):
-
-1. Open the matching screen file in this project:
-
-   ```text
-   src/screens/D42.jsx
-   ```
-
-2. Replace the placeholder `export default function D42Screen() { ... }`
-   body with your full JSX implementation for that screen.
-
-   - Keep the default export name (e.g. `D42Screen`) or update both the
-     component and the import in `App.jsx` if you change it.
-   - You can keep using `PhoneFrame` and `BottomNav`, or fully own the
-     frame inside your canvas – it’s your choice.
-
-3. Add any extra imports your canvas needs (e.g. from `lucide-react` or MUI).
-
-The selector in `App.jsx` will continue to work as long as each file:
-
-- Exists at `src/screens/Dxx.jsx`, and
-- Exports a default React component.
-
-This gives your team a **plug‑and‑play, non‑fragile** base: all 102 screens
-are already wired, themed and selectable. Your designers and engineers can now
-swap in the world‑class canvases without worrying about build config, routing
-or theming.
+- The app no longer uses Create React App or `.jsx` files.
+- Do not commit `dist/` or `build/` by hand; they are regenerated by the build.

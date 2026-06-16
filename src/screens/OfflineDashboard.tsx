@@ -142,7 +142,26 @@ export default function OfflineDashboard() {
     setShowGoOnlineModal(false);
 
     try {
-      const result = await setDriverOnline({ confirmed: true });
+      // The backend requires a valid GPS location to go online.
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10_000,
+          maximumAge: 30_000,
+        });
+      });
+      const coords = position.coords;
+      const result = await setDriverOnline({
+        confirmed: true,
+        location: {
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+          accuracy: coords.accuracy,
+          heading: coords.heading ?? undefined,
+          speed: coords.speed ?? undefined,
+          timestamp: Date.now(),
+        },
+      });
       navigate(result?.redirectPath || "/driver/dashboard/online", { replace: true });
     } catch (error) {
       const apiError = error instanceof ApiRequestError ? error : null;

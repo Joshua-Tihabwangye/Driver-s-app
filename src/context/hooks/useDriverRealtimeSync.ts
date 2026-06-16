@@ -19,6 +19,7 @@ type ActiveTripStateLike = {
 
 type UseDriverRealtimeSyncInput = {
   driverBackendEnabled: boolean;
+  activeTripId?: string | null;
   setJobs: Dispatch<SetStateAction<Job[]>>;
   setTrips: Dispatch<SetStateAction<TripRecord[]>>;
   setActiveTrip: Dispatch<SetStateAction<ActiveTripStateLike>>;
@@ -38,6 +39,7 @@ type UseDriverRealtimeSyncInput = {
 
 export function useDriverRealtimeSync({
   driverBackendEnabled,
+  activeTripId,
   setJobs,
   setTrips,
   setActiveTrip,
@@ -261,6 +263,12 @@ export function useDriverRealtimeSync({
     };
 
     let cancelled = false;
+
+    // Subscribe to the active trip room so targeted lifecycle events are received.
+    if (activeTripId) {
+      socket.emit("subscribe", { channel: "trip", id: activeTripId });
+    }
+
     // Phase 1.5 — event names are hardcoded from events.contract.ts.
     // No pre-flight HTTP fetch needed; connect socket directly.
     const jobAvailableEvents = uniqueEvents(["job.offer.new", "delivery.order.new", "service.request.new"]);
@@ -312,5 +320,5 @@ export function useDriverRealtimeSync({
       }
       socket.disconnect();
     };
-  }, [driverBackendEnabled, mapBackendJobStatus, mapBackendJobType, mapBackendTripStage, mapBackendTripStatus, setActiveTrip, setDeliveryWorkflow, setJobs, setTrips]);
+  }, [driverBackendEnabled, activeTripId, mapBackendJobStatus, mapBackendJobType, mapBackendTripStage, mapBackendTripStatus, setActiveTrip, setDeliveryWorkflow, setJobs, setTrips]);
 }

@@ -17,6 +17,7 @@ import { PolylineF } from "@react-google-maps/api";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { useStore } from "../context/StoreContext";
+import { createDriverSocket } from "../services/driverSocket";
 
 type MapLayerMode = "default" | "terrain" | "night";
 type MarkerTone = "driver" | "danger" | "warning" | "station" | "neutral";
@@ -301,6 +302,7 @@ export default function DriverMapSurface({
     reportActiveRideMovementSample,
     setMapAlertsEnabled,
     setMapStationsEnabled,
+    activeTrip,
   } = useStore();
   const [zoom, setZoom] = useState(defaultZoom);
   const [bearing, setBearing] = useState(defaultBearing);
@@ -324,6 +326,7 @@ export default function DriverMapSurface({
     id: "evzone-driver-google-map-script",
     googleMapsApiKey,
   });
+  const activeTripId = activeTrip?.tripId ?? null;
 
   useEffect(() => {
     setHint(floatingHint);
@@ -368,6 +371,21 @@ export default function DriverMapSurface({
             accuracy: pos.coords.accuracy,
             timestamp: Date.now(),
           });
+          // Also emit a real-time socket location update when on an active trip.
+          if (activeTripId) {
+            const socket = createDriverSocket();
+            if (socket.connected) {
+              socket.emit("location.update", {
+                tripId: activeTripId,
+                latitude: pos.coords.latitude,
+                longitude: pos.coords.longitude,
+                accuracy: pos.coords.accuracy,
+                heading: pos.coords.heading ?? undefined,
+                speed: pos.coords.speed ?? undefined,
+                timestamp: Date.now(),
+              });
+            }
+          }
         }
         if (isFollowingDevice) {
           setCenter(nextPosition);
@@ -378,7 +396,7 @@ export default function DriverMapSurface({
       { enableHighAccuracy: true, maximumAge: 10000 },
     );
     return () => navigator.geolocation.clearWatch(watchId);
-  }, [driverPresenceStatus, isFollowingDevice, mapRef, reportActiveRideMovementSample]);
+  }, [driverPresenceStatus, isFollowingDevice, mapRef, reportActiveRideMovementSample, activeTripId]);
 
   useEffect(() => {
     if (!mapRef) return;
@@ -551,13 +569,14 @@ export default function DriverMapSurface({
             options={{
               disableDefaultUI: true,
               clickableIcons: false,
-              // Allow one-finger pan on touch devices and preserve pinch zoom.
-              gestureHandling: "greedy",
+              // Use auto gesture handling so two-finger rotate/pitch works natively.
+              // Custom rotate buttons provide one-finger rotation fallback.
+              gestureHandling: "auto",
               mapTypeControl: false,
               fullscreenControl: false,
               zoomControl: false,
               streetViewControl: false,
-              rotateControl: false,
+              rotateControl: true,
               tilt: 0,
               mapTypeId: layer === "terrain" ? "terrain" : "roadmap",
               styles: layer === "night" ? NIGHT_MAP_STYLES : [],
