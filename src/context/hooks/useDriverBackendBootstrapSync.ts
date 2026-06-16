@@ -7,12 +7,12 @@ import {
   getDriverActiveTrip,
   getDriverBootstrap,
   getDriverTripSafetyState,
-  listDriverDeliveryOrders,
   listDriverEmergencyContacts,
   listDriverJobs,
   listDriverServiceRequests,
   listDriverTrips,
 } from "../../services/api/driverApi";
+import { isAbortError } from "../../services/api/httpClient";
 import {
   buildBackendJobPresentation,
   extractBackendRoutePoints,
@@ -139,11 +139,7 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
         if (profile) {
           const backendPhoto =
             typeof profile.profilePhoto === "string" ? profile.profilePhoto.trim() : "";
-          const backendDocumentsReady =
-            onboardingStatus?.hasRequiredDriverDocuments === true &&
-            onboardingStatus?.hasRequiredVehicleDocuments === true;
-          const effectivePresenceStatus =
-            profile.status === "online" && backendDocumentsReady ? "online" : "offline";
+          
           setDriverProfile((prev: any) => ({
             ...prev,
             fullName: profile.fullName || prev.fullName,
@@ -158,7 +154,14 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
             landmark: profile.landmark || prev.landmark,
           }));
           setDriverProfilePhoto(backendPhoto.length > 0 ? backendPhoto : null);
-          setDriverPresenceStatus(effectivePresenceStatus);
+          
+          // Only set presence status if backend explicitly says offline
+          // Don't force offline if backend says online, even if docs are not ready (yet)
+          if (profile.status === "offline") {
+            setDriverPresenceStatus("offline");
+          } else if (profile.status === "online") {
+            setDriverPresenceStatus("online");
+          }
         }
 
         // ── Hydrate preferences ──────────────────────────────────────────
@@ -287,6 +290,9 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
           setJobAccessError(null);
         }
       } catch (error) {
+        if (isAbortError(error)) {
+          return;
+        }
         console.warn("Driver backend bootstrap failed.", error);
         setJobAccessError("Unable to sync with backend. Check server/database connection.");
       } finally {
@@ -415,6 +421,9 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
           setActiveRideRuntime(mapBackendSafetyStateToRuntime(safetyState));
         }
       } catch (error) {
+        if (isAbortError(error)) {
+          return;
+        }
         console.warn("Failed to sync active trip safety state from backend.", error);
       }
     };
@@ -483,7 +492,7 @@ async function loadOnlineData(opts: {
     backendContactsResult,
   ] = await Promise.allSettled([
     listDriverJobs(),
-    listDriverDeliveryOrders(),
+    getDriverActiveDelivery(),
     listDriverServiceRequests(),
     listDriverTrips(),
     getDriverActiveTrip(),
@@ -569,7 +578,7 @@ async function loadOnlineData(opts: {
           routePoints: extractBackendRoutePoints(job.route),
         };
       }),
-      ...backendDeliveryOrders.map((order: any) => ({
+      ...(Array.isArray(backendDeliveryOrders) ? backendDeliveryOrders : [backendDeliveryOrders]).map((order: any) => ({
         id: order.id,
         routeId: order.routeId,
         from: order.pickupAddress,
