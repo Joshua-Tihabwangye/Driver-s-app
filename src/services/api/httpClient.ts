@@ -182,6 +182,10 @@ function _parseJson<T>(text: string): T | null {
   }
 }
 
+export function isAbortError(error: unknown): error is Error & { name: 'AbortError' } {
+  return error instanceof Error && error.name === 'AbortError';
+}
+
 async function _handleError(res: Response, parsed?: ApiEnvelope<unknown> | null): Promise<never> {
   const message = parsed?.message || `Request failed: ${res.status} ${res.statusText}`;
   throw new ApiRequestError({
