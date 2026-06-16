@@ -31,6 +31,11 @@ export interface SharedContact {
   createdAt: number;
 }
 
+export interface GeoPoint {
+  lat: number;
+  lng: number;
+}
+
 export interface Job {
   id: string;
   tripId?: string;
@@ -44,6 +49,12 @@ export interface Job {
   itemType?: string;
   status: JobStatus;
   requestedAt: number;
+  riderName?: string;
+  riderPhone?: string;
+  pickupLocation?: GeoPoint | null;
+  dropoffLocation?: GeoPoint | null;
+  routePoints?: GeoPoint[];
+  otpCode?: string;
   sharedContacts?: SharedContact[];
   segments?: TourSegment[];
 }
@@ -176,8 +187,16 @@ export interface TripRecord {
   dropoff?: string;
   distance?: string;
   duration?: string;
+  requestedAt?: number;
+  updatedAt?: number;
   startedAt?: number;
   completedAt?: number;
+  riderName?: string;
+  riderPhone?: string;
+  pickupLocation?: GeoPoint | null;
+  dropoffLocation?: GeoPoint | null;
+  routePoints?: GeoPoint[];
+  otpCode?: string;
   details?: TripRecordDetails;
 }
 

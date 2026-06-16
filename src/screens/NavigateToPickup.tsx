@@ -76,6 +76,7 @@ export default function NavigateToPickup() {
 
   const rentalExtra = isRental ? tripPresentation.routeSummary : null;
   const tourExtra = isTour ? tripPresentation.routeSummary : null;
+  const riderPhone = (tripPresentation.riderPhone || "").replace(/[^\d+]/g, "");
 
   return (
     <div className="flex flex-col min-h-full">
@@ -87,7 +88,7 @@ export default function NavigateToPickup() {
       <DriverMapSurface
         heightClass="h-[460px]"
         onBack={() => navigate(-1)}
-        routePath="M20 80 C 30 70, 45 60, 65 40 S 80 25, 85 20"
+        routePoints={tripPresentation.routePoints || []}
         routeColor="#15b79e"
         routeStrokeWidth={2.4}
         routeDasharray="4 2"
@@ -118,6 +119,7 @@ export default function NavigateToPickup() {
           {
             id: "pickup",
             positionClass: "right-[16%] top-[18%]",
+            position: tripPresentation.pickupLocation || undefined,
             tone: isAmbulance ? "danger" : "warning",
             label: isAmbulance ? "Patient" : "Pickup",
             icon: MapPin,
@@ -166,17 +168,18 @@ export default function NavigateToPickup() {
                 {!isAmbulance && (
                   <div className="flex items-center space-x-2 text-[10px] text-slate-400 font-black uppercase tracking-tight">
                     <Clock className="h-3 w-3" />
-                    <span>ETA 18:22</span>
+                    <span>{tripPresentation.timingSummary || "Live route pending"}</span>
                   </div>
                 )}
                 {!isAmbulance && (
                   <button
                     type="button"
-                    onClick={() => window.open("tel:+256700000000")}
+                    onClick={() => riderPhone && window.open(`tel:${riderPhone}`)}
+                    disabled={!riderPhone}
                     className="inline-flex items-center rounded-full bg-orange-500 px-3 py-1.5 text-[10px] font-black uppercase tracking-tight text-white shadow-md hover:bg-orange-600 transition-colors"
                   >
                     <Phone className="h-3 w-3 mr-2" />
-                    Call
+                    {riderPhone ? "Call" : "No phone"}
                   </button>
                 )}
               </div>

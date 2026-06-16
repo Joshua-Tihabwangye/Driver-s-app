@@ -1,5 +1,6 @@
 import { createContext, ReactNode, useContext, useState, useMemo, useCallback, useEffect, type Dispatch, type SetStateAction } from "react";
 import type {
+  EarningsEntry,
   Job,
   TripRecord,
   SharedTrip,
@@ -15,8 +16,6 @@ import type {
   TourSegment,
   TourSegmentStatus,
 } from "../data/types";
-import { MOCK_EARNINGS, MOCK_COMPLETED_TRIPS, MOCK_DASHBOARD_STATS } from "../data/mockData";
-import { SAMPLE_IDS } from "../data/constants";
 import { getAssignableJobTypesFromRoleConfig, getPersistedServiceIdsFromRoleConfig } from "../utils/taskCategories";
 import {
   areAllRequiredDocumentsCompliant,
@@ -318,7 +317,7 @@ interface StoreContextType {
 
   // Metrics (Derived)
   dashboardMetrics: DashboardMetrics;
-  recentEarnings: typeof MOCK_EARNINGS;
+  recentEarnings: EarningsEntry[];
   driverRoleConfig: DriverRoleConfig;
   driverProfile: DriverProfile;
   resetActiveTrip: () => void;
@@ -454,8 +453,6 @@ const TRIPS_STORAGE_KEY = "driver_trips";
 const REVENUE_EVENTS_STORAGE_KEY = "driver_revenue_events";
 const TRIP_FEEDBACKS_STORAGE_KEY = "driver_trip_feedbacks";
 const DRIVER_BACKEND_ONLY_MODE = true;
-const AUTO_RESEED_REQUESTS = false;
-const REQUEST_RESEED_JOB_TYPES: readonly JobCategory[] = ["ride", "delivery"];
 const DOCUMENT_EXPIRED_API_ERROR =
   "Some of your documents have expired. You won't be able to receive job requests until you upload valid documents.";
 const GO_ONLINE_CONFIRMATION_MESSAGE =
@@ -524,8 +521,8 @@ const DEFAULT_ONBOARDING_CHECKPOINTS: OnboardingCheckpointState = {
 
 const DEFAULT_DELIVERY_WORKFLOW: DeliveryWorkflowState = {
   activeJobId: null,
-  routeId: SAMPLE_IDS.route,
-  stopId: SAMPLE_IDS.stop,
+  routeId: "",
+  stopId: "",
   stage: "idle",
 };
 
@@ -1188,7 +1185,7 @@ function buildCompletedLifecycleArtifacts(
             name: job.itemType || "General Parcel",
             type: job.itemType || "Box",
             weight: "2.5 kg",
-            recipient: "Customer",
+            recipient: job.riderName || "Customer",
             sender: "Merchant",
             proofType: "signature",
           },
@@ -1196,17 +1193,17 @@ function buildCompletedLifecycleArtifacts(
       : job.jobType === "rental"
         ? {
             rental: {
-              customerName: "David W.",
-              billedDuration: job.duration || "4 Hours",
+              customerName: job.riderName || "Customer",
+              billedDuration: job.duration || "Trip duration",
               usageKm: job.distance || "0 km",
               condition: "Verified Clean",
-              rate: "$12.50 / Hr",
+              rate: job.fare || "Variable fare",
             },
           }
         : job.jobType === "tour"
           ? {
               tour: {
-                groupName: "Tour Group",
+                groupName: job.riderName || "Tour booking",
                 itinerary: [
                   { label: "Pickup", time: "09:00 AM", note: job.from },
                   { label: "Final Drop-off", time: "03:00 PM", note: job.to },
@@ -1215,11 +1212,11 @@ function buildCompletedLifecycleArtifacts(
               },
             }
           : job.jobType === "ambulance"
-            ? {
-                ambulance: {
-                  missionType: "Emergency Dispatch",
-                  responseTime: "2 min dash",
-                  careNotes: "Patient stabilized during transit.",
+          ? {
+              ambulance: {
+                  missionType: "Medical transport",
+                  responseTime: job.duration || "Response logged",
+                  careNotes: "Completion recorded from live trip data.",
                 },
               }
             : undefined;
@@ -1239,6 +1236,12 @@ function buildCompletedLifecycleArtifacts(
       status: "completed",
       distance: job.distance,
       duration: job.duration,
+      riderName: job.riderName,
+      riderPhone: job.riderPhone,
+      pickupLocation: job.pickupLocation,
+      dropoffLocation: job.dropoffLocation,
+      routePoints: job.routePoints,
+      requestedAt: job.requestedAt,
       details: overrides?.details ?? defaultDetails,
     },
     revenueEvents: [
@@ -1726,58 +1729,17 @@ export const isWithinPeriod = (timestampOrDate: number | string, period: PeriodF
   return true;
 };
 
-// Extracted from original mock
-const initialJobs: Job[] = [
-  {
-    id: "3244",
-    from: "Kampala Serena",
-    to: "Entebbe Airport",
-    distance: "38 km",
-    duration: "45 min",
-    fare: "85.00",
-    jobType: "ride",
-    status: "pending",
-    requestedAt: Date.now() - 0.02 * 3600000,
-    sharedContacts: [],
-  },
-  { id: "3245", from: "Village Mall", to: "Kyambogo", distance: "5.2 km", duration: "16 min", fare: "12.50", jobType: "ride", status: "pending", requestedAt: Date.now() - 0.05 * 3600000 },
-  { id: "3250", from: "Sheraton Hotel", to: "Speke Resort", distance: "26 km", duration: "4h booking", fare: "Rental", jobType: "rental", status: "pending", requestedAt: Date.now() - 0.06 * 3600000 },
-  { id: "3246", from: "Airport", to: "Safari Lodge", distance: "42 km", duration: "Day 2 of 5", fare: "Tour", jobType: "tour", status: "pending", requestedAt: Date.now() - 3 * 3600000,    segments: [
-      {
-        id: "s1",
-        time: "08:00 AM",
-        title: "Pickup at Airport",
-        description: "Meet the Smith family at Terminal 1 arrivals.",
-        status: "completed",
-      },
-      {
-        id: "s2",
-        time: "10:30 AM",
-        title: "City Museum Tour",
-        description: "Guided tour through the historic district.",
-        status: "in-progress",
-      },
-      {
-        id: "s3",
-        time: "01:30 PM",
-        title: "Lunch at The Peak",
-        description: "Scenic lunch stop for the group.",
-        status: "upcoming",
-      },
-      {
-        id: "s4",
-        time: "04:00 PM",
-        title: "Hotel Drop-off",
-        description: "Return to Grand Plaza Hotel.",
-        status: "upcoming",
-      },
-    ],
-  },
-  { id: "3247", from: "Near Acacia Road", to: "City Hospital", distance: "3.1 km", duration: "8 min", fare: "—", jobType: "ambulance", status: "pending", requestedAt: Date.now() - 0.1 * 3600000 },
-  { id: "3249", from: "FreshMart", to: "Naguru", distance: "2.7 km", duration: "10 min", fare: "3.40", jobType: "delivery", itemType: "Grocery", status: "pending", requestedAt: Date.now() - 0.8 * 3600000 },
-  { id: "shared-100", from: "Acacia Mall", to: "Bugolobi (+1 stop)", distance: "7.7 km", duration: "24 min", fare: "15.40", jobType: "shared", status: "pending", requestedAt: Date.now() - 0.15 * 3600000 },
-  { id: "shared-101", from: "Makerere Main Gate", to: "Ntinda (+2 stops)", distance: "8.5 km", duration: "30 min", fare: "18.20", jobType: "shared", status: "pending", requestedAt: Date.now() - 0.25 * 3600000 },
-];
+function formatTrackedMinutes(totalMinutes: number): string {
+  if (!Number.isFinite(totalMinutes) || totalMinutes <= 0) {
+    return "0m";
+  }
+  if (totalMinutes < 60) {
+    return `${Math.max(1, Math.round(totalMinutes))}m`;
+  }
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = Math.round(totalMinutes % 60);
+  return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+}
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [periodFilter, setPeriodFilter] = useState<PeriodFilter>("day");
@@ -2112,6 +2074,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setSelectedVehicleIndex,
     setJobs,
     setTrips,
+    setRevenueEvents,
     setEmergencyContacts,
     setActiveTrip,
     setDeliveryWorkflow,
@@ -2363,7 +2326,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         if (result?.status === "online") {
           // Status already set optimistically — just trigger the data sync.
           setBackendBootstrapTrigger((prev) => prev + 1);
-        } else if (input?.confirmed && result?.status !== "online") {
+        } else if (input?.confirmed) {
           // Server returned something other than online — roll back.
           setDriverPresenceStatus("offline");
         }
@@ -2876,65 +2839,68 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const reportActiveRideMovementSample = useCallback((sample: Omit<ActiveRideLocationSample, "timestamp"> & { timestamp?: number }): void => {
     const rideTrackingActive = activeTrip.stage === "in_progress";
     const deliveryTrackingActive = deliveryWorkflow.stage === "in_delivery";
-    if (!rideTrackingActive && !deliveryTrackingActive) return;
+    const presenceOnline = driverPresenceStatus === "online";
+    if (!presenceOnline && !rideTrackingActive && !deliveryTrackingActive) return;
     
-    setActiveRideRuntime((prev) => {
-        const timestamp = sample.timestamp || Date.now();
-        const newLocation: ActiveRideLocationSample = { ...sample, timestamp };
-        
-        let lastMovementAt = prev.lastMovementAt;
-        if (!prev.lastKnownLocation || !lastMovementAt) {
-            lastMovementAt = timestamp;
-        } else {
-            const dx = prev.lastKnownLocation.latitude - newLocation.latitude;
-            const dy = prev.lastKnownLocation.longitude - newLocation.longitude;
-            const dist = Math.sqrt(dx*dx + dy*dy) * 111000; 
-            
-            if (dist > 50) { 
-                lastMovementAt = timestamp;
-            }
-        }
-        
-        let safetyCheck = prev.safetyCheck;
-        const isStationary = (timestamp - lastMovementAt) >= 20* 60000;
-        
-        if (isStationary && safetyCheck.status === "idle") {
-            safetyCheck = {
-                ...safetyCheck,
-                status: "safety_check_pending",
-                stationarySince: lastMovementAt,
-                triggeredAt: timestamp,
-                triggeredByStationary: true,
-            };
-            if (!DRIVER_BACKEND_ONLY_MODE && !shouldUseDriverBackendWrites()) {
-              setTimeout(() => {
-                window.localStorage.setItem('evzone_active_ride_safety_check', JSON.stringify({ tripId: activeTrip.tripId, ts: Date.now() }));
-              }, 50);
-            }
-        } else if (!isStationary && safetyCheck.status !== "idle" && safetyCheck.triggeredByStationary && safetyCheck.status !== "sos_triggered") {
-            safetyCheck = {
-                ...safetyCheck,
-                status: "idle",
-                driverAction: null,
-                passengerAction: null,
-            };
-            if (!DRIVER_BACKEND_ONLY_MODE && !shouldUseDriverBackendWrites()) {
-              setTimeout(() => {
-                window.localStorage.setItem('evzone_active_ride_safety_resume', JSON.stringify({ tripId: activeTrip.tripId, ts: Date.now() }));
-              }, 50);
-            }
-        }
+    if (rideTrackingActive || deliveryTrackingActive) {
+      setActiveRideRuntime((prev) => {
+          const timestamp = sample.timestamp || Date.now();
+          const newLocation: ActiveRideLocationSample = { ...sample, timestamp };
+          
+          let lastMovementAt = prev.lastMovementAt;
+          if (!prev.lastKnownLocation || !lastMovementAt) {
+              lastMovementAt = timestamp;
+          } else {
+              const dx = prev.lastKnownLocation.latitude - newLocation.latitude;
+              const dy = prev.lastKnownLocation.longitude - newLocation.longitude;
+              const dist = Math.sqrt(dx*dx + dy*dy) * 111000; 
+              
+              if (dist > 50) { 
+                  lastMovementAt = timestamp;
+              }
+          }
+          
+          let safetyCheck = prev.safetyCheck;
+          const isStationary = (timestamp - lastMovementAt) >= 20* 60000;
+          
+          if (isStationary && safetyCheck.status === "idle") {
+              safetyCheck = {
+                  ...safetyCheck,
+                  status: "safety_check_pending",
+                  stationarySince: lastMovementAt,
+                  triggeredAt: timestamp,
+                  triggeredByStationary: true,
+              };
+              if (!DRIVER_BACKEND_ONLY_MODE && !shouldUseDriverBackendWrites()) {
+                setTimeout(() => {
+                  window.localStorage.setItem('evzone_active_ride_safety_check', JSON.stringify({ tripId: activeTrip.tripId, ts: Date.now() }));
+                }, 50);
+              }
+          } else if (!isStationary && safetyCheck.status !== "idle" && safetyCheck.triggeredByStationary && safetyCheck.status !== "sos_triggered") {
+              safetyCheck = {
+                  ...safetyCheck,
+                  status: "idle",
+                  driverAction: null,
+                  passengerAction: null,
+              };
+              if (!DRIVER_BACKEND_ONLY_MODE && !shouldUseDriverBackendWrites()) {
+                setTimeout(() => {
+                  window.localStorage.setItem('evzone_active_ride_safety_resume', JSON.stringify({ tripId: activeTrip.tripId, ts: Date.now() }));
+                }, 50);
+              }
+          }
 
-        return {
-            ...prev,
-            tripId: activeTrip.tripId ?? prev.tripId,
-            lastKnownLocation: newLocation,
-            lastMovementAt,
-            safetyCheck
-        };
-    });
+          return {
+              ...prev,
+              tripId: activeTrip.tripId ?? prev.tripId,
+              lastKnownLocation: newLocation,
+              lastMovementAt,
+              safetyCheck
+          };
+      });
+    }
     const timestamp = sample.timestamp || Date.now();
-    if (driverBackendEnabled) {
+    if (driverBackendEnabled && presenceOnline) {
       const socket = createDriverSocket();
       if (!socket.connected) {
         socket.connect();
@@ -2958,7 +2924,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         console.warn("Driver location heartbeat failed.", error);
       });
     }
-  }, [activeTrip, deliveryWorkflow, driverBackendEnabled]);
+  }, [activeTrip, deliveryWorkflow, driverBackendEnabled, driverPresenceStatus]);
 
   const respondToSafetyCheck = useCallback((actor: RideSafetyActor, action: RideSafetyAction): boolean => {
     
@@ -3672,11 +3638,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       // Strict Ride-Hailing Rule: Prevent overriding a truly active trip.
       // Ghost trip detection: IF we have an active trip ID, but it doesn't exist in the current jobs array,
       // it's a "ghost" from a previous testing session and can be safely overwritten.
-      const isGhostTrip = activeTrip.tripId && !jobs.some(j => j.id === activeTrip.tripId);
+      const resolvedTripId = targetJob.tripId || jobId;
+      const isGhostTrip =
+        activeTrip.tripId &&
+        !jobs.some(
+          (job) =>
+            job.id === activeTrip.tripId ||
+            job.tripId === activeTrip.tripId ||
+            job.routeId === activeTrip.tripId
+        );
       
       const hasBlockingTrip =
         activeTrip.tripId &&
-        activeTrip.tripId !== jobId &&
+        activeTrip.tripId !== resolvedTripId &&
         activeTrip.status !== "completed" &&
         activeTrip.status !== "cancelled" &&
         activeTrip.stage !== "idle" &&
@@ -3696,7 +3670,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       // Set the active trip state — this is what the trip screens read
       // to know which trip is currently in progress
       setActiveTrip({
-        tripId: jobId,
+        tripId: resolvedTripId,
         jobType: "ride",
         stage: "navigate_to_pickup",
         status: "accepted",
@@ -3705,17 +3679,59 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           updatedAt: now,
         },
       });
-      setActiveRideRuntime(createDefaultActiveRideRuntime(null));
+      setActiveRideRuntime(createDefaultActiveRideRuntime(resolvedTripId));
 
       if (shouldUseDriverBackendWrites()) {
-        void acceptDriverJob(jobId).catch((error) => {
-          console.warn("Driver backend job accept failed.", error);
-        });
+        void acceptDriverJob(jobId)
+          .then((response) => {
+            const backendTrip = response?.trip;
+            if (!backendTrip) {
+              return;
+            }
+            setJobs((prev) =>
+              prev.map((job) =>
+                job.id === jobId
+                  ? {
+                      ...job,
+                      tripId: backendTrip.id,
+                      status: "attended",
+                    }
+                  : job
+              )
+            );
+            setActiveTrip((prev) => {
+              if (prev.tripId !== resolvedTripId && prev.tripId !== jobId) {
+                return prev;
+              }
+              return {
+                ...prev,
+                tripId: backendTrip.id,
+                stage: mapBackendTripStage(backendTrip.status),
+                status:
+                  backendTrip.status === "completed"
+                    ? "completed"
+                    : backendTrip.status === "cancelled"
+                      ? "cancelled"
+                      : "in_progress",
+                timestamps: {
+                  ...prev.timestamps,
+                  acceptedAt: prev.timestamps.acceptedAt ?? now,
+                  startedAt: backendTrip.startedAt ?? prev.timestamps.startedAt,
+                  completedAt: backendTrip.completedAt ?? prev.timestamps.completedAt,
+                  updatedAt: backendTrip.updatedAt ?? Date.now(),
+                },
+              };
+            });
+            setActiveRideRuntime(createDefaultActiveRideRuntime(backendTrip.id));
+          })
+          .catch((error) => {
+            console.warn("Driver backend job accept failed.", error);
+          });
       }
 
       return true;
     },
-    [jobs, activeTrip, completeActiveTrip, canAccessOrdersWithCurrentDocuments]
+    [jobs, activeTrip, completeActiveTrip, canAccessOrdersWithCurrentDocuments, mapBackendTripStage]
   );
 
   const canTransitionActiveTripStage = useCallback(
@@ -3749,7 +3765,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }
 
       // Safe Auto-Complete for current active trip
-      const isGhostTrip = activeTrip.tripId && !jobs.some(j => j.id === activeTrip.tripId);
+      const isGhostTrip =
+        activeTrip.tripId &&
+        !jobs.some(
+          (job) =>
+            job.id === activeTrip.tripId ||
+            job.tripId === activeTrip.tripId ||
+            job.routeId === activeTrip.tripId
+        );
       const hasBlockingTrip =
         activeTrip.tripId &&
         activeTrip.tripId !== jobId &&
@@ -3770,8 +3793,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
       setDeliveryWorkflow({
         activeJobId: jobId,
-        routeId: targetJob.routeId || SAMPLE_IDS.route,
-        stopId: SAMPLE_IDS.stop,
+        routeId: targetJob.routeId || "",
+        stopId: "",
         stage: "accepted",
       });
 
@@ -3921,13 +3944,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }),
     [driverRoleSelection, sharedRidesEnabled]
   );
-  const reseedRequestJobTypes = useMemo(
-    () =>
-      REQUEST_RESEED_JOB_TYPES.filter(
-        (jobType) => assignableJobTypes.includes(jobType)
-      ),
-    [assignableJobTypes]
-  );
   const rideCapable = assignableJobTypes.includes("ride");
   const canAcceptJobType = useCallback(
     (jobType: JobCategory) => {
@@ -3939,59 +3955,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     },
     [assignableJobTypes, driverBackendEnabled, driverSharedRidesEnabled, rideCapable, sharedRidesEnabled]
   );
-
-  useEffect(() => {
-    if (typeof window === "undefined" || !AUTO_RESEED_REQUESTS) {
-      return;
-    }
-    if (reseedRequestJobTypes.length === 0) {
-      return;
-    }
-
-    const missingRequestTypes = reseedRequestJobTypes.filter(
-      (jobType) =>
-        !jobs.some((job) => job.jobType === jobType && job.status === "pending")
-    );
-    if (missingRequestTypes.length === 0) {
-      return;
-    }
-
-    setJobs((prev) => {
-      const missingTypeSet = new Set<JobCategory>(missingRequestTypes);
-      const now = Date.now();
-      let changed = false;
-
-      const restored = prev.map((job, index) => {
-        if (!missingTypeSet.has(job.jobType) || job.status === "pending") {
-          return job;
-        }
-        changed = true;
-        return {
-          ...job,
-          status: "pending" as const,
-          requestedAt: now - index * 60000,
-        };
-      });
-
-      const existingIds = new Set(restored.map((job) => job.id));
-      const seeded = initialJobs
-        .filter(
-          (job) =>
-            missingTypeSet.has(job.jobType) && !existingIds.has(job.id)
-        )
-        .map((job, index) => ({
-          ...job,
-          status: "pending" as const,
-          requestedAt: now - (restored.length + index) * 60000,
-        }));
-
-      if (!changed && seeded.length === 0) {
-        return prev;
-      }
-
-      return [...seeded, ...restored];
-    });
-  }, [jobs, reseedRequestJobTypes]);
 
   const acceptSpecializedJob = useCallback(
     (jobId: string, jobType: SpecializedJobType) => {
@@ -4014,7 +3977,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         return false;
       }
 
-      const isGhostTrip = activeTrip.tripId && !jobs.some(j => j.id === activeTrip.tripId);
+      const isGhostTrip =
+        activeTrip.tripId &&
+        !jobs.some(
+          (job) =>
+            job.id === activeTrip.tripId ||
+            job.tripId === activeTrip.tripId ||
+            job.routeId === activeTrip.tripId
+        );
       
       const hasBlockingTrip =
         activeTrip.tripId &&
@@ -4081,7 +4051,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         return false;
       }
 
-      const isGhostTrip = activeTrip.tripId && !jobs.some(j => j.id === activeTrip.tripId);
+      const isGhostTrip =
+        activeTrip.tripId &&
+        !jobs.some(
+          (job) =>
+            job.id === activeTrip.tripId ||
+            job.tripId === activeTrip.tripId ||
+            job.routeId === activeTrip.tripId
+        );
       
       const hasBlockingTrip =
         activeTrip.tripId &&
@@ -4249,12 +4226,27 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   // Derived Metrics
   const dashboardMetrics = useMemo(() => {
     const periodTrips = filteredTrips.filter((trip) =>
-      isWithinPeriod(trip.date || trip.time || Date.now(), periodFilter)
+      isWithinPeriod(
+        trip.completedAt ||
+          trip.startedAt ||
+          trip.requestedAt ||
+          trip.updatedAt ||
+          trip.date ||
+          trip.time ||
+          Date.now(),
+        periodFilter,
+      )
     );
     const periodRevenue = filteredRevenueEvents.filter((event) =>
       isWithinPeriod(event.timestamp, periodFilter)
     );
     const totalEarnings = periodRevenue.reduce((sum, event) => sum + event.amount, 0);
+    const trackedMinutes = periodTrips.reduce((sum, trip) => {
+      if (!trip.startedAt || !trip.completedAt || trip.completedAt <= trip.startedAt) {
+        return sum;
+      }
+      return sum + (trip.completedAt - trip.startedAt) / 60000;
+    }, 0);
 
     const mix: Record<JobCategory, number> = {
       ride: 0,
@@ -4272,7 +4264,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const jobsCount = periodTrips.length;
 
     return {
-      onlineTime: periodFilter === "day" ? "3h 24m" : periodFilter === "week" ? "28h 15m" : "110h",
+      onlineTime: formatTrackedMinutes(trackedMinutes),
       jobsCount,
       totalTrips: filteredTrips.length,
       earningsAmount: `UGX ${totalEarnings.toLocaleString()}`,
@@ -4280,13 +4272,52 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     };
   }, [periodFilter, filteredTrips, filteredRevenueEvents]);
 
-  // Adjust recent earnings charts based on period
-  const recentEarnings = useMemo(() => {
-    return MOCK_EARNINGS.map(e => ({
-      ...e,
-      amount: periodFilter === "week" ? e.amount * 4 : periodFilter === "month" ? e.amount * 12 : e.amount
-    }));
-  }, [periodFilter]);
+  const recentEarnings = useMemo<EarningsEntry[]>(() => {
+    const grouped = new Map<string, EarningsEntry>();
+    const relevantEvents = filteredRevenueEvents
+      .filter((event) => isWithinPeriod(event.timestamp, periodFilter))
+      .sort((a, b) => b.timestamp - a.timestamp);
+
+    for (const event of relevantEvents) {
+      const date = new Date(event.timestamp).toISOString().slice(0, 10);
+      const existing = grouped.get(date);
+      if (existing) {
+        existing.amount += event.amount;
+        existing.trips += 1;
+        continue;
+      }
+      grouped.set(date, {
+        id: `earnings-${date}`,
+        date,
+        amount: event.amount,
+        currency: "UGX",
+        trips: 1,
+        period: "daily",
+      });
+    }
+
+    const entries = Array.from(grouped.values())
+      .sort((a, b) => Date.parse(b.date) - Date.parse(a.date))
+      .slice(0, 7);
+
+    if (entries.length > 0) {
+      return entries;
+    }
+
+    return Array.from({ length: 7 }, (_, index) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (6 - index));
+      const isoDate = date.toISOString().slice(0, 10);
+      return {
+        id: `earnings-empty-${isoDate}`,
+        date: isoDate,
+        amount: 0,
+        currency: "UGX",
+        trips: 0,
+        period: "daily",
+      };
+    });
+  }, [filteredRevenueEvents, periodFilter]);
 
   const activeDeliveryJob = useMemo(
     () =>

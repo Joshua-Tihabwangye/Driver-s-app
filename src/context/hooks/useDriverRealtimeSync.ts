@@ -2,6 +2,10 @@ import { useEffect, type Dispatch, type SetStateAction } from "react";
 import { createDriverSocket } from "../../services/driverSocket";
 import { DRIVER_BACKEND_AUTH_EVENT, readDriverBackendAccessToken } from "../../services/api/driverApi";
 import type { Job, TripRecord } from "../../data/types";
+import {
+  buildBackendJobPresentation,
+  extractBackendRoutePoints,
+} from "../../utils/backendJobPresentation";
 
 type ActiveTripStateLike = {
   tripId: string | null;
@@ -78,6 +82,13 @@ export function useDriverRealtimeSync({
       requestedAt?: number;
       fareEstimate?: number;
       distanceMeters?: number;
+      routeDistanceKm?: number;
+      routeDurationMin?: number;
+      riderName?: string;
+      riderPhone?: string;
+      route?: unknown;
+      pickupLocation?: { lat: number; lng: number } | null;
+      dropoffLocation?: { lat: number; lng: number } | null;
       serviceType?: string;
     }) => {
       const jobId = payload.jobId || payload.orderId || payload.requestId || payload.tripId;
@@ -90,18 +101,36 @@ export function useDriverRealtimeSync({
             : payload.routeId && !payload.tripId
               ? "delivery"
               : mapBackendJobType(payload.type || "ride");
+        const presentation = buildBackendJobPresentation({
+          route:
+            payload.routeDistanceKm != null || payload.routeDurationMin != null
+              ? {
+                  ...(payload.route && typeof payload.route === "object" ? payload.route as Record<string, unknown> : {}),
+                  distanceKm: payload.routeDistanceKm,
+                  durationMinutes: payload.routeDurationMin,
+                }
+              : payload.route,
+          distanceMeters: payload.distanceMeters,
+          durationMinutes: payload.routeDurationMin,
+          estimatedFare: payload.fareEstimate,
+        });
         const nextJob: Job = {
           id: jobId,
           tripId: payload.tripId,
           routeId: payload.routeId,
           from: payload.pickup || payload.pickupAddress || "Pickup",
           to: payload.dropoff || payload.dropoffAddress || "Dropoff",
-          distance: "TBD",
-          duration: "TBD",
-          fare: payload.fareEstimate ? String(payload.fareEstimate) : "TBD",
+          distance: presentation.distance,
+          duration: presentation.duration,
+          fare: presentation.fare,
           jobType: inferredJobType,
           status: "pending",
           requestedAt: payload.requestedAt || Date.now(),
+          riderName: payload.riderName || undefined,
+          riderPhone: payload.riderPhone || undefined,
+          pickupLocation: payload.pickupLocation || null,
+          dropoffLocation: payload.dropoffLocation || null,
+          routePoints: extractBackendRoutePoints(payload.route),
         };
 
         if (existingIndex >= 0) {

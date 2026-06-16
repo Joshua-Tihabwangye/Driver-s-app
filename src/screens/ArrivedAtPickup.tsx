@@ -96,6 +96,7 @@ export default function ArrivedAtPickup() {
   const summaryTitle = tripPresentation.routeSummary;
   let summaryText = tripPresentation.timingSummary;
   let timeLabel = `Waiting: ${formatTime(elapsedSeconds)}`;
+  const riderPhone = tripPresentation.riderPhone || "";
 
   if (isRental) {
     summaryText = `Rental flow active · ${tripPresentation.statusSummary}`;
@@ -138,6 +139,7 @@ export default function ArrivedAtPickup() {
             {
               id: "pickup-point",
               positionClass: "left-[32%] top-[44%]",
+              position: tripPresentation.pickupLocation || undefined,
               tone: isAmbulance ? "danger" : "warning",
               label: "Docking Point",
               icon: MapPin,
@@ -177,14 +179,16 @@ export default function ArrivedAtPickup() {
               <div className="flex items-center space-x-2">
                 <button
                   type="button"
-                  onClick={() => handleMessage("+256700000123")}
+                  onClick={() => handleMessage(riderPhone)}
+                  disabled={!riderPhone}
                   className="h-10 w-10 flex items-center justify-center rounded-2xl bg-white border border-orange-50 text-orange-500 shadow-sm hover:bg-orange-50 transition-colors"
                 >
                   <MessageCircle className="h-4 w-4" />
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleCall("+256700000123")}
+                  onClick={() => handleCall(riderPhone)}
+                  disabled={!riderPhone}
                   className="h-10 w-10 flex items-center justify-center rounded-2xl bg-orange-500 text-white shadow-xl shadow-orange-500/20 hover:scale-105 transition-all"
                 >
                   <Phone className="h-4 w-4" />

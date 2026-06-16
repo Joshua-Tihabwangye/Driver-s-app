@@ -12,7 +12,6 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import DriverMapSurface from "../components/DriverMapSurface";
 import SlideToConfirm from "../components/SlideToConfirm";
-import { SAMPLE_IDS } from "../data/constants";
 import { getDriverDeliveryRoute } from "../services/api/driverApi";
 import { useStore } from "../context/StoreContext";
 
@@ -159,9 +158,9 @@ export default function ActiveDeliveryRoute() {
           <button
             type="button"
             onClick={() =>
-              navigate(
-                `/driver/delivery/route/${routeId || deliveryWorkflow.routeId || SAMPLE_IDS.route}/map`
-              )
+              routeId || deliveryWorkflow.routeId
+                ? navigate(`/driver/delivery/route/${routeId || deliveryWorkflow.routeId}/map`)
+                : navigate("/driver/delivery/orders")
             }
             className="rounded-full border border-slate-200 bg-white/94 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-700 shadow-lg"
           >
@@ -212,7 +211,11 @@ export default function ActiveDeliveryRoute() {
         {/* Share Trip Status */}
         <button
           type="button"
-          onClick={() => navigate(`/driver/safety/share-my-ride/${routeId || deliveryWorkflow.routeId || SAMPLE_IDS.route}`)}
+          onClick={() =>
+            routeId || deliveryWorkflow.routeId
+              ? navigate(`/driver/safety/share-my-ride/${routeId || deliveryWorkflow.routeId}`)
+              : navigate("/driver/delivery/orders")
+          }
           className="w-full flex items-center justify-between p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-100/50 shadow-sm active:scale-95 transition-all text-left"
         >
           <div className="flex items-center space-x-3">
@@ -254,9 +257,13 @@ export default function ActiveDeliveryRoute() {
             instruction="Slide when arrived at drop-off"
             successLabel="Drop-off reached"
             onConfirm={() => {
-              navigate(
-                `/driver/delivery/route/${routeId || deliveryWorkflow.routeId || SAMPLE_IDS.route}/stop/${activeStopId}/details`
-              );
+              if (routeId || deliveryWorkflow.routeId) {
+                navigate(
+                  `/driver/delivery/route/${routeId || deliveryWorkflow.routeId}/stop/${activeStopId}/details`
+                );
+              } else {
+                navigate("/driver/delivery/orders");
+              }
               return true;
             }}
           />
@@ -264,9 +271,11 @@ export default function ActiveDeliveryRoute() {
           <button
             type="button"
             onClick={() =>
-              navigate(
-                `/driver/delivery/route/${routeId || deliveryWorkflow.routeId || SAMPLE_IDS.route}/details`
-              )
+              routeId || deliveryWorkflow.routeId
+                ? navigate(
+                    `/driver/delivery/route/${routeId || deliveryWorkflow.routeId}/details`
+                  )
+                : navigate("/driver/delivery/orders")
             }
             className="w-full rounded-[2rem] border-2 border-slate-900 bg-white px-6 py-4 text-[11px] font-black uppercase tracking-widest text-slate-900 active:scale-[0.98] transition-all hover:bg-slate-50 shadow-xl shadow-slate-200/50"
           >

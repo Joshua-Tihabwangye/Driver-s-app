@@ -59,6 +59,7 @@ export default function WaitingForPassenger() {
   const isRental = jobType === "rental";
   const isTour = jobType === "tour";
   const isAmbulance = jobType === "ambulance";
+  const riderPhone = tripPresentation.riderPhone || "";
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -127,6 +128,7 @@ export default function WaitingForPassenger() {
           {
             id: "pickup",
             positionClass: "left-[32%] top-[48%]",
+            position: tripPresentation.pickupLocation || undefined,
             tone: isAmbulance ? "danger" : "warning",
             label: "Docking Point",
             icon: MapPin,
@@ -178,14 +180,16 @@ export default function WaitingForPassenger() {
                <div className="flex items-center space-x-2">
                   <button
                     type="button"
-                    onClick={() => handleMessage("+256700000123")}
+                    onClick={() => handleMessage(riderPhone)}
+                    disabled={!riderPhone}
                     className="h-10 w-10 flex items-center justify-center rounded-2xl bg-white border border-slate-100 text-slate-900 shadow-sm hover:bg-slate-50 transition-colors"
                   >
                     <MessageCircle className="h-4 w-4" />
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleCall("+256700000123")}
+                    onClick={() => handleCall(riderPhone)}
+                    disabled={!riderPhone}
                     className="h-10 w-10 flex items-center justify-center rounded-2xl bg-slate-900 text-white shadow-lg hover:bg-slate-800 transition-colors"
                   >
                     <Phone className="h-4 w-4" />

@@ -1,7 +1,6 @@
 import {
   buildJobDetailRoute,
   buildPrivateTripRoute,
-  SAMPLE_IDS,
 } from "../data/constants";
 import {
 Clock,
@@ -14,6 +13,7 @@ import DriverMapSurface from "../components/DriverMapSurface";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
 import type { JobCategory } from "../data/types";
+import { resolveDriverTripPresentation } from "../utils/driverTripPresentation";
 
 // EVzone Driver App – NavigationInProgress Driver App – Navigation in Progress (v1)
 // Navigation view while driving to drop-off or along the route.
@@ -49,14 +49,23 @@ export default function NavigationInProgress() {
   };
 
   const routeState = (location.state as NavigationRouteState | null) || null;
-  const tripId = routeTripId || routeState?.tripId || activeTrip.tripId || SAMPLE_IDS.trip;
-  const relatedJob = jobs.find((job) => job.id === tripId) || null;
+  const routeTripCandidateId = routeTripId || routeState?.tripId || activeTrip.tripId || null;
+  const relatedJob = routeTripCandidateId
+    ? jobs.find((job) => job.id === routeTripCandidateId || job.tripId === routeTripCandidateId) || null
+    : null;
+  const tripId = routeTripCandidateId || relatedJob?.id || "";
 
   const resolvedJobType: JobCategory =
     routeState?.jobType ||
     (activeTrip.tripId === tripId ? activeTrip.jobType : null) ||
     relatedJob?.jobType ||
     "ride";
+  const tripPresentation = resolveDriverTripPresentation({
+    tripId,
+    jobType: resolvedJobType,
+    jobs,
+    trips,
+  });
 
   const tourSegment = resolvedJobType === "tour" ? routeState?.segment || null : null;
   const isTour = resolvedJobType === "tour";
@@ -66,26 +75,26 @@ export default function NavigationInProgress() {
   const destinationTitle = isTour
     ? tourSegment?.title || "Tour segment navigation"
     : isRental
-    ? "To · Bugolobi"
+    ? `To · ${tripPresentation.destinationLabel}`
     : isAmbulance
-    ? `Ambulance route · ${relatedJob?.to || "Hospital"}`
-    : `To · ${relatedJob?.to || "Bugolobi"}`;
+    ? `Ambulance route · ${tripPresentation.destinationLabel}`
+    : `To · ${tripPresentation.destinationLabel}`;
 
   const destinationDescription = isTour
-    ? tourSegment?.description || `${relatedJob?.from || "Pickup"} → ${relatedJob?.to || "Drop-off"}`
+    ? tourSegment?.description || `${tripPresentation.originLabel} → ${tripPresentation.destinationLabel}`
     : isRental
-    ? "6.7 km · 14 min remaining"
+    ? tripPresentation.timingSummary || "Live route pending"
     : isAmbulance
     ? "Emergency corridor guidance active"
-    : `${relatedJob?.distance || "6.7 km"} · ${relatedJob?.duration || "14 min"} remaining`;
+    : tripPresentation.timingSummary || "Live route pending";
 
   const etaLabel = isTour
     ? tourSegment?.time || "Current segment window"
     : isRental
-    ? "ETA 18:34"
-    : relatedJob?.duration
-    ? `ETA · ${relatedJob.duration}`
-    : "ETA 18:34";
+    ? tripPresentation.timingSummary || "Live route pending"
+    : tripPresentation.timingSummary
+    ? `ETA · ${tripPresentation.timingSummary}`
+    : "Live route pending";
 
   const handleArrivedAtPickup = () => {
     if (
@@ -201,7 +210,7 @@ export default function NavigationInProgress() {
         heightClass="h-[460px]"
         className="shrink-0"
         onBack={() => navigate(-1)}
-        routePath="M15 80 C 30 70, 45 60, 55 50 S 75 30, 85 20"
+        routePoints={tripPresentation.routePoints || []}
         routeColor="var(--brand-active)"
         routeStrokeWidth={2.3}
         routeDasharray="5 3"
@@ -236,6 +245,7 @@ export default function NavigationInProgress() {
           {
             id: "terminal",
             positionClass: "right-[16%] top-[18%]",
+            position: tripPresentation.dropoffLocation || undefined,
             tone: isAmbulance ? "danger" : "warning",
             label: isRental ? "Drop-off" : "Terminal",
             icon: MapPin,

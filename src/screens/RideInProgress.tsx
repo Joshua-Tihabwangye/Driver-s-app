@@ -2,7 +2,6 @@ import { buildDriverLifecycleRoute } from "../data/constants";
 import {
   ChevronLeft,
   Clock,
-  DollarSign,
   MapPin,
   Navigation,
   PauseCircle,
@@ -30,7 +29,6 @@ import { resolveDriverTripPresentation } from "../utils/driverTripPresentation";
 
 export default function RideInProgress() {
   const navigate = useNavigate();
-  const [tripState, setTripState] = useState<"active" | "reached">("active");
   const [nowMs, setNowMs] = useState(Date.now());
   const { tripId: routeTripId } = useParams();
   const {
@@ -56,15 +54,6 @@ export default function RideInProgress() {
   const routeSummary = tripPresentation.routeSummary;
   const timingSummary = tripPresentation.timingSummary;
   const fareSummary = tripPresentation.fareSummary;
-
-  useEffect(() => {
-    if (tripState === "active") {
-      const timer = setTimeout(() => {
-        setTripState("reached");
-      }, 15000); // 15 sec sim
-      return () => clearTimeout(timer);
-    }
-  }, [tripState]);
 
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -96,18 +85,10 @@ export default function RideInProgress() {
     0,
     5 - Math.floor((nowMs - stopRequestedAt) / 1000)
   );
-  // Base values from original Ride flow
-  let titleText = routeSummary;
-  let subtitleText = timingSummary;
-  let rightLine1 = fareSummary ?? "Live";
-  let rightLine2 = `Time in trip: ${formatElapsedTime(elapsedInTripSeconds)}`;
-
-  if (tripState === "reached") {
-    titleText = "Destination Reached";
-    subtitleText = "Ready to drop off";
-    rightLine1 = fareSummary ? `${fareSummary} total` : "Trip complete";
-    rightLine2 = tripPresentation.destinationLabel;
-  }
+  const titleText = routeSummary;
+  const subtitleText = timingSummary || "Live trip telemetry";
+  const rightLine1 = fareSummary ?? "Live fare";
+  const rightLine2 = `Time in trip: ${formatElapsedTime(elapsedInTripSeconds)}`;
 
   const handleEndTrip = () => {
     if (!tripId) {
@@ -143,7 +124,7 @@ export default function RideInProgress() {
         heightClass="h-[460px]"
         onBack={() => navigate(-1)}
         onSos={handleEmergencySos}
-        routePath="M16 80 C 30 70, 42 60, 56 48 S 78 30, 86 22"
+        routePoints={tripPresentation.routePoints || []}
         routeColor={jobType === "ambulance" ? "#dc4d46" : "#15b79e"}
         routeStrokeWidth={2.6}
         routeDasharray="5 3"
@@ -174,8 +155,9 @@ export default function RideInProgress() {
           {
             id: "destination",
             positionClass: "right-[16%] top-[28%]",
+            position: tripPresentation.dropoffLocation || undefined,
             tone: jobType === "ambulance" ? "danger" : "warning",
-            label: tripState === "reached" ? "Arrived" : "Destination",
+            label: "Destination",
             icon: MapPin,
           },
         ]}
@@ -205,7 +187,6 @@ export default function RideInProgress() {
               </div>
               <div className="flex flex-col items-end space-y-2">
                 <span className="inline-flex items-center text-sm font-black text-slate-900">
-                  <DollarSign className="h-4 w-4 mr-0.5 text-orange-500" />
                   {rightLine1}
                 </span>
                 <div className="flex flex-col items-end">
@@ -217,7 +198,7 @@ export default function RideInProgress() {
             <div className="flex items-center justify-between border-t border-orange-50 pt-4">
                <div className="flex items-center space-x-2 text-[10px] text-slate-400 font-black uppercase tracking-tight">
                   <Clock className="h-4 w-4 text-orange-500" />
-                  <span>ETA: 13 min</span>
+                  <span>{timingSummary || "Live route pending"}</span>
                </div>
                <div className="flex items-center space-x-2 text-[10px] text-orange-600 font-black uppercase tracking-tight">
                   <ShieldCheck className="h-4 w-4" />
@@ -226,17 +207,15 @@ export default function RideInProgress() {
             </div>
           </div>
 
-          {tripState === "reached" ? (
-            <SlideToConfirm
-              instruction="Slide to end trip"
-              successLabel="Trip completed"
-              onConfirm={() => {
-                handleEndTrip();
-                return true;
-              }}
-            />
-          ) : (
-            <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-[#f0fff4]/50 p-6 flex flex-col space-y-4 shadow-sm hover:border-orange-500/30 transition-all">
+          <SlideToConfirm
+            instruction="Slide to complete trip"
+            successLabel="Trip completed"
+            onConfirm={() => {
+              handleEndTrip();
+              return true;
+            }}
+          />
+          <div className="rounded-[2.5rem] border-2 border-orange-500/10 bg-[#f0fff4]/50 p-6 flex flex-col space-y-4 shadow-sm hover:border-orange-500/30 transition-all">
               <div className="flex items-center space-x-3">
                 <div className="flex flex-col">
                    <span className="text-[10px] tracking-[0.2em] font-black uppercase text-orange-500">Safety Support</span>
@@ -310,7 +289,6 @@ export default function RideInProgress() {
                 <ChevronLeft className="h-4 w-4 text-slate-400 rotate-180" />
               </button>
             </div>
-          )}
         </section>
       </main>
 

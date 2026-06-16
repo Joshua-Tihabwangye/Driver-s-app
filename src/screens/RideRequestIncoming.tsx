@@ -20,16 +20,6 @@ import type { JobCategory } from "../data/types";
 // and support for multiple job types: Ride / Delivery / Rental / Shuttle / Tour / Ambulance / Shared.
 // 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
 
-const JOB_TYPES: JobCategory[] = [
-  "ride",
-  "delivery",
-  "rental",
-  "tour",
-  "ambulance",
-  "shuttle",
-  "shared",
-];
-
 type RequestRouteState = {
   jobType?: JobCategory;
   jobId?: string;
@@ -117,7 +107,6 @@ export default function RideRequestIncoming() {
   const navigate = useNavigate();
   const {
     jobs,
-    assignableJobTypes,
     acceptRideJob,
     acceptDeliveryJob,
     acceptSpecializedJob,
@@ -136,18 +125,6 @@ export default function RideRequestIncoming() {
       setJobType(routeState.jobType);
     }
   }, [routeState?.jobType]);
-
-  const selectableJobTypes = useMemo(() => {
-    const filtered = JOB_TYPES.filter((type) => assignableJobTypes.includes(type));
-    return filtered.length > 0 ? filtered : JOB_TYPES;
-  }, [assignableJobTypes]);
-
-  useEffect(() => {
-    if (selectableJobTypes.includes(jobType)) {
-      return;
-    }
-    setJobType(selectableJobTypes[0]);
-  }, [jobType, selectableJobTypes]);
 
   const resolveRequestedJob = useMemo(() => {
     return (targetType: JobCategory) => {
@@ -181,10 +158,12 @@ export default function RideRequestIncoming() {
   const isTour = jobType === "tour";
   const isShuttle = jobType === "shuttle";
   const isShared = jobType === "shared";
+  const selectedJob = resolveRequestedJob(jobType);
+  const liveSummary = [selectedJob?.distance, selectedJob?.duration].filter(Boolean).join(" · ");
 
   // Right-hand summary block content per jobType
-  let rightLine1 = "$5.80 (est.)";
-  let rightLine2 = "7.4 km · 18 min";
+  let rightLine1 = "Fare pending";
+  let rightLine2 = "Route pending";
 
   if (isRental) {
     rightLine1 = "$45.00 (est.)";
@@ -196,14 +175,14 @@ export default function RideRequestIncoming() {
     rightLine1 = "Ambulance · Code 1";
     rightLine2 = "High priority";
   } else if (jobType === "delivery") {
-    rightLine1 = "$3.80 (est.)";
-    rightLine2 = "Food delivery · 15–20 min";
+    rightLine1 = "Delivery request";
+    rightLine2 = "Awaiting live route";
   } else if (isShuttle) {
     rightLine1 = "Shuttle run · Green Valley School";
     rightLine2 = "Morning route";
   } else if (isShared) {
-    rightLine1 = "Base Leg: $15.40 (est.)";
-    rightLine2 = "Dynamic match · 7.7 km";
+    rightLine1 = "Shared ride";
+    rightLine2 = "Dynamic matching";
   }
 
   // Pickup / drop-off or patient text per jobType
@@ -235,6 +214,17 @@ export default function RideRequestIncoming() {
     ? "High chance of matching another rider"
     : "Residential · usual demand";
 
+  const resolvedRightLine1 = selectedJob?.fare || rightLine1;
+  const resolvedRightLine2 = liveSummary || rightLine2;
+  const resolvedPickupLabel = selectedJob
+    ? `${isAmbulance ? "Patient location" : "Pickup"} · ${selectedJob.from}`
+    : pickupLabel;
+  const resolvedPickupSub = selectedJob?.distance || pickupSub;
+  const resolvedDropoffLabel = selectedJob
+    ? `${isAmbulance ? "Destination" : "Drop-off"} · ${selectedJob.to}`
+    : dropoffLabel;
+  const resolvedDropoffSub = selectedJob?.duration || dropoffSub;
+
   // Primary action label
   const primaryCta = isShuttle ? "Open Shuttle Driver App" : "Accept";
 
@@ -250,7 +240,10 @@ export default function RideRequestIncoming() {
       return;
     }
 
-    window.location.href = "tel:+256700000111";
+    const riderPhone = (selectedJob?.riderPhone || "").replace(/[^\d+]/g, "");
+    if (riderPhone) {
+      window.location.href = `tel:${riderPhone}`;
+    }
   };
 
   const handleAccept = () => {
@@ -260,7 +253,6 @@ export default function RideRequestIncoming() {
       return;
     }
 
-    const selectedJob = resolveRequestedJob(jobType);
     if (!selectedJob) {
       setAcceptError(true);
       setTimeout(() => setAcceptError(false), 3000);
@@ -306,10 +298,13 @@ export default function RideRequestIncoming() {
       return;
     }
 
-    navigate(buildAcceptedJobRoute(jobType, selectedJob.id), {
+    const acceptedRouteId =
+      jobType === "ride" ? selectedJob.tripId || selectedJob.id : selectedJob.id;
+
+    navigate(buildAcceptedJobRoute(jobType, acceptedRouteId), {
       state: {
         jobType,
-        jobId: selectedJob.id,
+        jobId: acceptedRouteId,
       },
     });
   };
@@ -345,26 +340,6 @@ export default function RideRequestIncoming() {
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
-        {/* Job type selector (for preview only) */}
-        <section className="bg-slate-100/50 backdrop-blur-sm rounded-3xl p-2 border border-slate-100">
-          <div className="flex flex-wrap gap-1.5 justify-center">
-            {selectableJobTypes.map((type) => (
-              <button
-                key={type}
-                type="button"
-                onClick={() => setJobType(type)}
-                className={`rounded-full px-3 py-1 border text-[9px] font-black uppercase tracking-wider transition-all ${
-                  jobType === type
-                    ? "bg-brand-secondary border-brand-secondary text-white shadow-md shadow-brand-secondary/20"
-                    : "bg-white border-slate-200 text-brand-inactive hover:border-slate-300"
-                }`}
-              >
-                {type}
-              </button>
-            ))}
-          </div>
-        </section>
-
         {/* Request card */}
         <section className="rounded-[2.5rem] bg-[#f0fff4] border-2 border-brand-active/20 text-slate-900 p-6 space-y-6 shadow-2xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 bg-brand-active/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110" />
@@ -399,9 +374,7 @@ export default function RideRequestIncoming() {
                     ? "Ambulance Dispatch"
                     : isShuttle
                     ? "Shuttle Service"
-                    : isShared
-                    ? "Sarah L. (1 Seat)"
-                    : "John K · 4.92 ★"}
+                    : selectedJob?.riderName || (isShared ? "Shared rider" : "Rider")}
                 </p>
                 <div className="mt-2">
                   <JobTypePill jobType={jobType} />
@@ -410,10 +383,10 @@ export default function RideRequestIncoming() {
             </div>
             <div className="flex flex-col items-end">
               <span className={`text-[11px] font-medium uppercase tracking-widest ${isAmbulance ? "text-red-400" : "text-brand-active"}`}>
-                {rightLine1}
+                {resolvedRightLine1}
               </span>
               <span className="text-[10px] text-slate-500 font-bold uppercase tracking-tight mt-1">
-                {rightLine2}
+                {resolvedRightLine2}
               </span>
             </div>
           </div>
@@ -424,8 +397,8 @@ export default function RideRequestIncoming() {
                 <MapPin className="h-4 w-4" />
               </div>
               <div className="flex flex-col">
-                <span className="text-[11px] font-black text-slate-900 uppercase tracking-tight">{pickupLabel}</span>
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">{pickupSub}</span>
+                <span className="text-[11px] font-black text-slate-900 uppercase tracking-tight">{resolvedPickupLabel}</span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">{resolvedPickupSub}</span>
               </div>
             </div>
             <div className="flex items-start space-x-4">
@@ -433,8 +406,8 @@ export default function RideRequestIncoming() {
                 <MapPin className="h-4 w-4" />
               </div>
               <div className="flex flex-col">
-                <span className="text-[11px] font-black text-slate-900 uppercase tracking-tight">{dropoffLabel}</span>
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">{dropoffSub}</span>
+                <span className="text-[11px] font-black text-slate-900 uppercase tracking-tight">{resolvedDropoffLabel}</span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">{resolvedDropoffSub}</span>
               </div>
             </div>
           </div>
@@ -443,7 +416,7 @@ export default function RideRequestIncoming() {
             <div className="flex items-center justify-between pt-2 text-[10px] font-black text-slate-500 uppercase tracking-widest relative z-10">
               <span className="inline-flex items-center">
                 <Clock className="h-3.5 w-3.5 mr-2 text-brand-active" />
-                Pickup ETA: 18:42
+                {resolvedRightLine2 || "Live route pending"}
               </span>
               {!isShuttle && (
                 <button
@@ -452,7 +425,7 @@ export default function RideRequestIncoming() {
                   className="inline-flex items-center rounded-full border border-slate-300 bg-white px-3 py-1 text-[10px] text-slate-700 hover:bg-slate-50 transition-colors shadow-sm"
                 >
                   <Phone className="h-3.5 w-3.5 mr-2" />
-                  Call
+                  {selectedJob?.riderPhone ? "Call" : "No phone"}
                 </button>
               )}
             </div>

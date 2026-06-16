@@ -112,6 +112,11 @@ export interface DriverBackendJob {
   tripId?: string;
   routeId?: string;
   route?: unknown;
+  estimatedFare?: number | string;
+  riderName?: string | null;
+  riderPhone?: string | null;
+  pickupLocation?: { lat: number; lng: number } | null;
+  dropoffLocation?: { lat: number; lng: number } | null;
 }
 
 export interface DriverBackendTrip {
@@ -124,8 +129,13 @@ export interface DriverBackendTrip {
   updatedAt: number;
   startedAt?: number;
   completedAt?: number;
-  otpCode?: string;
+  otpCode?: string | null;
   route?: unknown;
+  fare?: number | string;
+  riderName?: string | null;
+  riderPhone?: string | null;
+  pickupLocation?: { lat: number; lng: number } | null;
+  dropoffLocation?: { lat: number; lng: number } | null;
 }
 
 export interface DriverBackendSharedTripRoutePayload {
@@ -347,22 +357,27 @@ export interface DriverBackendServiceRequest {
 }
 
 export interface DriverBackendWalletSummary {
-  availableBalance: number;
-  pendingBalance: number;
+  availableBalance?: number;
+  pendingBalance?: number;
+  balance?: number;
   currency: string;
-  lastUpdatedAt: number;
+  lastUpdatedAt?: number | string;
+  updatedAt?: number | string;
 }
 
 export interface DriverBackendWalletEvent {
   id: string;
-  type: "trip_earning" | "cashout_requested" | "cashout_completed" | "cashout_failed" | "adjustment";
+  type: string;
   amount: number;
-  currency: string;
-  status: "pending" | "completed" | "failed";
-  description: string;
-  createdAt: number;
+  currency?: string;
+  status?: string;
+  description?: string;
+  createdAt: number | string;
   relatedTripId?: string;
   relatedCashoutId?: string;
+  tripId?: string | null;
+  deliveryOrderId?: string | null;
+  metadata?: Record<string, unknown> | null;
 }
 
 export interface DriverBackendCashoutRequestInput {

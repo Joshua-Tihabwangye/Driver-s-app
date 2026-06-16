@@ -35,7 +35,7 @@ function formatRemainingTime(expiresAt: number, now: number): string {
 export default function RiderVerification() {
   const navigate = useNavigate();
   const { tripId: routeTripId } = useParams();
-  const { activeTrip, jobs, transitionActiveTripStage } = useStore();
+  const { activeTrip, jobs, trips, transitionActiveTripStage } = useStore();
   const [code, setCode] = useState<string[]>(Array(CODE_LENGTH).fill(""));
   const [verificationMethod, setVerificationMethod] = useState<"otp" | "qr">("otp");
   const [qrConfirmed, setQrConfirmed] = useState(false);
@@ -49,25 +49,37 @@ export default function RiderVerification() {
   const streamRef = useRef<MediaStream | null>(null);
   const hasAutoSubmittedRef = useRef(false);
   const tripId = routeTripId || activeTrip.tripId;
+  const backendVerificationMode = shouldUseDriverBackendWrites();
 
   const targetJob = useMemo(
-    () => (tripId ? jobs.find((job) => job.id === tripId) || null : null),
+    () => (tripId ? jobs.find((job) => job.id === tripId || job.tripId === tripId) || null : null),
     [jobs, tripId]
   );
-  const passengerContact = null;
+  const targetTrip = useMemo(
+    () => (tripId ? trips.find((trip) => trip.id === tripId) || null : null),
+    [tripId, trips]
+  );
+  const passengerContact = useMemo(
+    () => ({
+      phone: targetJob?.riderPhone || targetTrip?.riderPhone || "",
+      name: targetJob?.riderName || targetTrip?.riderName || "Rider",
+    }),
+    [targetJob?.riderName, targetJob?.riderPhone, targetTrip?.riderName, targetTrip?.riderPhone],
+  );
 
   const verificationPayload = useMemo(() => {
+    if (!tripId || backendVerificationMode) return null;
     if (!tripId) return null;
     return buildTripVerificationPayload(
       tripId,
       activeTrip.timestamps.acceptedAt || targetJob?.requestedAt
     );
-  }, [activeTrip.timestamps.acceptedAt, targetJob?.requestedAt, tripId]);
+  }, [activeTrip.timestamps.acceptedAt, backendVerificationMode, targetJob?.requestedAt, tripId]);
 
-  const expectedOtp = verificationPayload?.otp || "";
+  const expectedOtp = targetTrip?.otpCode || verificationPayload?.otp || "";
   const enteredOtp = code.join("");
   const isOtpComplete = code.every((digit) => digit !== "");
-  const otpMatches = true; // In development every figure should be allowed
+  const otpMatches = expectedOtp ? enteredOtp === expectedOtp : isOtpComplete;
   const tokenExpired = verificationPayload
     ? isTripVerificationExpired(verificationPayload, now)
     : false;
@@ -128,7 +140,7 @@ export default function RiderVerification() {
 
     if (verificationMethod === "otp" && shouldUseDriverBackendWrites()) {
       try {
-        const response = await tripVerifyOtp(tripId, enteredOtp || expectedOtp);
+        const response = await tripVerifyOtp(tripId, enteredOtp);
         if (!response) {
           setOtpError("Unable to verify rider OTP right now.");
           return;
@@ -252,7 +264,7 @@ export default function RiderVerification() {
   };
 
   const shareBody =
-    verificationPayload && tripId
+    !backendVerificationMode && verificationPayload && tripId
       ? `Trip ${tripId} verification: OTP ${verificationPayload.otp}. Expires in ${formatRemainingTime(
           verificationPayload.expiresAt,
           now
@@ -327,14 +339,14 @@ export default function RiderVerification() {
             Ask the passenger to present the active trip OTP or QR. Tokens are trip-bound and
             expire automatically.
           </p>
-          {verificationPayload ? (
+          {expectedOtp ? (
             <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 flex items-center justify-between">
               <div>
                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
                   Active Token
                 </p>
                 <p className="text-[11px] font-black text-slate-700">
-                  OTP {verificationPayload.otp} · Trip {tripId}
+                  OTP {expectedOtp} · Trip {tripId}
                 </p>
               </div>
               <span
@@ -346,15 +358,17 @@ export default function RiderVerification() {
               >
                 <Clock className="h-3 w-3 mr-1" />
                 {verificationLocked
-                  ? "Expired"
-                  : formatRemainingTime(verificationPayload.expiresAt, now)}
+                  ? "Locked"
+                  : verificationPayload
+                    ? formatRemainingTime(verificationPayload.expiresAt, now)
+                    : "Backend active"}
               </span>
             </div>
           ) : null}
         </section>
 
         <section className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
+          <div className={`grid gap-3 ${backendVerificationMode ? "grid-cols-1" : "grid-cols-2"}`}>
             <button
               type="button"
               onClick={() => setVerificationMethod("otp")}
@@ -366,20 +380,22 @@ export default function RiderVerification() {
             >
               Use OTP
             </button>
-            <button
-              type="button"
-              onClick={() => {
-                setQrConfirmed(false);
-                setVerificationMethod("qr");
-              }}
-              className={`rounded-2xl border px-4 py-3 text-[11px] font-black uppercase tracking-widest transition-all ${
-                verificationMethod === "qr"
-                  ? "border-orange-500 bg-orange-50 text-orange-600"
-                  : "border-slate-200 bg-white text-slate-500"
-              }`}
-            >
-              Scan QR
-            </button>
+            {!backendVerificationMode ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setQrConfirmed(false);
+                  setVerificationMethod("qr");
+                }}
+                className={`rounded-2xl border px-4 py-3 text-[11px] font-black uppercase tracking-widest transition-all ${
+                  verificationMethod === "qr"
+                    ? "border-orange-500 bg-orange-50 text-orange-600"
+                    : "border-slate-200 bg-white text-slate-500"
+                }`}
+              >
+                Scan QR
+              </button>
+            ) : null}
           </div>
 
           {verificationMethod === "otp" ? (
