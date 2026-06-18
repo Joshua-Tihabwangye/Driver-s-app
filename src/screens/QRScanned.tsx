@@ -1,10 +1,9 @@
 import {
 CheckCircle2,
-ChevronLeft,
-QrCode
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useStore } from "../context/StoreContext";
 
 // EVzone Driver App – QRScanned QR Code Scanned – Confirmation Indicator (v1)
 // Variant showing a full-screen confirmation indicator after a QR code is successfully scanned.
@@ -13,6 +12,9 @@ import PageHeader from "../components/PageHeader";
 
 export default function QRScanned() {
   const navigate = useNavigate();
+  const { activeDeliveryJob, deliveryWorkflow } = useStore();
+  const orderId = activeDeliveryJob?.orderId || activeDeliveryJob?.id || deliveryWorkflow.orderId || "N/A";
+  const pickupPoint = activeDeliveryJob?.from || "Pickup location";
 
   return (
     <div className="flex flex-col h-full ">
@@ -37,9 +39,9 @@ export default function QRScanned() {
               Code Verified
             </h2>
             <div className="flex flex-col items-center text-[11px] font-bold text-slate-500 uppercase tracking-widest space-y-1">
-              <span>Order #3241 · Burger Hub</span>
+              <span>Order #{orderId} · Pickup QR</span>
               <span className="flex items-center text-orange-600 bg-orange-50 px-3 py-1 rounded-full">
-                Acacia Mall
+                {pickupPoint}
               </span>
             </div>
           </div>

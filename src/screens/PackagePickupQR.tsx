@@ -16,13 +16,16 @@ import { useStore } from "../context/StoreContext";
 
 export default function PackagePickupQR() {
   const navigate = useNavigate();
-  const { deliveryStageAtLeast } = useStore();
+  const { deliveryStageAtLeast, activeDeliveryJob, deliveryWorkflow } = useStore();
 
   useEffect(() => {
     if (!deliveryStageAtLeast("pickup_confirmed")) {
       navigate("/driver/delivery/pickup/confirm", { replace: true });
     }
   }, [deliveryStageAtLeast, navigate]);
+
+  const orderId = activeDeliveryJob?.orderId || activeDeliveryJob?.id || deliveryWorkflow.orderId || "N/A";
+  const pickupPoint = activeDeliveryJob?.from || "Pickup location";
 
   return (
     <div className="flex flex-col h-full ">
@@ -56,8 +59,8 @@ export default function PackagePickupQR() {
           </div>
 
           <div className="text-[10px] font-black text-slate-400 text-center uppercase tracking-[0.2em]">
-            Order <span className="text-slate-900">#3241</span> · 
-            Pickup <span className="text-slate-900">Burger Hub</span>
+            Order <span className="text-slate-900">#{orderId}</span> ·
+            Pickup <span className="text-slate-900">{pickupPoint}</span>
           </div>
         </section>
 

@@ -17,7 +17,9 @@ import { useStore } from "../context/StoreContext";
 
 export default function ConfirmPickupLocation() {
   const navigate = useNavigate();
-  const { confirmDeliveryPickup, deliveryStageAtLeast } = useStore();
+  const { confirmDeliveryPickup, deliveryStageAtLeast, activeDeliveryJob, deliveryWorkflow } = useStore();
+  const pickupPoint = activeDeliveryJob?.from || "Pickup location";
+  const orderId = activeDeliveryJob?.orderId || activeDeliveryJob?.id || deliveryWorkflow.orderId || "N/A";
 
   useEffect(() => {
     if (!deliveryStageAtLeast("accepted")) {
@@ -45,7 +47,7 @@ export default function ConfirmPickupLocation() {
               GPS Mismatch
             </p>
             <p className="mt-1 text-[11px] font-bold uppercase tracking-tight text-slate-700">
-              Compare the expected pin against your current location before confirming.
+              Compare the expected pin for order #{orderId} against your current location before confirming.
             </p>
           </div>
         )}
@@ -79,7 +81,7 @@ export default function ConfirmPickupLocation() {
                 <MapPin className="h-4 w-4 text-slate-400" />
               </div>
               <span className="text-sm font-black text-slate-900 leading-tight">
-                Burger Hub, Acacia Mall
+                {pickupPoint}
               </span>
               <span className="text-[10px] font-medium text-slate-500 uppercase tracking-widest">
                 Pin from order

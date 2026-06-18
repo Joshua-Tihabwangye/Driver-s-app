@@ -336,7 +336,9 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
           if (backendActiveDelivery) {
             setActiveTrip(defaultActiveTrip);
             setDeliveryWorkflow({
-              activeJobId: backendActiveDelivery.orderId,
+              activeJobId: backendActiveDelivery.jobId || backendActiveDelivery.orderId,
+              jobId: backendActiveDelivery.jobId || null,
+              orderId: backendActiveDelivery.orderId,
               routeId: backendActiveDelivery.routeId,
               stopId: backendActiveDelivery.nextStopId || defaultDeliveryWorkflow.stopId,
               stage: backendActiveDelivery.stage,
@@ -715,7 +717,9 @@ async function loadOnlineData(opts: {
   } else if (backendActiveDelivery) {
     setActiveTrip(defaultActiveTrip);
     setDeliveryWorkflow({
-      activeJobId: backendActiveDelivery.orderId,
+      activeJobId: backendActiveDelivery.jobId || backendActiveDelivery.orderId,
+      jobId: backendActiveDelivery.jobId || null,
+      orderId: backendActiveDelivery.orderId,
       routeId: backendActiveDelivery.routeId,
       stopId: backendActiveDelivery.nextStopId || defaultDeliveryWorkflow.stopId,
       stage: backendActiveDelivery.stage,

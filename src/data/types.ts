@@ -31,6 +31,35 @@ export interface SharedContact {
   createdAt: number;
 }
 
+export interface DeliveryContact {
+  name: string;
+  phone: string;
+  email?: string;
+}
+
+export interface DeliveryPackageDetails {
+  name: string;
+  type: string;
+  weight?: string;
+  pieces?: number;
+  sender?: string;
+  recipient?: string;
+  proofType?: "otp" | "qr" | "photo" | "signature";
+  notes?: string;
+}
+
+export interface DeliveryRouteStop {
+  id: string;
+  label: string;
+  detail?: string;
+  status?: "current" | "upcoming" | "completed" | "pending";
+  eta?: string;
+  contactName?: string;
+  contactPhone?: string;
+  pickupLocation?: GeoPoint | null;
+  dropoffLocation?: GeoPoint | null;
+}
+
 export interface GeoPoint {
   lat: number;
   lng: number;
@@ -40,6 +69,7 @@ export interface Job {
   id: string;
   tripId?: string;
   routeId?: string;
+  orderId?: string;
   from: string;
   to: string;
   distance: string;
@@ -54,6 +84,13 @@ export interface Job {
   pickupLocation?: GeoPoint | null;
   dropoffLocation?: GeoPoint | null;
   routePoints?: GeoPoint[];
+  routeSummary?: string;
+  requiresPickupOtp?: boolean;
+  requiresDropoffQr?: boolean;
+  recipientContact?: DeliveryContact | null;
+  packageDetails?: DeliveryPackageDetails | null;
+  nextStopId?: string;
+  stops?: DeliveryRouteStop[];
   otpCode?: string;
   sharedContacts?: SharedContact[];
   segments?: TourSegment[];

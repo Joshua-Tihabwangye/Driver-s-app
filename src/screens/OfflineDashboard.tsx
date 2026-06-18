@@ -266,6 +266,32 @@ export default function OfflineDashboard() {
           </button>
         ) : null}
 
+        {!canGoOnline && visibleBlockers.length > 0 ? (
+          <section className="space-y-3 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+                Go Online Blockers
+              </p>
+              <p className="mt-1 text-[11px] font-medium leading-relaxed text-slate-600">
+                These are the exact onboarding items still preventing the driver
+                from going online.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              {visibleBlockers.map((blocker) => (
+                <IssueRow
+                  key={blocker.id}
+                  title={blocker.title}
+                  text={blocker.description}
+                  type="blocking"
+                  onClick={() => navigate(blocker.route)}
+                />
+              ))}
+            </div>
+          </section>
+        ) : null}
+
         {/* Only show the access-restricted message when canGoOnline is still false */}
         {hasOfflineGuardMessage && !canGoOnline ? (
           <section className="rounded-3xl border border-orange-200 bg-orange-50 p-4 space-y-2">

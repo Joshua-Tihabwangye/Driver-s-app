@@ -1,8 +1,6 @@
 import {
 CheckCircle2,
-ChevronLeft,
 MapPin,
-QrCode,
 X
 } from "lucide-react";
 import { useEffect } from "react";
@@ -17,13 +15,16 @@ import { useStore } from "../context/StoreContext";
 
 export default function QRScanConfirmation() {
   const navigate = useNavigate();
-  const { deliveryStageAtLeast } = useStore();
+  const { deliveryStageAtLeast, activeDeliveryJob, deliveryWorkflow } = useStore();
 
   useEffect(() => {
     if (!deliveryStageAtLeast("pickup_confirmed")) {
       navigate("/driver/delivery/pickup/confirm", { replace: true });
     }
   }, [deliveryStageAtLeast, navigate]);
+
+  const orderId = activeDeliveryJob?.orderId || activeDeliveryJob?.id || deliveryWorkflow.orderId || "N/A";
+  const pickupPoint = activeDeliveryJob?.from || "Pickup location";
 
   return (
     <div className="flex flex-col h-full ">
@@ -52,11 +53,11 @@ export default function QRScanConfirmation() {
                     Code Scanned
                   </span>
                   <p className="text-[11px] font-bold text-slate-700 truncate w-full">
-                    Order #3241 · Burger Hub
+                    Order #{orderId} · Pickup QR
                   </p>
                   <div className="inline-flex items-center text-[10px] font-medium text-slate-500 mt-1 uppercase tracking-widest">
                     <MapPin className="h-3 w-3 mr-1 text-orange-500" />
-                    Acacia Mall
+                    {pickupPoint}
                   </div>
                 </div>
                 <button 

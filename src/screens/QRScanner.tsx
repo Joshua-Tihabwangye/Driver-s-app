@@ -1,26 +1,20 @@
 import {
   Camera,
   Info,
-  X
+  X,
 } from "lucide-react";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import jsQR from "jsqr";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
-import jsQR from "jsqr";
-
-// EVzone Driver App – QRScanner QR Code Scanner (v2)
-// Base QR scanning screen with camera view and scan frame overlay.
-// Updated so the green horizontal scan line moves down as it scans.
-// 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
-
 
 export default function QRScanner() {
   const navigate = useNavigate();
-  const { deliveryStageAtLeast } = useStore();
+  const { deliveryStageAtLeast, deliveryWorkflow, activeDeliveryJob } = useStore();
   const [showInstructionNotice, setShowInstructionNotice] = useState(true);
   const [scanState, setScanState] = useState<"scanning" | "detected">("scanning");
-
+  const [scannedValue, setScannedValue] = useState("");
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -39,7 +33,7 @@ export default function QRScanner() {
     const startCamera = async () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "environment" }
+          video: { facingMode: "environment" },
         });
         if (isCancelled) {
           stream.getTracks().forEach((track) => track.stop());
@@ -52,7 +46,7 @@ export default function QRScanner() {
           await videoRef.current.play().catch(() => undefined);
           tick();
         }
-      } catch (err) {
+      } catch {
         setCameraError("Camera access denied or unavailable.");
       }
     };
@@ -61,7 +55,7 @@ export default function QRScanner() {
       if (isCancelled || scanState === "detected") return;
       const video = videoRef.current;
       const canvas = canvasRef.current;
-      
+
       if (video && video.readyState === video.HAVE_ENOUGH_DATA && canvas) {
         canvas.height = video.videoHeight;
         canvas.width = video.videoWidth;
@@ -70,12 +64,13 @@ export default function QRScanner() {
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           const code = jsQR(imageData.data, imageData.width, imageData.height, {
-            inversionAttempts: "dontInvert"
+            inversionAttempts: "dontInvert",
           });
-          
-          if (code && code.data) {
+
+          if (code?.data) {
+            setScannedValue(code.data);
             setScanState("detected");
-            return; // Stop ticking once detected
+            return;
           }
         }
       }
@@ -83,7 +78,7 @@ export default function QRScanner() {
     };
 
     if (scanState === "scanning") {
-      startCamera();
+      void startCamera();
     }
 
     return () => {
@@ -92,7 +87,7 @@ export default function QRScanner() {
         cancelAnimationFrame(animationFrameId);
       }
       if (streamRef.current) {
-        streamRef.current.getTracks().forEach((t) => t.stop());
+        streamRef.current.getTracks().forEach((track) => track.stop());
         streamRef.current = null;
       }
       if (videoRef.current) {
@@ -101,13 +96,18 @@ export default function QRScanner() {
     };
   }, [scanState]);
 
-  // Auto-simulate a successful scan after 15 seconds in development only.
-  // Production builds require a real QR code to continue.
   useEffect(() => {
     if (!import.meta.env.DEV) return;
     let autoSimulateTimer: number;
     if (scanState === "scanning") {
       autoSimulateTimer = window.setTimeout(() => {
+        setScannedValue(
+          activeDeliveryJob?.orderId ||
+            activeDeliveryJob?.id ||
+            deliveryWorkflow.orderId ||
+            deliveryWorkflow.jobId ||
+            "",
+        );
         setScanState("detected");
       }, 15000);
     }
@@ -116,22 +116,24 @@ export default function QRScanner() {
         window.clearTimeout(autoSimulateTimer);
       }
     };
-  }, [scanState]);
+  }, [activeDeliveryJob?.id, activeDeliveryJob?.orderId, deliveryWorkflow.jobId, deliveryWorkflow.orderId, scanState]);
 
   useEffect(() => {
     if (scanState === "detected") {
       const forwardTimer = window.setTimeout(() => {
-        navigate("/driver/qr/processing", { replace: true });
+        navigate("/driver/qr/processing", {
+          replace: true,
+          state: { qrValue: scannedValue },
+        });
       }, 1500);
       return () => {
         window.clearTimeout(forwardTimer);
       };
     }
-  }, [scanState, navigate]);
+  }, [navigate, scanState, scannedValue]);
 
   return (
     <div className="flex flex-col h-full ">
-      {/* Local style: animate scan line */}
       <style>{`
         @keyframes qr-scan-move {
           0% { transform: translateY(0); opacity: 0; }
@@ -144,10 +146,10 @@ export default function QRScanner() {
         }
       `}</style>
 
-      <PageHeader 
-        title="Scan QR Code" 
-        subtitle="Driver · Deliveries" 
-        onBack={() => navigate(-1)} 
+      <PageHeader
+        title="Scan QR Code"
+        subtitle="Driver · Deliveries"
+        onBack={() => navigate(-1)}
       />
 
       <main className="flex-1 px-6 pt-6 pb-16 overflow-y-auto scrollbar-hide space-y-6">
@@ -179,11 +181,12 @@ export default function QRScanner() {
           </section>
         )}
 
-        {/* Camera / scanner view */}
         <section className="relative rounded-[3rem] overflow-hidden border border-slate-100 bg-black h-[320px] shadow-2xl flex items-center justify-center">
           {cameraError ? (
             <div className="absolute inset-0 flex items-center justify-center bg-slate-900">
-               <p className="text-white/60 text-xs text-center px-4 font-black uppercase tracking-widest">{cameraError}</p>
+              <p className="text-white/60 text-xs text-center px-4 font-black uppercase tracking-widest">
+                {cameraError}
+              </p>
             </div>
           ) : (
             <>
@@ -194,33 +197,27 @@ export default function QRScanner() {
                 muted
                 playsInline
               />
-              {/* Overlay darken */}
               <div className="absolute inset-0 bg-slate-900/50" />
             </>
           )}
 
           <canvas ref={canvasRef} className="hidden" />
 
-          {/* Scan box frame */}
           <div className="relative flex h-56 w-56 items-center justify-center">
-            {/* Corners style */}
             <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-orange-500 rounded-tl-2xl" />
             <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-orange-500 rounded-tr-2xl" />
             <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-orange-500 rounded-bl-2xl" />
             <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-orange-500 rounded-br-2xl" />
 
-            {/* Moving scan line */}
             {scanState === "scanning" && !cameraError && (
               <div className="absolute left-6 right-6 top-6 h-1 w-auto bg-gradient-to-r from-transparent via-orange-400 to-transparent qr-scan-line shadow-[0_0_15px_rgba(249,115,22,0.5)]" />
             )}
 
-            {/* Camera icon hint */}
             {!cameraError && (
               <Camera className="relative h-12 w-12 text-white/40 drop-shadow-lg" />
             )}
           </div>
 
-          {/* Overlay text */}
           <div className="absolute top-6 inset-x-0 text-center">
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">
               {scanState === "scanning" ? "Align Code in Frame" : "QR Detected"}
@@ -228,7 +225,6 @@ export default function QRScanner() {
           </div>
         </section>
 
-        {/* Info & guidance */}
         <section className="space-y-4 pb-12">
           <div className="rounded-[2.5rem] bg-white border border-slate-100 p-6 flex items-start space-x-4 text-[11px] text-slate-600 shadow-xl shadow-slate-200/50">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-orange-50 text-orange-500">
@@ -241,7 +237,7 @@ export default function QRScanner() {
               <p className="font-medium leading-relaxed">
                 {scanState === "scanning"
                   ? "Hold your device steady. The scan will trigger once the QR code is in clear focus."
-                  : "Code captured successfully. Redirecting to verification..."}
+                  : `Code captured successfully. Verifying ${scannedValue || "the QR payload"}...`}
               </p>
             </div>
           </div>

@@ -7,6 +7,7 @@ import { useStore } from "../context/StoreContext";
 export default function DeliveryDropoffConfirmed() {
   const navigate = useNavigate();
   const { deliveryStageAtLeast, activeDeliveryJob, resetDeliveryWorkflow } = useStore();
+  const orderId = activeDeliveryJob?.orderId || activeDeliveryJob?.id || "N/A";
 
   useEffect(() => {
     if (!deliveryStageAtLeast("dropoff_confirmed")) {
@@ -50,7 +51,7 @@ export default function DeliveryDropoffConfirmed() {
               </div>
               <div className="flex flex-col">
                 <span className="text-xs font-black text-slate-900">
-                  #{activeDeliveryJob?.id || "N/A"} ·{" "}
+                  Order #{orderId} ·{" "}
                   {activeDeliveryJob?.itemType || "Package"}
                 </span>
                 <span className="text-[10px] font-medium text-slate-500">

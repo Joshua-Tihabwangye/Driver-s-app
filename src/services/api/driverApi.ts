@@ -111,12 +111,20 @@ export interface DriverBackendJob {
   requestedAt: number;
   tripId?: string;
   routeId?: string;
+  orderId?: string | null;
   route?: unknown;
   estimatedFare?: number | string;
+  routeSummary?: string;
+  requiresPickupOtp?: boolean;
+  requiresDropoffQr?: boolean;
   riderName?: string | null;
   riderPhone?: string | null;
+  recipientContact?: DriverBackendDeliveryContact | null;
+  packageDetails?: DriverBackendDeliveryPackageDetails | null;
   pickupLocation?: { lat: number; lng: number } | null;
   dropoffLocation?: { lat: number; lng: number } | null;
+  nextStopId?: string | null;
+  stops?: DriverBackendDeliveryRouteStop[];
 }
 
 export interface DriverBackendTrip {
@@ -311,17 +319,62 @@ export interface DriverBackendEarningsSummary {
   count: number;
 }
 
+export interface DriverBackendDeliveryContact {
+  name: string;
+  phone: string;
+  email?: string | null;
+}
+
+export interface DriverBackendDeliveryPackageDetails {
+  name?: string;
+  type?: string;
+  weight?: string;
+  pieces?: number;
+  sender?: string;
+  recipient?: string;
+  proofType?: "otp" | "qr" | "photo" | "signature";
+  notes?: string;
+}
+
+export interface DriverBackendDeliveryRouteStop {
+  id: string;
+  label?: string;
+  detail?: string;
+  status?: string;
+  eta?: string;
+  contactName?: string;
+  contactPhone?: string;
+  lat?: number;
+  lng?: number;
+  pickupLocation?: { lat: number; lng: number } | null;
+  dropoffLocation?: { lat: number; lng: number } | null;
+  coordinates?: { lat: number; lng: number } | null;
+}
+
 export interface DriverBackendDeliveryOrder {
   id: string;
+  jobId?: string | null;
+  orderId?: string | null;
   driverId: string;
   status: string;
   routeId: string;
   pickupAddress: string;
   dropoffAddress: string;
+  pickupLocation?: { lat: number; lng: number } | null;
+  dropoffLocation?: { lat: number; lng: number } | null;
+  fare?: number | string;
+  routeSummary?: string;
+  requiresPickupOtp?: boolean;
+  requiresDropoffQr?: boolean;
+  recipientContact?: DriverBackendDeliveryContact | null;
+  packageDetails?: DriverBackendDeliveryPackageDetails | null;
+  nextStopId?: string | null;
+  stops?: DriverBackendDeliveryRouteStop[];
 }
 
 export interface DriverBackendDeliveryRouteState {
   orderId: string;
+  jobId?: string | null;
   routeId: string;
   driverId?: string | null;
   riderId?: string | null;
@@ -337,15 +390,35 @@ export interface DriverBackendDeliveryRouteState {
   updatedAt: number;
   nextStopId?: string;
   remainingStops?: number;
+  requiresPickupOtp?: boolean;
+  requiresDropoffQr?: boolean;
+  routeSummary?: string;
+  pickupLocation?: { lat: number; lng: number } | null;
+  dropoffLocation?: { lat: number; lng: number } | null;
+  recipientContact?: DriverBackendDeliveryContact | null;
+  packageDetails?: DriverBackendDeliveryPackageDetails | null;
+  nextStop?: DriverBackendDeliveryRouteStop | null;
+  stops?: DriverBackendDeliveryRouteStop[];
+  fare?: number | string;
 }
 
 export interface DriverBackendDeliveryRoute {
   id: string;
   driverId: string;
   orderId: string;
+  jobId?: string | null;
   status: string;
-  stops?: unknown;
+  stops?: DriverBackendDeliveryRouteStop[];
+  nextStop?: DriverBackendDeliveryRouteStop | null;
   updatedAt?: number;
+  routeSummary?: string;
+  pickupLocation?: { lat: number; lng: number } | null;
+  dropoffLocation?: { lat: number; lng: number } | null;
+  requiresPickupOtp?: boolean;
+  requiresDropoffQr?: boolean;
+  recipientContact?: DriverBackendDeliveryContact | null;
+  packageDetails?: DriverBackendDeliveryPackageDetails | null;
+  fare?: number | string;
 }
 
 export interface DriverBackendServiceRequest {
@@ -747,20 +820,16 @@ export async function getDriverDeliveryRoute(routeId: string) {
 }
 
 export async function acceptDriverDeliveryOrder(orderId: string) {
-  const token = readDriverBackendAccessToken();
-  if (!isBackendAuthEnabled() || !token) return null;
-  return request<DriverBackendDeliveryOrder>(`/drivers/me/delivery/orders/${orderId}/accept`, {
-    method: "POST",
-    headers: authHeaders(token),
-  });
+  return acceptDriverJob(orderId);
 }
 
-export async function confirmDriverDeliveryPickup(routeId: string) {
+export async function confirmDriverDeliveryPickup(routeId: string, otp?: string) {
   const token = readDriverBackendAccessToken();
   if (!isBackendAuthEnabled() || !token) return null;
   return request<Record<string, unknown>>(`/drivers/me/delivery/routes/${routeId}/pickup-confirm`, {
     method: "POST",
     headers: authHeaders(token),
+    body: otp ? { otp } : undefined,
   });
 }
 
@@ -787,6 +856,15 @@ export async function completeDriverDeliveryRoute(routeId: string) {
   const token = readDriverBackendAccessToken();
   if (!isBackendAuthEnabled() || !token) return null;
   return request<Record<string, unknown>>(`/drivers/me/delivery/routes/${routeId}/dropoff-complete`, {
+    method: "POST",
+    headers: authHeaders(token),
+  });
+}
+
+export async function completeDriverDeliveryStop(routeId: string, stopId: string) {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return null;
+  return request<Record<string, unknown>>(`/drivers/me/delivery/routes/${routeId}/stops/${stopId}/complete`, {
     method: "POST",
     headers: authHeaders(token),
   });
@@ -831,7 +909,7 @@ export async function completeDriverServiceRequest(requestId: string) {
 export async function acceptDriverJob(jobId: string) {
   const token = readDriverBackendAccessToken();
   if (!isBackendAuthEnabled() || !token) return null;
-  return request<{ job: DriverBackendJob; trip?: DriverBackendTrip }>(`/drivers/me/jobs/${jobId}/accept`, {
+  return request<{ job: DriverBackendJob; trip?: DriverBackendTrip; deliveryOrder?: DriverBackendDeliveryOrder | null }>(`/drivers/me/jobs/${jobId}/accept`, {
     method: "POST",
     headers: authHeaders(token),
   });
