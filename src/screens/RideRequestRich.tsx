@@ -95,6 +95,7 @@ export default function RideRequestRich() {
     respondToSafetyCheck,
   } = useStore();
   const [timeLeft, setTimeLeft] = useState(20);
+  const [isAccepting, setIsAccepting] = useState(false);
   const [jobType, setJobType] = useState<JobCategory>(routeState?.jobType || "ride");
   const requestedJobId = routeState?.jobId;
 
@@ -126,10 +127,11 @@ export default function RideRequestRich() {
   }, [jobs, requestedJobId]);
 
   useEffect(() => {
+    if (isAccepting) return;
     if (timeLeft <= 0) return;
     const id = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
     return () => clearTimeout(id);
-  }, [timeLeft]);
+  }, [timeLeft, isAccepting]);
 
   const isAmbulance = jobType === "ambulance";
   const isRental = jobType === "rental";
@@ -228,7 +230,7 @@ export default function RideRequestRich() {
     navigate("/driver/safety/sos/sending");
   };
 
-  const handleAccept = () => {
+  const handleAccept = async () => {
     clearJobAccessError();
     if (isShuttle) {
       navigate(buildAcceptedJobRoute("shuttle", requestedJobId || ""));
@@ -240,58 +242,43 @@ export default function RideRequestRich() {
       return;
     }
 
-    if (jobType === "shared") {
-      const nextSharedJobId = selectedJob.id;
-      const accepted = acceptSharedJob(nextSharedJobId);
-      // Shared route canonical target: /driver/trip/${nextSharedJobId}/active
+    setIsAccepting(true);
+    try {
+      let accepted = false;
+      if (jobType === "shared") {
+        const nextSharedJobId = selectedJob.id;
+        accepted = await acceptSharedJob(nextSharedJobId);
+      } else if (jobType === "ride") {
+        accepted = await acceptRideJob(selectedJob.id);
+      } else if (jobType === "delivery") {
+        accepted = await acceptDeliveryJob(selectedJob.id);
+      } else if (
+        jobType === "rental" ||
+        jobType === "tour" ||
+        jobType === "ambulance"
+      ) {
+        accepted = await acceptSpecializedJob(selectedJob.id, jobType);
+      }
+
       if (!accepted) {
         if (jobAccessError) {
           window.alert(jobAccessError);
         }
-        navigate("/driver/jobs/list");
         return;
       }
-      navigate(buildAcceptedJobRoute("shared", nextSharedJobId), {
+
+      const acceptedRouteId =
+        jobType === "ride" ? selectedJob.tripId || selectedJob.id : selectedJob.id;
+
+      navigate(buildAcceptedJobRoute(jobType, acceptedRouteId), {
         state: {
           jobType,
-          jobId: nextSharedJobId,
+          jobId: acceptedRouteId,
         },
       });
-      return;
+    } finally {
+      setIsAccepting(false);
     }
-
-    let accepted = false;
-    if (jobType === "ride") {
-      accepted = acceptRideJob(selectedJob.id);
-    } else if (jobType === "delivery") {
-      accepted = acceptDeliveryJob(selectedJob.id);
-    } else if (
-      jobType === "rental" ||
-      jobType === "tour" ||
-      jobType === "ambulance"
-    ) {
-      accepted = acceptSpecializedJob(selectedJob.id, jobType);
-    } else {
-      accepted = false;
-    }
-
-    if (!accepted) {
-      if (jobAccessError) {
-        window.alert(jobAccessError);
-      }
-      navigate("/driver/jobs/list");
-      return;
-    }
-
-    const acceptedRouteId =
-      jobType === "ride" ? selectedJob.tripId || selectedJob.id : selectedJob.id;
-
-    navigate(buildAcceptedJobRoute(jobType, acceptedRouteId), {
-      state: {
-        jobType,
-        jobId: acceptedRouteId,
-      },
-    });
   };
 
   const handleDecline = () => {
@@ -442,9 +429,10 @@ export default function RideRequestRich() {
             <button 
               type="button"
               onClick={handleAccept}
-              className="flex-1 rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-orange-500 text-slate-900 shadow-xl shadow-orange-500/20 active:scale-95 transition-all"
+              disabled={isAccepting}
+              className="flex-1 rounded-full py-4 text-[11px] font-black uppercase tracking-widest bg-orange-500 text-slate-900 shadow-xl shadow-orange-500/20 active:scale-95 transition-all disabled:opacity-70 disabled:cursor-wait"
             >
-              {primaryCta}
+              {isAccepting ? "Accepting..." : primaryCta}
             </button>
           </div>
         </section>

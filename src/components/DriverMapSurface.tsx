@@ -20,7 +20,7 @@ import {
 	useJsApiLoader,
 } from "@react-google-maps/api";
 import { PolylineF } from "@react-google-maps/api";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useStore } from "../context/StoreContext";
 import { createDriverSocket } from "../services/driverSocket";
@@ -365,6 +365,13 @@ export default function DriverMapSurface({
 	const [hint, setHint] = useState<string | null>(floatingHint);
 	// Phase 5.2 — track driver's own GPS position for the self-pin
 	const [selfPosition, setSelfPosition] = useState<LatLng | null>(null);
+	const lastLocationRef = useRef<{
+		latitude: number;
+		longitude: number;
+		accuracy?: number;
+		heading?: number | null;
+		speed?: number | null;
+	} | null>(null);
 
 	const { isLoaded, loadError } = useJsApiLoader({
 		id: "evzone-driver-google-map-script",
@@ -410,6 +417,13 @@ export default function DriverMapSurface({
 					lat: pos.coords.latitude,
 					lng: pos.coords.longitude,
 				};
+				lastLocationRef.current = {
+					latitude: pos.coords.latitude,
+					longitude: pos.coords.longitude,
+					accuracy: pos.coords.accuracy,
+					heading: pos.coords.heading ?? null,
+					speed: pos.coords.speed ?? null,
+				};
 				setSelfPosition(nextPosition);
 				if (driverPresenceStatus === "online") {
 					reportActiveRideMovementSample({
@@ -450,6 +464,64 @@ export default function DriverMapSurface({
 		reportActiveRideMovementSample,
 		activeTripId,
 	]);
+
+	// Phase 2 — regular heartbeat while online so the backend doesn't mark the driver
+	// offline when the device is stationary and watchPosition isn't firing.
+	useEffect(() => {
+		if (
+			driverPresenceStatus !== "online" ||
+			typeof navigator === "undefined" ||
+			!navigator.geolocation
+		) {
+			return;
+		}
+
+		const emitLocationUpdate = (
+			sample: NonNullable<typeof lastLocationRef.current>,
+		) => {
+			reportActiveRideMovementSample({
+				...sample,
+				timestamp: Date.now(),
+			});
+			if (activeTripId) {
+				const socket = createDriverSocket();
+				if (socket.connected) {
+					socket.emit("location.update", {
+						tripId: activeTripId,
+						...sample,
+						heading: sample.heading ?? undefined,
+						speed: sample.speed ?? undefined,
+						timestamp: Date.now(),
+					});
+				}
+			}
+		};
+
+		const interval = window.setInterval(() => {
+			if (lastLocationRef.current) {
+				emitLocationUpdate(lastLocationRef.current);
+				return;
+			}
+			// No location yet: try to acquire one on the heartbeat tick.
+			navigator.geolocation.getCurrentPosition(
+				(pos) => {
+					const sample = {
+						latitude: pos.coords.latitude,
+						longitude: pos.coords.longitude,
+						accuracy: pos.coords.accuracy,
+						heading: pos.coords.heading ?? null,
+						speed: pos.coords.speed ?? null,
+					};
+					lastLocationRef.current = sample;
+					emitLocationUpdate(sample);
+				},
+				undefined,
+				{ enableHighAccuracy: true, maximumAge: 10000 },
+			);
+		}, 10000);
+
+		return () => window.clearInterval(interval);
+	}, [driverPresenceStatus, reportActiveRideMovementSample, activeTripId]);
 
 	useEffect(() => {
 		if (!mapRef) return;

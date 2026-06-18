@@ -989,13 +989,14 @@ export async function triggerTripSos(
   });
 }
 
-export async function sendDriverLocationHeartbeat(input: DriverBackendLocationHeartbeatInput) {
+export async function sendDriverLocationHeartbeat(input: DriverBackendLocationHeartbeatInput, timeoutMs?: number) {
   const token = readDriverBackendAccessToken();
   if (!isBackendAuthEnabled() || !token) return null;
   return request<Record<string, unknown>>("/locations/heartbeat", {
     method: "POST",
     headers: authHeaders(token),
     body: input,
+    timeoutMs: timeoutMs ?? 5000,
   });
 }
 

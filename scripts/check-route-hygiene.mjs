@@ -89,7 +89,7 @@ check(
 
 check(
   "Rental overview links to canonical trip routes (no sample ids)",
-  /const ensureRental[A-Za-z]+ = \(\) =>/.test(rentalJobOverview) &&
+  /const ensureRental[A-Za-z]+ = (?:async )?\(\) =>/.test(rentalJobOverview) &&
     rentalJobOverview.includes('acceptSpecializedJob(jobId, "rental")') &&
     rentalJobOverview.includes('buildDriverLifecycleRoute("navigation", activeRentalTripId)') &&
     rentalJobOverview.includes('buildDriverLifecycleRoute("completed", completedTripId)') &&

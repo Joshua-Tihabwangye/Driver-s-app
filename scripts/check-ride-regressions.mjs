@@ -47,7 +47,7 @@ check(
     incoming.includes("acceptDeliveryJob(selectedJob.id)") &&
     incoming.includes("acceptSharedJob(nextSharedJobId)") &&
     incoming.includes("acceptSpecializedJob(selectedJob.id, jobType)") &&
-    incoming.includes("buildAcceptedJobRoute(jobType, selectedJob.id)"),
+    /buildAcceptedJobRoute\(jobType,\s+\w+\)/.test(incoming),
   "RideRequestIncoming should use one canonical accept pattern for all supported job families"
 );
 
@@ -57,7 +57,7 @@ check(
     rich.includes("acceptDeliveryJob(selectedJob.id)") &&
     rich.includes("acceptSharedJob(nextSharedJobId)") &&
     rich.includes("acceptSpecializedJob(selectedJob.id, jobType)") &&
-    rich.includes("buildAcceptedJobRoute(jobType, selectedJob.id)"),
+    /buildAcceptedJobRoute\(jobType,\s+\w+\)/.test(rich),
   "RideRequestRich should mirror incoming accept behavior"
 );
 

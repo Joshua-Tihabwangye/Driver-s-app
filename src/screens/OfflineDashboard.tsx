@@ -11,6 +11,7 @@ import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
 import { useDriverBackendEnabled } from "../context/hooks/useDriverBackendEnabled";
 import { ApiRequestError } from "../services/api/httpClient";
+import type { DriverBackendPresenceOnlineInput } from "../services/api/driverApi";
 import {
   areAllRequiredDocumentsCompliant,
   getDocumentExpiryStatus,
@@ -60,6 +61,7 @@ export default function OfflineDashboard() {
     selectedVehicleIndex,
     driverBootstrapReady,
     refreshBackendOnboardingState,
+    refreshDriverJobs,
   } = useStore();
 
   // Refresh onboarding/document status when the driver lands on this screen,
@@ -141,8 +143,11 @@ export default function OfflineDashboard() {
   const handleConfirmGoOnline = async () => {
     setShowGoOnlineModal(false);
 
+    // GPS is preferred but not blocking: if the driver denies location or it
+    // times out, we still let them go online and the backend will use the
+    // last known location or request updates via the heartbeat.
+    let locationInput: DriverBackendPresenceOnlineInput["location"] | undefined;
     try {
-      // The backend requires a valid GPS location to go online.
       const position = await new Promise<GeolocationPosition>((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(resolve, reject, {
           enableHighAccuracy: true,
@@ -151,17 +156,28 @@ export default function OfflineDashboard() {
         });
       });
       const coords = position.coords;
+      locationInput = {
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+        accuracy: coords.accuracy,
+        heading: coords.heading ?? undefined,
+        speed: coords.speed ?? undefined,
+        timestamp: Date.now(),
+      };
+    } catch {
+      // Best-effort location; proceed without it.
+      locationInput = undefined;
+    }
+
+    try {
       const result = await setDriverOnline({
         confirmed: true,
-        location: {
-          latitude: coords.latitude,
-          longitude: coords.longitude,
-          accuracy: coords.accuracy,
-          heading: coords.heading ?? undefined,
-          speed: coords.speed ?? undefined,
-          timestamp: Date.now(),
-        },
+        location: locationInput,
       });
+
+      // Pull pending jobs right away so the online dashboard can display them.
+      await refreshDriverJobs();
+
       navigate(result?.redirectPath || "/driver/dashboard/online", { replace: true });
     } catch (error) {
       const apiError = error instanceof ApiRequestError ? error : null;

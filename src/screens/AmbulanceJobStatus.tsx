@@ -84,18 +84,18 @@ export default function AmbulanceJobStatus() {
       return;
     }
     if (ambulanceJob.status === "pending" || ambulanceJob.status === "attended") {
-      acceptSpecializedJob(jobId, "ambulance");
+      void acceptSpecializedJob(jobId, "ambulance");
     }
   }, [jobId, ambulanceJob, isThisAmbulanceJobActive, acceptSpecializedJob]);
 
-  const ensureAmbulanceFlowTripId = () => {
+  const ensureAmbulanceFlowTripId = async () => {
     if (!jobId) {
       return null;
     }
     if (isThisAmbulanceJobActive) {
       return jobId;
     }
-    if (acceptSpecializedJob(jobId, "ambulance")) {
+    if (await acceptSpecializedJob(jobId, "ambulance")) {
       return jobId;
     }
     if (jobAccessError) {
@@ -136,8 +136,8 @@ export default function AmbulanceJobStatus() {
     else if (stage === "enRouteToHospital") setStage("atHospital");
   };
 
-  const handleOpenCompletion = () => {
-    const activeAmbulanceTripId = ensureAmbulanceFlowTripId();
+  const handleOpenCompletion = async () => {
+    const activeAmbulanceTripId = await ensureAmbulanceFlowTripId();
     if (!activeAmbulanceTripId) {
       return;
     }
@@ -202,11 +202,11 @@ export default function AmbulanceJobStatus() {
     });
   };
 
-  const handlePrimaryClick = () => {
+  const handlePrimaryClick = async () => {
     if (!isFinalStage) {
       handleAdvanceStage();
     } else {
-      handleOpenCompletion();
+      await handleOpenCompletion();
     }
   };
 

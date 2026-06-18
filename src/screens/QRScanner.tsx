@@ -101,8 +101,10 @@ export default function QRScanner() {
     };
   }, [scanState]);
 
-  // Auto-simulate a successful scan after 15 seconds to proceed with workflow simulation
+  // Auto-simulate a successful scan after 15 seconds in development only.
+  // Production builds require a real QR code to continue.
   useEffect(() => {
+    if (!import.meta.env.DEV) return;
     let autoSimulateTimer: number;
     if (scanState === "scanning") {
       autoSimulateTimer = window.setTimeout(() => {

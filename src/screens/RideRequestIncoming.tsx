@@ -104,6 +104,7 @@ export default function RideRequestIncoming() {
   const routeState = (location.state as RequestRouteState | null) || null;
   const [timeLeft, setTimeLeft] = useState(15);
   const [acceptError, setAcceptError] = useState(false);
+  const [isAccepting, setIsAccepting] = useState(false);
   // Demo state so you can preview all variants inside the canvas
   const [jobType, setJobType] = useState<JobCategory>(routeState?.jobType || "ride");
   const navigate = useNavigate();
@@ -150,13 +151,14 @@ export default function RideRequestIncoming() {
   }, [jobs, requestedJobId]);
 
   useEffect(() => {
+    if (isAccepting) return;
     if (timeLeft <= 0) {
       void performDecline("expired");
       return;
     }
     const id = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
     return () => clearTimeout(id);
-  }, [timeLeft]);
+  }, [timeLeft, isAccepting]);
 
   const isAmbulance = jobType === "ambulance";
   const isRental = jobType === "rental";
@@ -262,7 +264,7 @@ export default function RideRequestIncoming() {
     }
   };
 
-  const handleAccept = () => {
+  const handleAccept = async () => {
     clearJobAccessError();
     if (isShuttle) {
       navigate(buildAcceptedJobRoute("shuttle", requestedJobId || ""));
@@ -275,59 +277,48 @@ export default function RideRequestIncoming() {
       return;
     }
 
-    if (jobType === "shared") {
-      const nextSharedJobId = selectedJob.id;
-      const accepted = acceptSharedJob(nextSharedJobId);
-      // Shared route canonical target: /driver/trip/${nextSharedJobId}/active
+    setIsAccepting(true);
+    try {
+      let accepted = false;
+      if (jobType === "shared") {
+        const nextSharedJobId = selectedJob.id;
+        accepted = await acceptSharedJob(nextSharedJobId);
+      } else if (jobType === "ride") {
+        accepted = await acceptRideJob(selectedJob.id);
+      } else if (jobType === "delivery") {
+        accepted = await acceptDeliveryJob(selectedJob.id);
+      } else if (
+        jobType === "rental" ||
+        jobType === "tour" ||
+        jobType === "ambulance"
+      ) {
+        accepted = await acceptSpecializedJob(selectedJob.id, jobType);
+      }
+
       if (!accepted) {
         setAcceptError(true);
         setTimeout(() => setAcceptError(false), 3000);
         return;
       }
-      navigate(buildAcceptedJobRoute("shared", nextSharedJobId), {
+
+      emitJobOfferResponse("accept");
+
+      const acceptedRouteId =
+        jobType === "ride" ? selectedJob.tripId || selectedJob.id : selectedJob.id;
+
+      navigate(buildAcceptedJobRoute(jobType, acceptedRouteId), {
         state: {
           jobType,
-          jobId: nextSharedJobId,
+          jobId: acceptedRouteId,
         },
       });
-      return;
+    } finally {
+      setIsAccepting(false);
     }
-
-    let accepted = false;
-    if (jobType === "ride") {
-      accepted = acceptRideJob(selectedJob.id);
-    } else if (jobType === "delivery") {
-      accepted = acceptDeliveryJob(selectedJob.id);
-    } else if (
-      jobType === "rental" ||
-      jobType === "tour" ||
-      jobType === "ambulance"
-    ) {
-      accepted = acceptSpecializedJob(selectedJob.id, jobType);
-    } else {
-      accepted = false;
-    }
-
-    if (!accepted) {
-      setAcceptError(true);
-      setTimeout(() => setAcceptError(false), 3000);
-      return;
-    }
-
-    emitJobOfferResponse("accept");
-
-    const acceptedRouteId =
-      jobType === "ride" ? selectedJob.tripId || selectedJob.id : selectedJob.id;
-
-    navigate(buildAcceptedJobRoute(jobType, acceptedRouteId), {
-      state: {
-        jobType,
-        jobId: acceptedRouteId,
-      },
-    });
   };
 
   const performDecline = async (reason?: string) => {
+    if (isAccepting) return;
     emitJobOfferResponse("reject", reason);
     if (selectedJob && jobType === "ride") {
       try {
@@ -487,10 +478,11 @@ export default function RideRequestIncoming() {
             <button
               type="button"
               onClick={handleAccept}
-              className="flex-1 rounded-full py-5 text-[11px] font-black uppercase tracking-widest bg-orange-500 text-white shadow-xl hover:bg-orange-600 active:scale-95 transition-all flex items-center justify-center shadow-orange-500/20"
+              disabled={isAccepting}
+              className="flex-1 rounded-full py-5 text-[11px] font-black uppercase tracking-widest bg-orange-500 text-white shadow-xl hover:bg-orange-600 active:scale-95 transition-all flex items-center justify-center shadow-orange-500/20 disabled:opacity-70 disabled:cursor-wait"
             >
-              {!isShuttle && <Check className="h-4 w-4 mr-3" />}
-              {primaryCta}
+              {!isShuttle && !isAccepting && <Check className="h-4 w-4 mr-3" />}
+              {isAccepting ? "Accepting..." : primaryCta}
             </button>
           </div>
         </section>

@@ -6,6 +6,7 @@ import {
 	useMemo,
 	useCallback,
 	useEffect,
+	useRef,
 	type Dispatch,
 	type SetStateAction,
 } from "react";
@@ -53,6 +54,7 @@ import {
 	DriverBackendPresenceOnlineResult,
 	DriverBackendTripSafetyState,
 	getDriverBootstrap,
+	listDriverJobs,
 	rejectDriverJob,
 	readDriverBackendAccessToken,
 	requestTemporaryStop,
@@ -82,7 +84,11 @@ import { useDriverLocalPersistence } from "./hooks/useDriverLocalPersistence";
 import { useDriverRealtimeSync } from "./hooks/useDriverRealtimeSync";
 import { useDriverProfileAndAssetsActions } from "./hooks/useDriverProfileAndAssetsActions";
 import { createDriverSocket } from "../services/driverSocket";
-import { isAbortError } from "../services/api/httpClient";
+import { ApiRequestError, isAbortError } from "../services/api/httpClient";
+import {
+	buildBackendJobPresentation,
+	extractBackendRoutePoints,
+} from "../utils/backendJobPresentation";
 
 export interface DashboardMetrics {
 	onlineTime: string;
@@ -387,7 +393,7 @@ interface StoreContextType {
 	setActiveTrip: Dispatch<SetStateAction<ActiveTripState>>;
 	setActiveSharedTrip: (trip: SharedTrip | null) => void;
 	updateActiveSharedTrip: (updater: (prev: SharedTrip) => SharedTrip) => void;
-	acceptSharedJob: (jobId: string) => boolean;
+	acceptSharedJob: (jobId: string) => Promise<boolean>;
 	completeActiveSharedTrip: () => string | null;
 	completeTrip: (trip: TripRecord, revenue: RevenueEvent[]) => void;
 	addRevenueEvent: (event: RevenueEvent) => void;
@@ -411,18 +417,18 @@ interface StoreContextType {
 	) => Promise<DriverBackendPresenceOnlineResult | null>;
 	setDriverOffline: () => Promise<Record<string, unknown> | null>;
 	resetOnboardingVehicleSetup: () => void;
-	acceptRideJob: (jobId: string) => boolean;
+	acceptRideJob: (jobId: string) => Promise<boolean>;
 	acceptSpecializedJob: (
 		jobId: string,
 		jobType: "rental" | "tour" | "ambulance",
-	) => boolean;
+	) => Promise<boolean>;
 	transitionActiveTripStage: (nextStage: TripWorkflowStage) => boolean;
 	completeActiveTrip: () => string | null;
 	cancelActiveTrip: (
 		reasonStage?: "cancel_reason" | "cancel_no_show",
 	) => string | null;
 	clearActiveTrip: () => void;
-	acceptDeliveryJob: (jobId: string) => boolean;
+	acceptDeliveryJob: (jobId: string) => Promise<boolean>;
 	confirmDeliveryPickup: () => void;
 	verifyDeliveryQr: () => void;
 	startDeliveryRoute: () => void;
@@ -453,6 +459,7 @@ interface StoreContextType {
 	resolveGoOnlineAttempt: (nextRoute?: string) => GoOnlineDecision;
 	driverBootstrapReady: boolean;
 	refreshBackendOnboardingState: () => Promise<void>;
+	refreshDriverJobs: () => Promise<void>;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -1924,6 +1931,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 	const driverBackendEnabled = useDriverBackendEnabled();
 	const driverSharedRidesEnabled = useDriverSharedRidesEnabled();
 
+	// Refs for heartbeat request deduplication
+	const inFlightHeartbeatRef = useRef<Promise<any> | null>(null);
+	const lastSentLocationRef = useRef<{
+		lat: number;
+		lng: number;
+	} | null>(null);
+	const lastSentTimeRef = useRef<number>(0);
+
 	useEffect(() => {
 		if (driverBackendEnabled) {
 			setSharedRidesEnabled(driverSharedRidesEnabled);
@@ -2255,6 +2270,65 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
 		setDriverBootstrapReady(true);
 	}, [driverBackendEnabled]);
+
+	// Phase 2 — explicit jobs refresh that can be triggered right after going online
+	// so the driver sees pending requests without waiting for the periodic bootstrap.
+	const refreshDriverJobs = useCallback(async () => {
+		if (!driverBackendEnabled || !shouldUseDriverBackendWrites()) {
+			return;
+		}
+
+		try {
+			const backendJobs = await listDriverJobs();
+			setJobs((prev) => {
+				const backendIds = new Set(backendJobs.map((job) => job.id));
+				const keptOthers = prev.filter(
+					(job) =>
+						!backendIds.has(job.id) &&
+						job.jobType !== "ride" &&
+						job.jobType !== "shared",
+				);
+				const mappedJobs: Job[] = backendJobs.map((job) => {
+					const presentation = buildBackendJobPresentation({
+						route: job.route,
+						estimatedFare: job.estimatedFare,
+					});
+					const requestedAt =
+						typeof job.requestedAt === "number" &&
+						Number.isFinite(job.requestedAt)
+							? job.requestedAt
+							: Date.parse(String(job.requestedAt || "")) ||
+								Date.now();
+					return {
+						id: job.id,
+						tripId: job.tripId,
+						routeId: job.routeId,
+						from: job.pickup || "Pickup",
+						to: job.dropoff || "Dropoff",
+						distance: presentation.distance,
+						duration: presentation.duration,
+						fare: presentation.fare,
+						jobType: mapBackendJobType(job.type),
+						status: mapBackendJobStatus(job.status),
+						requestedAt,
+						riderName: job.riderName || undefined,
+						riderPhone: job.riderPhone || undefined,
+						pickupLocation: job.pickupLocation || null,
+						dropoffLocation: job.dropoffLocation || null,
+						routePoints: extractBackendRoutePoints(job.route),
+					};
+				});
+				return [...mappedJobs, ...keptOthers].sort(
+					(a, b) => b.requestedAt - a.requestedAt,
+				);
+			});
+		} catch (error) {
+			if (isAbortError(error)) {
+				return;
+			}
+			console.warn("Failed to refresh driver jobs.", error);
+		}
+	}, [driverBackendEnabled, setJobs, mapBackendJobType, mapBackendJobStatus]);
 
 	const setDriverProfilePhoto = useCallback(
 		(photo: string | null) => {
@@ -3286,17 +3360,56 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 				});
 			}
 			if (shouldUseDriverBackendWrites()) {
-				void sendDriverLocationHeartbeat({
+				// Deduplication checks
+				const currentLocation = {
+					lat: sample.latitude,
+					lng: sample.longitude,
+				};
+				const now = Date.now();
+
+				// Skip if location hasn't changed significantly (10 meters) and sent within last 5 seconds
+				if (lastSentLocationRef.current) {
+					const dx =
+						lastSentLocationRef.current.lat - currentLocation.lat;
+					const dy =
+						lastSentLocationRef.current.lng - currentLocation.lng;
+					const dist = Math.sqrt(dx * dx + dy * dy) * 111000;
+					if (dist < 10 && now - lastSentTimeRef.current < 5000) {
+						return;
+					}
+				}
+
+				// Skip if there's already an in-flight heartbeat
+				if (inFlightHeartbeatRef.current) {
+					return;
+				}
+
+				lastSentLocationRef.current = currentLocation;
+				lastSentTimeRef.current = now;
+
+				const heartbeatPromise = sendDriverLocationHeartbeat({
 					latitude: sample.latitude,
 					longitude: sample.longitude,
 					accuracy: sample.accuracy,
 					timestamp,
-				}).catch((error) => {
-					if (isAbortError(error)) {
-						return;
-					}
-					console.warn("Driver location heartbeat failed.", error);
-				});
+				})
+					.catch((error) => {
+						if (isAbortError(error)) {
+							return;
+						}
+						console.warn(
+							"Driver location heartbeat failed.",
+							error,
+						);
+					})
+					.finally(() => {
+						// Clear in-flight ref when done
+						if (inFlightHeartbeatRef.current === heartbeatPromise) {
+							inFlightHeartbeatRef.current = null;
+						}
+					});
+
+				inFlightHeartbeatRef.current = heartbeatPromise;
 			}
 		},
 		[
@@ -4195,8 +4308,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 	// would block new acceptance because the guard only checked status !== "completed"
 	// but not whether the trip was actually in-progress. Now we also allow acceptance
 	// when the stale trip is in "idle" stage (meaning it was never truly started).
+	//
+	// Phase 2 — wait for the backend accept to succeed before telling the UI the job
+	// is accepted. On failure we roll back the optimistic local changes so the driver
+	// can retry or the offer can expire and be re-dispatched.
 	const acceptRideJob = useCallback(
-		(jobId: string) => {
+		async (jobId: string) => {
 			if (!canAccessOrdersWithCurrentDocuments()) {
 				return false;
 			}
@@ -4238,6 +4355,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 			}
 
 			const now = Date.now();
+			const previousActiveTrip = activeTrip;
+			const previousJobStatus = targetJob.status;
+
 			// Mark the job as "attended" (accepted) in the jobs list
 			setJobs((prev) =>
 				prev.map((job) =>
@@ -4260,69 +4380,82 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 				createDefaultActiveRideRuntime(resolvedTripId),
 			);
 
-			if (shouldUseDriverBackendWrites()) {
-				void acceptDriverJob(jobId)
-					.then((response) => {
-						const backendTrip = response?.trip;
-						if (!backendTrip) {
-							return;
-						}
-						setJobs((prev) =>
-							prev.map((job) =>
-								job.id === jobId
-									? {
-											...job,
-											tripId: backendTrip.id,
-											status: "attended",
-										}
-									: job,
-							),
-						);
-						setActiveTrip((prev) => {
-							if (
-								prev.tripId !== resolvedTripId &&
-								prev.tripId !== jobId
-							) {
-								return prev;
-							}
-							return {
-								...prev,
-								tripId: backendTrip.id,
-								stage: mapBackendTripStage(backendTrip.status),
-								status:
-									backendTrip.status === "completed"
-										? "completed"
-										: backendTrip.status === "cancelled"
-											? "cancelled"
-											: "in_progress",
-								timestamps: {
-									...prev.timestamps,
-									acceptedAt:
-										prev.timestamps.acceptedAt ?? now,
-									startedAt:
-										backendTrip.startedAt ??
-										prev.timestamps.startedAt,
-									completedAt:
-										backendTrip.completedAt ??
-										prev.timestamps.completedAt,
-									updatedAt:
-										backendTrip.updatedAt ?? Date.now(),
-								},
-							};
-						});
-						setActiveRideRuntime(
-							createDefaultActiveRideRuntime(backendTrip.id),
-						);
-					})
-					.catch((error) => {
-						console.warn(
-							"Driver backend job accept failed.",
-							error,
-						);
-					});
+			if (!shouldUseDriverBackendWrites()) {
+				return true;
 			}
 
-			return true;
+			try {
+				const response = await acceptDriverJob(jobId);
+				const backendTrip = response?.trip;
+				if (!backendTrip) {
+					return true;
+				}
+				setJobs((prev) =>
+					prev.map((job) =>
+						job.id === jobId
+							? {
+									...job,
+									tripId: backendTrip.id,
+									status: "attended",
+								}
+							: job,
+					),
+				);
+				setActiveTrip((prev) => {
+					if (
+						prev.tripId !== resolvedTripId &&
+						prev.tripId !== jobId
+					) {
+						return prev;
+					}
+					return {
+						...prev,
+						tripId: backendTrip.id,
+						stage: mapBackendTripStage(backendTrip.status),
+						status:
+							backendTrip.status === "completed"
+								? "completed"
+								: backendTrip.status === "cancelled"
+									? "cancelled"
+									: "in_progress",
+						timestamps: {
+							...prev.timestamps,
+							acceptedAt: prev.timestamps.acceptedAt ?? now,
+							startedAt:
+								backendTrip.startedAt ??
+								prev.timestamps.startedAt,
+							completedAt:
+								backendTrip.completedAt ??
+								prev.timestamps.completedAt,
+							updatedAt: backendTrip.updatedAt ?? Date.now(),
+						},
+					};
+				});
+				setActiveRideRuntime(
+					createDefaultActiveRideRuntime(backendTrip.id),
+				);
+				return true;
+			} catch (error) {
+				// Roll back the optimistic update so the job remains available.
+				setJobs((prev) =>
+					prev.map((job) =>
+						job.id === jobId
+							? { ...job, status: previousJobStatus }
+							: job,
+					),
+				);
+				setActiveTrip(previousActiveTrip);
+				setActiveRideRuntime(
+					createDefaultActiveRideRuntime(previousActiveTrip.tripId),
+				);
+				const message =
+					error instanceof ApiRequestError
+						? error.message
+						: "Failed to accept ride. Please try again.";
+				setJobAccessError(message);
+				console.warn("Driver backend job accept failed.", error);
+				return false;
+			}
 		},
 		[
 			jobs,
@@ -4330,6 +4463,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 			completeActiveTrip,
 			canAccessOrdersWithCurrentDocuments,
 			mapBackendTripStage,
+			setJobAccessError,
 		],
 	);
 
@@ -4355,7 +4489,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 	);
 
 	const acceptDeliveryJob = useCallback(
-		(jobId: string) => {
+		async (jobId: string) => {
 			if (!canAccessOrdersWithCurrentDocuments()) {
 				return false;
 			}
@@ -4388,6 +4522,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 				completeActiveTrip();
 			}
 
+			const previousJobStatus = targetJob.status;
+			const previousDeliveryWorkflow = deliveryWorkflow;
+
 			setJobs((prev) =>
 				prev.map((job) =>
 					job.id === jobId ? { ...job, status: "attended" } : job,
@@ -4401,22 +4538,38 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 				stage: "accepted",
 			});
 
-			if (shouldUseDriverBackendWrites()) {
-				void acceptDriverDeliveryOrder(jobId).catch((error) => {
-					console.warn(
-						"Driver backend delivery accept failed.",
-						error,
-					);
-				});
+			if (!shouldUseDriverBackendWrites()) {
+				return true;
 			}
 
-			return true;
+			try {
+				await acceptDriverDeliveryOrder(jobId);
+				return true;
+			} catch (error) {
+				setJobs((prev) =>
+					prev.map((job) =>
+						job.id === jobId
+							? { ...job, status: previousJobStatus }
+							: job,
+					),
+				);
+				setDeliveryWorkflow(previousDeliveryWorkflow);
+				const message =
+					error instanceof ApiRequestError
+						? error.message
+						: "Failed to accept delivery order. Please try again.";
+				setJobAccessError(message);
+				console.warn("Driver backend delivery accept failed.", error);
+				return false;
+			}
 		},
 		[
 			jobs,
 			activeTrip,
+			deliveryWorkflow,
 			completeActiveTrip,
 			canAccessOrdersWithCurrentDocuments,
+			setJobAccessError,
 		],
 	);
 
@@ -4609,7 +4762,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 	);
 
 	const acceptSpecializedJob = useCallback(
-		(jobId: string, jobType: SpecializedJobType) => {
+		async (jobId: string, jobType: SpecializedJobType) => {
 			if (!canAccessOrdersWithCurrentDocuments()) {
 				return false;
 			}
@@ -4651,6 +4804,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 			}
 
 			const now = Date.now();
+			const previousActiveTrip = activeTrip;
+			const previousJobStatus = targetJob.status;
 
 			setJobs((prev) =>
 				prev.map((job) =>
@@ -4670,16 +4825,36 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 			});
 			setActiveRideRuntime(createDefaultActiveRideRuntime(jobId));
 
-			if (shouldUseDriverBackendWrites()) {
-				void acceptDriverServiceRequest(jobId).catch((error) => {
-					console.warn(
-						"Driver backend service request accept failed.",
-						error,
-					);
-				});
+			if (!shouldUseDriverBackendWrites()) {
+				return true;
 			}
 
-			return true;
+			try {
+				await acceptDriverServiceRequest(jobId);
+				return true;
+			} catch (error) {
+				setJobs((prev) =>
+					prev.map((job) =>
+						job.id === jobId
+							? { ...job, status: previousJobStatus }
+							: job,
+					),
+				);
+				setActiveTrip(previousActiveTrip);
+				setActiveRideRuntime(
+					createDefaultActiveRideRuntime(previousActiveTrip.tripId),
+				);
+				const message =
+					error instanceof ApiRequestError
+						? error.message
+						: "Failed to accept request. Please try again.";
+				setJobAccessError(message);
+				console.warn(
+					"Driver backend service request accept failed.",
+					error,
+				);
+				return false;
+			}
 		},
 		[
 			jobs,
@@ -4687,13 +4862,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 			activeTrip,
 			completeActiveTrip,
 			canAccessOrdersWithCurrentDocuments,
+			setJobAccessError,
 		],
 	);
 	// acceptSharedJob: Accepts a pending shared ride job.
 	// Shared jobs now honor the backend capability gate first, then fall back to
 	// the local preference only in backend-disabled/demo mode.
 	const acceptSharedJob = useCallback(
-		(jobId: string) => {
+		async (jobId: string) => {
 			if (!canAccessOrdersWithCurrentDocuments()) {
 				return false;
 			}
@@ -4734,6 +4910,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 			}
 
 			const now = Date.now();
+			const previousJobStatus = targetJob.status;
 
 			// Mark the shared job as "attended" in the jobs list
 			setJobs((prev) =>
@@ -4741,52 +4918,64 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 					job.id === jobId ? { ...job, status: "attended" } : job,
 				),
 			);
-			if (shouldUseDriverBackendWrites()) {
-				void acceptDriverJob(jobId)
-					.then((response) => {
-						const backendTrip = response?.trip;
-						if (!backendTrip) {
-							return;
-						}
-						const hydratedSharedTrip =
-							hydrateSharedTripFromBackendTrip(backendTrip);
 
-						setActiveTrip((prev) => ({
-							...prev,
-							tripId: backendTrip.id,
-							jobType: "shared",
-							stage:
-								backendTrip.status === "completed"
-									? "completed"
-									: backendTrip.status === "cancelled"
-										? "cancelled"
-										: "shared_active",
-							status:
-								backendTrip.status === "completed"
-									? "completed"
-									: backendTrip.status === "cancelled"
-										? "cancelled"
-										: "in_progress",
-							timestamps: {
-								...prev.timestamps,
-								acceptedAt: prev.timestamps.acceptedAt ?? now,
-								startedAt: prev.timestamps.startedAt ?? now,
-								updatedAt: Date.now(),
-							},
-						}));
-						setActiveSharedTrip(hydratedSharedTrip);
-						setActiveRideRuntime(
-							createDefaultActiveRideRuntime(backendTrip.id),
-						);
-					})
-					.catch((error) => {
-						console.warn(
-							"Driver backend job accept failed.",
-							error,
-						);
-					});
+			if (!shouldUseDriverBackendWrites()) {
+				return true;
 			}
-			return true;
+
+			try {
+				const response = await acceptDriverJob(jobId);
+				const backendTrip = response?.trip;
+				if (!backendTrip) {
+					return true;
+				}
+				const hydratedSharedTrip =
+					hydrateSharedTripFromBackendTrip(backendTrip);
+
+				setActiveTrip((prev) => ({
+					...prev,
+					tripId: backendTrip.id,
+					jobType: "shared",
+					stage:
+						backendTrip.status === "completed"
+							? "completed"
+							: backendTrip.status === "cancelled"
+								? "cancelled"
+								: "shared_active",
+					status:
+						backendTrip.status === "completed"
+							? "completed"
+							: backendTrip.status === "cancelled"
+								? "cancelled"
+								: "in_progress",
+					timestamps: {
+						...prev.timestamps,
+						acceptedAt: prev.timestamps.acceptedAt ?? now,
+						startedAt: prev.timestamps.startedAt ?? now,
+						updatedAt: Date.now(),
+					},
+				}));
+				setActiveSharedTrip(hydratedSharedTrip);
+				setActiveRideRuntime(
+					createDefaultActiveRideRuntime(backendTrip.id),
+				);
+				return true;
+			} catch (error) {
+				setJobs((prev) =>
+					prev.map((job) =>
+						job.id === jobId
+							? { ...job, status: previousJobStatus }
+							: job,
+					),
+				);
+				const message =
+					error instanceof ApiRequestError
+						? error.message
+						: "Failed to accept shared ride. Please try again.";
+				setJobAccessError(message);
+				console.warn("Driver backend job accept failed.", error);
+				return false;
+			}
 		},
 		[
 			jobs,
@@ -4797,6 +4986,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 			driverBackendEnabled,
 			driverSharedRidesEnabled,
 			sharedRidesEnabled,
+			setJobAccessError,
+			hydrateSharedTripFromBackendTrip,
 		],
 	);
 	const completeActiveSharedTrip = useCallback(() => {
@@ -5180,6 +5371,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 			resolveJobAccessAttempt,
 			resolveGoOnlineAttempt,
 			refreshBackendOnboardingState,
+			refreshDriverJobs,
 		}),
 		[
 			periodFilter,
@@ -5273,6 +5465,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 			resolveJobAccessAttempt,
 			resolveGoOnlineAttempt,
 			refreshBackendOnboardingState,
+			refreshDriverJobs,
 		],
 	);
 

@@ -44,13 +44,13 @@ export default function AmbulanceIncoming() {
     return () => clearTimeout(id);
   }, [timeLeft]);
 
-  const handleAccept = () => {
+  const handleAccept = async () => {
     clearJobAccessError();
     if (!pendingAmbulanceJob) {
       navigate("/driver/jobs/list");
       return;
     }
-    const accepted = acceptSpecializedJob(pendingAmbulanceJob.id, "ambulance");
+    const accepted = await acceptSpecializedJob(pendingAmbulanceJob.id, "ambulance");
     if (!accepted) {
       if (jobAccessError) {
         window.alert(jobAccessError);
