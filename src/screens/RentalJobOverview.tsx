@@ -85,18 +85,18 @@ export default function RentalJobOverview() {
       return;
     }
     if (rentalJob.status === "pending" || rentalJob.status === "attended") {
-      acceptSpecializedJob(jobId, "rental");
+      void acceptSpecializedJob(jobId, "rental");
     }
   }, [jobId, rentalJob, isThisRentalActive, acceptSpecializedJob]);
 
-  const ensureRentalFlowTripId = () => {
+  const ensureRentalFlowTripId = async () => {
     if (!jobId) {
       return null;
     }
     if (isThisRentalActive) {
       return jobId;
     }
-    if (acceptSpecializedJob(jobId, "rental")) {
+    if (await acceptSpecializedJob(jobId, "rental")) {
       return jobId;
     }
     if (jobAccessError) {
@@ -132,8 +132,8 @@ export default function RentalJobOverview() {
     );
   }
 
-  const handleStartNavigation = () => {
-    const activeRentalTripId = ensureRentalFlowTripId();
+  const handleStartNavigation = async () => {
+    const activeRentalTripId = await ensureRentalFlowTripId();
     if (!activeRentalTripId) {
       return;
     }
@@ -146,8 +146,8 @@ export default function RentalJobOverview() {
     });
   };
 
-  const handleEndRental = () => {
-    const activeRentalTripId = ensureRentalFlowTripId();
+  const handleEndRental = async () => {
+    const activeRentalTripId = await ensureRentalFlowTripId();
     if (!activeRentalTripId) {
       return;
     }

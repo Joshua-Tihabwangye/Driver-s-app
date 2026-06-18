@@ -16,7 +16,7 @@ interface SharedTripsContextType {
   setSharedRidesEnabled: (val: boolean) => void;
   activeSharedTrip: SharedTrip | null;
   setActiveSharedTrip: (trip: SharedTrip | null) => void;
-  acceptSharedJob: (jobId: string) => boolean;
+  acceptSharedJob: (jobId: string) => Promise<boolean>;
   hydrateSharedTripById: (jobId: string) => Promise<boolean>;
 
   // Actions
