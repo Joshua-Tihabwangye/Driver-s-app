@@ -26,6 +26,8 @@ type UseDriverRealtimeSyncInput = {
   setDeliveryWorkflow: Dispatch<
     SetStateAction<{
       activeJobId: string | null;
+      jobId: string | null;
+      orderId: string | null;
       routeId: string;
       stopId: string;
       stage: "idle" | "accepted" | "pickup_confirmed" | "qr_verified" | "in_delivery" | "dropoff_confirmed";
@@ -76,6 +78,7 @@ export function useDriverRealtimeSync({
       requestId?: string;
       tripId?: string;
       routeId?: string;
+      routeSummary?: string;
       pickup?: string;
       dropoff?: string;
       pickupAddress?: string;
@@ -88,9 +91,15 @@ export function useDriverRealtimeSync({
       routeDurationMin?: number;
       riderName?: string;
       riderPhone?: string;
+      requiresPickupOtp?: boolean;
+      requiresDropoffQr?: boolean;
+      recipientContact?: { name: string; phone: string; email?: string | null } | null;
+      packageDetails?: Record<string, unknown> | null;
+      nextStopId?: string;
       route?: unknown;
       pickupLocation?: { lat: number; lng: number } | null;
       dropoffLocation?: { lat: number; lng: number } | null;
+      stops?: unknown[];
       serviceType?: string;
     }) => {
       const jobId = payload.jobId || payload.orderId || payload.requestId || payload.tripId;
@@ -120,6 +129,7 @@ export function useDriverRealtimeSync({
           id: jobId,
           tripId: payload.tripId,
           routeId: payload.routeId,
+          orderId: payload.orderId || null,
           from: payload.pickup || payload.pickupAddress || "Pickup",
           to: payload.dropoff || payload.dropoffAddress || "Dropoff",
           distance: presentation.distance,
@@ -132,6 +142,13 @@ export function useDriverRealtimeSync({
           riderPhone: payload.riderPhone || undefined,
           pickupLocation: payload.pickupLocation || null,
           dropoffLocation: payload.dropoffLocation || null,
+          routeSummary: payload.routeSummary,
+          requiresPickupOtp: payload.requiresPickupOtp,
+          requiresDropoffQr: payload.requiresDropoffQr,
+          recipientContact: payload.recipientContact || null,
+          packageDetails: (payload.packageDetails as any) || null,
+          nextStopId: payload.nextStopId,
+          stops: Array.isArray(payload.stops) ? (payload.stops as any[]) : undefined,
           routePoints: extractBackendRoutePoints(payload.route),
         };
 
@@ -145,11 +162,25 @@ export function useDriverRealtimeSync({
       });
     };
 
-    const handleJobOfferUpdated = (payload: { jobId: string; status: string }) => {
-      setJobs((prev) => prev.map((job) => (job.id === payload.jobId ? { ...job, status: mapBackendJobStatus(payload.status) } : job)));
+    const handleJobOfferUpdated = (payload: { jobId?: string; orderId?: string; status: string; routeId?: string }) => {
+      const matchId = payload.jobId || payload.orderId;
+      if (!matchId) return;
+      setJobs((prev) =>
+        prev.map((job) =>
+          job.id === matchId || job.orderId === payload.orderId
+            ? {
+                ...job,
+                orderId: payload.orderId || job.orderId || null,
+                routeId: payload.routeId || job.routeId,
+                status: mapBackendJobStatus(payload.status),
+              }
+            : job,
+        ),
+      );
     };
 
     const handleDeliveryRouteUpdated = (payload: {
+      jobId?: string;
       orderId: string;
       routeId: string;
       orderStatus: string;
@@ -159,12 +190,21 @@ export function useDriverRealtimeSync({
     }) => {
       setJobs((prev) =>
         prev.map((job) =>
-          job.id === payload.orderId ? { ...job, routeId: payload.routeId, status: mapBackendJobStatus(payload.orderStatus) } : job,
+          job.id === payload.jobId || job.id === payload.orderId || job.routeId === payload.routeId || job.orderId === payload.orderId
+            ? {
+                ...job,
+                orderId: payload.orderId,
+                routeId: payload.routeId,
+                status: mapBackendJobStatus(payload.orderStatus),
+              }
+            : job,
         ),
       );
       setDeliveryWorkflow((prev) => ({
         ...prev,
-        activeJobId: payload.orderId,
+        activeJobId: payload.jobId || prev.activeJobId || payload.orderId,
+        jobId: payload.jobId || prev.jobId || prev.activeJobId || null,
+        orderId: payload.orderId,
         routeId: payload.routeId,
         stopId: payload.nextStopId || prev.stopId,
         stage: payload.stage === "cancelled" ? "idle" : payload.stage,

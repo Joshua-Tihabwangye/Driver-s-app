@@ -1,22 +1,31 @@
 import {
-Camera,
-ChevronLeft,
-Clock,
-MessageCircle,
-Package,
-Phone
+  Camera,
+  ChevronLeft,
+  Clock,
+  MapPin,
+  MessageCircle,
+  Package,
+  Phone,
 } from "lucide-react";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import DriverMapSurface from "../components/DriverMapSurface";
 import SlideToConfirm from "../components/SlideToConfirm";
-import { SAMPLE_IDS } from "../data/constants";
+import { getDriverDeliveryRoute } from "../services/api/driverApi";
 import { useStore } from "../context/StoreContext";
 
-// EVzone Driver App – DeliveryStopDetails Active Route with Expanded Stop Details (Messaging Shortcut) (v1)
-// Active route view with an expanded card for the next stop, including quick message/call actions.
-// 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
+function resolveStopLabel(stop: any) {
+  return stop?.label || stop?.address || stop?.name || "Stop";
+}
 
+function resolveStopDetail(stop: any) {
+  return stop?.detail || stop?.description || stop?.note || "";
+}
+
+function formatCoords(point: { lat: number; lng: number } | null | undefined) {
+  if (!point) return "Coords unavailable";
+  return `${point.lat.toFixed(5)}, ${point.lng.toFixed(5)}`;
+}
 
 export default function DeliveryStopDetails() {
   const navigate = useNavigate();
@@ -24,8 +33,10 @@ export default function DeliveryStopDetails() {
   const {
     deliveryStageAtLeast,
     confirmDeliveryDropoff,
+    completeDeliveryStop,
     deliveryWorkflow,
     resetDeliveryWorkflow,
+    activeDeliveryJob,
   } = useStore();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -35,6 +46,7 @@ export default function DeliveryStopDetails() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [backendRoute, setBackendRoute] = useState<any | null>(null);
 
   useEffect(() => {
     if (!isSubmitting && !deliveryStageAtLeast("in_delivery")) {
@@ -42,35 +54,54 @@ export default function DeliveryStopDetails() {
     }
   }, [deliveryStageAtLeast, navigate, isSubmitting]);
 
-  const stopDetailsById = {
-    "gamma-stop": {
-      label: "Naguru (Block B)",
-      detail: "Deliver order #3235 · FreshMart groceries",
-      etaTime: "18:40",
-      etaDistance: "2.3 km · 8 min",
-      contactName: "Sarah",
-      contactPhone: "+256 700 000 333",
-    },
-    "beta-stop": {
-      label: "Ntinda (Main Road)",
-      detail: "Deliver order #3230 · Pharmacy package",
-      etaTime: "18:55",
-      etaDistance: "3.0 km · 11 min",
-      contactName: "Michael",
-      contactPhone: "+256 700 000 444",
-    },
-    "alpha-stop": {
-      label: "Lugogo (Main Gate)",
-      detail: "Deliver order #3221 · Food package",
-      etaTime: "18:20",
-      etaDistance: "1.8 km · 6 min",
-      contactName: "Daniel",
-      contactPhone: "+256 700 000 222",
-    },
-  };
-  const nextStop =
-    stopDetailsById[(stopId || "") as keyof typeof stopDetailsById] ||
-    stopDetailsById["gamma-stop"];
+  useEffect(() => {
+    let cancelled = false;
+    const resolvedRouteId = routeId || deliveryWorkflow.routeId;
+    if (!resolvedRouteId) {
+      setBackendRoute(null);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    void getDriverDeliveryRoute(resolvedRouteId)
+      .then((route) => {
+        if (!cancelled) {
+          setBackendRoute(route);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setBackendRoute(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [deliveryWorkflow.routeId, routeId]);
+
+  const routeStops = Array.isArray(backendRoute?.stops) ? (backendRoute.stops as any[]) : [];
+  const selectedStop =
+    routeStops.find((stop) => stop?.id === stopId) ||
+    routeStops.find((stop) => stop?.id === backendRoute?.nextStop?.id) ||
+    routeStops.find((stop) => String(stop?.status || "").toLowerCase() === "current") ||
+    routeStops.find((stop) => String(stop?.status || "").toLowerCase() === "upcoming") ||
+    routeStops[0] ||
+    null;
+  const recipientContact =
+    backendRoute?.recipientContact ||
+    activeDeliveryJob?.recipientContact ||
+    (selectedStop?.contactName || selectedStop?.contactPhone
+      ? { name: selectedStop.contactName || "Recipient", phone: selectedStop.contactPhone || "" }
+      : null);
+  const packageDetails = backendRoute?.packageDetails || activeDeliveryJob?.packageDetails || null;
+  const pickupLocation = backendRoute?.pickupLocation || activeDeliveryJob?.pickupLocation || selectedStop?.pickupLocation || null;
+  const dropoffLocation = backendRoute?.dropoffLocation || activeDeliveryJob?.dropoffLocation || selectedStop?.dropoffLocation || null;
+  const requiresPickupOtp = backendRoute?.requiresPickupOtp ?? activeDeliveryJob?.requiresPickupOtp ?? false;
+  const requiresDropoffQr = backendRoute?.requiresDropoffQr ?? activeDeliveryJob?.requiresDropoffQr ?? false;
+  const currentOrderId = deliveryWorkflow.orderId || activeDeliveryJob?.orderId || activeDeliveryJob?.id || "N/A";
+  const currentJobId = deliveryWorkflow.jobId || deliveryWorkflow.activeJobId || activeDeliveryJob?.id || "N/A";
 
   useEffect(() => {
     return () => {
@@ -82,11 +113,11 @@ export default function DeliveryStopDetails() {
 
   const sanitizePhone = (phone: string) => (phone || "").replace(/[^\d+]/g, "");
   const handleCall = () => {
-    const target = sanitizePhone(nextStop.contactPhone);
+    const target = sanitizePhone(recipientContact?.phone || "");
     if (target) window.open(`tel:${target}`);
   };
   const handleMessage = () => {
-    const target = sanitizePhone(nextStop.contactPhone);
+    const target = sanitizePhone(recipientContact?.phone || "");
     if (target) window.open(`sms:${target}`);
   };
 
@@ -139,9 +170,7 @@ export default function DeliveryStopDetails() {
     }
   };
 
-  const handleCaptureSignatureProof = (
-    event: ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleCaptureSignatureProof = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -154,12 +183,13 @@ export default function DeliveryStopDetails() {
     setSignatureProofName(file.name || "signature-proof.jpg");
   };
 
-  const handleConfirmDropOff = () => {
+  const handleConfirmDropOff = async () => {
     if (!signatureProofUrl) {
       return;
     }
     setIsSubmitting(true);
-    confirmDeliveryDropoff();
+    await completeDeliveryStop();
+    await confirmDeliveryDropoff();
     resetDeliveryWorkflow();
     navigate("/driver/jobs/list", { replace: true });
   };
@@ -178,10 +208,10 @@ export default function DeliveryStopDetails() {
         infoCard={(
           <div className="rounded-[1.5rem] border border-white/70 bg-white/92 p-4 shadow-xl backdrop-blur-sm">
             <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
-              Drop-off Check
+              Stop Details
             </p>
             <p className="mt-1 text-[11px] font-bold uppercase tracking-tight text-slate-700">
-              Confirm the pinned stop before capturing proof of delivery.
+              Complete the stop, then finish the delivery only after the proof is captured.
             </p>
           </div>
         )}
@@ -200,7 +230,6 @@ export default function DeliveryStopDetails() {
           </h1>
         </section>
 
-        {/* Expanded next stop details */}
         <section className="space-y-4">
           <div className="rounded-[2.5rem] border border-slate-100 bg-white p-6 shadow-xl shadow-slate-200/50 flex flex-col space-y-6">
             <div className="flex items-start justify-between">
@@ -209,18 +238,35 @@ export default function DeliveryStopDetails() {
                   Active Delivery
                 </span>
                 <span className="text-lg font-black text-slate-900 leading-tight">
-                  {nextStop.label}
+                  {resolveStopLabel(selectedStop)}
                 </span>
                 <span className="text-[10px] font-medium text-slate-500 mt-1 uppercase tracking-widest">
-                  {nextStop.detail}
+                  {resolveStopDetail(selectedStop)}
                 </span>
               </div>
               <div className="flex flex-col items-end text-[10px] text-slate-500 font-bold uppercase tracking-widest">
                 <span className="inline-flex items-center mb-1 text-orange-500">
                   <Clock className="h-4 w-4 mr-1.5" />
-                  {nextStop.etaTime}
+                  {selectedStop?.eta || "ETA pending"}
                 </span>
-                <span>{nextStop.etaDistance}</span>
+                <span>{selectedStop?.detail || "Route stop"}</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div className="rounded-xl bg-slate-50 border border-slate-100 px-3 py-2">
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Job / Order</span>
+                <p className="mt-1 text-[11px] font-black text-slate-900">#{currentJobId}</p>
+                <p className="text-[11px] text-slate-500">Order #{currentOrderId}</p>
+              </div>
+              <div className="rounded-xl bg-slate-50 border border-slate-100 px-3 py-2">
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Proof Rules</span>
+                <p className="mt-1 text-[11px] font-black text-slate-900">
+                  {requiresPickupOtp ? "OTP required" : "OTP optional"}
+                </p>
+                <p className="text-[11px] text-slate-500">
+                  {requiresDropoffQr ? "QR required" : "QR optional"}
+                </p>
               </div>
             </div>
 
@@ -230,11 +276,11 @@ export default function DeliveryStopDetails() {
                   Recipient
                 </span>
                 <span className="text-sm font-black text-slate-900">
-                  {nextStop.contactName}
+                  {recipientContact?.name || "Recipient unavailable"}
                 </span>
                 <span className="inline-flex items-center text-[10px] text-slate-500 mt-1 font-bold">
                   <Phone className="h-4 w-4 mr-1.5 text-orange-500" />
-                  {nextStop.contactPhone}
+                  {recipientContact?.phone || "Contact unavailable"}
                 </span>
               </div>
               <div className="flex items-center space-x-3">
@@ -259,10 +305,15 @@ export default function DeliveryStopDetails() {
           <div className="rounded-[2.5rem] border border-slate-100 bg-white p-6 shadow-xl shadow-slate-200/50 space-y-4">
             <div>
               <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                Proof of Delivery
+                Stop Summary
               </p>
               <p className="mt-1 text-[11px] font-medium text-slate-600">
-                Open camera and capture the signed delivery sheet before confirming drop-off.
+                {packageDetails
+                  ? `${packageDetails.name || "Package"} · ${packageDetails.type || "Item"} · ${packageDetails.weight || "Weight pending"}`
+                  : "Package details pending"}
+              </p>
+              <p className="mt-1 text-[11px] font-medium text-slate-600">
+                Pickup {formatCoords(pickupLocation)} · Drop-off {formatCoords(dropoffLocation)}
               </p>
             </div>
 
@@ -315,7 +366,7 @@ export default function DeliveryStopDetails() {
                     >
                       <div className="h-16 w-16 rounded-full border-4 border-slate-900" />
                     </button>
-                    <div className="h-14 w-14" /> {/* Spacer */}
+                    <div className="h-14 w-14" />
                   </div>
                 </div>
                 <p className="mt-6 text-white/60 text-[10px] font-black uppercase tracking-widest">
@@ -339,14 +390,13 @@ export default function DeliveryStopDetails() {
           </div>
 
           <p className="text-[10px] text-slate-400 font-medium text-center px-6 leading-relaxed">
-            Use quick communication to coordinate gate access, entrances or
-            safe meeting spots when needed.
+            The stop will be completed before the drop-off completion call is sent to the backend.
           </p>
           <SlideToConfirm
             instruction="Slide to confirm delivered"
             successLabel="Delivery confirmed"
-            onConfirm={() => {
-              handleConfirmDropOff();
+            onConfirm={async () => {
+              await handleConfirmDropOff();
               return true;
             }}
             disabled={!signatureProofUrl || isSubmitting}
@@ -356,7 +406,7 @@ export default function DeliveryStopDetails() {
             type="button"
             onClick={() =>
               navigate(
-                `/driver/delivery/route/${routeId || deliveryWorkflow.routeId || SAMPLE_IDS.route}/active`
+                `/driver/delivery/route/${routeId || deliveryWorkflow.routeId || "route"}/active`,
               )
             }
             className="w-full rounded-[2rem] border-2 border-slate-900 bg-white py-5 text-[11px] font-black uppercase tracking-widest text-slate-900 active:scale-[0.98] transition-all hover:bg-slate-50"

@@ -1,20 +1,28 @@
 import {
-Info,
-Loader2,
+  Info,
+  Loader2,
 } from "lucide-react";
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
 
-// EVzone Driver App – QRProcessing QR Code – Processing Stage (v1)
-// Screen showing the processing state after scanning a QR code, while verifying with backend.
-// 375x812 phone frame, swipe scrolling in <main>, scrollbar hidden.
-
+type QRProcessingLocationState = {
+  qrValue?: string;
+};
 
 export default function QRProcessing() {
   const navigate = useNavigate();
-  const { deliveryStageAtLeast, verifyDeliveryQr } = useStore();
+  const location = useLocation();
+  const { deliveryStageAtLeast, verifyDeliveryQr, deliveryWorkflow, activeDeliveryJob } = useStore();
+  const routeState = (location.state as QRProcessingLocationState | null) || null;
+  const qrValue =
+    routeState?.qrValue ||
+    activeDeliveryJob?.orderId ||
+    activeDeliveryJob?.id ||
+    deliveryWorkflow.orderId ||
+    deliveryWorkflow.jobId ||
+    "";
 
   useEffect(() => {
     if (!deliveryStageAtLeast("pickup_confirmed")) {
@@ -24,23 +32,22 @@ export default function QRProcessing() {
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      verifyDeliveryQr();
+      verifyDeliveryQr(qrValue);
       navigate("/driver/delivery/pickup/confirmed", { replace: true });
     }, 1800);
 
     return () => window.clearTimeout(timer);
-  }, [navigate, verifyDeliveryQr]);
+  }, [navigate, qrValue, verifyDeliveryQr]);
 
   return (
     <div className="flex flex-col h-full ">
-      <PageHeader 
-        title="Verifying Code" 
-        subtitle="Driver · Account" 
-        onBack={() => navigate(-1)} 
+      <PageHeader
+        title="Verifying Code"
+        subtitle="Driver · Account"
+        onBack={() => navigate(-1)}
       />
 
       <main className="flex-1 px-6 pb-16 overflow-y-auto scrollbar-hide flex flex-col items-center justify-center space-y-10">
-        {/* Processing indicator */}
         <section className="flex flex-col items-center space-y-6 w-full pt-12">
           <div className="relative">
             <div className="absolute inset-0 rounded-full border-4 border-orange-100 animate-spin-slow" />
@@ -53,12 +60,11 @@ export default function QRProcessing() {
               Verifying Code
             </span>
             <p className="text-[11px] font-bold text-slate-500 uppercase tracking-[0.2em]">
-              Checking details with server…
+              Checking {qrValue || "QR payload"} with server...
             </p>
           </div>
         </section>
 
-        {/* Info note */}
         <section className="w-full max-w-[300px] flex flex-col space-y-6">
           <div className="rounded-[2rem] bg-slate-900 p-6 shadow-2xl space-y-4">
             <div className="flex items-center space-x-3 text-orange-500">
@@ -68,8 +74,7 @@ export default function QRProcessing() {
               </span>
             </div>
             <p className="text-[11px] font-medium text-slate-300 leading-relaxed">
-              Please wait a moment while we confirm this package. Do not leave
-              the pickup point until verification is complete.
+              Please wait a moment while we confirm this package. Do not leave the pickup point until verification is complete.
             </p>
           </div>
 

@@ -99,11 +99,11 @@ export const MOCK_NOTIFICATIONS: AppNotification[] = [
 // ── Dashboard Stats ──────────────────────────────────────
 export const MOCK_DASHBOARD_STATS = {
   onlineTime: "3h 24m",
-  jobsToday: 12,
+  jobsToday: 9,
   earningsToday: "$84.60",
   jobMix: {
     ride: 7,
-    delivery: 3,
+    delivery: 0,
     rental: 1,
     tour: 1,
     ambulance: 0,
@@ -152,28 +152,6 @@ export const MOCK_COMPLETED_TRIPS: import('./types').TripRecord[] = [
     }
   },
   { id: "tr-103", from: "Bugolobi", to: "Luzira", date: yesterdayDate, time: "04:45 PM", amount: "15000", jobType: "ride", status: "completed", distance: "4.8 km", duration: "15 min" },
-  { 
-    id: "tr-104", 
-    from: "Makerere", 
-    to: "Wandegeya", 
-    date: yesterdayDate, 
-    time: "02:10 PM", 
-    amount: "5500", 
-    jobType: "delivery", 
-    status: "completed",
-    distance: "2.1 km",
-    duration: "10 min",
-    details: {
-      package: {
-        name: "Electronics (Order #4112)",
-        type: "Electronics",
-        weight: "3.2 kg",
-        recipient: "Alice M.",
-        sender: "TechStore Hub",
-        proofType: "signature"
-      }
-    }
-  },
   { id: "tr-105", from: "City Square", to: "Kololo", date: dayBeforeYesterdayDate, time: "11:20 AM", amount: "9000", jobType: "shared", status: "completed", distance: "2.8 km", duration: "14 min" },
   { 
     id: "tr-106", 
@@ -239,68 +217,6 @@ export const MOCK_COMPLETED_TRIPS: import('./types').TripRecord[] = [
     }
   },
 ];
-
-// ── Delivery Routes ──────────────────────────────────────
-export const MOCK_DELIVERY_ROUTES = {
-  "demo-route": {
-    id: "demo-route",
-    jobId: "3249",
-    stops: [
-      {
-        id: "start-point",
-        index: 1,
-        label: "Start Point",
-        address: "EVzone Depot, Industrial Area",
-        detail: "Vehicle Check & Departure",
-        eta: "08:15",
-        status: "completed",
-        contactName: "Depot Manager",
-        contactPhone: "+256 700 000 111",
-        distance: "0 km",
-        duration: "0 min",
-      },
-      {
-        id: "alpha-stop",
-        index: 2,
-        label: "FreshMart, Lugogo",
-        address: "Lugogo Bypass, Kampala",
-        detail: "Pickup order #3249 · Groceries",
-        eta: "08:45",
-        status: "completed",
-        contactName: "FreshMart Support",
-        contactPhone: "+256 700 000 333",
-        distance: "4.2 km",
-        duration: "15 min",
-      },
-      {
-        id: "beta-stop",
-        index: 3,
-        label: "PharmaPlus, City Centre",
-        address: "Parliamentary Ave, Kampala",
-        detail: "Pickup order #4112 · Pharmacy",
-        eta: "09:25",
-        status: "current",
-        contactName: "Pharmacist",
-        contactPhone: "+256 700 000 555",
-        distance: "2.5 km",
-        duration: "10 min",
-      },
-      {
-        id: "gamma-stop",
-        index: 4,
-        label: "Naguru (Block B)",
-        address: "Naguru Hill, Block B-12",
-        detail: "Deliver order #3249 · Groceries",
-        eta: "09:40",
-        status: "upcoming",
-        contactName: "Sarah",
-        contactPhone: "+256 700 000 444",
-        distance: "3.1 km",
-        duration: "12 min",
-      }
-    ]
-  }
-};
 
 // ── Shared Trips ─────────────────────────────────────────
 export const MOCK_SHARED_TRIPS: import('./types').SharedTrip[] = [

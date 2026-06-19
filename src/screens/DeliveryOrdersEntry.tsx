@@ -36,6 +36,7 @@ export default function DeliveryOrdersEntry() {
 
   const jobSummary = activeDeliveryJob || {
     id: "N/A",
+    orderId: "N/A",
     itemType: "Package",
     from: "Pickup point",
     to: "Drop-off point",
@@ -67,7 +68,7 @@ export default function DeliveryOrdersEntry() {
                 Current Delivery
               </span>
               <p className="text-sm font-black">
-                #{jobSummary.id} · {jobSummary.itemType || "Package"}
+                Job #{jobSummary.id} · Order #{jobSummary.orderId || jobSummary.id} · {jobSummary.itemType || "Package"}
               </p>
             </div>
           </div>

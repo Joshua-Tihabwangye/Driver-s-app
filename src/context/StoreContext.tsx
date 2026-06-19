@@ -47,6 +47,7 @@ import {
 	acceptDriverDeliveryOrder,
 	acceptDriverServiceRequest,
 	completeDriverDeliveryRoute,
+	completeDriverDeliveryStop,
 	completeDriverServiceRequest,
 	confirmDriverDeliveryPickup,
 	DRIVER_BACKEND_AUTH_EVENT,
@@ -166,6 +167,8 @@ export type DeliveryWorkflowStage =
 
 export interface DeliveryWorkflowState {
 	activeJobId: string | null;
+	jobId: string | null;
+	orderId: string | null;
 	routeId: string;
 	stopId: string;
 	stage: DeliveryWorkflowStage;
@@ -429,10 +432,11 @@ interface StoreContextType {
 	) => string | null;
 	clearActiveTrip: () => void;
 	acceptDeliveryJob: (jobId: string) => Promise<boolean>;
-	confirmDeliveryPickup: () => void;
-	verifyDeliveryQr: () => void;
+	confirmDeliveryPickup: (otp?: string) => void;
+	verifyDeliveryQr: (qrValue?: string) => void;
 	startDeliveryRoute: () => void;
-	confirmDeliveryDropoff: () => void;
+	completeDeliveryStop: () => Promise<void>;
+	confirmDeliveryDropoff: () => Promise<void>;
 	resetDeliveryWorkflow: () => void;
 	selectedVehicleIndex: number | null;
 	setSelectedVehicleIndex: (index: number | null) => void;
@@ -572,6 +576,8 @@ const DEFAULT_ONBOARDING_CHECKPOINTS: OnboardingCheckpointState = {
 
 const DEFAULT_DELIVERY_WORKFLOW: DeliveryWorkflowState = {
 	activeJobId: null,
+	jobId: null,
+	orderId: null,
 	routeId: "",
 	stopId: "",
 	stage: "idle",
@@ -4527,12 +4533,21 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
 			setJobs((prev) =>
 				prev.map((job) =>
-					job.id === jobId ? { ...job, status: "attended" } : job,
+					job.id === jobId
+						? {
+								...job,
+								status: "attended",
+								orderId: job.orderId || null,
+								routeId: job.routeId || targetJob.routeId || "",
+						  }
+						: job,
 				),
 			);
 
 			setDeliveryWorkflow({
 				activeJobId: jobId,
+				jobId,
+				orderId: targetJob.orderId || null,
 				routeId: targetJob.routeId || "",
 				stopId: "",
 				stage: "accepted",
@@ -4543,7 +4558,37 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 			}
 
 			try {
-				await acceptDriverDeliveryOrder(jobId);
+				const response = await acceptDriverDeliveryOrder(jobId);
+				const deliveryOrder = response?.deliveryOrder ?? null;
+				if (deliveryOrder) {
+					const resolvedOrderId =
+						deliveryOrder.id ||
+						deliveryOrder.orderId ||
+						targetJob.orderId ||
+						null;
+					const resolvedRouteId =
+						deliveryOrder.routeId || targetJob.routeId || "";
+					setJobs((prev) =>
+						prev.map((job) =>
+							job.id === jobId
+								? {
+										...job,
+										orderId: resolvedOrderId,
+										routeId: resolvedRouteId,
+								  }
+								: job,
+						),
+					);
+					setDeliveryWorkflow((prev) => ({
+						...prev,
+						activeJobId: jobId,
+						jobId,
+						orderId: resolvedOrderId,
+						routeId: resolvedRouteId,
+						stopId: deliveryOrder.nextStopId || prev.stopId,
+						stage: "accepted",
+					}));
+				}
 				return true;
 			} catch (error) {
 				setJobs((prev) =>
@@ -4573,7 +4618,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 		],
 	);
 
-	const confirmDeliveryPickup = useCallback(() => {
+	const confirmDeliveryPickup = useCallback((otp?: string) => {
 		if (driverPresenceStatus !== "online") {
 			setJobAccessError(OFFLINE_JOB_ACCESS_ERROR);
 			return;
@@ -4592,18 +4637,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 			};
 		});
 		if (shouldUseDriverBackendWrites() && deliveryWorkflow.routeId) {
-			void confirmDriverDeliveryPickup(deliveryWorkflow.routeId).catch(
-				(error) => {
-					console.warn(
-						"Driver backend delivery pickup confirm failed.",
-						error,
-					);
-				},
-			);
+			void confirmDriverDeliveryPickup(
+				deliveryWorkflow.routeId,
+				otp?.trim() || undefined,
+			).catch((error) => {
+				console.warn("Driver backend delivery pickup confirm failed.", error);
+			});
 		}
 	}, [deliveryWorkflow.routeId, driverPresenceStatus]);
 
-	const verifyDeliveryQr = useCallback(() => {
+	const verifyDeliveryQr = useCallback((qrValue?: string) => {
 		if (driverPresenceStatus !== "online") {
 			setJobAccessError(OFFLINE_JOB_ACCESS_ERROR);
 			return;
@@ -4622,21 +4665,44 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 			};
 		});
 		if (shouldUseDriverBackendWrites() && deliveryWorkflow.routeId) {
+			const resolvedQrValue =
+				qrValue?.trim() ||
+				deliveryWorkflow.orderId ||
+				deliveryWorkflow.jobId ||
+				deliveryWorkflow.activeJobId ||
+				deliveryWorkflow.routeId;
 			void verifyDriverDeliveryQr(
 				deliveryWorkflow.routeId,
-				deliveryWorkflow.activeJobId || deliveryWorkflow.routeId,
+				resolvedQrValue,
 			).catch((error) => {
-				console.warn(
-					"Driver backend delivery QR verify failed.",
-					error,
-				);
+				console.warn("Driver backend delivery QR verify failed.", error);
 			});
 		}
 	}, [
 		deliveryWorkflow.activeJobId,
+		deliveryWorkflow.jobId,
+		deliveryWorkflow.orderId,
 		deliveryWorkflow.routeId,
 		driverPresenceStatus,
 	]);
+
+	const completeDeliveryStop = useCallback(async () => {
+		if (driverPresenceStatus !== "online") {
+			setJobAccessError(OFFLINE_JOB_ACCESS_ERROR);
+			return;
+		}
+		if (!deliveryWorkflow.routeId || !deliveryWorkflow.stopId) {
+			return;
+		}
+		if (shouldUseDriverBackendWrites()) {
+			await completeDriverDeliveryStop(
+				deliveryWorkflow.routeId,
+				deliveryWorkflow.stopId,
+			).catch((error) => {
+				console.warn("Driver backend delivery stop completion failed.", error);
+			});
+		}
+	}, [deliveryWorkflow.routeId, deliveryWorkflow.stopId, driverPresenceStatus]);
 
 	const startDeliveryRoute = useCallback(() => {
 		if (driverPresenceStatus !== "online") {
@@ -4668,7 +4734,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 		}
 	}, [deliveryWorkflow.routeId, driverPresenceStatus]);
 
-	const confirmDeliveryDropoff = useCallback(() => {
+	const confirmDeliveryDropoff = useCallback(async () => {
 		if (driverPresenceStatus !== "online") {
 			setJobAccessError(OFFLINE_JOB_ACCESS_ERROR);
 			return;
@@ -4685,11 +4751,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 			stage: "dropoff_confirmed",
 		}));
 
-		if (deliveryWorkflow.activeJobId) {
+		if (deliveryWorkflow.activeJobId || deliveryWorkflow.jobId) {
 			const completedAt = Date.now();
 			const relatedJob = jobs.find(
 				(job) =>
-					job.id === deliveryWorkflow.activeJobId &&
+					(job.id === deliveryWorkflow.activeJobId ||
+						job.id === deliveryWorkflow.jobId ||
+						job.orderId === deliveryWorkflow.orderId ||
+						job.routeId === deliveryWorkflow.routeId) &&
 					job.jobType === "delivery",
 			);
 
@@ -4709,18 +4778,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 			}
 		}
 		if (shouldUseDriverBackendWrites() && deliveryWorkflow.routeId) {
-			void completeDriverDeliveryRoute(deliveryWorkflow.routeId).catch(
+			await completeDriverDeliveryRoute(deliveryWorkflow.routeId).catch(
 				(error) => {
-					console.warn(
-						"Driver backend delivery complete failed.",
-						error,
-					);
+					console.warn("Driver backend delivery complete failed.", error);
 				},
 			);
 		}
 	}, [
 		activeTrip.timestamps.startedAt,
 		deliveryWorkflow.activeJobId,
+		deliveryWorkflow.jobId,
+		deliveryWorkflow.orderId,
 		deliveryWorkflow.routeId,
 		deliveryWorkflow.stage,
 		driverPresenceStatus,
@@ -5210,14 +5278,21 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
 	const activeDeliveryJob = useMemo(
 		() =>
-			deliveryWorkflow.activeJobId
-				? jobs.find(
-						(job) =>
-							job.id === deliveryWorkflow.activeJobId &&
-							job.jobType === "delivery",
-					) || null
-				: null,
-		[deliveryWorkflow.activeJobId, jobs],
+			jobs.find(
+				(job) =>
+					job.jobType === "delivery" &&
+					(job.id === deliveryWorkflow.jobId ||
+						job.id === deliveryWorkflow.activeJobId ||
+						job.orderId === deliveryWorkflow.orderId ||
+						job.routeId === deliveryWorkflow.routeId),
+			) || null,
+		[
+			deliveryWorkflow.activeJobId,
+			deliveryWorkflow.jobId,
+			deliveryWorkflow.orderId,
+			deliveryWorkflow.routeId,
+			jobs,
+		],
 	);
 
 	// ── Context value ───────────────────────────────────────────
@@ -5346,6 +5421,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 			confirmDeliveryPickup,
 			verifyDeliveryQr,
 			startDeliveryRoute,
+			completeDeliveryStop,
 			confirmDeliveryDropoff,
 			// Use the real resetDeliveryWorkflow that clears delivery state
 			resetDeliveryWorkflow,
@@ -5442,6 +5518,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 			confirmDeliveryPickup,
 			verifyDeliveryQr,
 			startDeliveryRoute,
+			completeDeliveryStop,
 			confirmDeliveryDropoff,
 			resetDeliveryWorkflow,
 			selectedVehicleIndex,
