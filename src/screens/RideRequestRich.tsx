@@ -244,7 +244,7 @@ export default function RideRequestRich() {
 
     setIsAccepting(true);
     try {
-      let accepted = false;
+      let accepted: string | boolean = false;
       if (jobType === "shared") {
         const nextSharedJobId = selectedJob.id;
         accepted = await acceptSharedJob(nextSharedJobId);
@@ -268,7 +268,11 @@ export default function RideRequestRich() {
       }
 
       const acceptedRouteId =
-        jobType === "ride" ? selectedJob.tripId || selectedJob.id : selectedJob.id;
+        jobType === "ride"
+          ? typeof accepted === "string"
+            ? accepted
+            : selectedJob.tripId || selectedJob.id
+          : selectedJob.id;
 
       navigate(buildAcceptedJobRoute(jobType, acceptedRouteId), {
         state: {

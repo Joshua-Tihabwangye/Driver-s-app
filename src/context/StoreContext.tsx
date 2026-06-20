@@ -420,7 +420,7 @@ interface StoreContextType {
 	) => Promise<DriverBackendPresenceOnlineResult | null>;
 	setDriverOffline: () => Promise<Record<string, unknown> | null>;
 	resetOnboardingVehicleSetup: () => void;
-	acceptRideJob: (jobId: string) => Promise<boolean>;
+	acceptRideJob: (jobId: string) => Promise<string | false>;
 	acceptSpecializedJob: (
 		jobId: string,
 		jobType: "rental" | "tour" | "ambulance",
@@ -4387,14 +4387,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 			);
 
 			if (!shouldUseDriverBackendWrites()) {
-				return true;
+				return resolvedTripId;
 			}
 
 			try {
 				const response = await acceptDriverJob(jobId);
 				const backendTrip = response?.trip;
 				if (!backendTrip) {
-					return true;
+					return resolvedTripId;
 				}
 				setJobs((prev) =>
 					prev.map((job) =>
@@ -4440,7 +4440,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 				setActiveRideRuntime(
 					createDefaultActiveRideRuntime(backendTrip.id),
 				);
-				return true;
+				return backendTrip.id;
 			} catch (error) {
 				// Roll back the optimistic update so the job remains available.
 				setJobs((prev) =>
