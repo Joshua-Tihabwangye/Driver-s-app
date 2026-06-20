@@ -96,6 +96,9 @@ const googleMapsApiKey =
 	rawGoogleMapsKey && !/^https?:\/\//i.test(rawGoogleMapsKey)
 		? rawGoogleMapsKey
 		: "";
+const googleMapsMapId = (
+	import.meta.env.VITE_GOOGLE_MAPS_MAP_ID || "DEMO_MAP_ID"
+).trim();
 
 const NIGHT_MAP_STYLES: any[] = [
 	{ elementType: "geometry", stylers: [{ color: "#1d2c4d" }] },
@@ -550,6 +553,7 @@ export default function DriverMapSurface({
 		if (mapRef) {
 			const currentHeading = mapRef.getHeading() || 0;
 			mapRef.setHeading(normalizeBearing(currentHeading + delta));
+			mapRef.setTilt(45);
 		}
 	};
 
@@ -557,7 +561,7 @@ export default function DriverMapSurface({
 		setIsFollowingDevice(false);
 		if (mapRef) {
 			mapRef.setHeading(0);
-			mapRef.setTilt(0);
+			mapRef.setTilt(45);
 		}
 		setHint("Orientation reset");
 	};
@@ -618,13 +622,13 @@ export default function DriverMapSurface({
 			id: "rotate-left",
 			icon: RotateCcw,
 			ariaLabel: "Rotate map counterclockwise",
-			onClick: () => rotateMap(-15),
+			onClick: () => rotateMap(-45),
 		},
 		{
 			id: "rotate-right",
 			icon: RotateCw,
 			ariaLabel: "Rotate map clockwise",
-			onClick: () => rotateMap(15),
+			onClick: () => rotateMap(45),
 		},
 		{
 			id: "reset-bearing",
@@ -674,7 +678,11 @@ export default function DriverMapSurface({
 						mapContainerStyle={{ width: "100%", height: "100%" }}
 						center={center}
 						zoom={zoom}
-						onLoad={(map) => setMapRef(map)}
+						onLoad={(map) => {
+							map.setHeading(defaultBearing);
+							map.setTilt(45);
+							setMapRef(map);
+						}}
 						onUnmount={() => setMapRef(null)}
 						onDragStart={() => setIsFollowingDevice(false)}
 						onZoomChanged={() => {
@@ -700,12 +708,16 @@ export default function DriverMapSurface({
 							disableDefaultUI: true,
 							clickableIcons: false,
 							gestureHandling: "greedy",
+							cameraControl: true,
+							headingInteractionEnabled: true,
 							mapTypeControl: false,
 							fullscreenControl: false,
 							zoomControl: false,
 							streetViewControl: false,
 							rotateControl: true,
-							tilt: 0,
+							tiltInteractionEnabled: true,
+							tilt: 45,
+							mapId: googleMapsMapId,
 							mapTypeId:
 								layer === "terrain" ? "terrain" : "roadmap",
 							styles: layer === "night" ? NIGHT_MAP_STYLES : [],

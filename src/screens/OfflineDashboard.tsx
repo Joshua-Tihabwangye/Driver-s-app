@@ -50,6 +50,7 @@ export default function OfflineDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const [showGoOnlineModal, setShowGoOnlineModal] = useState(false);
+  const [isGoingOnline, setIsGoingOnline] = useState(false);
   const driverBackendEnabled = useDriverBackendEnabled();
   const {
     canGoOnline,
@@ -141,6 +142,11 @@ export default function OfflineDashboard() {
     navigate(blocker.route);
   };
   const handleConfirmGoOnline = async () => {
+    if (isGoingOnline) {
+      return;
+    }
+
+    setIsGoingOnline(true);
     setShowGoOnlineModal(false);
 
     // GPS is preferred but not blocking: if the driver denies location or it
@@ -151,8 +157,8 @@ export default function OfflineDashboard() {
       const position = await new Promise<GeolocationPosition>((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(resolve, reject, {
           enableHighAccuracy: true,
-          timeout: 10_000,
-          maximumAge: 30_000,
+          timeout: 2_500,
+          maximumAge: 60_000,
         });
       });
       const coords = position.coords;
@@ -176,10 +182,11 @@ export default function OfflineDashboard() {
       });
 
       // Pull pending jobs right away so the online dashboard can display them.
-      await refreshDriverJobs();
+      void refreshDriverJobs().catch(() => undefined);
 
       navigate(result?.redirectPath || "/driver/dashboard/online", { replace: true });
     } catch (error) {
+      setIsGoingOnline(false);
       const apiError = error instanceof ApiRequestError ? error : null;
       const details =
         apiError?.details && typeof apiError.details === "object"
@@ -196,6 +203,10 @@ export default function OfflineDashboard() {
     }
   };
   const handleGoOnline = () => {
+    if (isGoingOnline) {
+      return;
+    }
+
     const decision = resolveGoOnlineAttempt("/driver/dashboard/online");
     if (!decision.allowed) {
       navigate(decision.route, {
@@ -238,10 +249,10 @@ export default function OfflineDashboard() {
           <button
             type="button"
             onClick={handleGoOnline}
-            disabled={!canGoOnline}
+            disabled={!canGoOnline || isGoingOnline}
             className="relative z-10 w-full rounded-2xl bg-brand-active py-4 text-xs font-black text-slate-900 hover:bg-brand-active/90 active:scale-95 transition-all shadow-xl shadow-brand-active/20 uppercase tracking-widest disabled:opacity-60 disabled:cursor-wait"
           >
-            Go Online
+            {isGoingOnline ? "Going online..." : "Go Online"}
           </button>
           
           <p className="relative z-10 text-[11px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed">
