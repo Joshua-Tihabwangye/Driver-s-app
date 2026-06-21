@@ -96,9 +96,6 @@ const googleMapsApiKey =
 	rawGoogleMapsKey && !/^https?:\/\//i.test(rawGoogleMapsKey)
 		? rawGoogleMapsKey
 		: "";
-const googleMapsMapId = (
-	import.meta.env.VITE_GOOGLE_MAPS_MAP_ID || "DEMO_MAP_ID"
-).trim();
 
 const NIGHT_MAP_STYLES: any[] = [
 	{ elementType: "geometry", stylers: [{ color: "#1d2c4d" }] },
@@ -120,6 +117,9 @@ const NIGHT_MAP_STYLES: any[] = [
 		stylers: [{ color: "#0e1626" }],
 	},
 ];
+
+// Note: mapId is NOT used here to allow custom styles and free rotation
+// This matches the rider app map configuration for consistency
 
 const MARKER_STYLES: Record<MarkerTone, MarkerTonePalette> = {
 	danger: {
@@ -553,7 +553,6 @@ export default function DriverMapSurface({
 		if (mapRef) {
 			const currentHeading = mapRef.getHeading() || 0;
 			mapRef.setHeading(normalizeBearing(currentHeading + delta));
-			mapRef.setTilt(45);
 		}
 	};
 
@@ -561,7 +560,6 @@ export default function DriverMapSurface({
 		setIsFollowingDevice(false);
 		if (mapRef) {
 			mapRef.setHeading(0);
-			mapRef.setTilt(45);
 		}
 		setHint("Orientation reset");
 	};
@@ -680,7 +678,6 @@ export default function DriverMapSurface({
 						zoom={zoom}
 						onLoad={(map) => {
 							map.setHeading(defaultBearing);
-							map.setTilt(45);
 							setMapRef(map);
 						}}
 						onUnmount={() => setMapRef(null)}
@@ -716,8 +713,7 @@ export default function DriverMapSurface({
 							streetViewControl: false,
 							rotateControl: true,
 							tiltInteractionEnabled: true,
-							tilt: 45,
-							mapId: googleMapsMapId,
+							tilt: 0,
 							mapTypeId:
 								layer === "terrain" ? "terrain" : "roadmap",
 							styles: layer === "night" ? NIGHT_MAP_STYLES : [],
