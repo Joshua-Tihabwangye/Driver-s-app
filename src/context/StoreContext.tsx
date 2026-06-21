@@ -84,7 +84,7 @@ import { useDriverBackendBootstrapSync } from "./hooks/useDriverBackendBootstrap
 import { useDriverLocalPersistence } from "./hooks/useDriverLocalPersistence";
 import { useDriverRealtimeSync } from "./hooks/useDriverRealtimeSync";
 import { useDriverProfileAndAssetsActions } from "./hooks/useDriverProfileAndAssetsActions";
-import { createDriverSocket } from "../services/driverSocket";
+import { createDriverSocket, disconnectDriverSocket } from "../services/driverSocket";
 import { ApiRequestError, isAbortError } from "../services/api/httpClient";
 import {
 	buildBackendJobPresentation,
@@ -2677,11 +2677,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 		if (shouldUseDriverBackendWrites()) {
 			const result = await setDriverPresenceOffline();
 			setDriverPresenceStatus("offline");
+			// Cleanly tear down the real-time socket so the backend stops
+			// receiving presence pings from this client.
+			disconnectDriverSocket();
 			setBackendBootstrapTrigger((prev) => prev + 1);
 			return result;
 		}
 
 		setDriverPresenceStatus("offline");
+		disconnectDriverSocket();
 		return { status: "offline" };
 	}, [refreshBackendOnboardingState]);
 

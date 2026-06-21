@@ -30,3 +30,15 @@ export function createDriverSocket(): DriverSocket {
 
   return driverSocket;
 }
+
+/**
+ * Cleanly disconnect and destroy the singleton socket instance.
+ * Call this when the driver goes offline so the backend no longer
+ * receives presence pings from a stale connection.
+ */
+export function disconnectDriverSocket(): void {
+  if (driverSocket) {
+    driverSocket.disconnect();
+    driverSocket = null;
+  }
+}
