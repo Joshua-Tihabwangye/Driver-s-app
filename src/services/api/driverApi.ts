@@ -88,7 +88,11 @@ export interface DriverBackendDocument {
   id: string;
   userId?: string;
   userType?: string;
-  documentType: string;
+  // Compatibility controller returns `documentType`; canonical DriversController
+  // returns `type`. Accept both so the UI works before and after the backend
+  // routing cleanup.
+  documentType?: string;
+  type?: string;
   side?: string | null;
   fileUrl: string;
   fileKey?: string | null;
@@ -639,10 +643,21 @@ export async function getDriverPreferences() {
 export async function patchDriverPreferences(patch: DriverBackendPreferencesPatch) {
   const token = readDriverBackendAccessToken();
   if (!isBackendAuthEnabled() || !token) return null;
+  // The compatibility controller expects the patch wrapped in `preferences`.
   return request<Record<string, unknown>>("/drivers/me/preferences", {
     method: "PATCH",
     headers: authHeaders(token),
-    body: patch,
+    body: { preferences: patch },
+  });
+}
+
+export async function patchDriverServiceCapabilities(serviceCapabilities: string[]) {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return null;
+  return request<Record<string, unknown>>("/drivers/me/service-capabilities", {
+    method: "PATCH",
+    headers: authHeaders(token),
+    body: { serviceCapabilities },
   });
 }
 
@@ -661,6 +676,51 @@ export async function getDriverOnboardingStatus() {
   return request<DriverBackendOnboardingStatus>("/drivers/me/onboarding/status", {
     method: "GET",
     headers: authHeaders(token),
+  });
+}
+
+export async function getDriverLearning() {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return null;
+  return request<{
+    items: Array<{
+      id: string;
+      code: string;
+      title: string;
+      description?: string;
+      quiz?: Record<string, unknown> | null;
+      progress: { status: string; score?: number } | null;
+    }>;
+    summary: { totalModules: number; completedModules: number };
+  }>("/drivers/me/learning", {
+    method: "GET",
+    headers: authHeaders(token),
+  });
+}
+
+export async function startDriverLearningModule(moduleId: string) {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return null;
+  return request<Record<string, unknown>>(`/drivers/me/learning/${moduleId}/start`, {
+    method: "POST",
+    headers: authHeaders(token),
+  });
+}
+
+export async function submitDriverLearningAssessment(
+  moduleId: string,
+  answers: Record<string, unknown>,
+) {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return null;
+  return request<{
+    assessment: Record<string, unknown>;
+    progress: { status: string; score?: number };
+    certificate?: Record<string, unknown> | null;
+  }>(`/drivers/me/learning/${moduleId}/assessment`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: { answers },
   });
 }
 
@@ -1137,13 +1197,43 @@ export async function listDriverDocuments() {
   });
 }
 
+function mapDriverDocumentTypeToBackend(
+  documentType: string,
+  side?: string | null,
+): string {
+  const sideNorm = (side ?? "front").toLowerCase();
+  switch (documentType) {
+    case "national_id_or_passport":
+      return sideNorm === "back" ? "NATIONAL_ID" : "NATIONAL_ID";
+    case "drivers_license":
+      return sideNorm === "back" ? "DRIVING_LICENSE_BACK" : "DRIVING_LICENSE_FRONT";
+    case "conduct_clearance":
+      return "GOOD_CONDUCT";
+    default:
+      return documentType.toUpperCase();
+  }
+}
+
 export async function createDriverDocument(input: DriverBackendDocumentInput) {
   const token = readDriverBackendAccessToken();
   if (!isBackendAuthEnabled() || !token) return null;
+  // The canonical DriversController expects `type` (DocumentType enum) and
+  // stores fileKey/originalFileName/mimeType/sizeBytes/side in `metadata`.
   return request<DriverBackendDocument>("/drivers/me/documents", {
     method: "POST",
     headers: authHeaders(token),
-    body: input,
+    body: {
+      type: mapDriverDocumentTypeToBackend(input.documentType, input.side),
+      fileUrl: input.fileUrl,
+      expiryDate: input.expiryDate,
+      metadata: {
+        fileKey: input.fileKey,
+        originalFileName: input.originalFileName,
+        mimeType: input.mimeType,
+        sizeBytes: input.sizeBytes,
+        side: input.side,
+      },
+    },
   });
 }
 
@@ -1237,11 +1327,25 @@ export async function uploadFile(file: File, category: "image" | "document" | "f
   const formData = new FormData();
   formData.append("file", file);
   formData.append("category", category);
-  return request<{ fileKey: string; fileUrl: string; originalFileName: string; mimeType: string; sizeBytes: number }>("/upload", {
+  return request<{
+    id: string;
+    storageKey: string;
+    url: string;
+    accessUrl?: string;
+    originalName: string;
+    mimeType: string;
+    sizeBytes: number;
+  }>("/files/upload", {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
     body: formData,
-  });
+  }).then((result) => ({
+    fileKey: result.storageKey,
+    fileUrl: result.accessUrl || result.url,
+    originalFileName: result.originalName,
+    mimeType: result.mimeType,
+    sizeBytes: result.sizeBytes,
+  }));
 }
 
 export async function setDriverActiveVehicle(vehicleId: string | null) {

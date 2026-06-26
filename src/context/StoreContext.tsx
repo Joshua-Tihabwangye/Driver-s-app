@@ -68,6 +68,7 @@ import {
 	startDriverDeliveryRoute,
 	patchDriverPreferences,
 	patchDriverProfile,
+	patchDriverServiceCapabilities,
 	shouldUseDriverBackendWrites,
 	triggerTripSos,
 	tripArrive,
@@ -462,7 +463,7 @@ interface StoreContextType {
 	resolveJobAccessAttempt: (nextRoute?: string) => JobAccessDecision;
 	resolveGoOnlineAttempt: (nextRoute?: string) => GoOnlineDecision;
 	driverBootstrapReady: boolean;
-	refreshBackendOnboardingState: () => Promise<void>;
+	refreshBackendOnboardingState: () => Promise<DriverBackendOnboardingStatus | null>;
 	refreshDriverJobs: () => Promise<void>;
 }
 
@@ -501,7 +502,7 @@ const JOBS_STORAGE_KEY = "driver_jobs";
 const TRIPS_STORAGE_KEY = "driver_trips";
 const REVENUE_EVENTS_STORAGE_KEY = "driver_revenue_events";
 const TRIP_FEEDBACKS_STORAGE_KEY = "driver_trip_feedbacks";
-const DRIVER_BACKEND_ONLY_MODE = true;
+const DRIVER_BACKEND_ONLY_MODE = false;
 const DOCUMENT_EXPIRED_API_ERROR =
 	"Some of your documents have expired. You won't be able to receive job requests until you upload valid documents.";
 const GO_ONLINE_CONFIRMATION_MESSAGE =
@@ -2106,10 +2107,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 		}
 	}, []);
 
-	// Sync active vehicle selection to backend
+	// Sync active vehicle selection to backend. Only try to activate vehicles
+	// that the backend has already verified (status ACTIVE); otherwise the
+	// activation endpoint returns 403 and clutters the logs.
 	const syncActiveVehicleToBackend = useCallback(
-		async (vehicleId: string | null) => {
+		async (vehicleId: string | null, vehicleStatus?: string) => {
 			if (!shouldUseDriverBackendWrites()) return;
+			if (!vehicleId) return;
+			if (vehicleStatus !== "active") return;
 			try {
 				await setDriverActiveVehicle(vehicleId);
 			} catch (error) {
@@ -2144,7 +2149,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
 	const refreshBackendOnboardingState = useCallback(async () => {
 		if (!shouldUseDriverBackendWrites()) {
-			return;
+			return null;
 		}
 
 		// Single consolidated bootstrap call — eliminates 5-request waterfall
@@ -2241,17 +2246,27 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
 		// Hydrate local document state from backend records
 		if (backendDocuments && backendDocuments.length > 0) {
+			// Compatibility controller returns `documentType`+`side`; canonical
+			// DriversController returns `type` (NATIONAL_ID, DRIVING_LICENSE_FRONT, …).
 			const docTypeMap: Record<string, DocumentUploadKey> = {
 				national_id_or_passport: "id",
 				drivers_license: "license",
 				conduct_clearance: "police",
+				NATIONAL_ID: "id",
+				DRIVING_LICENSE_FRONT: "license",
+				DRIVING_LICENSE_BACK: "license",
+				GOOD_CONDUCT: "police",
 			};
 			const next = readStoredDocumentState();
 			let changed = false;
 			for (const doc of backendDocuments) {
-				const key = docTypeMap[doc.documentType];
+				const rawType = doc.documentType || doc.type || "";
+				const key = docTypeMap[rawType];
 				if (!key) continue;
-				const side = doc.side === "back" ? "back" : "front";
+				const side =
+					doc.side === "back" || rawType === "DRIVING_LICENSE_BACK"
+						? "back"
+						: "front";
 				if (!next[key][side].fileUrl && doc.fileUrl) {
 					next[key] = {
 						...next[key],
@@ -2275,6 +2290,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 		}
 
 		setDriverBootstrapReady(true);
+		return onboardingStatus ?? null;
 	}, [driverBackendEnabled]);
 
 	// Phase 2 — explicit jobs refresh that can be triggered right after going online
@@ -2504,7 +2520,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 			selectedVehicleIndex < vehicles.length
 				? vehicles[selectedVehicleIndex]
 				: null;
-		void syncActiveVehicleToBackend(activeVehicle?.id ?? null);
+		void syncActiveVehicleToBackend(activeVehicle?.id ?? null, activeVehicle?.status);
 	}, [driverBackendEnabled, selectedVehicleIndex, vehicles]);
 
 	// Keep vehicleReady in sync with selected vehicle/local flow, or backend vehicle records.
@@ -4272,6 +4288,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 			}));
 
 			if (shouldUseDriverBackendWrites()) {
+				// The backend onboarding status checks `driver.serviceCapabilities`,
+				// so we must persist the selected category as ServiceType enum values.
+				const serviceCapabilities = persistedServiceIds.map((id) =>
+					id.replace(/-/g, "_").toUpperCase(),
+				);
 				void Promise.all([
 					patchDriverProfile({
 						serviceMode: input.coreRole,
@@ -4280,6 +4301,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 					patchDriverPreferences({
 						serviceIds: persistedServiceIds,
 					}),
+					patchDriverServiceCapabilities(serviceCapabilities),
 				])
 					.then(() => {
 						void refreshBackendOnboardingState().catch((error) => {

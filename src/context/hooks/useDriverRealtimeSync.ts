@@ -324,24 +324,24 @@ export function useDriverRealtimeSync({
       "trip.cancelled",
     ]);
 
+    const tripStatusHandlers = tripStatusEvents.map((eventName) => ({
+      eventName,
+      handler: (payload: {
+        tripId?: string;
+        id?: string;
+        newStatus?: string;
+        status?: string;
+        timestamp?: number;
+        updatedAt?: number;
+      }) => handleTripStatusEvent(eventName, payload || {}),
+    }));
+
     if (!cancelled) {
       jobAvailableEvents.forEach((eventName) => socket.on(eventName, handleJobAvailable));
       jobOfferUpdatedEvents.forEach((eventName) => socket.on(eventName, handleJobOfferUpdated));
       deliveryRouteUpdatedEvents.forEach((eventName) => socket.on(eventName, handleDeliveryRouteUpdated));
       serviceRequestUpdatedEvents.forEach((eventName) => socket.on(eventName, handleServiceRequestUpdated));
-      tripStatusEvents.forEach((eventName) => {
-        socket.on(
-          eventName,
-          (payload: {
-            tripId?: string;
-            id?: string;
-            newStatus?: string;
-            status?: string;
-            timestamp?: number;
-            updatedAt?: number;
-          }) => handleTripStatusEvent(eventName, payload || {}),
-        );
-      });
+      tripStatusHandlers.forEach(({ eventName, handler }) => socket.on(eventName, handler));
       if (typeof window !== "undefined") {
         window.addEventListener(DRIVER_BACKEND_AUTH_EVENT, refreshSocketAuth as EventListener);
       }
@@ -350,11 +350,14 @@ export function useDriverRealtimeSync({
 
     return () => {
       cancelled = true;
+      if (activeTripId) {
+        socket.emit("unsubscribe", { channel: "trip", id: activeTripId });
+      }
       jobAvailableEvents.forEach((eventName) => socket.off(eventName, handleJobAvailable));
       jobOfferUpdatedEvents.forEach((eventName) => socket.off(eventName, handleJobOfferUpdated));
       deliveryRouteUpdatedEvents.forEach((eventName) => socket.off(eventName, handleDeliveryRouteUpdated));
       serviceRequestUpdatedEvents.forEach((eventName) => socket.off(eventName, handleServiceRequestUpdated));
-      tripStatusEvents.forEach((eventName) => socket.off(eventName));
+      tripStatusHandlers.forEach(({ eventName, handler }) => socket.off(eventName, handler));
       if (typeof window !== "undefined") {
         window.removeEventListener(DRIVER_BACKEND_AUTH_EVENT, refreshSocketAuth as EventListener);
       }

@@ -13,6 +13,7 @@ import PageHeader from "../components/PageHeader";
 import VehicleDocumentCard from "../components/VehicleDocumentCard";
 import VehicleImageUpload from "../components/VehicleImageUpload";
 import { useStore } from "../context/StoreContext";
+import { useVehicleDocumentStore } from "../stores/vehicleDocumentStore";
 import { validateDocumentExpiryDate } from "../utils/documentVerificationState";
 
 // EVzone Driver App – VehicleDetails Vehicles (v1)
@@ -71,6 +72,23 @@ function createVehicleFormState(vehicle: any) {
   };
 }
 
+function sanitizeVehicleDocsForStorage(docs: any): any {
+  if (!docs || typeof docs !== "object") return {};
+  const result: any = {};
+  for (const key of Object.keys(docs)) {
+    const group = docs[key];
+    if (!group || typeof group !== "object") continue;
+    const file = group.file;
+    if (file && typeof file === "object") {
+      const { rawFile: _, ...fileWithoutRaw } = file;
+      result[key] = { ...group, file: fileWithoutRaw };
+    } else {
+      result[key] = group;
+    }
+  }
+  return result;
+}
+
 export default function VehicleDetails() {
   const { vehicleId } = useParams();
   const navigate = useNavigate();
@@ -94,6 +112,11 @@ export default function VehicleDetails() {
 
   const [showDocs, setShowDocs] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
+
+  const persistedDocs = useVehicleDocumentStore((state) =>
+    vehicleId && !isNew ? state.documentsByVehicle[vehicleId] : undefined
+  );
+  const setDocuments = useVehicleDocumentStore((state) => state.setDocuments);
 
   // If new and no draft exists, go back
   useEffect(() => {
@@ -126,19 +149,37 @@ export default function VehicleDetails() {
     }
   }, [form.make, form.model, form.year, form.plate, form.type, form.batterySize, form.range, form.imageUrl, form.imageKey, form.vehicleDocs]);
 
+  // Hydrate form from persisted documents when the vehicle changes or when
+  // the IndexedDB-backed Zustand store finishes rehydrating.
   useEffect(() => {
     if (isNew) {
+      loadedVehicleIdRef.current = "new";
       return;
     }
 
     const nextVehicleId = vehicle?.id ?? null;
-    if (!nextVehicleId || loadedVehicleIdRef.current === nextVehicleId) {
+    if (!nextVehicleId) return;
+
+    if (loadedVehicleIdRef.current === nextVehicleId && !persistedDocs) {
       return;
     }
 
     loadedVehicleIdRef.current = nextVehicleId;
-    setForm(createVehicleFormState(vehicle));
-  }, [isNew, vehicle?.id]);
+    const baseForm = createVehicleFormState(vehicle);
+    setForm({
+      ...baseForm,
+      vehicleDocs: persistedDocs
+        ? { ...baseForm.vehicleDocs, ...persistedDocs }
+        : baseForm.vehicleDocs,
+    });
+  }, [isNew, vehicle?.id, persistedDocs]);
+
+  // Persist uploaded vehicle documents to IndexedDB-backed Zustand store
+  // so they survive page refreshes before the user clicks Save.
+  useEffect(() => {
+    if (!vehicleId || isNew) return;
+    setDocuments(vehicleId, form.vehicleDocs);
+  }, [form.vehicleDocs, vehicleId, isNew, setDocuments]);
 
   const handleDelete = () => {
     if (isNew) {
@@ -201,9 +242,12 @@ export default function VehicleDetails() {
   const handleSave = async () => {
     if (!validate()) return;
 
+    const docsToSave = sanitizeVehicleDocsForStorage(form.vehicleDocs);
+
     if (isNew && draftVehicle) {
       const saved = await addVehicle({
         ...draftVehicle,
+        vehicleDocs: docsToSave,
         status: "active"
       });
       if (!saved) {
@@ -222,7 +266,7 @@ export default function VehicleDetails() {
         type: form.type.charAt(0).toUpperCase() + form.type.slice(1),
         imageUrl: form.imageUrl || undefined,
         imageKey: form.imageKey || undefined,
-        vehicleDocs: form.vehicleDocs,
+        vehicleDocs: docsToSave,
       });
       if (!saved) {
         setErrors(["Vehicle details were not saved. Please try again."]);
@@ -250,12 +294,14 @@ export default function VehicleDetails() {
   const accessoryCount = Object.keys(resolvedAccessories).length;
   const availableCount = Object.values(resolvedAccessories).filter(v => v === "Available").length;
 
-  const allDocsUploaded = Boolean(
-    form.vehicleDocs?.insurance?.file &&
-    validateDocumentExpiryDate(form.vehicleDocs?.insurance?.expiryDate || "").valid &&
-    form.vehicleDocs?.inspection?.file
-      && validateDocumentExpiryDate(form.vehicleDocs?.inspection?.expiryDate || "").valid
-  );
+  const requiredDocs = ["logbook", "registration", "insurance", "inspection"] as const;
+  const allDocsUploaded = requiredDocs.every((key) => {
+    const group = form.vehicleDocs?.[key];
+    return (
+      group?.file &&
+      validateDocumentExpiryDate(group.expiryDate || "").valid
+    );
+  });
 
   return (
     <div className="flex flex-col min-h-full bg-cream/30">
@@ -420,6 +466,20 @@ export default function VehicleDetails() {
                     <div className="text-[11px] font-medium text-slate-500 mb-2 text-left">
                       Please upload all required vehicle documents. These must be clear and legible.
                     </div>
+                    <VehicleDocumentCard
+                      icon={FileBadge2}
+                      title="Vehicle Logbook / Ownership"
+                      subtitle="Upload one clear copy"
+                      documentGroup={form.vehicleDocs?.logbook}
+                      onChange={(group) => setForm(f => ({ ...f, vehicleDocs: { ...f.vehicleDocs, logbook: group } }))}
+                    />
+                    <VehicleDocumentCard
+                      icon={FileBadge2}
+                      title="Vehicle Registration / Road License"
+                      subtitle="Upload one clear copy"
+                      documentGroup={form.vehicleDocs?.registration}
+                      onChange={(group) => setForm(f => ({ ...f, vehicleDocs: { ...f.vehicleDocs, registration: group } }))}
+                    />
                     <VehicleDocumentCard
                       icon={ShieldCheck}
                       title="Proof of Insurance"

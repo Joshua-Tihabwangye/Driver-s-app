@@ -138,7 +138,10 @@ export async function loginDriverViaBackend(input: DriverBackendLoginInput): Pro
   return request<BackendAuthTokens>("/auth/login", {
     method: "POST",
     retryOnUnauthorized: false,
-    body: input,
+    body: {
+      identifier: input.identity,
+      password: input.password,
+    },
   });
 }
 

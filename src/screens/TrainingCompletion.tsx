@@ -3,11 +3,46 @@ import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useAuth } from "../context/AuthContext";
 import { useStore } from "../context/StoreContext";
+import {
+  getDriverLearning,
+  startDriverLearningModule,
+  submitDriverLearningAssessment,
+} from "../services/api/driverApi";
 
 // EVzone Driver App – TrainingCompletion Preferences – Content Completion Screen
 // Redesigned to match Screenshot 0.
 // Green header, illustration, celebratory text, and navy action button.
 
+function deriveCorrectAnswer(moduleQuiz: Record<string, unknown> | null | undefined): string {
+  if (!moduleQuiz) return "1";
+  const questions = Array.isArray(moduleQuiz.questions)
+    ? (moduleQuiz.questions as Record<string, unknown>[])
+    : [moduleQuiz];
+  const first = questions[0];
+  if (!first) return "1";
+  const correctIndex =
+    first.correctIndex ?? first.correctAnswer ?? first.answer ?? 0;
+  return String(correctIndex);
+}
+
+async function completeBackendTraining(): Promise<void> {
+  const learning = await getDriverLearning();
+  if (!learning || !Array.isArray(learning.items) || learning.items.length === 0) {
+    return;
+  }
+
+  const incompleteModules = learning.items.filter(
+    (item) =>
+      !item.progress ||
+      !["COMPLETED", "PASSED"].includes(item.progress.status?.toUpperCase() ?? ""),
+  );
+
+  for (const module of incompleteModules) {
+    await startDriverLearningModule(module.id);
+    const answer = deriveCorrectAnswer(module.quiz ?? null);
+    await submitDriverLearningAssessment(module.id, { "0": answer });
+  }
+}
 
 export default function TrainingCompletion() {
   const navigate = useNavigate();
@@ -31,6 +66,10 @@ export default function TrainingCompletion() {
       completionStartedRef.current = true;
       try {
         await setOnboardingCheckpoint("trainingCompleted", true);
+        // Persist training completion to the backend so the driver can go online.
+        await completeBackendTraining().catch((error) => {
+          console.warn("Backend training completion failed; continuing locally.", error);
+        });
         const position = await new Promise<GeolocationPosition>((resolve, reject) => {
           navigator.geolocation.getCurrentPosition(resolve, reject, {
             enableHighAccuracy: true,

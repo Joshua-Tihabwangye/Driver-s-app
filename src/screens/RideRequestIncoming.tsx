@@ -13,6 +13,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { useStore } from "../context/StoreContext";
+import { useDriverBackendEnabled } from "../context/hooks/useDriverBackendEnabled";
 import { createDriverSocket } from "../services/driverSocket";
 import { rejectDriverJob } from "../services/api/driverApi";
 import type { JobCategory } from "../data/types";
@@ -102,7 +103,8 @@ function JobTypePill({ jobType }) {
 export default function RideRequestIncoming() {
   const location = useLocation();
   const routeState = (location.state as RequestRouteState | null) || null;
-  const [timeLeft, setTimeLeft] = useState(15);
+  const backendMode = useDriverBackendEnabled();
+  const [timeLeft, setTimeLeft] = useState(backendMode ? 0 : 15);
   const [acceptError, setAcceptError] = useState(false);
   const [isAccepting, setIsAccepting] = useState(false);
   // Demo state so you can preview all variants inside the canvas
@@ -151,6 +153,9 @@ export default function RideRequestIncoming() {
   }, [jobs, requestedJobId]);
 
   useEffect(() => {
+    if (backendMode) {
+      return undefined;
+    }
     if (isAccepting) return;
     if (timeLeft <= 0) {
       void performDecline("expired");
@@ -158,7 +163,7 @@ export default function RideRequestIncoming() {
     }
     const id = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
     return () => clearTimeout(id);
-  }, [timeLeft, isAccepting]);
+  }, [backendMode, timeLeft, isAccepting]);
 
   const isAmbulance = jobType === "ambulance";
   const isRental = jobType === "rental";
@@ -459,15 +464,17 @@ export default function RideRequestIncoming() {
 
         {/* Timer + actions */}
         <section className="space-y-6 pt-2">
-          <div className="flex items-center justify-center space-x-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-            <div className="relative flex items-center justify-center">
-               <div className="h-8 w-8 rounded-full border-2 border-slate-100 animate-pulse" />
-               <Clock className="absolute h-4 w-4" />
+          {!backendMode && (
+            <div className="flex items-center justify-center space-x-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+              <div className="relative flex items-center justify-center">
+                 <div className="h-8 w-8 rounded-full border-2 border-slate-100 animate-pulse" />
+                 <Clock className="absolute h-4 w-4" />
+              </div>
+              <span>
+                Auto-decline in <span className="text-slate-900 mx-1">{timeLeft}s</span>
+              </span>
             </div>
-            <span>
-              Auto-decline in <span className="text-slate-900 mx-1">{timeLeft}s</span>
-            </span>
-          </div>
+          )}
 
           <div className="flex items-center space-x-4">
             {!isShuttle && (

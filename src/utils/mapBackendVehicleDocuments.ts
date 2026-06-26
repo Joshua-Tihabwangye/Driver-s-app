@@ -2,6 +2,8 @@ import type { VehicleDocuments } from "../data/types";
 
 const INSURANCE_KEYS = ["insurance", "vehicle_insurance", "proof_of_insurance"] as const;
 const INSPECTION_KEYS = ["inspection", "vehicle_inspection"] as const;
+const LOGBOOK_KEYS = ["logbook", "vehicle_logbook", "ownership"] as const;
+const REGISTRATION_KEYS = ["registration", "road_license", "vehicle_registration"] as const;
 
 type BackendVehicleDocuments = Record<string, unknown> | null | undefined;
 
@@ -51,12 +53,16 @@ export function mapBackendVehicleDocuments(
   documents: BackendVehicleDocuments,
 ): VehicleDocuments {
   return {
+    logbook: readEntry(documents, LOGBOOK_KEYS),
+    registration: readEntry(documents, REGISTRATION_KEYS),
     insurance: readEntry(documents, INSURANCE_KEYS),
     inspection: readEntry(documents, INSPECTION_KEYS),
   };
 }
 
 export const VEHICLE_DOCUMENT_API_TYPES = {
+  logbook: "logbook",
+  registration: "registration",
   insurance: "insurance",
   inspection: "inspection",
 } as const;

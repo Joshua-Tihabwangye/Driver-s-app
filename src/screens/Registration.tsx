@@ -2,7 +2,8 @@ import { Eye, EyeOff, Smartphone } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
-import { AUTH_LOGIN_ROUTE, useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext";
+import { resolveRouteFromOnboardingStatus } from "../utils/onboardingRedirect";
 import { useStore } from "../context/StoreContext";
 import {
   isBackendAuthEnabled,
@@ -47,7 +48,7 @@ function Input({ label, type = "text", value, onChange, placeholder }) {
 export default function Registration() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout } = useAuth();
+  const { login } = useAuth();
   const {
     setOnboardingCheckpoint,
     driverProfile,
@@ -210,12 +211,31 @@ export default function Registration() {
     resetOnboardingVehicleSetup();
     setOnboardingCheckpoint("documentsVerified", false);
     setOnboardingCheckpoint("trainingCompleted", false);
-    logout();
 
-    navigate(AUTH_LOGIN_ROUTE, {
-      replace: true,
-      state: { selectedService, authMode: "login" },
-    });
+    // The account is created and the backend tokens are already saved. Refresh
+    // the session so the auth context is hydrated, then continue straight into
+    // the onboarding flow instead of forcing the driver to sign in again.
+    try {
+      const session = await login({
+        name: fullName.trim(),
+        email: email.trim().toLowerCase(),
+        phone: phone.trim(),
+        selectedService,
+      });
+      const redirect =
+        resolveRouteFromOnboardingStatus(session?.onboarding) ||
+        (session?.defaultRedirect && session.defaultRedirect !== "/driver"
+          ? session.defaultRedirect
+          : undefined) ||
+        "/driver/register";
+      navigate(redirect, { replace: true, state: { selectedService } });
+    } catch (error) {
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : "Account created, but we could not sign you in automatically. Please sign in manually.";
+      setErrorMessage(message);
+    }
   };
 
   const handlePickPhoneFromPhonebook = async () => {
