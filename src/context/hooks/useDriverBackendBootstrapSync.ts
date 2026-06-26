@@ -227,7 +227,10 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
             isActive: Boolean(vehicle.isActive),
             vehicleDocs,
             documentsUploaded: Boolean(
-              vehicleDocs.insurance?.file?.url && vehicleDocs.inspection?.file?.url,
+              vehicleDocs.insurance?.file?.url &&
+                vehicleDocs.inspection?.file?.url &&
+                vehicleDocs.logbook?.file?.url &&
+                vehicleDocs.registration?.file?.url,
             ),
           };
         });

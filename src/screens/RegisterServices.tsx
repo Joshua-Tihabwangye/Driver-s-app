@@ -244,9 +244,18 @@ export default function RegisterServices() {
         phone: savedAccount?.phone || "",
         selectedService,
       });
+      // The backend sometimes returns a bare "/driver" default redirect that
+      // does not exist in this SPA. Always prefer the onboarding-derived route
+      // and only fall back to the backend redirect when it points to a real
+      // screen.
+      const safeDefaultRedirect =
+        session?.defaultRedirect && session.defaultRedirect !== "/driver"
+          ? session.defaultRedirect
+          : undefined;
       sessionRedirect =
-        session?.defaultRedirect ||
-        resolveRouteFromOnboardingStatus(session?.onboarding);
+        resolveRouteFromOnboardingStatus(session?.onboarding) ||
+        safeDefaultRedirect ||
+        "/driver/dashboard/offline";
       onboardingCompleted = session?.onboarding?.onboardingCompleted === true;
       clearAuthPrefillPassword();
       signedIn = true;

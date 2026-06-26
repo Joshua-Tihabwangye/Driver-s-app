@@ -35,7 +35,7 @@ type DriverPreferencesLike = Partial<{
   requirementIds: string[];
 }>;
 
-const VEHICLE_DOCUMENT_KEYS = ["insurance", "inspection"] as const;
+const VEHICLE_DOCUMENT_KEYS = ["logbook", "registration", "insurance", "inspection"] as const;
 
 type UseDriverProfileAndAssetsActionsOptions = {
   setDriverProfile: Dispatch<SetStateAction<any>>;
@@ -328,16 +328,23 @@ export function useDriverProfileAndAssetsActions({
           throw new Error("Vehicle was not saved to the backend.");
         }
         createdVehicleId = created.id;
-        await persistVehicleDocuments(created.id, vehicle.vehicleDocs);
+      } catch (error) {
+        setVehicles(previousVehicles);
+        console.warn("Driver backend vehicle create failed.", error);
+        return false;
+      }
+
+      // Documents are uploaded separately. If a document upload fails we keep
+      // the vehicle row in the database (the backend is now idempotent by
+      // plate) so the driver can retry instead of getting stuck on a duplicate
+      // plate error after a partial save.
+      try {
+        await persistVehicleDocuments(createdVehicleId, vehicle.vehicleDocs);
         void refreshBackendOnboardingState().catch((error) => {
           console.warn("Driver backend vehicle create refresh failed.", error);
         });
       } catch (error) {
-        if (createdVehicleId) {
-          await deleteDriverVehicle(createdVehicleId).catch(() => undefined);
-        }
-        setVehicles(previousVehicles);
-        console.warn("Driver backend vehicle create failed.", error);
+        console.warn("Driver backend vehicle documents failed.", error);
         return false;
       }
     }

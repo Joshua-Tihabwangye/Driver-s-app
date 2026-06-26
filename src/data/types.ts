@@ -115,6 +115,7 @@ export interface VehicleDocumentGroup {
 
 export interface VehicleDocuments {
   logbook?: VehicleDocumentGroup;
+  registration?: VehicleDocumentGroup;
   insurance?: VehicleDocumentGroup;
   inspection?: VehicleDocumentGroup;
 }
