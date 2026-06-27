@@ -339,15 +339,7 @@ export default function DriverProfileOnboarding() {
         present: onboardingCheckpoints.emergencyContactReady,
         route: "/driver/safety/emergency/contacts",
       },
-      {
-        id: "training-completed",
-        label: "Safety Training",
-        detail: onboardingCheckpoints.trainingCompleted
-          ? "Safety training is complete."
-          : "Complete the required driver training.",
-        present: onboardingCheckpoints.trainingCompleted,
-        route: "/driver/training/intro",
-      },
+
     ];
 
     const docItems: BreakdownItem[] = documentSides.map((item) => {
@@ -384,7 +376,6 @@ export default function DriverProfileOnboarding() {
     effectiveDocumentsVerified,
     onboardingCheckpoints.emergencyContactReady,
     onboardingCheckpoints.roleSelected,
-    onboardingCheckpoints.trainingCompleted,
     onboardingCheckpoints.vehicleReady,
     uploadedDocumentSideCount,
   ]);
@@ -407,7 +398,7 @@ export default function DriverProfileOnboarding() {
   const nextRequiredBlocker = onboardingBlockers[0] || null;
 
   const gatewayAction = useMemo(() => {
-    if (!canGoOnline && nextRequiredBlocker) {
+    if (!onboardingPrerequisitesComplete && nextRequiredBlocker) {
       return {
         kind: "next-step",
         label: "Continue to the Next Step",
@@ -418,13 +409,22 @@ export default function DriverProfileOnboarding() {
       };
     }
 
+    if (onboardingPrerequisitesComplete && !onboardingCheckpoints.trainingCompleted) {
+      return {
+        kind: "training",
+        label: "Continue to Safety Training",
+        route: "/driver/training/intro",
+        note: "All profile prerequisites are complete. Proceed to safety training to unlock the dashboard.",
+      };
+    }
+
     return {
       kind: "dashboard",
       label: "Continue to Dashboard",
       route: "/driver/dashboard/offline",
       note: "Onboarding is complete. Go to your dashboard and start work when you are ready.",
     };
-  }, [canGoOnline, nextRequiredBlocker]);
+  }, [nextRequiredBlocker, onboardingPrerequisitesComplete, onboardingCheckpoints.trainingCompleted]);
 
   const completedSocialLinksCount = useMemo(
     () =>
@@ -1029,7 +1029,7 @@ export default function DriverProfileOnboarding() {
           <button
             type="button"
             onClick={() => {
-              if (gatewayAction.kind === "next-step") {
+              if (gatewayAction.kind === "next-step" || gatewayAction.kind === "training") {
                 navigate(gatewayAction.route);
                 return;
               }

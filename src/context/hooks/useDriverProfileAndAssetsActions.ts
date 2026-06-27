@@ -8,10 +8,12 @@ import {
   patchDriverPreferences,
   patchDriverProfile,
   patchDriverVehicle,
+  setDriverActiveVehicle,
   shouldUseDriverBackendWrites,
   updateDriverEmergencyContact as patchDriverEmergencyContact,
   uploadDriverVehicleDocument,
   uploadFile,
+  type DriverBackendOnboardingStatus,
 } from "../../services/api/driverApi";
 import { VEHICLE_DOCUMENT_API_TYPES } from "../../utils/mapBackendVehicleDocuments";
 
@@ -43,7 +45,7 @@ type UseDriverProfileAndAssetsActionsOptions = {
   setEmergencyContacts: Dispatch<SetStateAction<SharedContact[]>>;
   setVehicles: Dispatch<SetStateAction<Vehicle[]>>;
   resolveAccessoriesForVehicle: (vehicleType: Vehicle["type"], current?: Vehicle["accessories"]) => Vehicle["accessories"];
-  refreshBackendOnboardingState: () => Promise<void>;
+  refreshBackendOnboardingState: () => Promise<DriverBackendOnboardingStatus | null>;
 };
 
 export function useDriverProfileAndAssetsActions({
@@ -277,7 +279,7 @@ export function useDriverProfileAndAssetsActions({
     }
   }, [refreshBackendOnboardingState, setEmergencyContacts]);
 
-  const updateVehicle = useCallback(async (id: string, patch: Partial<Vehicle>): Promise<{ success: boolean; error?: string }> => {
+  const updateVehicle = useCallback(async (id: string, patch: Partial<Vehicle>): Promise<{ success: boolean; error?: string; onboardingStatus?: DriverBackendOnboardingStatus | null }> => {
     let previousVehicles: Vehicle[] = [];
     setVehicles((prev) => {
       previousVehicles = prev;
@@ -302,9 +304,9 @@ export function useDriverProfileAndAssetsActions({
           isActive: patch.isActive,
         });
         await persistVehicleDocuments(id, patch.vehicleDocs);
-        void refreshBackendOnboardingState().catch((error) => {
-          console.warn("Driver backend vehicle refresh failed.", error);
-        });
+        await setDriverActiveVehicle(id);
+        const onboardingStatus = await refreshBackendOnboardingState();
+        return { success: true, onboardingStatus };
       } catch (error) {
         setVehicles(previousVehicles);
         const message = error instanceof Error ? error.message : "Vehicle update failed.";
@@ -316,7 +318,7 @@ export function useDriverProfileAndAssetsActions({
     return { success: true };
   }, [persistVehicleDocuments, refreshBackendOnboardingState, setVehicles]);
 
-  const addVehicle = useCallback(async (vehicle: Vehicle) => {
+  const addVehicle = useCallback(async (vehicle: Vehicle): Promise<{ success: boolean; error?: string; vehicleId?: string; onboardingStatus?: DriverBackendOnboardingStatus | null }> => {
     const accessories = resolveAccessoriesForVehicle(vehicle.type, vehicle.accessories);
     let previousVehicles: Vehicle[] = [];
     setVehicles((prev) => {
@@ -359,9 +361,9 @@ export function useDriverProfileAndAssetsActions({
       // plate error after a partial save.
       try {
         await persistVehicleDocuments(createdVehicleId, vehicle.vehicleDocs);
-        void refreshBackendOnboardingState().catch((error) => {
-          console.warn("Driver backend vehicle create refresh failed.", error);
-        });
+        await setDriverActiveVehicle(createdVehicleId);
+        const onboardingStatus = await refreshBackendOnboardingState();
+        return { success: true, vehicleId: createdVehicleId, onboardingStatus };
       } catch (error) {
         const message = error instanceof Error ? error.message : "Vehicle documents failed to upload.";
         console.warn("Driver backend vehicle documents failed.", error);
@@ -369,7 +371,7 @@ export function useDriverProfileAndAssetsActions({
       }
     }
 
-    return { success: true };
+    return { success: true, vehicleId: vehicle.id };
   }, [persistVehicleDocuments, refreshBackendOnboardingState, resolveAccessoriesForVehicle, setVehicles]);
 
   const deleteVehicle = useCallback(async (id: string) => {
