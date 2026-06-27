@@ -244,22 +244,26 @@ export default function VehicleDetails() {
       newErrors.push("Safety inventory has not been checked");
     }
 
-    // Check docs
-    const insuranceComplete = Boolean(form.vehicleDocs?.insurance?.file);
-    const inspectionComplete = Boolean(form.vehicleDocs?.inspection?.file);
-    const insuranceExpiryValid = validateDocumentExpiryDate(
-      form.vehicleDocs?.insurance?.expiryDate || ""
-    ).valid;
-    const inspectionExpiryValid = validateDocumentExpiryDate(
-      form.vehicleDocs?.inspection?.expiryDate || ""
-    ).valid;
+    // Check docs — backend requires insurance, inspection, logbook and
+    // registration/road-license before the vehicle is considered ready.
+    const requiredDocs = [
+      { key: "insurance", label: "Proof of Insurance" },
+      { key: "inspection", label: "Vehicle Inspection Report" },
+      { key: "logbook", label: "Vehicle Logbook / Ownership" },
+      { key: "registration", label: "Vehicle Registration / Road License" },
+    ] as const;
 
-    if (!insuranceComplete) newErrors.push("Proof of Insurance file is required");
-    if (!inspectionComplete) newErrors.push("Vehicle Inspection Report file is required");
-    if (!insuranceExpiryValid)
-      newErrors.push("Proof of Insurance expiry date must be in the future");
-    if (!inspectionExpiryValid)
-      newErrors.push("Vehicle Inspection Report expiry date must be in the future");
+    for (const { key, label } of requiredDocs) {
+      const group = form.vehicleDocs?.[key];
+      const hasFile = Boolean(group?.file);
+      const expiryValid = validateDocumentExpiryDate(group?.expiryDate || "").valid;
+      if (!hasFile) {
+        newErrors.push(`${label} file is required`);
+      }
+      if (!expiryValid) {
+        newErrors.push(`${label} expiry date must be in the future`);
+      }
+    }
 
     setErrors(newErrors);
     return newErrors.length === 0;
@@ -270,6 +274,7 @@ export default function VehicleDetails() {
 
     const docsToSave = sanitizeVehicleDocsForStorage(form.vehicleDocs);
 
+    let onboardingStatus;
     if (isNew && draftVehicle) {
       const result = await addVehicle({
         ...draftVehicle,
@@ -279,6 +284,7 @@ export default function VehicleDetails() {
         setErrors([result.error || "Vehicle details were not saved. Please try again."]);
         return;
       }
+      onboardingStatus = result.onboardingStatus;
       setDraftVehicle(null);
     } else if (vehicleId) {
       const result = await updateVehicle(vehicleId, {
@@ -297,8 +303,14 @@ export default function VehicleDetails() {
         setErrors([result.error || "Vehicle details were not saved. Please try again."]);
         return;
       }
+      onboardingStatus = result.onboardingStatus;
     }
-    navigate("/driver/onboarding/profile");
+
+    if (onboardingStatus?.onboardingCompleted) {
+      navigate("/driver/dashboard/offline");
+    } else {
+      navigate(onboardingStatus?.redirectPath || "/driver/onboarding/profile");
+    }
   };
 
   const handleGoToAccessories = () => {

@@ -445,8 +445,8 @@ interface StoreContextType {
 	vehicles: Vehicle[];
 	draftVehicle: Vehicle | null;
 	setDraftVehicle: (vehicle: Vehicle | null) => void;
-	updateVehicle: (id: string, patch: Partial<Vehicle>) => Promise<{ success: boolean; error?: string }>;
-	addVehicle: (vehicle: Vehicle) => Promise<{ success: boolean; error?: string }>;
+	updateVehicle: (id: string, patch: Partial<Vehicle>) => Promise<{ success: boolean; error?: string; onboardingStatus?: DriverBackendOnboardingStatus | null }>;
+	addVehicle: (vehicle: Vehicle) => Promise<{ success: boolean; error?: string; vehicleId?: string; onboardingStatus?: DriverBackendOnboardingStatus | null }>;
 	deleteVehicle: (id: string) => Promise<boolean>;
 	toggleVehicleAccessory: (vehicleId: string, accessoryName: string) => void;
 	resetVehicleAccessories: (vehicleId: string) => void;
@@ -2155,7 +2155,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
 		// Single consolidated bootstrap call — eliminates 5-request waterfall
 		const bootstrapData = await getDriverBootstrap().catch(() => null);
-		if (!bootstrapData) return;
+		if (!bootstrapData) return null;
 
 		const {
 			profile,

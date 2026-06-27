@@ -44,6 +44,23 @@ function VehicleTypeChip({ icon: Icon, label, active, onClick }: VehicleTypeChip
   );
 }
 
+function sanitizeVehicleDocsForStorage(docs: any): any {
+  if (!docs || typeof docs !== "object") return {};
+  const result: any = {};
+  for (const key of Object.keys(docs)) {
+    const group = docs[key];
+    if (!group || typeof group !== "object") continue;
+    const file = group.file;
+    if (file && typeof file === "object") {
+      const { rawFile: _, ...fileWithoutRaw } = file;
+      result[key] = { ...group, file: fileWithoutRaw };
+    } else {
+      result[key] = group;
+    }
+  }
+  return result;
+}
+
 function InputRow({ label, placeholder, value, onChange }: any) {
   return (
     <label className="flex flex-col space-y-1">
@@ -189,9 +206,12 @@ export default function ManageVehicleDetails() {
   const handleSave = async () => {
     if (!validate()) return;
 
+    const docsToSave = sanitizeVehicleDocsForStorage(form.vehicleDocs);
+
     if (isNew && draftVehicle) {
       const result = await addVehicle({
         ...draftVehicle,
+        vehicleDocs: docsToSave,
       });
       if (!result.success) {
         setErrors([result.error || "Vehicle details were not saved. Please try again."]);
@@ -209,7 +229,7 @@ export default function ManageVehicleDetails() {
         type: form.type.charAt(0).toUpperCase() + form.type.slice(1),
         imageUrl: form.imageUrl || undefined,
         imageKey: form.imageKey || undefined,
-        vehicleDocs: form.vehicleDocs,
+        vehicleDocs: docsToSave,
       });
       if (!result.success) {
         setErrors([result.error || "Vehicle details were not saved. Please try again."]);
