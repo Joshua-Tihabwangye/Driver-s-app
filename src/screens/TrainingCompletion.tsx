@@ -47,7 +47,7 @@ async function completeBackendTraining(): Promise<void> {
 export default function TrainingCompletion() {
   const navigate = useNavigate();
   const { isLoggedIn, login } = useAuth();
-  const { setOnboardingCheckpoint, setDriverOnline } = useStore();
+  const { setOnboardingCheckpoint, refreshBackendOnboardingState, setDriverOnline } = useStore();
   const [continueRequested, setContinueRequested] = useState(false);
   const completionStartedRef = useRef(false);
 
@@ -65,38 +65,37 @@ export default function TrainingCompletion() {
     const completeTrainingAndGoOnline = async () => {
       completionStartedRef.current = true;
       try {
+        // Mark training complete locally and in the backend profile.
         await setOnboardingCheckpoint("trainingCompleted", true);
-        // Persist training completion to the backend so the driver can go online.
+
+        // Auto-complete backend learning modules if any exist. Errors here should
+        // not block the driver from reaching the dashboard.
         await completeBackendTraining().catch((error) => {
           console.warn("Backend training completion failed; continuing locally.", error);
         });
-        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject, {
-            enableHighAccuracy: true,
-            timeout: 10_000,
-            maximumAge: 30_000,
-          });
+
+        // Refresh onboarding state so the app knows training (and therefore onboarding)
+        // is complete before we navigate.
+        await refreshBackendOnboardingState().catch((error) => {
+          console.warn("Backend onboarding refresh failed; continuing locally.", error);
         });
-        const coords = position.coords;
-        const result = await setDriverOnline({
-          confirmed: true,
-          location: {
-            latitude: coords.latitude,
-            longitude: coords.longitude,
-            accuracy: coords.accuracy,
-            heading: coords.heading ?? undefined,
-            speed: coords.speed ?? undefined,
-            timestamp: Date.now(),
-          },
+
+        // Try to set the driver online in the background. Location is optional on
+        // the backend, so we do not require browser geolocation to finish onboarding.
+        const onlineResult = await setDriverOnline({ confirmed: true }).catch((error) => {
+          console.warn("Go online request failed; landing on online dashboard anyway.", error);
+          return null;
         });
+
         if (!cancelled) {
-          navigate(result?.redirectPath || "/driver/dashboard/online", { replace: true });
+          navigate(onlineResult?.redirectPath || "/driver/dashboard/online", { replace: true });
         }
       } catch {
+        // Last-resort fallback: always route to the online dashboard so the driver
+        // is not stuck on the training completion screen.
         if (!cancelled) {
-          navigate("/driver/dashboard/offline", { replace: true });
+          navigate("/driver/dashboard/online", { replace: true });
         }
-      } finally {
       }
     };
 
@@ -105,7 +104,7 @@ export default function TrainingCompletion() {
     return () => {
       cancelled = true;
     };
-  }, [continueRequested, isLoggedIn, navigate, setDriverOnline, setOnboardingCheckpoint]);
+  }, [continueRequested, isLoggedIn, navigate, refreshBackendOnboardingState, setDriverOnline, setOnboardingCheckpoint]);
 
   const handleContinue = () => {
     setContinueRequested(true);
