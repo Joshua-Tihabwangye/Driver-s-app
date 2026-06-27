@@ -7,7 +7,7 @@ import {
   ShieldCheck,
   FileBadge2
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ComponentType } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import VehicleDocumentCard from "../components/VehicleDocumentCard";
@@ -18,18 +18,26 @@ import { validateDocumentExpiryDate } from "../utils/documentVerificationState";
 // Post-onboarding Vehicle Details - Form View
 // Fully decoupled from onboarding dependencies like the old warning cards.
 
-function VehicleTypeChip({ icon: Icon, label, active, onClick }: any) {
+interface VehicleTypeChipProps {
+  icon: ComponentType<{ className?: string }>;
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}
+
+function VehicleTypeChip({ icon: Icon, label, active, onClick }: VehicleTypeChipProps) {
   return (
     <button
       type="button"
+      aria-pressed={active}
       onClick={onClick}
-      className={`flex flex-col items-center justify-center flex-1 rounded-2xl border px-3 py-3 text-xs font-semibold transition-all active:scale-[0.97] ${active
-        ? "border-orange-500 bg-orange-50 text-slate-900 shadow-sm"
+      className={`flex flex-col items-center justify-center flex-1 min-w-[80px] min-h-[80px] rounded-2xl border px-3 py-3 text-xs font-semibold transition-all select-none active:scale-[0.97] focus:outline-none focus:ring-2 focus:ring-orange-300 ${active
+        ? "border-orange-500 bg-orange-50 text-slate-900 shadow-sm ring-2 ring-orange-200"
         : "border-slate-100 bg-slate-50 text-slate-600 hover:border-slate-200"
         }`}
     >
-      <div className={`mb-1 flex h-8 w-8 items-center justify-center rounded-full ${active ? "bg-orange-500" : "bg-white border border-slate-100"}`}>
-        <Icon className={`h-4 w-4 ${active ? "text-white" : "text-slate-400"}`} />
+      <div className={`mb-1 flex h-10 w-10 items-center justify-center rounded-full ${active ? "bg-orange-500" : "bg-white border border-slate-100"}`}>
+        <Icon className={`h-5 w-5 ${active ? "text-white" : "text-slate-400"}`} />
       </div>
       <span>{label}</span>
     </button>
@@ -93,12 +101,14 @@ export default function ManageVehicleDetails() {
     }
   }, [isNew, draftVehicle, navigate]);
 
-  // Sync form to draft if new
+  // Sync form to draft if new. Keep only lightweight, stable fields in sync;
+  // vehicleDocs are read directly from form.vehicleDocs in handleSave, so
+  // including them here causes infinite renders.
   useEffect(() => {
     if (isNew && draftVehicle) {
       const updatedType = form.type.charAt(0).toUpperCase() + form.type.slice(1);
       const typeChanged = draftVehicle.type !== updatedType;
-      
+
       setDraftVehicle({
         ...draftVehicle,
         make: form.make,
@@ -110,11 +120,10 @@ export default function ManageVehicleDetails() {
         range: form.range,
         imageUrl: form.imageUrl,
         imageKey: form.imageKey,
-        vehicleDocs: form.vehicleDocs,
-        ...(typeChanged ? { accessories: getDefaultAccessoriesForType(updatedType) } : {})
+        ...(typeChanged ? { accessories: getDefaultAccessoriesForType(updatedType) } : {}),
       });
     }
-  }, [form.make, form.model, form.year, form.plate, form.type, form.batterySize, form.range, form.imageUrl, form.imageKey, form.vehicleDocs]);
+  }, [form.make, form.model, form.year, form.plate, form.type, form.batterySize, form.range, form.imageUrl, form.imageKey]);
 
   // Load data for existing vehicle exactly once to avoid loop
   useEffect(() => {
@@ -181,17 +190,16 @@ export default function ManageVehicleDetails() {
     if (!validate()) return;
 
     if (isNew && draftVehicle) {
-      const saved = await addVehicle({
+      const result = await addVehicle({
         ...draftVehicle,
-        status: "active"
       });
-      if (!saved) {
-        setErrors(["Vehicle details were not saved. Please try again."]);
+      if (!result.success) {
+        setErrors([result.error || "Vehicle details were not saved. Please try again."]);
         return;
       }
       setDraftVehicle(null);
     } else if (vehicleId && !isNew) {
-      const saved = await updateVehicle(vehicleId, {
+      const result = await updateVehicle(vehicleId, {
         make: form.make,
         model: form.model,
         year: parseInt(form.year) || 2024,
@@ -203,8 +211,8 @@ export default function ManageVehicleDetails() {
         imageKey: form.imageKey || undefined,
         vehicleDocs: form.vehicleDocs,
       });
-      if (!saved) {
-        setErrors(["Vehicle details were not saved. Please try again."]);
+      if (!result.success) {
+        setErrors([result.error || "Vehicle details were not saved. Please try again."]);
         return;
       }
     }

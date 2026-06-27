@@ -77,6 +77,7 @@ import {
 	tripStart,
 	setDriverActiveVehicle,
 	verifyDriverDeliveryQr,
+	type DriverBackendOnboardingStatus,
 } from "../services/api/driverApi";
 import { hydrateSharedTripFromBackendTrip } from "../utils/sharedTripHydrator";
 import { useDriverBackendEnabled } from "./hooks/useDriverBackendEnabled";
@@ -444,8 +445,8 @@ interface StoreContextType {
 	vehicles: Vehicle[];
 	draftVehicle: Vehicle | null;
 	setDraftVehicle: (vehicle: Vehicle | null) => void;
-	updateVehicle: (id: string, patch: Partial<Vehicle>) => Promise<boolean>;
-	addVehicle: (vehicle: Vehicle) => Promise<boolean>;
+	updateVehicle: (id: string, patch: Partial<Vehicle>) => Promise<{ success: boolean; error?: string }>;
+	addVehicle: (vehicle: Vehicle) => Promise<{ success: boolean; error?: string }>;
 	deleteVehicle: (id: string) => Promise<boolean>;
 	toggleVehicleAccessory: (vehicleId: string, accessoryName: string) => void;
 	resetVehicleAccessories: (vehicleId: string) => void;
