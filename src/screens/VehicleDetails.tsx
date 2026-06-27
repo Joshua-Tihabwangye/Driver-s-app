@@ -7,7 +7,7 @@ import {
   ShieldCheck,
   FileBadge2
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ComponentType } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import VehicleDocumentCard from "../components/VehicleDocumentCard";
@@ -20,18 +20,26 @@ import { validateDocumentExpiryDate } from "../utils/documentVerificationState";
 // Redesigned with Green curved header and bottom nav.
 // Dynamic routing enabled with StoreContext persistence.
 
-function VehicleTypeChip({ icon: Icon, label, active, onClick }: any) {
+interface VehicleTypeChipProps {
+  icon: ComponentType<{ className?: string }>;
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}
+
+function VehicleTypeChip({ icon: Icon, label, active, onClick }: VehicleTypeChipProps) {
   return (
     <button
       type="button"
+      aria-pressed={active}
       onClick={onClick}
-      className={`flex flex-col items-center justify-center flex-1 rounded-2xl border px-3 py-3 text-xs font-semibold transition-all active:scale-[0.97] ${active
-        ? "border-orange-500 bg-orange-50 text-slate-900 shadow-sm"
+      className={`flex flex-col items-center justify-center flex-1 min-w-[80px] min-h-[80px] rounded-2xl border px-3 py-3 text-xs font-semibold transition-all select-none active:scale-[0.97] focus:outline-none focus:ring-2 focus:ring-orange-300 ${active
+        ? "border-orange-500 bg-orange-50 text-slate-900 shadow-sm ring-2 ring-orange-200"
         : "border-slate-100 bg-slate-50 text-slate-600 hover:border-slate-200"
         }`}
     >
-      <div className={`mb-1 flex h-8 w-8 items-center justify-center rounded-full ${active ? "bg-orange-500" : "bg-white border border-slate-100"}`}>
-        <Icon className={`h-4 w-4 ${active ? "text-white" : "text-slate-400"}`} />
+      <div className={`mb-1 flex h-10 w-10 items-center justify-center rounded-full ${active ? "bg-orange-500" : "bg-white border border-slate-100"}`}>
+        <Icon className={`h-5 w-5 ${active ? "text-white" : "text-slate-400"}`} />
       </div>
       <span>{label}</span>
     </button>
@@ -89,6 +97,10 @@ function sanitizeVehicleDocsForStorage(docs: any): any {
   return result;
 }
 
+function deepEqual(a: any, b: any): boolean {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
 export default function VehicleDetails() {
   const { vehicleId } = useParams();
   const navigate = useNavigate();
@@ -125,12 +137,14 @@ export default function VehicleDetails() {
     }
   }, [isNew, draftVehicle, navigate]);
 
-  // Sync form to draft if new
+  // Sync form to draft if new. Keep only lightweight, stable fields in sync;
+  // vehicleDocs are persisted via useVehicleDocumentStore and read directly from
+  // form.vehicleDocs in handleSave, so including them here causes infinite renders.
   useEffect(() => {
     if (isNew && draftVehicle) {
       const updatedType = form.type.charAt(0).toUpperCase() + form.type.slice(1);
       const typeChanged = draftVehicle.type !== updatedType;
-      
+
       setDraftVehicle({
         ...draftVehicle,
         make: form.make,
@@ -142,12 +156,11 @@ export default function VehicleDetails() {
         range: form.range,
         imageUrl: form.imageUrl,
         imageKey: form.imageKey,
-        vehicleDocs: form.vehicleDocs,
         // Reset accessories only if type actually changed and we are in draft mode
-        ...(typeChanged ? { accessories: getDefaultAccessoriesForType(updatedType) } : {})
+        ...(typeChanged ? { accessories: getDefaultAccessoriesForType(updatedType) } : {}),
       });
     }
-  }, [form.make, form.model, form.year, form.plate, form.type, form.batterySize, form.range, form.imageUrl, form.imageKey, form.vehicleDocs]);
+  }, [form.make, form.model, form.year, form.plate, form.type, form.batterySize, form.range, form.imageUrl, form.imageKey]);
 
   // Hydrate form from persisted documents when the vehicle changes or when
   // the IndexedDB-backed Zustand store finishes rehydrating.
@@ -166,11 +179,19 @@ export default function VehicleDetails() {
 
     loadedVehicleIdRef.current = nextVehicleId;
     const baseForm = createVehicleFormState(vehicle);
+    const nextVehicleDocs = persistedDocs
+      ? { ...baseForm.vehicleDocs, ...persistedDocs }
+      : baseForm.vehicleDocs;
+
+    // Avoid re-setting form when persisted data has not actually changed;
+    // object-reference changes from the Zustand store would otherwise loop.
+    if (deepEqual(nextVehicleDocs, form.vehicleDocs)) {
+      return;
+    }
+
     setForm({
       ...baseForm,
-      vehicleDocs: persistedDocs
-        ? { ...baseForm.vehicleDocs, ...persistedDocs }
-        : baseForm.vehicleDocs,
+      vehicleDocs: nextVehicleDocs,
     });
   }, [isNew, vehicle?.id, persistedDocs]);
 
@@ -178,7 +199,12 @@ export default function VehicleDetails() {
   // so they survive page refreshes before the user clicks Save.
   useEffect(() => {
     if (!vehicleId || isNew) return;
-    setDocuments(vehicleId, form.vehicleDocs);
+    const current = useVehicleDocumentStore.getState().documentsByVehicle[vehicleId];
+    // Only write when the document contents actually changed to break the
+    // reference-cycle loop with the hydrate effect above.
+    if (!deepEqual(current, form.vehicleDocs)) {
+      setDocuments(vehicleId, form.vehicleDocs);
+    }
   }, [form.vehicleDocs, vehicleId, isNew, setDocuments]);
 
   const handleDelete = () => {
@@ -245,18 +271,17 @@ export default function VehicleDetails() {
     const docsToSave = sanitizeVehicleDocsForStorage(form.vehicleDocs);
 
     if (isNew && draftVehicle) {
-      const saved = await addVehicle({
+      const result = await addVehicle({
         ...draftVehicle,
         vehicleDocs: docsToSave,
-        status: "active"
       });
-      if (!saved) {
-        setErrors(["Vehicle details were not saved. Please try again."]);
+      if (!result.success) {
+        setErrors([result.error || "Vehicle details were not saved. Please try again."]);
         return;
       }
       setDraftVehicle(null);
     } else if (vehicleId) {
-      const saved = await updateVehicle(vehicleId, {
+      const result = await updateVehicle(vehicleId, {
         make: form.make,
         model: form.model,
         year: parseInt(form.year) || 2024,
@@ -268,8 +293,8 @@ export default function VehicleDetails() {
         imageKey: form.imageKey || undefined,
         vehicleDocs: docsToSave,
       });
-      if (!saved) {
-        setErrors(["Vehicle details were not saved. Please try again."]);
+      if (!result.success) {
+        setErrors([result.error || "Vehicle details were not saved. Please try again."]);
         return;
       }
     }

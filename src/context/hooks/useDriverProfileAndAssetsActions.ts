@@ -140,20 +140,37 @@ export function useDriverProfileAndAssetsActions({
 
     for (const docKey of VEHICLE_DOCUMENT_KEYS) {
       const group = vehicleDocs[docKey];
-      const file = group?.file?.rawFile as File | undefined;
-      const expiryDate = group?.expiryDate || group?.file?.expiryDate || "";
+      if (!group) {
+        continue;
+      }
+
+      const expiryDate = group.expiryDate || group.file?.expiryDate || "";
       if (!expiryDate) {
         continue;
       }
 
-      let uploadedUrl = group?.file?.url?.trim() || "";
-      let uploadedKey = group?.file?.fileKey;
-      let mimeType = group?.file?.mimeType;
-      let sizeBytes = group?.file?.sizeBytes;
-      const originalFileName = group?.file?.fileName || file?.name;
+      const rawFile = group.file?.rawFile as File | undefined;
+      const existingUrl = group.file?.url?.trim() || "";
+      const isAlreadyUploaded =
+        existingUrl &&
+        !existingUrl.startsWith("data:") &&
+        !existingUrl.startsWith("local://");
 
-      if (file && (!uploadedUrl || uploadedUrl.startsWith("data:") || uploadedUrl.startsWith("local://"))) {
-        const uploadResult = await uploadFile(file, "document");
+      // If only an expiry date was entered without a file, skip this optional
+      // document instead of aborting the entire save.
+      if (!rawFile && !isAlreadyUploaded) {
+        console.warn(`Skipping vehicle ${docKey}: expiry date set but no file uploaded.`);
+        continue;
+      }
+
+      let uploadedUrl = existingUrl;
+      let uploadedKey = group.file?.fileKey;
+      let mimeType = group.file?.mimeType;
+      let sizeBytes = group.file?.sizeBytes;
+      const originalFileName = group.file?.fileName || rawFile?.name;
+
+      if (rawFile && (!uploadedUrl || uploadedUrl.startsWith("data:") || uploadedUrl.startsWith("local://"))) {
+        const uploadResult = await uploadFile(rawFile, "document");
         if (!uploadResult) {
           throw new Error(`Vehicle ${docKey} upload failed.`);
         }
@@ -260,7 +277,7 @@ export function useDriverProfileAndAssetsActions({
     }
   }, [refreshBackendOnboardingState, setEmergencyContacts]);
 
-  const updateVehicle = useCallback(async (id: string, patch: Partial<Vehicle>) => {
+  const updateVehicle = useCallback(async (id: string, patch: Partial<Vehicle>): Promise<{ success: boolean; error?: string }> => {
     let previousVehicles: Vehicle[] = [];
     setVehicles((prev) => {
       previousVehicles = prev;
@@ -290,12 +307,13 @@ export function useDriverProfileAndAssetsActions({
         });
       } catch (error) {
         setVehicles(previousVehicles);
+        const message = error instanceof Error ? error.message : "Vehicle update failed.";
         console.warn("Driver backend vehicle update failed.", error);
-        return false;
+        return { success: false, error: message };
       }
     }
 
-    return true;
+    return { success: true };
   }, [persistVehicleDocuments, refreshBackendOnboardingState, setVehicles]);
 
   const addVehicle = useCallback(async (vehicle: Vehicle) => {
@@ -330,8 +348,9 @@ export function useDriverProfileAndAssetsActions({
         createdVehicleId = created.id;
       } catch (error) {
         setVehicles(previousVehicles);
+        const message = error instanceof Error ? error.message : "Vehicle creation failed.";
         console.warn("Driver backend vehicle create failed.", error);
-        return false;
+        return { success: false, error: message };
       }
 
       // Documents are uploaded separately. If a document upload fails we keep
@@ -344,12 +363,13 @@ export function useDriverProfileAndAssetsActions({
           console.warn("Driver backend vehicle create refresh failed.", error);
         });
       } catch (error) {
+        const message = error instanceof Error ? error.message : "Vehicle documents failed to upload.";
         console.warn("Driver backend vehicle documents failed.", error);
-        return false;
+        return { success: false, error: message };
       }
     }
 
-    return true;
+    return { success: true };
   }, [persistVehicleDocuments, refreshBackendOnboardingState, resolveAccessoriesForVehicle, setVehicles]);
 
   const deleteVehicle = useCallback(async (id: string) => {
