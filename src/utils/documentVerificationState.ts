@@ -1,3 +1,5 @@
+import { shouldUseDriverBackendWrites } from "../services/api/driverApi";
+
 export const DOCUMENT_UPLOAD_STATE_KEY = "driver_document_upload_state";
 
 export type DocumentUploadKey = "id" | "license" | "police";
@@ -168,7 +170,7 @@ function sanitizeEntry(raw: unknown, fallback: DocumentUploadEntry): DocumentUpl
 }
 
 export function readStoredDocumentState(): DocumentUploadState {
-  if (typeof window === "undefined") {
+  if (typeof window === "undefined" || shouldUseDriverBackendWrites()) {
     return cloneDefaultState();
   }
 
@@ -190,7 +192,7 @@ export function readStoredDocumentState(): DocumentUploadState {
 }
 
 export function persistDocumentState(nextState: DocumentUploadState): void {
-  if (typeof window === "undefined") {
+  if (typeof window === "undefined" || shouldUseDriverBackendWrites()) {
     return;
   }
 

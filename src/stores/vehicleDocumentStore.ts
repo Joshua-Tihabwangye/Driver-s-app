@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import { shouldUseDriverBackendWrites } from "../services/api/driverApi";
 import type { VehicleDocuments, VehicleDocumentGroup } from "../data/types";
 
 const DB_NAME = "evzone_driver_vehicle_docs_db";
@@ -54,9 +55,18 @@ async function idbRemoveItem(name: string): Promise<void> {
 }
 
 const idbStorage = createJSONStorage(() => ({
-  getItem: idbGetItem,
-  setItem: idbSetItem,
-  removeItem: idbRemoveItem,
+  getItem: async (name: string) => {
+    if (shouldUseDriverBackendWrites()) return null;
+    return idbGetItem(name);
+  },
+  setItem: async (name: string, value: string) => {
+    if (shouldUseDriverBackendWrites()) return;
+    return idbSetItem(name, value);
+  },
+  removeItem: async (name: string) => {
+    if (shouldUseDriverBackendWrites()) return;
+    return idbRemoveItem(name);
+  },
 }));
 
 function sanitizeDocumentGroup(group?: VehicleDocumentGroup): VehicleDocumentGroup | undefined {

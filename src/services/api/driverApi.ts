@@ -203,6 +203,7 @@ export interface DriverBackendLocationHeartbeatInput {
 
 export interface DriverBackendPresenceOnlineInput {
   confirmed?: boolean;
+  vehicleId?: string;
   location?: DriverBackendLocationHeartbeatInput;
 }
 
@@ -675,6 +676,19 @@ export async function getDriverOnboardingStatus() {
   if (!isBackendAuthEnabled() || !token) return null;
   return request<DriverBackendOnboardingStatus>("/drivers/me/onboarding/status", {
     method: "GET",
+    headers: authHeaders(token),
+  });
+}
+
+export async function completeDriverOnboarding() {
+  const token = readDriverBackendAccessToken();
+  if (!isBackendAuthEnabled() || !token) return null;
+  return request<{
+    onboardingCompleted: boolean;
+    verificationStatus: string;
+    redirectPath: string;
+  }>("/drivers/me/onboarding/complete", {
+    method: "POST",
     headers: authHeaders(token),
   });
 }

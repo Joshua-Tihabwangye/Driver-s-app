@@ -197,15 +197,35 @@ export default function SafetyHub() {
   
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [contactError, setContactError] = useState<string | null>(null);
 
-  const handleAddSave = (contact: Omit<SharedContact, "id" | "createdAt">) => {
-    addEmergencyContact(contact);
+  const handleAddSave = async (contact: Omit<SharedContact, "id" | "createdAt">) => {
+    const result = await addEmergencyContact(contact);
+    if (!result.success) {
+      setContactError(result.error || "Failed to save emergency contact.");
+      return;
+    }
+    setContactError(null);
     setIsAdding(false);
   };
 
-  const handleEditSave = (contact: SharedContact) => {
-    updateEmergencyContact(contact);
+  const handleEditSave = async (contact: SharedContact) => {
+    const result = await updateEmergencyContact(contact);
+    if (!result.success) {
+      setContactError(result.error || "Failed to update emergency contact.");
+      return;
+    }
+    setContactError(null);
     setEditingId(null);
+  };
+
+  const handleRemove = async (id: string) => {
+    const result = await removeEmergencyContact(id);
+    if (!result.success) {
+      setContactError(result.error || "Failed to remove emergency contact.");
+    } else {
+      setContactError(null);
+    }
   };
 
   return (
@@ -296,7 +316,7 @@ export default function SafetyHub() {
                         onClick={(e) => {
                           // EVzone Driver – Part 5: Delete contact logic.
                           e.stopPropagation(); // Prevent opening edit mode
-                          removeEmergencyContact(contact.id);
+                          handleRemove(contact.id);
                         }}
                         className="p-2.5 text-slate-300 hover:text-red-500 transition-colors active:scale-90"
                       >
@@ -320,6 +340,17 @@ export default function SafetyHub() {
         </section>
 
         {/* Policy & Training Links */}
+        {contactError && (
+          <div className="mx-6 rounded-2xl border border-red-100 bg-red-50 p-4 text-center">
+            <p className="text-[11px] font-black text-red-700 uppercase tracking-tight mb-1">
+              Could not save contact
+            </p>
+            <p className="text-[11px] font-medium text-red-600/80 leading-relaxed">
+              {contactError}
+            </p>
+          </div>
+        )}
+
         <section className="space-y-4 pb-6">
            <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-2">Knowledge Base</h2>
            <button

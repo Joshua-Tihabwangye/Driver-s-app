@@ -7,6 +7,8 @@ import {
   getDriverLearning,
   startDriverLearningModule,
   submitDriverLearningAssessment,
+  completeDriverOnboarding,
+  type DriverBackendOnboardingStatus,
 } from "../services/api/driverApi";
 
 // EVzone Driver App – TrainingCompletion Preferences – Content Completion Screen
@@ -44,11 +46,59 @@ async function completeBackendTraining(): Promise<void> {
   }
 }
 
+function describeOnboardingGap(status: DriverBackendOnboardingStatus | null | undefined): {
+  message: string;
+  route: string;
+} {
+  if (!status) {
+    return {
+      message: "We couldn't reach the server to confirm your onboarding. Please check your connection and try again.",
+      route: "/driver/onboarding/profile",
+    };
+  }
+
+  const missing: string[] = [];
+  if (!status.hasSelectedServiceCategories) missing.push("service category");
+  if (!status.hasRequiredDriverDocuments) missing.push("driver documents");
+  if (!status.hasActiveVehicle) missing.push("active vehicle");
+  if (!status.hasRequiredVehicleDocuments) missing.push("vehicle documents");
+  if (status.checkpoints && !status.checkpoints.emergencyContactReady) {
+    missing.push("emergency contact");
+  }
+  if (!status.hasCompletedTutorials) missing.push("training");
+
+  const route =
+    status.redirectPath && status.redirectPath !== "/driver/dashboard/offline"
+      ? status.redirectPath
+      : "/driver/onboarding/profile";
+
+  if (missing.length === 0) {
+    return {
+      message: "Your profile is almost ready, but the server hasn't finalized your onboarding yet. Please try again in a moment.",
+      route,
+    };
+  }
+
+  return {
+    message: `Your onboarding is missing: ${missing.join(", ")}. Please complete ${missing.length === 1 ? "this requirement" : "these requirements"} and try again.`,
+    route,
+  };
+}
+
 export default function TrainingCompletion() {
   const navigate = useNavigate();
   const { isLoggedIn, login } = useAuth();
-  const { setOnboardingCheckpoint, refreshBackendOnboardingState, setDriverOnline } = useStore();
+  const {
+    setOnboardingCheckpoint,
+    refreshBackendOnboardingState,
+    setDriverOnline,
+    vehicles,
+    selectedVehicleIndex,
+  } = useStore();
   const [continueRequested, setContinueRequested] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [missingRequirementRoute, setMissingRequirementRoute] = useState<string | null>(null);
   const completionStartedRef = useRef(false);
 
   useEffect(() => {
@@ -64,37 +114,83 @@ export default function TrainingCompletion() {
 
     const completeTrainingAndGoOnline = async () => {
       completionStartedRef.current = true;
+      setIsLoading(true);
+      setError(null);
+
       try {
-        // Mark training complete locally and in the backend profile.
+        // 1. Mark training complete locally and in the backend profile.
         await setOnboardingCheckpoint("trainingCompleted", true);
 
-        // Auto-complete backend learning modules if any exist. Errors here should
-        // not block the driver from reaching the dashboard.
+        // 2. Auto-complete backend learning modules if any exist. Errors here should
+        //    not block the driver from reaching the dashboard.
         await completeBackendTraining().catch((error) => {
           console.warn("Backend training completion failed; continuing locally.", error);
         });
 
-        // Refresh onboarding state so the app knows training (and therefore onboarding)
-        // is complete before we navigate.
-        await refreshBackendOnboardingState().catch((error) => {
-          console.warn("Backend onboarding refresh failed; continuing locally.", error);
-        });
+        // 3. Refresh onboarding state and confirm onboarding is complete before
+        //    navigating anywhere. This prevents the onboarding guard from redirecting
+        //    the driver back to the profile page.
+        const onboardingStatus = await refreshBackendOnboardingState();
+        if (!onboardingStatus?.onboardingCompleted) {
+          if (!cancelled) {
+            const { message, route } = describeOnboardingGap(onboardingStatus);
+            setError(message);
+            setMissingRequirementRoute(route);
+            setIsLoading(false);
+            completionStartedRef.current = false;
+          }
+          return;
+        }
+        setMissingRequirementRoute(null);
 
-        // Try to set the driver online in the background. Location is optional on
-        // the backend, so we do not require browser geolocation to finish onboarding.
-        const onlineResult = await setDriverOnline({ confirmed: true }).catch((error) => {
-          console.warn("Go online request failed; landing on online dashboard anyway.", error);
+        // 4. Ask the backend to finalize onboarding and flip verification status.
+        //    This is required before the driver can go online in self-serve mode.
+        const completionResult = await completeDriverOnboarding();
+        if (!completionResult?.onboardingCompleted) {
+          if (!cancelled) {
+            const { message, route } = describeOnboardingGap(onboardingStatus);
+            setError(message || "We couldn't finalize your onboarding. Please try again.");
+            setMissingRequirementRoute(route);
+            setIsLoading(false);
+            completionStartedRef.current = false;
+          }
+          return;
+        }
+
+        // 5. Attempt to set the driver online. Location is optional on the backend.
+        //    Only navigate to the online dashboard if the backend confirms the driver
+        //    is online; otherwise land on the offline dashboard.
+        const activeVehicle =
+          selectedVehicleIndex !== null &&
+          selectedVehicleIndex >= 0 &&
+          selectedVehicleIndex < vehicles.length
+            ? vehicles[selectedVehicleIndex]
+            : null;
+        const onlineResult = await setDriverOnline({
+          confirmed: true,
+          vehicleId: activeVehicle?.id,
+        }).catch((error) => {
+          console.warn("Go online request failed; landing on offline dashboard.", error);
           return null;
         });
 
         if (!cancelled) {
-          navigate(onlineResult?.redirectPath || "/driver/dashboard/online", { replace: true });
+          if (onlineResult?.redirectPath) {
+            navigate(onlineResult.redirectPath, { replace: true });
+          } else {
+            navigate("/driver/dashboard/offline", { replace: true });
+          }
         }
-      } catch {
-        // Last-resort fallback: always route to the online dashboard so the driver
-        // is not stuck on the training completion screen.
+      } catch (error) {
+        console.warn("Training completion flow failed.", error);
         if (!cancelled) {
-          navigate("/driver/dashboard/online", { replace: true });
+          setError(
+            error instanceof Error
+              ? error.message
+              : "Something went wrong while finishing your training. Please try again."
+          );
+          setIsLoading(false);
+          completionStartedRef.current = false;
         }
       }
     };
@@ -107,10 +203,17 @@ export default function TrainingCompletion() {
   }, [continueRequested, isLoggedIn, navigate, refreshBackendOnboardingState, setDriverOnline, setOnboardingCheckpoint]);
 
   const handleContinue = () => {
+    if (isLoading) return;
     setContinueRequested(true);
     if (!isLoggedIn) {
       void login();
       return;
+    }
+  };
+
+  const handleFixMissingRequirement = () => {
+    if (missingRequirementRoute) {
+      navigate(missingRequirementRoute, { replace: true });
     }
   };
 
@@ -171,21 +274,45 @@ export default function TrainingCompletion() {
 
         {/* Actions */}
         <div className="w-full space-y-4 flex flex-col items-center">
-          <button
-            type="button"
-            onClick={handleContinue}
-            className="w-full rounded-2xl bg-orange-500 py-5 text-sm font-black text-white shadow-2xl shadow-orange-500/20 hover:bg-orange-600 active:scale-[0.98] transition-all uppercase tracking-widest"
-          >
-            Continue to Dashboard
-          </button>
+          {error && (
+            <div className="w-full rounded-2xl border border-red-100 bg-red-50 p-4 text-center">
+              <p className="text-[11px] font-black text-red-700 uppercase tracking-tight mb-1">
+                Could not finish onboarding
+              </p>
+              <p className="text-[11px] font-medium text-red-600/80 leading-relaxed">
+                {error}
+              </p>
+            </div>
+          )}
 
           <button
             type="button"
-            onClick={() => navigate("/driver/onboarding/profile")}
-            className="text-xs font-black text-slate-400 hover:text-slate-600 transition-colors uppercase tracking-[0.2em]"
+            disabled={isLoading}
+            onClick={handleContinue}
+            className="w-full rounded-2xl bg-orange-500 py-5 text-sm font-black text-white shadow-2xl shadow-orange-500/20 hover:bg-orange-600 active:scale-[0.98] transition-all uppercase tracking-widest disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            Back to Profile
+            {isLoading ? "Finishing up..." : "Continue to Dashboard"}
           </button>
+
+          {missingRequirementRoute && !isLoading && (
+            <button
+              type="button"
+              onClick={handleFixMissingRequirement}
+              className="text-xs font-black text-orange-500 hover:text-orange-600 transition-colors uppercase tracking-[0.2em]"
+            >
+              Fix missing requirement
+            </button>
+          )}
+
+          {!isLoading && (
+            <button
+              type="button"
+              onClick={() => navigate("/driver/onboarding/profile")}
+              className="text-xs font-black text-slate-400 hover:text-slate-600 transition-colors uppercase tracking-[0.2em]"
+            >
+              Back to Profile
+            </button>
+          )}
         </div>
       </main>
     </div>
