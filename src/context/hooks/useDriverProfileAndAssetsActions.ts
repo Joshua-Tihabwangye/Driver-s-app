@@ -187,12 +187,8 @@ export function useDriverProfileAndAssetsActions({
       }
 
       await uploadDriverVehicleDocument(vehicleId, {
-        documentType: VEHICLE_DOCUMENT_API_TYPES[docKey],
+        type: VEHICLE_DOCUMENT_API_TYPES[docKey],
         fileUrl: uploadedUrl,
-        fileKey: uploadedKey,
-        originalFileName,
-        mimeType,
-        sizeBytes,
         expiryDate,
       });
     }
@@ -321,7 +317,14 @@ export function useDriverProfileAndAssetsActions({
           isActive: patch.isActive,
         });
         await persistVehicleDocuments(id, patch.vehicleDocs);
-        await setDriverActiveVehicle(id);
+        // The vehicle may not be ACTIVE yet if required documents are still
+        // pending. The backend auto-activates it once docs are verified and sets
+        // currentVehicleId at that point, so failing here must not abort the save.
+        try {
+          await setDriverActiveVehicle(id);
+        } catch (error) {
+          console.warn("Vehicle is not active yet; will auto-activate after documents.", error);
+        }
         const onboardingStatus = await refreshBackendOnboardingState();
         return { success: true, onboardingStatus };
       } catch (error) {
@@ -365,6 +368,32 @@ export function useDriverProfileAndAssetsActions({
           throw new Error("Vehicle was not saved to the backend.");
         }
         createdVehicleId = created.id;
+        // Replace the optimistic temp-ID vehicle with the real backend vehicle so
+        // follow-up calls (documents, active-vehicle) target the correct row.
+        setVehicles((prev) =>
+          prev.map((entry) =>
+            entry.id === vehicle.id
+              ? {
+                  ...vehicle,
+                  id: created.id,
+                  make: created.make ?? vehicle.make,
+                  model: created.model ?? vehicle.model,
+                  year: created.year ?? vehicle.year,
+                  plate: created.plate ?? vehicle.plate,
+                  type: created.type ?? vehicle.type,
+                  status: created.status ?? vehicle.status,
+                  accessories: created.accessories ?? accessories,
+                  imageKey: created.imageKey ?? vehicle.imageKey,
+                  imageUrl: created.imageUrl ?? vehicle.imageUrl,
+                  batterySize: created.batterySize ?? vehicle.batterySize,
+                  range: created.range ?? vehicle.range,
+                  color: created.color ?? vehicle.color,
+                  isActive: created.isActive ?? vehicle.isActive,
+                  vehicleDocs: vehicle.vehicleDocs,
+                }
+              : entry,
+          ),
+        );
       } catch (error) {
         setVehicles(previousVehicles);
         const message = error instanceof Error ? error.message : "Vehicle creation failed.";
@@ -378,7 +407,14 @@ export function useDriverProfileAndAssetsActions({
       // plate error after a partial save.
       try {
         await persistVehicleDocuments(createdVehicleId, vehicle.vehicleDocs);
-        await setDriverActiveVehicle(createdVehicleId);
+        // The vehicle may not be ACTIVE yet if required documents are still
+        // pending. The backend auto-activates it once docs are verified and sets
+        // currentVehicleId at that point, so failing here must not abort the save.
+        try {
+          await setDriverActiveVehicle(createdVehicleId);
+        } catch (error) {
+          console.warn("Vehicle is not active yet; will auto-activate after documents.", error);
+        }
         const onboardingStatus = await refreshBackendOnboardingState();
         return { success: true, vehicleId: createdVehicleId, onboardingStatus };
       } catch (error) {

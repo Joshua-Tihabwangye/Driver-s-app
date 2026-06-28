@@ -757,12 +757,12 @@ export async function getDriverBootstrap() {
 export async function uploadDriverVehicleDocument(
   vehicleId: string,
   input: {
-    documentType: string;
+    type:
+      | "VEHICLE_INSURANCE"
+      | "VEHICLE_INSPECTION"
+      | "VEHICLE_LOGBOOK"
+      | "ROAD_LICENSE";
     fileUrl: string;
-    fileKey?: string;
-    originalFileName?: string;
-    mimeType?: string;
-    sizeBytes?: number;
     expiryDate: string;
   },
 ) {
@@ -779,13 +779,13 @@ export async function patchDriverVehicleDocument(
   vehicleId: string,
   documentId: string,
   patch: {
-    fileUrl?: string;
-    fileKey?: string;
-    originalFileName?: string;
-    mimeType?: string;
-    sizeBytes?: number;
-    expiryDate?: string;
-    status?: string;
+    type:
+      | "VEHICLE_INSURANCE"
+      | "VEHICLE_INSPECTION"
+      | "VEHICLE_LOGBOOK"
+      | "ROAD_LICENSE";
+    fileUrl: string;
+    expiryDate: string;
   },
 ) {
   const token = readDriverBackendAccessToken();

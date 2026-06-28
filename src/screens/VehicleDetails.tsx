@@ -272,7 +272,9 @@ export default function VehicleDetails() {
   const handleSave = async () => {
     if (!validate()) return;
 
-    const docsToSave = sanitizeVehicleDocsForStorage(form.vehicleDocs);
+    // Pass the docs as-is so persistVehicleDocuments can upload rawFile if present.
+    // The IndexedDB store already sanitizes rawFile for local persistence.
+    const docsToSave = form.vehicleDocs;
 
     let onboardingStatus;
     if (isNew && draftVehicle) {

@@ -61,8 +61,8 @@ export function mapBackendVehicleDocuments(
 }
 
 export const VEHICLE_DOCUMENT_API_TYPES = {
-  logbook: "logbook",
-  registration: "registration",
-  insurance: "insurance",
-  inspection: "inspection",
+  logbook: "VEHICLE_LOGBOOK",
+  registration: "ROAD_LICENSE",
+  insurance: "VEHICLE_INSURANCE",
+  inspection: "VEHICLE_INSPECTION",
 } as const;
