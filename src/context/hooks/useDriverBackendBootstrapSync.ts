@@ -13,6 +13,12 @@ import {
   listDriverTrips,
 } from "../../services/api/driverApi";
 import { isAbortError } from "../../services/api/httpClient";
+import { resolveRouteFromOnboardingStatus } from "../../utils/onboardingRedirect";
+import {
+  DEFAULT_DOCUMENT_UPLOAD_STATE,
+  type DocumentUploadKey,
+  type DocumentUploadState,
+} from "../../utils/documentVerificationState";
 import {
   buildBackendJobPresentation,
   extractBackendRoutePoints,
@@ -58,6 +64,7 @@ type UseDriverBackendBootstrapSyncOptions = {
   setTrips: AnySetter;
   setRevenueEvents: AnySetter;
   setEmergencyContacts: AnySetter;
+  setDriverDocumentState: AnySetter;
   setActiveTrip: AnySetter;
   setDeliveryWorkflow: AnySetter;
   setActiveRideRuntime: AnySetter;
@@ -91,6 +98,7 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
     setTrips,
     setRevenueEvents,
     setEmergencyContacts,
+    setDriverDocumentState,
     setActiveTrip,
     setDeliveryWorkflow,
     setActiveRideRuntime,
@@ -134,6 +142,7 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
         const preferences = bootstrapData?.preferences ?? null;
         const onboardingStatus = bootstrapData?.onboardingStatus ?? null;
         const backendVehicles = bootstrapData?.vehicles ?? [];
+        const backendDocuments = bootstrapData?.documents ?? [];
 
         // ── Hydrate profile ──────────────────────────────────────────────
         if (profile) {
@@ -201,10 +210,51 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
           setOnboardingCompleted(onboardingStatus.onboardingCompleted === true);
           setPrimaryOnboardingRoute(
             onboardingStatus.redirectPath ||
-            (onboardingStatus.onboardingCompleted
-              ? "/driver/dashboard/offline"
-              : "/driver/onboarding/profile"),
+              resolveRouteFromOnboardingStatus(onboardingStatus),
           );
+        }
+
+        // ── Hydrate driver personal documents ────────────────────────────
+        if (backendDocuments.length > 0) {
+          const docTypeMap: Record<string, DocumentUploadKey> = {
+            national_id_or_passport: "id",
+            drivers_license: "license",
+            conduct_clearance: "police",
+            NATIONAL_ID: "id",
+            DRIVING_LICENSE_FRONT: "license",
+            DRIVING_LICENSE_BACK: "license",
+            GOOD_CONDUCT: "police",
+          };
+          const next: DocumentUploadState = {
+            id: { ...DEFAULT_DOCUMENT_UPLOAD_STATE.id },
+            license: { ...DEFAULT_DOCUMENT_UPLOAD_STATE.license },
+            police: { ...DEFAULT_DOCUMENT_UPLOAD_STATE.police },
+          };
+          for (const doc of backendDocuments) {
+            const rawType = doc.documentType || doc.type || "";
+            const key = docTypeMap[rawType];
+            if (!key) continue;
+            const side =
+              doc.side === "back" || rawType === "DRIVING_LICENSE_BACK"
+                ? "back"
+                : "front";
+            if (doc.fileUrl) {
+              next[key] = {
+                ...next[key],
+                expiryDate: doc.expiryDate
+                  ? doc.expiryDate.slice(0, 10)
+                  : next[key].expiryDate,
+                [side]: {
+                  status: "Uploaded",
+                  fileName: doc.originalFileName || doc.fileUrl || "",
+                  fileUrl: doc.fileUrl || "",
+                  fileKey: doc.fileKey || "",
+                  error: "",
+                },
+              };
+            }
+          }
+          setDriverDocumentState(next);
         }
 
         // ── Hydrate vehicles ─────────────────────────────────────────────

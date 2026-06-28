@@ -20,13 +20,10 @@ import {
   isAcceptedDocumentFile,
   isDocumentEntryComplete,
   isDocumentEntryRejected,
-  persistDocumentState,
-  readStoredDocumentState,
   validateDocumentExpiryDate,
   type DocumentUploadKey,
   type DocumentExpiryStatus,
   type DocumentUploadSide,
-  type DocumentUploadState,
 } from "../utils/documentVerificationState";
 
 function CopyRow({
@@ -249,9 +246,14 @@ export default function DocumentUpload() {
   const navigate = useNavigate();
   const location = useLocation();
   const driverBackendEnabled = useDriverBackendEnabled();
-  const { resolveGoOnlineAttempt, setOnboardingCheckpoint } =
-    useStore();
+  const {
+    resolveGoOnlineAttempt,
+    setOnboardingCheckpoint,
+    driverDocumentState,
+    setDriverDocumentState,
+  } = useStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const focusedDoc = useMemo(() => {
     const query = new URLSearchParams(location.search);
     const focus = query.get("focus");
@@ -266,7 +268,8 @@ export default function DocumentUpload() {
     return typeof next === "string" && next.trim().length > 0 ? next : "";
   }, [location.search]);
 
-  const [docs, setDocs] = useState<DocumentUploadState>(() => readStoredDocumentState());
+  const docs = driverDocumentState;
+  const setDocs = setDriverDocumentState;
   const [expiryErrors, setExpiryErrors] = useState<Record<DocumentUploadKey, string>>({
     id: "",
     license: "",
@@ -278,9 +281,8 @@ export default function DocumentUpload() {
     isDocumentEntryRejected("license", docs.license) ||
     isDocumentEntryRejected("police", docs.police);
 
-  useEffect(() => {
-    setOnboardingCheckpoint("documentsVerified", allRequiredUploadedWithValidExpiry);
-  }, [allRequiredUploadedWithValidExpiry, setOnboardingCheckpoint]);
+  // docs is now the global driverDocumentState from StoreContext so the profile
+  // page and upload page share the same source of truth.
 
   const handleExpiryDateChange = (key: DocumentUploadKey, value: string) => {
     setDocs((prev) => {
@@ -291,7 +293,6 @@ export default function DocumentUpload() {
           expiryDate: value,
         },
       };
-      persistDocumentState(next);
       return next;
     });
 
@@ -339,7 +340,6 @@ export default function DocumentUpload() {
             },
           },
         };
-        persistDocumentState(next);
         return next;
       });
       if (!accepted) {
@@ -370,7 +370,6 @@ export default function DocumentUpload() {
             },
           },
         };
-        persistDocumentState(next);
         return next;
       });
     } catch (error) {
@@ -391,7 +390,6 @@ export default function DocumentUpload() {
             },
           },
         };
-        persistDocumentState(next);
         return next;
       });
     }
@@ -418,6 +416,7 @@ export default function DocumentUpload() {
     }
 
     setIsSubmitting(true);
+    setSubmitError(null);
     try {
       if (driverBackendEnabled) {
         const docTypeMap: Record<DocumentUploadKey, string> = {
@@ -426,6 +425,7 @@ export default function DocumentUpload() {
           police: "conduct_clearance",
         };
 
+        const pendingUploads: Array<{ key: DocumentUploadKey; side: DocumentUploadSide; fileUrl: string }> = [];
         for (const key of ["id", "license", "police"] as const) {
           for (const side of getRequiredDocumentSides(key)) {
             const copy = docs[key][side];
@@ -433,16 +433,33 @@ export default function DocumentUpload() {
             if (!fileUrl || fileUrl.startsWith("local://") || fileUrl.startsWith("data:")) {
               continue;
             }
-            await createDriverDocument({
-              documentType: docTypeMap[key],
-              fileUrl,
-              fileKey: copy.fileKey,
-              originalFileName: copy.fileName,
-              mimeType: copy.mimeType,
-              sizeBytes: copy.sizeBytes,
-              side,
-              expiryDate: docs[key].expiryDate,
-            });
+            pendingUploads.push({ key, side, fileUrl });
+          }
+        }
+
+        if (pendingUploads.length > 0) {
+          const results = await Promise.allSettled(
+            pendingUploads.map(({ key, side }) =>
+              createDriverDocument({
+                documentType: docTypeMap[key],
+                fileUrl: docs[key][side].fileUrl,
+                fileKey: docs[key][side].fileKey,
+                originalFileName: docs[key][side].fileName,
+                mimeType: docs[key][side].mimeType,
+                sizeBytes: docs[key][side].sizeBytes,
+                side,
+                expiryDate: docs[key].expiryDate,
+              })
+            )
+          );
+
+          const failures = results
+            .map((result, index) => ({ result, upload: pendingUploads[index] }))
+            .filter(({ result }) => result.status === "rejected")
+            .map(({ upload }) => `${upload.key} ${upload.side}`);
+
+          if (failures.length > 0) {
+            throw new Error(`Failed to save ${failures.join(", ")} to the server. Please retry.`);
           }
         }
       }
@@ -472,7 +489,9 @@ export default function DocumentUpload() {
       navigate("/driver/onboarding/profile");
     } catch (error) {
       console.error("Failed to submit documents to backend:", error);
-      alert("Failed to save documents to server. Please try again.");
+      setSubmitError(
+        error instanceof Error ? error.message : "Failed to save documents to server. Please try again.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -633,6 +652,17 @@ export default function DocumentUpload() {
         </section>
 
         <section className="pb-12 pt-4">
+          {submitError && (
+            <div className="mb-3 rounded-2xl border border-red-100 bg-red-50 p-4 text-center">
+              <p className="text-[11px] font-black text-red-700 uppercase tracking-tight mb-1">
+                Could not save documents
+              </p>
+              <p className="text-[11px] font-medium text-red-600/80 leading-relaxed">
+                {submitError}
+              </p>
+            </div>
+          )}
+
           {hasRejectedFiles && (
             <p className="mb-2 text-center text-[10px] font-bold uppercase tracking-tight text-red-600">
               Some files were rejected. Upload valid PDF or image files for all copies.

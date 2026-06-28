@@ -198,84 +198,101 @@ export function useDriverProfileAndAssetsActions({
     }
   }, []);
 
-  const addEmergencyContact = useCallback((contact: Omit<SharedContact, "id" | "createdAt">) => {
+  const addEmergencyContact = useCallback(async (
+    contact: Omit<SharedContact, "id" | "createdAt">,
+  ): Promise<{ success: boolean; error?: string; contact?: SharedContact }> => {
     const tempId = `ec-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
     const createdAt = Date.now();
+    const localContact: SharedContact = { ...contact, id: tempId, createdAt };
 
-    setEmergencyContacts((prev) => [
-      ...prev,
-      {
-        ...contact,
-        id: tempId,
-        createdAt,
-      },
-    ]);
+    setEmergencyContacts((prev) => [...prev, localContact]);
 
-    if (shouldUseDriverBackendWrites()) {
-      void createDriverEmergencyContact({
+    if (!shouldUseDriverBackendWrites()) {
+      return { success: true, contact: localContact };
+    }
+
+    try {
+      const backendContact = await createDriverEmergencyContact({
         name: contact.name,
         phone: contact.phone,
         relationship: contact.relationship,
-      })
-        .then((backendContact) => {
-          if (!backendContact) return;
-          setEmergencyContacts((prev) =>
-            prev.map((entry) =>
-              entry.id === tempId
-                ? {
-                    ...entry,
-                    id: backendContact.id,
-                    name: backendContact.name,
-                    phone: backendContact.phone,
-                    relationship: backendContact.relationship,
-                  }
-                : entry,
-            ),
-          );
-          void refreshBackendOnboardingState().catch((error) => {
-            console.warn("Driver backend emergency contact refresh failed.", error);
-          });
-          return;
-        })
-        .catch((error) => {
-          console.warn("Driver backend emergency contact create failed.", error);
-        });
+      });
+      if (!backendContact) {
+        throw new Error("Emergency contact could not be saved to the server.");
+      }
+      const savedContact: SharedContact = {
+        ...localContact,
+        id: backendContact.id,
+        name: backendContact.name,
+        phone: backendContact.phone,
+        relationship: backendContact.relationship,
+      };
+      setEmergencyContacts((prev) =>
+        prev.map((entry) => (entry.id === tempId ? savedContact : entry)),
+      );
+      void refreshBackendOnboardingState().catch((error) => {
+        console.warn("Driver backend emergency contact refresh failed.", error);
+      });
+      return { success: true, contact: savedContact };
+    } catch (error) {
+      setEmergencyContacts((prev) => prev.filter((entry) => entry.id !== tempId));
+      const message = error instanceof Error ? error.message : "Failed to save emergency contact.";
+      console.warn("Driver backend emergency contact create failed.", error);
+      return { success: false, error: message };
     }
   }, [refreshBackendOnboardingState, setEmergencyContacts]);
 
-  const removeEmergencyContact = useCallback((id: string) => {
-    setEmergencyContacts((prev) => prev.filter((c) => c.id !== id));
+  const removeEmergencyContact = useCallback(async (id: string): Promise<{ success: boolean; error?: string }> => {
+    let previousContacts: SharedContact[] = [];
+    setEmergencyContacts((prev) => {
+      previousContacts = prev;
+      return prev.filter((c) => c.id !== id);
+    });
 
-    if (shouldUseDriverBackendWrites()) {
-      void deleteDriverEmergencyContact(id)
-        .then(() => {
-          void refreshBackendOnboardingState().catch((error) => {
-            console.warn("Driver backend emergency contact delete refresh failed.", error);
-          });
-        })
-        .catch((error) => {
-          console.warn("Driver backend emergency contact delete failed.", error);
-        });
+    if (!shouldUseDriverBackendWrites()) {
+      return { success: true };
+    }
+
+    try {
+      await deleteDriverEmergencyContact(id);
+      void refreshBackendOnboardingState().catch((error) => {
+        console.warn("Driver backend emergency contact delete refresh failed.", error);
+      });
+      return { success: true };
+    } catch (error) {
+      setEmergencyContacts(previousContacts);
+      const message = error instanceof Error ? error.message : "Failed to delete emergency contact.";
+      console.warn("Driver backend emergency contact delete failed.", error);
+      return { success: false, error: message };
     }
   }, [refreshBackendOnboardingState, setEmergencyContacts]);
 
-  const updateEmergencyContact = useCallback((updated: SharedContact) => {
-    setEmergencyContacts((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+  const updateEmergencyContact = useCallback(async (updated: SharedContact): Promise<{ success: boolean; error?: string }> => {
+    let previousContacts: SharedContact[] = [];
+    setEmergencyContacts((prev) => {
+      previousContacts = prev;
+      return prev.map((c) => (c.id === updated.id ? updated : c));
+    });
 
-    if (shouldUseDriverBackendWrites()) {
-      void patchDriverEmergencyContact(updated.id, {
+    if (!shouldUseDriverBackendWrites()) {
+      return { success: true };
+    }
+
+    try {
+      await patchDriverEmergencyContact(updated.id, {
         name: updated.name,
         phone: updated.phone,
         relationship: updated.relationship,
-      })
-        .then(() => {
-          void refreshBackendOnboardingState().catch((error) => {
-            console.warn("Driver backend emergency contact update refresh failed.", error);
-          });
-        })
-        .catch((error) => {
-          console.warn("Driver backend emergency contact update failed.", error);
-        });
+      });
+      void refreshBackendOnboardingState().catch((error) => {
+        console.warn("Driver backend emergency contact update refresh failed.", error);
+      });
+      return { success: true };
+    } catch (error) {
+      setEmergencyContacts(previousContacts);
+      const message = error instanceof Error ? error.message : "Failed to update emergency contact.";
+      console.warn("Driver backend emergency contact update failed.", error);
+      return { success: false, error: message };
     }
   }, [refreshBackendOnboardingState, setEmergencyContacts]);
 

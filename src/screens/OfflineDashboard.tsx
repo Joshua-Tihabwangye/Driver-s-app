@@ -175,9 +175,17 @@ export default function OfflineDashboard() {
       locationInput = undefined;
     }
 
+    const activeVehicle =
+      selectedVehicleIndex !== null &&
+      selectedVehicleIndex >= 0 &&
+      selectedVehicleIndex < vehicles.length
+        ? vehicles[selectedVehicleIndex]
+        : null;
+
     try {
       const result = await setDriverOnline({
         confirmed: true,
+        vehicleId: activeVehicle?.id,
         location: locationInput,
       });
 
@@ -326,6 +334,7 @@ export default function OfflineDashboard() {
       <OfflineConfirmModal
         isOpen={showGoOnlineModal}
         mode="online"
+        isLoading={isGoingOnline}
         onConfirm={handleConfirmGoOnline}
         onCancel={() => setShowGoOnlineModal(false)}
       />

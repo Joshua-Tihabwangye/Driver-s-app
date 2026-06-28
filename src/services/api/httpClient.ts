@@ -188,13 +188,25 @@ export function isAbortError(error: unknown): error is Error & { name: 'AbortErr
 
 async function _handleError(res: Response, parsed?: ApiEnvelope<unknown> | null): Promise<never> {
   const envelopeError = (parsed as { error?: { message?: string | string[] } } | undefined)?.error;
-  const rawMessage = envelopeError?.message ?? (parsed as { message?: string } | undefined)?.message;
-  const detailMessage = Array.isArray(rawMessage) ? rawMessage.join("; ") : rawMessage;
+  const rawMessage =
+    envelopeError?.message ??
+    (parsed as { message?: string | { message?: string } } | undefined)?.message;
+  const detailMessage =
+    typeof rawMessage === "string"
+      ? rawMessage
+      : Array.isArray(rawMessage)
+        ? rawMessage.join("; ")
+        : typeof rawMessage === "object" &&
+            rawMessage &&
+            "message" in rawMessage &&
+            typeof rawMessage.message === "string"
+          ? rawMessage.message
+          : undefined;
   const message = detailMessage || `Request failed: ${res.status} ${res.statusText}`;
   throw new ApiRequestError({
     message,
     status: res.status,
-    code: parsed?.code,
-    details: parsed?.details,
+    code: (parsed as { code?: string } | undefined)?.code,
+    details: parsed ?? undefined,
   });
 }

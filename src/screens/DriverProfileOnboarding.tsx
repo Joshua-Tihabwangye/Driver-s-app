@@ -34,7 +34,6 @@ import {
   getRequiredDocumentSides,
   isDocumentEntryComplete,
   isDocumentEntryRejected,
-  readStoredDocumentState,
   validateDocumentExpiryDate,
   type DocumentUploadKey,
 } from "../utils/documentVerificationState";
@@ -101,13 +100,16 @@ export default function DriverProfileOnboarding() {
     driverProfilePhoto,
     onboardingBlockers,
     onboardingCheckpoints,
+    onboardingCompleted,
+    primaryOnboardingRoute,
     setOnboardingCheckpoint,
     resolveGoOnlineAttempt,
     vehicles,
     selectedVehicleIndex,
     emergencyContacts,
+    driverDocumentState,
   } = useStore();
-  const documentState = readStoredDocumentState();
+  const documentState = driverDocumentState;
   const blockerCount = onboardingBlockers.length;
   const documentsComplete = areAllRequiredDocumentsCompliant(documentState);
   const effectiveDocumentsVerified = onboardingCheckpoints.documentsVerified || documentsComplete;
@@ -398,23 +400,78 @@ export default function DriverProfileOnboarding() {
   const nextRequiredBlocker = onboardingBlockers[0] || null;
 
   const gatewayAction = useMemo(() => {
-    if (!onboardingPrerequisitesComplete && nextRequiredBlocker) {
+    // Never promise the dashboard while onboardingCompleted is false. The
+    // RequireOnboarding guard uses onboardingCompleted to decide whether a
+    // dashboard route is allowed, so a "dashboard" button here would create a
+    // silent loop: navigate to dashboard -> guard redirects back -> repeat.
+    if (!onboardingCompleted) {
+      if (!onboardingCheckpoints.roleSelected) {
+        return {
+          kind: "next-step",
+          label: "Continue to the Next Step",
+          route: "/driver/register",
+          note: "Select your driver role and service category.",
+        };
+      }
+
+      if (driverPreferences.areaIds.length === 0) {
+        return {
+          kind: "next-step",
+          label: "Continue to the Next Step",
+          route: "/driver/preferences",
+          note: "Select at least one target area to receive requests.",
+        };
+      }
+
+      if (!effectiveDocumentsVerified) {
+        return {
+          kind: "next-step",
+          label: "Continue to the Next Step",
+          route: "/driver/onboarding/profile/documents/upload",
+          note: "Upload and verify required driver documents.",
+        };
+      }
+
+      if (!onboardingCheckpoints.vehicleReady) {
+        return {
+          kind: "next-step",
+          label: "Continue to the Next Step",
+          route: "/driver/vehicles",
+          note: "Add and verify at least one active vehicle.",
+        };
+      }
+
+      if (!onboardingCheckpoints.emergencyContactReady) {
+        return {
+          kind: "next-step",
+          label: "Continue to the Next Step",
+          route: "/driver/safety/emergency/contacts",
+          note: "Add at least one trusted emergency contact.",
+        };
+      }
+
+      if (!onboardingCheckpoints.trainingCompleted) {
+        return {
+          kind: "training",
+          label: "Continue to Safety Training",
+          route: "/driver/training/intro",
+          note: "All profile prerequisites are complete. Proceed to safety training to unlock the dashboard.",
+        };
+      }
+
+      // All local checkpoints look complete but backend still reports
+      // onboardingCompleted === false. Don't loop back to document upload;
+      // move forward to training or the dashboard, and only trust the backend
+      // primary route when it points somewhere other than this page.
+      const fallbackRoute =
+        primaryOnboardingRoute && primaryOnboardingRoute !== "/driver/onboarding/profile"
+          ? primaryOnboardingRoute
+          : "/driver/training/intro";
       return {
         kind: "next-step",
         label: "Continue to the Next Step",
-        route: nextRequiredBlocker.route,
-        note:
-          nextRequiredBlocker.description ||
-          "Continue with the next onboarding requirement.",
-      };
-    }
-
-    if (onboardingPrerequisitesComplete && !onboardingCheckpoints.trainingCompleted) {
-      return {
-        kind: "training",
-        label: "Continue to Safety Training",
-        route: "/driver/training/intro",
-        note: "All profile prerequisites are complete. Proceed to safety training to unlock the dashboard.",
+        route: fallbackRoute,
+        note: "Complete the remaining onboarding requirement.",
       };
     }
 
@@ -424,7 +481,16 @@ export default function DriverProfileOnboarding() {
       route: "/driver/dashboard/offline",
       note: "Onboarding is complete. Go to your dashboard and start work when you are ready.",
     };
-  }, [nextRequiredBlocker, onboardingPrerequisitesComplete, onboardingCheckpoints.trainingCompleted]);
+  }, [
+    driverPreferences.areaIds.length,
+    effectiveDocumentsVerified,
+    onboardingCheckpoints.roleSelected,
+    onboardingCheckpoints.vehicleReady,
+    onboardingCheckpoints.emergencyContactReady,
+    onboardingCheckpoints.trainingCompleted,
+    onboardingCompleted,
+    primaryOnboardingRoute,
+  ]);
 
   const completedSocialLinksCount = useMemo(
     () =>
@@ -669,42 +735,44 @@ export default function DriverProfileOnboarding() {
           </p>
         </button>
 
-        {/* Status alert */}
-        <section className={`rounded-3xl border p-5 flex items-start space-x-3 ${
-          canGoOnline
-            ? "bg-emerald-50/60 border-emerald-100/80"
-            : "bg-amber-50/50 border-amber-100/50"
-        }`}>
-          <div className={`mt-0.5 p-1.5 rounded-xl ${
-            canGoOnline ? "bg-emerald-100" : "bg-amber-100"
+        {/* Status alert — only show during onboarding */}
+        {!onboardingCompleted && (
+          <section className={`rounded-3xl border p-5 flex items-start space-x-3 ${
+            canGoOnline
+              ? "bg-emerald-50/60 border-emerald-100/80"
+              : "bg-amber-50/50 border-amber-100/50"
           }`}>
-            <AlertCircle className={`h-4 w-4 ${
-              canGoOnline ? "text-emerald-600" : "text-amber-600"
-            }`} />
-          </div>
-          <div className={`shrink text-[11px] ${
-            canGoOnline ? "text-emerald-900" : "text-amber-900"
-          }`}>
-            <p className="font-black text-xs mb-1 uppercase tracking-tight">
-              {canGoOnline
-                ? "Setup Complete"
-                : onboardingPrerequisitesComplete
-                ? "Setup Complete"
-                : "Setup Incomplete"}
-            </p>
-            <p className="font-medium opacity-70">
-              {canGoOnline
-                ? "All onboarding requirements are complete. Use Go Online when ready."
-                : onboardingPrerequisitesComplete
-                ? "All prerequisites are complete. Continue to the dashboard to start working."
-                : nextRequiredBlocker
-                ? `Next required step: ${nextRequiredBlocker.title}.`
-                : nextMissingInfoItem
-                ? `Next required step: ${nextMissingInfoItem.label}.`
-                : `Complete ${blockerCount} required step${blockerCount === 1 ? "" : "s"} to unlock shifts.`}
-            </p>
-          </div>
-        </section>
+            <div className={`mt-0.5 p-1.5 rounded-xl ${
+              canGoOnline ? "bg-emerald-100" : "bg-amber-100"
+            }`}>
+              <AlertCircle className={`h-4 w-4 ${
+                canGoOnline ? "text-emerald-600" : "text-amber-600"
+              }`} />
+            </div>
+            <div className={`shrink text-[11px] ${
+              canGoOnline ? "text-emerald-900" : "text-amber-900"
+            }`}>
+              <p className="font-black text-xs mb-1 uppercase tracking-tight">
+                {canGoOnline
+                  ? "Setup Complete"
+                  : onboardingPrerequisitesComplete
+                  ? "Setup Complete"
+                  : "Setup Incomplete"}
+              </p>
+              <p className="font-medium opacity-70">
+                {canGoOnline
+                  ? "All onboarding requirements are complete. Use Go Online when ready."
+                  : onboardingPrerequisitesComplete
+                  ? "All prerequisites are complete. Continue to the dashboard to start working."
+                  : nextRequiredBlocker
+                  ? `Next required step: ${nextRequiredBlocker.title}.`
+                  : nextMissingInfoItem
+                  ? `Next required step: ${nextMissingInfoItem.label}.`
+                  : `Complete ${blockerCount} required step${blockerCount === 1 ? "" : "s"} to unlock shifts.`}
+              </p>
+            </div>
+          </section>
+        )}
 
         {/* Documents & checks */}
         <section className="space-y-5">
@@ -1024,49 +1092,51 @@ export default function DriverProfileOnboarding() {
           </section>
         )}
 
-        {/* Main Action Button */}
-        <section className="pt-4 pb-12">
-          <button
-            type="button"
-            onClick={() => {
-              if (gatewayAction.kind === "next-step" || gatewayAction.kind === "training") {
-                navigate(gatewayAction.route);
-                return;
-              }
-              if (gatewayAction.kind === "online") {
-                const decision = resolveGoOnlineAttempt("/driver/dashboard/online");
-                if (decision.allowed) {
-                  navigate("/driver/dashboard/offline", {
-                    replace: true,
-                    state: {
-                      openGoOnlineConfirmation: true,
-                    },
+        {/* Main Action Button — only show during onboarding */}
+        {!onboardingCompleted && (
+          <section className="pt-4 pb-12">
+            <button
+              type="button"
+              onClick={() => {
+                if (gatewayAction.kind === "next-step" || gatewayAction.kind === "training") {
+                  navigate(gatewayAction.route);
+                  return;
+                }
+                if (gatewayAction.kind === "online") {
+                  const decision = resolveGoOnlineAttempt("/driver/dashboard/online");
+                  if (decision.allowed) {
+                    navigate("/driver/dashboard/offline", {
+                      replace: true,
+                      state: {
+                        openGoOnlineConfirmation: true,
+                      },
+                    });
+                    return;
+                  }
+                  navigate(decision.route, {
+                    state: decision.allowed
+                      ? undefined
+                      : {
+                          offlineGuardMessage: decision.message,
+                        },
                   });
                   return;
                 }
-                navigate(decision.route, {
-                  state: decision.allowed
-                    ? undefined
-                    : {
-                        offlineGuardMessage: decision.message,
-                      },
-                });
-                return;
-              }
-              navigate(gatewayAction.route);
-            }}
-            className={`w-full rounded-2xl py-4 text-sm font-black shadow-lg transition-all active:scale-[0.98] uppercase tracking-widest ${
-              gatewayAction.kind === "online" || gatewayAction.kind === "dashboard"
-                ? "bg-orange-500 text-white shadow-orange-500/20 hover:bg-orange-600"
-                : "bg-slate-900 text-white shadow-slate-900/20 hover:bg-slate-800"
-            }`}
-          >
-            {gatewayAction.label}
-          </button>
-          <p className="mt-2 text-center text-[10px] text-slate-400 font-bold uppercase tracking-tight">
-            {gatewayAction.note}
-          </p>
-        </section>
+                navigate(gatewayAction.route);
+              }}
+              className={`w-full rounded-2xl py-4 text-sm font-black shadow-lg transition-all active:scale-[0.98] uppercase tracking-widest ${
+                gatewayAction.kind === "online" || gatewayAction.kind === "dashboard"
+                  ? "bg-orange-500 text-white shadow-orange-500/20 hover:bg-orange-600"
+                  : "bg-slate-900 text-white shadow-slate-900/20 hover:bg-slate-800"
+              }`}
+            >
+              {gatewayAction.label}
+            </button>
+            <p className="mt-2 text-center text-[10px] text-slate-400 font-bold uppercase tracking-tight">
+              {gatewayAction.note}
+            </p>
+          </section>
+        )}
       </main>
     </div>
   );

@@ -5,6 +5,7 @@ interface OfflineConfirmModalProps {
   onConfirm: () => void;
   onCancel: () => void;
   mode?: "offline" | "online";
+  isLoading?: boolean;
 }
 
 export default function OfflineConfirmModal({
@@ -12,6 +13,7 @@ export default function OfflineConfirmModal({
   onConfirm,
   onCancel,
   mode = "offline",
+  isLoading = false,
 }: OfflineConfirmModalProps) {
   if (!isOpen) return null;
 
@@ -60,9 +62,10 @@ export default function OfflineConfirmModal({
           <button
             type="button"
             onClick={onConfirm}
-            className={`flex-1 rounded-lg py-3 text-xs font-bold text-white active:scale-95 transition-all ${confirmButtonClass}`}
+            disabled={isLoading}
+            className={`flex-1 rounded-lg py-3 text-xs font-bold text-white active:scale-95 transition-all ${confirmButtonClass} disabled:opacity-70 disabled:cursor-wait disabled:active:scale-100`}
           >
-            {confirmLabel}
+            {isLoading ? "Please wait..." : confirmLabel}
           </button>
         </div>
       </div>

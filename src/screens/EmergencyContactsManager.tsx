@@ -104,7 +104,7 @@ export default function EmergencyContactsManager() {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const name = form.name.trim();
     const relationship = form.relationship.trim();
     const phone = form.phone.trim();
@@ -120,6 +120,7 @@ export default function EmergencyContactsManager() {
       return;
     }
 
+    let result;
     if (editingId) {
       const existing = emergencyContacts.find((contact) => contact.id === editingId);
       if (!existing) {
@@ -127,18 +128,23 @@ export default function EmergencyContactsManager() {
         return;
       }
 
-      updateEmergencyContact({
+      result = await updateEmergencyContact({
         ...existing,
         name,
         relationship,
         phone,
       });
     } else {
-      addEmergencyContact({
+      result = await addEmergencyContact({
         name,
         relationship,
         phone,
       });
+    }
+
+    if (!result.success) {
+      setError(result.error || "Failed to save emergency contact.");
+      return;
     }
 
     resetForm();

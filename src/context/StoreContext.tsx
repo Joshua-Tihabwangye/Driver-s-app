@@ -40,6 +40,7 @@ import {
 	readStoredDocumentState,
 	validateDocumentExpiryDate,
 	type DocumentUploadKey,
+	type DocumentUploadState,
 } from "../utils/documentVerificationState";
 import { OFFLINE_JOB_ACCESS_ERROR } from "../utils/offlineAccess";
 import {
@@ -456,9 +457,11 @@ interface StoreContextType {
 	emergencyContacts: SharedContact[];
 	addEmergencyContact: (
 		contact: Omit<SharedContact, "id" | "createdAt">,
-	) => void;
-	removeEmergencyContact: (contactId: string) => void;
-	updateEmergencyContact: (contact: SharedContact) => void;
+	) => Promise<{ success: boolean; error?: string; contact?: SharedContact }>;
+	removeEmergencyContact: (contactId: string) => Promise<{ success: boolean; error?: string }>;
+	updateEmergencyContact: (contact: SharedContact) => Promise<{ success: boolean; error?: string }>;
+	driverDocumentState: DocumentUploadState;
+	setDriverDocumentState: (next: DocumentUploadState | ((prev: DocumentUploadState) => DocumentUploadState)) => void;
 	jobAccessError: string | null;
 	clearJobAccessError: () => void;
 	resolveJobAccessAttempt: (nextRoute?: string) => JobAccessDecision;
@@ -503,7 +506,7 @@ const JOBS_STORAGE_KEY = "driver_jobs";
 const TRIPS_STORAGE_KEY = "driver_trips";
 const REVENUE_EVENTS_STORAGE_KEY = "driver_revenue_events";
 const TRIP_FEEDBACKS_STORAGE_KEY = "driver_trip_feedbacks";
-const DRIVER_BACKEND_ONLY_MODE = false;
+const DRIVER_BACKEND_ONLY_MODE = true;
 const DOCUMENT_EXPIRED_API_ERROR =
 	"Some of your documents have expired. You won't be able to receive job requests until you upload valid documents.";
 const GO_ONLINE_CONFIRMATION_MESSAGE =
@@ -2035,13 +2038,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 	const [emergencyContacts, setEmergencyContacts] = useState<SharedContact[]>(
 		() => readStoredEmergencyContacts(),
 	);
+	const [driverDocumentState, setDriverDocumentState] =
+		useState<DocumentUploadState>(() => readStoredDocumentState());
 	const [driverPresenceStatus, setDriverPresenceStatus] =
 		useState<DriverPresenceStatus>(() => readStoredDriverPresenceStatus());
 	const [onboardingCompleted, setOnboardingCompleted] = useState<boolean>(
 		() => {
-			// Seed from localStorage so a fully-onboarded driver isn't redirected to
-			// the onboarding route during the bootstrap loading window.
-			if (typeof window === "undefined") return false;
+			// In backend-only mode the real onboarding status comes from the bootstrap
+			// call; seeding from localStorage would allow stale/offline state to leak in.
+			if (DRIVER_BACKEND_ONLY_MODE || typeof window === "undefined") return false;
 			try {
 				return (
 					window.localStorage.getItem(
@@ -2056,11 +2061,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 	const [backendPrimaryOnboardingRoute, setBackendPrimaryOnboardingRoute] =
 		useState<string>("/driver/onboarding/profile");
 
-	// Persist onboardingCompleted so it can seed the initial state on the next load,
-	// preventing the RequireOnboarding guard from briefly redirecting a fully-onboarded
-	// driver to the onboarding route during the bootstrap loading window.
+	// In backend-only mode the bootstrap response is the source of truth, so we no
+	// longer cache onboardingCompleted in localStorage. The RequireOnboarding guard
+	// waits for bootstrap to finish before deciding where to route.
 	useEffect(() => {
-		if (typeof window === "undefined") return;
+		if (DRIVER_BACKEND_ONLY_MODE || typeof window === "undefined") return;
 		try {
 			window.localStorage.setItem(
 				"driver_onboarding_completed",
@@ -2245,7 +2250,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 			);
 		}
 
-		// Hydrate local document state from backend records
+		// Hydrate global document state from backend records
 		if (backendDocuments && backendDocuments.length > 0) {
 			// Compatibility controller returns `documentType`+`side`; canonical
 			// DriversController returns `type` (NATIONAL_ID, DRIVING_LICENSE_FRONT, …).
@@ -2258,41 +2263,39 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 				DRIVING_LICENSE_BACK: "license",
 				GOOD_CONDUCT: "police",
 			};
-			const next = readStoredDocumentState();
-			let changed = false;
-			for (const doc of backendDocuments) {
-				const rawType = doc.documentType || doc.type || "";
-				const key = docTypeMap[rawType];
-				if (!key) continue;
-				const side =
-					doc.side === "back" || rawType === "DRIVING_LICENSE_BACK"
-						? "back"
-						: "front";
-				if (!next[key][side].fileUrl && doc.fileUrl) {
-					next[key] = {
-						...next[key],
-						expiryDate: doc.expiryDate
-							? doc.expiryDate.slice(0, 10)
-							: next[key].expiryDate,
-						[side]: {
-							status: "Uploaded",
-							fileName: doc.originalFileName || doc.fileUrl || "",
-							fileUrl: doc.fileUrl || "",
-							fileKey: doc.fileKey || "",
-							error: "",
-						},
-					};
-					changed = true;
+			setDriverDocumentState((prev) => {
+				const next = { ...prev };
+				for (const doc of backendDocuments) {
+					const rawType = doc.documentType || doc.type || "";
+					const key = docTypeMap[rawType];
+					if (!key) continue;
+					const side =
+						doc.side === "back" || rawType === "DRIVING_LICENSE_BACK"
+							? "back"
+							: "front";
+					if (doc.fileUrl) {
+						next[key] = {
+							...next[key],
+							expiryDate: doc.expiryDate
+								? doc.expiryDate.slice(0, 10)
+								: next[key].expiryDate,
+							[side]: {
+								status: "Uploaded",
+								fileName: doc.originalFileName || doc.fileUrl || "",
+								fileUrl: doc.fileUrl || "",
+								fileKey: doc.fileKey || "",
+								error: "",
+							},
+						};
+					}
 				}
-			}
-			if (changed) {
-				persistDocumentState(next);
-			}
+				return next;
+			});
 		}
 
 		setDriverBootstrapReady(true);
 		return onboardingStatus ?? null;
-	}, [driverBackendEnabled]);
+	}, [driverBackendEnabled, setDriverDocumentState]);
 
 	// Phase 2 — explicit jobs refresh that can be triggered right after going online
 	// so the driver sees pending requests without waiting for the periodic bootstrap.
@@ -2408,6 +2411,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 		setTrips,
 		setRevenueEvents,
 		setEmergencyContacts,
+		setDriverDocumentState,
 		setActiveTrip,
 		setDeliveryWorkflow,
 		setActiveRideRuntime,
@@ -5468,6 +5472,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 			addEmergencyContact,
 			removeEmergencyContact,
 			updateEmergencyContact,
+			driverDocumentState,
+			setDriverDocumentState,
 			updateTourSegmentStatus,
 			jobAccessError,
 			clearJobAccessError,
@@ -5563,6 +5569,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 			addEmergencyContact,
 			removeEmergencyContact,
 			updateEmergencyContact,
+			driverDocumentState,
+			setDriverDocumentState,
 			updateTourSegmentStatus,
 			jobAccessError,
 			clearJobAccessError,
