@@ -2958,9 +2958,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
 		const checkpointBlockers = ONBOARDING_CHECKPOINT_ORDER.filter(
 			(checkpointId) => {
-				if (checkpointId === "trainingCompleted") {
-					return false;
-				}
 				if (checkpointId === "documentsVerified") {
 					return !documentsVerified;
 				}

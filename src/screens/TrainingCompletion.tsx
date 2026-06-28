@@ -178,7 +178,10 @@ export default function TrainingCompletion() {
           if (onlineResult?.redirectPath) {
             navigate(onlineResult.redirectPath, { replace: true });
           } else {
-            navigate("/driver/dashboard/offline", { replace: true });
+            // After training the driver should land on the online dashboard.
+            // If the go-online request failed, the online dashboard will show the
+            // offline state and the driver can tap GO ONLINE once ready.
+            navigate("/driver/dashboard/online", { replace: true });
           }
         }
       } catch (error) {

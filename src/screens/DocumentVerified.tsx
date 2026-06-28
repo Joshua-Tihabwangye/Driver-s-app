@@ -45,6 +45,7 @@ export default function DocumentVerified() {
   const {
     resolveGoOnlineAttempt,
     setOnboardingCheckpoint,
+    onboardingCheckpoints,
   } = useStore();
   const documentState = useMemo(() => readStoredDocumentState(), []);
   const allDocumentsVerified = areAllRequiredDocumentsCompliant(documentState);
@@ -62,9 +63,15 @@ export default function DocumentVerified() {
     setOnboardingCheckpoint("documentsVerified", true);
   }, [allDocumentsVerified, documentState, navigate, setOnboardingCheckpoint]);
 
-  const primaryCtaLabel = "Continue to Dashboard";
+  const primaryCtaLabel = onboardingCheckpoints.trainingCompleted
+    ? "Continue to Dashboard"
+    : "Continue to Training";
   const handlePrimaryAction = () => {
-    navigate("/driver/dashboard/offline");
+    if (onboardingCheckpoints.trainingCompleted) {
+      navigate("/driver/dashboard/offline");
+    } else {
+      navigate("/driver/training/intro");
+    }
   };
 
   const handleGoOnlineNow = () => {
@@ -168,9 +175,8 @@ export default function DocumentVerified() {
                What's Next?
             </p>
             <div className="font-medium space-y-1">
-              <p>• Continue to the dashboard in offline mode.</p>
-              <p>• Tap Go Online when you are ready to start receiving work.</p>
-              <p>• Training remains available later, but it does not block work.</p>
+              <p>• Complete the required training next.</p>
+              <p>• After training you can go online and start receiving work.</p>
             </div>
           </div>
         </section>
