@@ -7,7 +7,8 @@ export function resolveRouteFromOnboardingStatus(
     return "/driver/register";
   }
 
-  if (status.onboardingCompleted) {
+  // Do not trust onboardingCompleted alone if training has not been completed.
+  if (status.onboardingCompleted && status.hasCompletedTutorials) {
     return status.redirectPath || "/driver/dashboard/offline";
   }
 
