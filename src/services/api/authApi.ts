@@ -45,6 +45,13 @@ export interface DriverBackendRegisterInput {
   email: string;
   phone?: string;
   password: string;
+  country?: string;
+  dateOfBirth?: string;
+  streetAddress?: string;
+  city?: string;
+  district?: string;
+  postalCode?: string;
+  landmark?: string;
 }
 
 export interface DriverBackendLoginInput {
@@ -117,6 +124,13 @@ export async function registerDriverViaBackend(input: DriverBackendRegisterInput
       phone: input.phone,
       fullName: input.fullName,
       roles: ["driver"],
+      country: input.country,
+      dateOfBirth: input.dateOfBirth,
+      streetAddress: input.streetAddress,
+      city: input.city,
+      district: input.district,
+      postalCode: input.postalCode,
+      landmark: input.landmark,
     },
   });
 }

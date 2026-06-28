@@ -141,8 +141,8 @@ function PersonalCopyRow({ label, copy, onClick }: PersonalCopyRowProps) {
     copy.status === "Uploaded"
       ? "bg-emerald-50 text-emerald-700 border-emerald-100"
       : copy.status === "Rejected"
-      ? "bg-red-50 text-red-700 border-red-200"
-      : "bg-amber-50 text-amber-700 border-amber-100";
+        ? "bg-red-50 text-red-700 border-red-200"
+        : "bg-amber-50 text-amber-700 border-amber-100";
 
   return (
     <button
@@ -156,13 +156,17 @@ function PersonalCopyRow({ label, copy, onClick }: PersonalCopyRowProps) {
             {label}
           </span>
           {copy.fileName ? (
-            <span className="break-all text-[10px] text-slate-500">Selected: {copy.fileName}</span>
+            <span className="break-all text-[10px] text-slate-500">
+              Selected: {copy.fileName}
+            </span>
           ) : (
             <span className="text-[10px] text-slate-400">No file selected</span>
           )}
         </div>
         <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
-          <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${tone}`}>
+          <span
+            className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${tone}`}
+          >
             {copy.status}
           </span>
           <span className="ml-auto inline-flex items-center rounded-full border border-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-700 sm:ml-0">
@@ -171,7 +175,11 @@ function PersonalCopyRow({ label, copy, onClick }: PersonalCopyRowProps) {
           </span>
         </div>
       </div>
-      {copy.error ? <p className="mt-1 text-[10px] font-medium text-red-600">{copy.error}</p> : null}
+      {copy.error ? (
+        <p className="mt-1 text-[10px] font-medium text-red-600">
+          {copy.error}
+        </p>
+      ) : null}
     </button>
   );
 }
@@ -181,12 +189,14 @@ function getDocumentDisplayName(
   fallbackFileName: string,
   documentType: string,
 ): string {
-  const trimmedOriginal = typeof originalFileName === "string" ? originalFileName.trim() : "";
+  const trimmedOriginal =
+    typeof originalFileName === "string" ? originalFileName.trim() : "";
   if (trimmedOriginal) {
     return trimmedOriginal;
   }
 
-  const trimmedFallback = typeof fallbackFileName === "string" ? fallbackFileName.trim() : "";
+  const trimmedFallback =
+    typeof fallbackFileName === "string" ? fallbackFileName.trim() : "";
   if (trimmedFallback) {
     return trimmedFallback;
   }
@@ -215,26 +225,26 @@ function ExpiryStatusBadge({
     status === "valid"
       ? "border-emerald-200 bg-emerald-50 text-emerald-700"
       : status === "expiring_soon"
-      ? "border-amber-200 bg-amber-50 text-amber-700"
-      : status === "expired"
-      ? "border-red-200 bg-red-50 text-red-700"
-      : "border-slate-200 bg-slate-100 text-slate-500";
+        ? "border-amber-200 bg-amber-50 text-amber-700"
+        : status === "expired"
+          ? "border-red-200 bg-red-50 text-red-700"
+          : "border-slate-200 bg-slate-100 text-slate-500";
 
   const label =
     status === "valid"
       ? "Valid"
       : status === "expiring_soon"
-      ? "Expiring Soon"
-      : status === "expired"
-      ? "Expired"
-      : "Expiry Date Required";
+        ? "Expiring Soon"
+        : status === "expired"
+          ? "Expired"
+          : "Expiry Date Required";
 
   const detail =
     typeof daysUntilExpiry === "number" && daysUntilExpiry >= 0
       ? `${daysUntilExpiry} days left`
       : status === "expired"
-      ? "Update required"
-      : "Set expiry date";
+        ? "Update required"
+        : "Set expiry date";
 
   return (
     <span
@@ -249,7 +259,9 @@ function scrollToSection(ref: RefObject<HTMLElement | null>) {
   ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-function isVehicleDocumentCompliant(group: VehicleDocumentGroup | undefined): boolean {
+function isVehicleDocumentCompliant(
+  group: VehicleDocumentGroup | undefined,
+): boolean {
   if (!group?.file?.url || !group.file.fileName) {
     return false;
   }
@@ -293,28 +305,34 @@ export default function RequiredActionsDashboard() {
     vehicles,
     selectedVehicleIndex,
     setSelectedVehicleIndex,
-    updateVehicle,
     refreshBackendOnboardingState,
   } = useStore();
 
   const [personalDocs, setPersonalDocs] = useState<DocumentUploadState>(() =>
-    readStoredDocumentState()
+    readStoredDocumentState(),
   );
-  const [expiryErrors, setExpiryErrors] = useState<Record<DocumentUploadKey, string>>({
+  const [expiryErrors, setExpiryErrors] = useState<
+    Record<DocumentUploadKey, string>
+  >({
     id: "",
     license: "",
     police: "",
   });
-  const [vehicleSaveErrors, setVehicleSaveErrors] = useState<Record<"insurance" | "inspection", string>>({
+  const [vehicleSaveErrors, setVehicleSaveErrors] = useState<
+    Record<"insurance" | "inspection", string>
+  >({
     insurance: "",
     inspection: "",
   });
 
   // "Update all documents" button state
-  const [updateStatus, setUpdateStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [updateStatus, setUpdateStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
   const [updateMessage, setUpdateMessage] = useState("");
 
-  const allPersonalDocsCompliant = areAllRequiredDocumentsCompliant(personalDocs);
+  const allPersonalDocsCompliant =
+    areAllRequiredDocumentsCompliant(personalDocs);
 
   // ── Update all documents to backend ───────────────────────────────────────
   const handleUpdateAllDocuments = async () => {
@@ -365,22 +383,31 @@ export default function RequiredActionsDashboard() {
             continue;
           }
 
-          if ((fileUrl.startsWith("local://") || fileUrl.startsWith("data:")) && copy.rawFile) {
+          if (
+            (fileUrl.startsWith("local://") || fileUrl.startsWith("data:")) &&
+            copy.rawFile
+          ) {
             const uploadResult = await uploadFile(copy.rawFile, "document");
             if (!uploadResult) {
               throw new Error("Failed to upload document file.");
             }
             fileUrl = uploadResult.fileUrl;
             fileKey = uploadResult.fileKey;
-            originalFileName = uploadResult.originalFileName || originalFileName;
+            originalFileName =
+              uploadResult.originalFileName || originalFileName;
             mimeType = uploadResult.mimeType;
             sizeBytes = uploadResult.sizeBytes;
-          } else if (fileUrl.startsWith("local://") || fileUrl.startsWith("data:")) {
+          } else if (
+            fileUrl.startsWith("local://") ||
+            fileUrl.startsWith("data:")
+          ) {
             throw new Error("Selected file is missing. Please pick it again.");
           }
 
           const docType = docTypeMap[key];
-          const existingDoc = byTypeAndSide.get(`${docType}:${side}`) || byTypeAndSide.get(`${docType}:front`);
+          const existingDoc =
+            byTypeAndSide.get(`${docType}:${side}`) ||
+            byTypeAndSide.get(`${docType}:front`);
           try {
             if (existingDoc) {
               await updateDriverDocument(existingDoc.id, {
@@ -427,7 +454,10 @@ export default function RequiredActionsDashboard() {
             });
           } catch (error) {
             failed++;
-            const message = getErrorMessage(error, "Failed to save this document.");
+            const message = getErrorMessage(
+              error,
+              "Failed to save this document.",
+            );
             setPersonalDocs((prev) => {
               const next = {
                 ...prev,
@@ -449,61 +479,76 @@ export default function RequiredActionsDashboard() {
 
       // 3. Sync vehicle documents
       if (activeVehicle) {
-        const vehicleKeys: Array<"insurance" | "inspection"> = ["insurance", "inspection"];
+        const vehicleKeys: Array<"insurance" | "inspection"> = [
+          "insurance",
+          "inspection",
+        ];
+        const VEHICLE_DOC_TYPE_MAP: Record<
+          "insurance" | "inspection",
+          "VEHICLE_INSURANCE" | "VEHICLE_INSPECTION"
+        > = {
+          insurance: "VEHICLE_INSURANCE",
+          inspection: "VEHICLE_INSPECTION",
+        };
+
         // Fetch existing vehicle documents
-        let existingVehicleDocs: Array<{ id: string; documentType: string }> = [];
+        let existingVehicleDocs: Array<{ id: string; documentType: string }> =
+          [];
         try {
           const vehicleList = await listDriverVehicles();
-          const backendVehicle = vehicleList.find((v) => v.id === activeVehicle.id);
+          const backendVehicle = vehicleList.find(
+            (v) => v.id === activeVehicle.id,
+          );
           existingVehicleDocs = (backendVehicle as any)?.vehicleDocuments ?? [];
-        } catch { /* best effort */ }
+        } catch {
+          /* best effort */
+        }
 
-        const vehicleDocByType = new Map(existingVehicleDocs.map((d) => [d.documentType, d]));
+        const vehicleDocByType = new Map(
+          existingVehicleDocs.map((d) => [d.documentType, d]),
+        );
 
         for (const key of vehicleKeys) {
-          const group = activeVehicle.vehicleDocs?.[key];
+          const group = localVehicleDocs?.[key];
           let fileUrl = group?.file?.url || "";
           const expiryDate = group?.expiryDate || group?.file?.expiryDate || "";
           if (!fileUrl || !expiryDate) continue;
-          let originalFileName = group?.file?.fileName || undefined;
-          let fileKey = group?.file?.fileKey;
-          let mimeType = group?.file?.mimeType;
-          let sizeBytes = group?.file?.sizeBytes;
           const rawFile = group?.file?.rawFile as File | undefined;
-          if ((fileUrl.startsWith("local://") || fileUrl.startsWith("data:")) && rawFile) {
+          if (
+            (fileUrl.startsWith("local://") || fileUrl.startsWith("data:")) &&
+            rawFile
+          ) {
             const uploadResult = await uploadFile(rawFile, "document");
             if (!uploadResult) {
               throw new Error("Failed to upload vehicle document.");
             }
             fileUrl = uploadResult.fileUrl;
-            fileKey = uploadResult.fileKey;
-            originalFileName = uploadResult.originalFileName || originalFileName;
-            mimeType = uploadResult.mimeType;
-            sizeBytes = uploadResult.sizeBytes;
-          } else if (fileUrl.startsWith("local://") || fileUrl.startsWith("data:")) {
-            throw new Error("Selected vehicle document is missing. Please pick it again.");
+          } else if (
+            fileUrl.startsWith("local://") ||
+            fileUrl.startsWith("data:")
+          ) {
+            throw new Error(
+              "Selected vehicle document is missing. Please pick it again.",
+            );
           }
 
-          const docType = key === "insurance" ? "insurance" : "inspection";
-          const existingVehicleDoc = vehicleDocByType.get(docType);
+          const backendDocType = VEHICLE_DOC_TYPE_MAP[key];
+          const existingVehicleDoc = vehicleDocByType.get(backendDocType);
           try {
             if (existingVehicleDoc) {
-              await patchDriverVehicleDocument(activeVehicle.id, existingVehicleDoc.id, {
-                fileUrl,
-                fileKey: fileKey || undefined,
-                expiryDate,
-                originalFileName,
-                mimeType,
-                sizeBytes,
-              });
+              await patchDriverVehicleDocument(
+                activeVehicle.id,
+                existingVehicleDoc.id,
+                {
+                  type: backendDocType,
+                  fileUrl,
+                  expiryDate,
+                },
+              );
             } else {
               await uploadDriverVehicleDocument(activeVehicle.id, {
-                documentType: docType,
+                type: backendDocType,
                 fileUrl,
-                fileKey: fileKey || undefined,
-                originalFileName,
-                mimeType,
-                sizeBytes,
                 expiryDate,
               });
             }
@@ -511,7 +556,10 @@ export default function RequiredActionsDashboard() {
             nextVehicleErrors[key] = "";
           } catch (error) {
             failed++;
-            nextVehicleErrors[key] = getErrorMessage(error, "Failed to save this vehicle document.");
+            nextVehicleErrors[key] = getErrorMessage(
+              error,
+              "Failed to save this vehicle document.",
+            );
           }
         }
       }
@@ -520,17 +568,23 @@ export default function RequiredActionsDashboard() {
 
       if (failed === 0 && succeeded > 0) {
         setUpdateStatus("success");
-        setUpdateMessage(`${succeeded} document${succeeded > 1 ? "s" : ""} updated successfully. You can now go online.`);
+        setUpdateMessage(
+          `${succeeded} document${succeeded > 1 ? "s" : ""} updated successfully. You can now go online.`,
+        );
         // Refresh onboarding state so the go-online gate sees fresh data
         await refreshBackendOnboardingState?.();
         // Send the driver back to the offline dashboard so they can tap Go Online.
         window.setTimeout(() => navigate("/driver/dashboard/offline"), 1500);
       } else if (succeeded > 0) {
         setUpdateStatus("success");
-        setUpdateMessage(`${succeeded} updated, ${failed} failed. Failed documents are marked in red below.`);
+        setUpdateMessage(
+          `${succeeded} updated, ${failed} failed. Failed documents are marked in red below.`,
+        );
       } else {
         setUpdateStatus("error");
-        setUpdateMessage("No documents were updated. Ensure files and expiry dates are set.");
+        setUpdateMessage(
+          "No documents were updated. Ensure files and expiry dates are set.",
+        );
       }
     } catch {
       setUpdateStatus("error");
@@ -591,7 +645,10 @@ export default function RequiredActionsDashboard() {
           return next;
         });
       } catch (error) {
-        console.warn("Failed to hydrate personal documents from backend.", error);
+        console.warn(
+          "Failed to hydrate personal documents from backend.",
+          error,
+        );
       }
     };
 
@@ -615,21 +672,43 @@ export default function RequiredActionsDashboard() {
       ? vehicles[selectedVehicleIndex]
       : null;
 
+  // Local vehicle document state so date/file changes do not trigger a backend
+  // PATCH on every keystroke. The backend is only called by "Update all documents".
+  const [localVehicleDocs, setLocalVehicleDocs] = useState<
+    VehicleDocuments | undefined
+  >(activeVehicle?.vehicleDocs);
+  const initializedVehicleIdRef = useRef<string | null | undefined>(undefined);
+
+  useEffect(() => {
+    // Only seed local state when the active vehicle itself changes. We must not
+    // overwrite in-progress edits when the same vehicle's docs object is recreated
+    // by a store update or background refresh.
+    if (activeVehicle?.id !== initializedVehicleIdRef.current) {
+      initializedVehicleIdRef.current = activeVehicle?.id;
+      setLocalVehicleDocs(activeVehicle?.vehicleDocs);
+    }
+  }, [activeVehicle?.id, activeVehicle?.vehicleDocs]);
+
   const activeVehicleDocsCompliant = useMemo(() => {
     if (!activeVehicle) {
       return false;
     }
 
-    const insuranceOk = isVehicleDocumentCompliant(activeVehicle.vehicleDocs?.insurance);
-    const inspectionOk = isVehicleDocumentCompliant(activeVehicle.vehicleDocs?.inspection);
+    const insuranceOk = isVehicleDocumentCompliant(localVehicleDocs?.insurance);
+    const inspectionOk = isVehicleDocumentCompliant(
+      localVehicleDocs?.inspection,
+    );
     return insuranceOk && inspectionOk;
-  }, [activeVehicle]);
+  }, [activeVehicle, localVehicleDocs]);
 
   useEffect(() => {
     setOnboardingCheckpoint("documentsVerified", allPersonalDocsCompliant);
   }, [allPersonalDocsCompliant, setOnboardingCheckpoint]);
 
-  const handleBlockerOpen = (blocker: { id: OnboardingCheckpointId; route: string }) => {
+  const handleBlockerOpen = (blocker: {
+    id: OnboardingCheckpointId;
+    route: string;
+  }) => {
     if (blocker.id === "documentsVerified") {
       scrollToSection(personalDocumentsRef);
       return;
@@ -643,8 +722,13 @@ export default function RequiredActionsDashboard() {
     navigate(blocker.route);
   };
 
-  const triggerPersonalUpload = (key: DocumentUploadKey, side: DocumentUploadSide) => {
-    const input = document.getElementById(`required-actions-doc-${key}-${side}`);
+  const triggerPersonalUpload = (
+    key: DocumentUploadKey,
+    side: DocumentUploadSide,
+  ) => {
+    const input = document.getElementById(
+      `required-actions-doc-${key}-${side}`,
+    );
     if (input) {
       input.click();
     }
@@ -675,7 +759,7 @@ export default function RequiredActionsDashboard() {
   const handlePersonalFileSelected = (
     key: DocumentUploadKey,
     side: DocumentUploadSide,
-    event: ChangeEvent<HTMLInputElement>
+    event: ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
     if (!file) {
@@ -683,7 +767,9 @@ export default function RequiredActionsDashboard() {
     }
 
     const accepted = isAcceptedDocumentFile(file);
-    const expiryValidation = validateDocumentExpiryDate(personalDocs[key].expiryDate);
+    const expiryValidation = validateDocumentExpiryDate(
+      personalDocs[key].expiryDate,
+    );
     setExpiryErrors((prev) => ({
       ...prev,
       [key]: expiryValidation.valid ? "" : expiryValidation.error,
@@ -696,22 +782,23 @@ export default function RequiredActionsDashboard() {
         ...prev,
         [key]: {
           ...prev[key],
-          [side]: accepted && hasValidExpiry
-            ? {
-                status: "Uploaded" as const,
-                fileName: file.name,
-                fileUrl: createLocalDocumentFileUrl(file.name),
-                rawFile: file,
-                error: "",
-              }
-            : {
-                status: "Rejected" as const,
-                fileName: file.name,
-                fileUrl: "",
-                error: accepted
-                  ? expiryValidation.error
-                  : "Only PDF and image files are allowed. Re-upload this copy.",
-              },
+          [side]:
+            accepted && hasValidExpiry
+              ? {
+                  status: "Uploaded" as const,
+                  fileName: file.name,
+                  fileUrl: createLocalDocumentFileUrl(file.name),
+                  rawFile: file,
+                  error: "",
+                }
+              : {
+                  status: "Rejected" as const,
+                  fileName: file.name,
+                  fileUrl: "",
+                  error: accepted
+                    ? expiryValidation.error
+                    : "Only PDF and image files are allowed. Re-upload this copy.",
+                },
         },
       };
       persistDocumentState(next);
@@ -728,22 +815,14 @@ export default function RequiredActionsDashboard() {
 
   const handleVehicleDocUpdate = (
     key: "insurance" | "inspection",
-    group: VehicleDocumentGroup
+    group: VehicleDocumentGroup,
   ) => {
-    if (!activeVehicle) {
-      return;
-    }
-
-    const nextVehicleDocs: VehicleDocuments = {
-      ...activeVehicle.vehicleDocs,
-      [key]: group,
-    };
-
-    updateVehicle(activeVehicle.id, {
-      vehicleDocs: nextVehicleDocs,
-      documentsUploaded:
-        isVehicleDocumentCompliant(nextVehicleDocs.insurance) &&
-        isVehicleDocumentCompliant(nextVehicleDocs.inspection),
+    setLocalVehicleDocs((prev) => {
+      const next: VehicleDocuments = {
+        ...prev,
+        [key]: group,
+      };
+      return next;
     });
   };
 
@@ -796,8 +875,12 @@ export default function RequiredActionsDashboard() {
           </div>
           {onboardingBlockers.length === 0 ? (
             <div className="rounded-2xl border-2 border-emerald-500/20 bg-emerald-50 px-4 py-4 text-[11px] text-emerald-900">
-              <p className="text-xs font-black uppercase tracking-widest">No blockers remaining</p>
-              <p className="mt-1 font-medium">Your onboarding requirements are complete.</p>
+              <p className="text-xs font-black uppercase tracking-widest">
+                No blockers remaining
+              </p>
+              <p className="mt-1 font-medium">
+                Your onboarding requirements are complete.
+              </p>
             </div>
           ) : (
             onboardingBlockers.map((blocker) => (
@@ -806,17 +889,16 @@ export default function RequiredActionsDashboard() {
                 icon={BLOCKER_ICON_MAP[blocker.id]}
                 title={blocker.title}
                 text={blocker.description}
-                onClick={() => handleBlockerOpen({ id: blocker.id, route: blocker.route })}
+                onClick={() =>
+                  handleBlockerOpen({ id: blocker.id, route: blocker.route })
+                }
                 type="blocking"
               />
             ))
           )}
         </section>
 
-        <section
-          ref={personalDocumentsRef}
-          className="space-y-4"
-        >
+        <section ref={personalDocumentsRef} className="space-y-4">
           <div className="space-y-1 rounded-2xl border border-brand-active/10 bg-white px-4 py-3 shadow-sm">
             <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">
               Personal Documents
@@ -853,8 +935,12 @@ export default function RequiredActionsDashboard() {
                         <CardIcon className="h-4 w-4 text-orange-600" />
                       </div>
                       <div>
-                        <p className="text-xs font-black text-slate-900">{meta.title}</p>
-                        <p className="text-[10px] font-medium text-slate-500">{meta.subtitle}</p>
+                        <p className="text-xs font-black text-slate-900">
+                          {meta.title}
+                        </p>
+                        <p className="text-[10px] font-medium text-slate-500">
+                          {meta.subtitle}
+                        </p>
                       </div>
                     </div>
                     <span
@@ -892,14 +978,21 @@ export default function RequiredActionsDashboard() {
                         <input
                           type="date"
                           value={entry.expiryDate}
-                          onChange={(evt) => handlePersonalExpiryDate(meta.key, evt.target.value)}
+                          onChange={(evt) =>
+                            handlePersonalExpiryDate(meta.key, evt.target.value)
+                          }
                           className="h-9 rounded-lg border border-slate-200 px-2 text-[11px] font-semibold text-slate-700 focus:border-orange-300 focus:outline-none"
                         />
                       </label>
-                      <ExpiryStatusBadge status={expiryStatus} daysUntilExpiry={daysUntilExpiry} />
+                      <ExpiryStatusBadge
+                        status={expiryStatus}
+                        daysUntilExpiry={daysUntilExpiry}
+                      />
                     </div>
                     {expiryErrors[meta.key] ? (
-                      <p className="mt-2 text-[10px] font-medium text-red-600">{expiryErrors[meta.key]}</p>
+                      <p className="mt-2 text-[10px] font-medium text-red-600">
+                        {expiryErrors[meta.key]}
+                      </p>
                     ) : null}
                   </div>
                 </div>
@@ -908,10 +1001,7 @@ export default function RequiredActionsDashboard() {
           </div>
         </section>
 
-        <section
-          ref={vehicleDocumentsRef}
-          className="space-y-4"
-        >
+        <section ref={vehicleDocumentsRef} className="space-y-4">
           <div className="space-y-1 rounded-2xl border border-blue-500/10 bg-white px-4 py-3 shadow-sm">
             <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">
               Vehicle Documents
@@ -923,9 +1013,12 @@ export default function RequiredActionsDashboard() {
 
           {vehicles.length === 0 ? (
             <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-[11px] text-amber-800">
-              <p className="font-black uppercase tracking-tight">No vehicle selected</p>
+              <p className="font-black uppercase tracking-tight">
+                No vehicle selected
+              </p>
               <p className="mt-1 font-medium">
-                Add a vehicle first, then upload insurance and inspection documents here.
+                Add a vehicle first, then upload insurance and inspection
+                documents here.
               </p>
               <button
                 type="button"
@@ -979,9 +1072,11 @@ export default function RequiredActionsDashboard() {
                       icon={ShieldCheck}
                       title="Proof of Insurance"
                       subtitle="Upload one clear copy"
-                      documentGroup={activeVehicle.vehicleDocs?.insurance}
+                      documentGroup={localVehicleDocs?.insurance}
                       saveError={vehicleSaveErrors.insurance}
-                      onChange={(group) => handleVehicleDocUpdate("insurance", group)}
+                      onChange={(group) =>
+                        handleVehicleDocUpdate("insurance", group)
+                      }
                     />
                   </div>
                   <div
@@ -995,9 +1090,11 @@ export default function RequiredActionsDashboard() {
                       icon={FileBadge2}
                       title="Vehicle Inspection Report"
                       subtitle="Upload one clear copy"
-                      documentGroup={activeVehicle.vehicleDocs?.inspection}
+                      documentGroup={localVehicleDocs?.inspection}
                       saveError={vehicleSaveErrors.inspection}
-                      onChange={(group) => handleVehicleDocUpdate("inspection", group)}
+                      onChange={(group) =>
+                        handleVehicleDocUpdate("inspection", group)
+                      }
                     />
                   </div>
                 </>
@@ -1037,7 +1134,9 @@ export default function RequiredActionsDashboard() {
               ) : (
                 <CheckCircle2 className="h-4 w-4" />
               )}
-              {updateStatus === "loading" ? "Updating…" : "Update All Documents"}
+              {updateStatus === "loading"
+                ? "Updating…"
+                : "Update All Documents"}
             </button>
           </section>
         ) : null}
@@ -1065,9 +1164,11 @@ export default function RequiredActionsDashboard() {
                 id={`required-actions-doc-${meta.key}-${side}`}
                 type="file"
                 accept="image/*,.pdf"
-                onChange={(event) => handlePersonalFileSelected(meta.key, side, event)}
+                onChange={(event) =>
+                  handlePersonalFileSelected(meta.key, side, event)
+                }
               />
-            ))
+            )),
           )}
         </div>
       </main>

@@ -2389,6 +2389,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 	useDriverBackendBootstrapSync({
 		driverBackendEnabled,
 		bootstrapTrigger: backendBootstrapTrigger,
+		driverPresenceStatus,
 		setDriverProfile,
 		setDriverProfilePhoto: setDriverProfilePhotoState,
 		setDriverPreferences,

@@ -169,6 +169,13 @@ export default function Registration() {
         email: email.trim(),
         phone: phone.trim(),
         password,
+        country: country.trim(),
+        dateOfBirth: dob.trim(),
+        streetAddress: streetAddress.trim(),
+        city: city.trim(),
+        district: district.trim(),
+        postalCode: postalCode.trim(),
+        landmark: landmark.trim(),
       });
       if (!backendAuth) {
         setErrorMessage("Enter a valid email address to complete backend registration.");

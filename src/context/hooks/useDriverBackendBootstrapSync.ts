@@ -12,7 +12,7 @@ import {
   listDriverServiceRequests,
   listDriverTrips,
 } from "../../services/api/driverApi";
-import { isAbortError } from "../../services/api/httpClient";
+import { ApiRequestError, isAbortError } from "../../services/api/httpClient";
 import { resolveRouteFromOnboardingStatus } from "../../utils/onboardingRedirect";
 import {
   DEFAULT_DOCUMENT_UPLOAD_STATE,
@@ -49,6 +49,7 @@ function toEpochMillis(value: unknown): number {
 type UseDriverBackendBootstrapSyncOptions = {
   driverBackendEnabled: boolean;
   bootstrapTrigger: number;
+  driverPresenceStatus: "offline" | "online";
   setDriverProfile: AnySetter;
   setDriverProfilePhoto: AnySetter;
   setDriverPreferences: AnySetter;
@@ -84,6 +85,7 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
   const {
     driverBackendEnabled,
     bootstrapTrigger,
+    driverPresenceStatus,
     setDriverProfile,
     setDriverProfilePhoto,
     setDriverPreferences,
@@ -383,15 +385,35 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
       return;
     }
 
+    // While the driver is offline there is no active job state to sync, and the
+    // delivery/service-request active endpoints are not implemented yet. Skip
+    // the whole wave to avoid repeated 404 warnings in the console.
+    if (driverPresenceStatus !== "online") {
+      return;
+    }
+
     let cancelled = false;
     const syncFromBackend = async () => {
       try {
-        const [backendActiveTrip, backendActiveDelivery, backendActiveServiceRequest] =
+        const [backendActiveTrip, backendActiveDeliveryResult, backendActiveServiceRequestResult] =
           await Promise.all([
             getDriverActiveTrip(),
-            getDriverActiveDelivery(),
-            getDriverActiveServiceRequest(),
+            getDriverActiveDelivery().catch((error) => {
+              // These endpoints are not implemented; swallow 404s quietly.
+              if (error instanceof ApiRequestError && error.status === 404) {
+                return null;
+              }
+              throw error;
+            }),
+            getDriverActiveServiceRequest().catch((error) => {
+              if (error instanceof ApiRequestError && error.status === 404) {
+                return null;
+              }
+              throw error;
+            }),
           ]);
+        const backendActiveDelivery = backendActiveDeliveryResult ?? null;
+        const backendActiveServiceRequest = backendActiveServiceRequestResult ?? null;
         if (cancelled) return;
 
         if (!backendActiveTrip) {
@@ -502,7 +524,7 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
       window.clearInterval(timer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bootstrapTrigger, driverBackendEnabled]);
+  }, [bootstrapTrigger, driverBackendEnabled, driverPresenceStatus]);
 }
 
 // ─── Extracted Wave-2 loader — called only when driver is online ────────────

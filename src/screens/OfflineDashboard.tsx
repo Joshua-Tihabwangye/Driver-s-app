@@ -1,9 +1,4 @@
-import {
-  AlertCircle,
-  ChevronRight,
-  Info,
-  WifiOff
-} from "lucide-react";
+import { AlertCircle, ChevronRight, Info, WifiOff } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import OfflineConfirmModal from "../components/OfflineConfirmModal";
@@ -16,7 +11,9 @@ import {
   areAllRequiredDocumentsCompliant,
   getExpiredPersonalDocumentKeys,
   getExpiredVehicleDocumentKeys,
+  isDocumentEntryComplete,
   readStoredDocumentState,
+  validateDocumentExpiryDate,
   type DocumentUploadKey,
   type RequiredVehicleDocumentKey,
 } from "../utils/documentVerificationState";
@@ -28,14 +25,16 @@ function IssueRow({ title, text, type, onClick }: any) {
   const isBlocking = type === "blocking";
   const Icon = isBlocking ? AlertCircle : Info;
   const color = isBlocking ? "text-red-500" : "text-amber-500";
-  
+
   return (
     <button
       type="button"
       onClick={onClick}
       className={`flex items-start space-x-4 rounded-2xl border border-brand-active/10 bg-white dark:bg-slate-800 px-4 py-4 text-left w-full active:scale-[0.98] transition-all group list-item-refined hover:scale-[1.01]`}
     >
-      <div className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-700 shadow-sm ${color}`}>
+      <div
+        className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-700 shadow-sm ${color}`}
+      >
         <Icon className="h-5 w-5" />
       </div>
       <div className="flex-1">
@@ -73,9 +72,12 @@ const EXPIRED_DOCUMENT_LABELS: Record<string, string> = {
 
 const BLOCKING_REASON_TO_DOCUMENT_ROUTE: Record<string, string> = {
   nationalId: "/driver/dashboard/required-actions?document=id&filter=expired",
-  drivingLicense: "/driver/dashboard/required-actions?document=license&filter=expired",
-  vehicleInsurance: "/driver/dashboard/required-actions?document=insurance&filter=expired",
-  vehicleInspection: "/driver/dashboard/required-actions?document=inspection&filter=expired",
+  drivingLicense:
+    "/driver/dashboard/required-actions?document=license&filter=expired",
+  vehicleInsurance:
+    "/driver/dashboard/required-actions?document=insurance&filter=expired",
+  vehicleInspection:
+    "/driver/dashboard/required-actions?document=inspection&filter=expired",
 };
 
 interface ExpiredDocumentBlocker {
@@ -90,6 +92,73 @@ function buildExpiredDocumentRoute(
   return `/driver/dashboard/required-actions?document=${key}&filter=expired`;
 }
 
+function getDocumentsVerifiedRedirectRoute(
+  state: import("../utils/documentVerificationState").DocumentUploadState,
+): string {
+  const expiredPersonal = getExpiredPersonalDocumentKeys(state);
+  if (expiredPersonal.length > 0) {
+    return buildExpiredDocumentRoute(expiredPersonal[0]);
+  }
+
+  const missingPersonal = (
+    ["id", "license", "police"] as DocumentUploadKey[]
+  ).find((key) => {
+    const entry = state[key];
+    return (
+      !isDocumentEntryComplete(key, entry) ||
+      !validateDocumentExpiryDate(entry.expiryDate).valid
+    );
+  });
+
+  if (missingPersonal) {
+    return `/driver/dashboard/required-actions?document=${missingPersonal}`;
+  }
+
+  return "/driver/dashboard/required-actions";
+}
+
+function getVehicleReadyRedirectRoute(
+  vehicles: import("../data/types").Vehicle[],
+  selectedVehicleIndex: number | null,
+): string {
+  if (vehicles.length === 0) {
+    return "/driver/vehicles";
+  }
+
+  const activeVehicle =
+    selectedVehicleIndex !== null &&
+    selectedVehicleIndex >= 0 &&
+    selectedVehicleIndex < vehicles.length
+      ? vehicles[selectedVehicleIndex]
+      : vehicles[0];
+
+  if (!activeVehicle) {
+    return "/driver/vehicles";
+  }
+
+  const expiredVehicle = getExpiredVehicleDocumentKeys(
+    activeVehicle.vehicleDocs,
+  );
+  if (expiredVehicle.length > 0) {
+    return buildExpiredDocumentRoute(expiredVehicle[0]);
+  }
+
+  const requiredVehicleKeys: Array<"insurance" | "inspection"> = [
+    "insurance",
+    "inspection",
+  ];
+  const missingVehicle = requiredVehicleKeys.find((key) => {
+    const group = activeVehicle.vehicleDocs?.[key];
+    return !group?.file?.url || !group.expiryDate;
+  });
+
+  if (missingVehicle) {
+    return `/driver/dashboard/required-actions?document=${missingVehicle}`;
+  }
+
+  return "/driver/dashboard/required-actions";
+}
+
 interface GoOnlineErrorBlocker {
   id: string;
   label: string;
@@ -102,10 +171,13 @@ interface GoOnlineErrorDetails {
   blockers?: GoOnlineErrorBlocker[];
 }
 
-function buildGoOnlineErrorDetails(apiError: ApiRequestError | null): GoOnlineErrorDetails {
-  const details = apiError?.details && typeof apiError.details === "object"
-    ? (apiError.details as Record<string, unknown>)
-    : null;
+function buildGoOnlineErrorDetails(
+  apiError: ApiRequestError | null,
+): GoOnlineErrorDetails {
+  const details =
+    apiError?.details && typeof apiError.details === "object"
+      ? (apiError.details as Record<string, unknown>)
+      : null;
   const blockingReasons = Array.isArray(details?.blockingReasons)
     ? (details.blockingReasons as string[])
     : [];
@@ -125,7 +197,9 @@ function buildGoOnlineErrorDetails(apiError: ApiRequestError | null): GoOnlineEr
   }
 
   return {
-    offlineGuardMessage: apiError?.message || "Unable to go online right now. Please review required actions.",
+    offlineGuardMessage:
+      apiError?.message ||
+      "Unable to go online right now. Please review required actions.",
   };
 }
 
@@ -161,14 +235,14 @@ export default function OfflineDashboard() {
     if (now - lastRefresh < 30_000) return;
     sessionStorage.setItem(lastRefreshKey, String(now));
     void refreshBackendOnboardingState();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [driverBackendEnabled, driverBootstrapReady]);
 
   const documentsVerified = driverBackendEnabled
     ? onboardingCheckpoints.documentsVerified === true
     : areAllRequiredDocumentsCompliant(readStoredDocumentState());
   const visibleBlockers = onboardingBlockers.filter((blocker) =>
-    blocker.id === "documentsVerified" ? !documentsVerified : true
+    blocker.id === "documentsVerified" ? !documentsVerified : true,
   );
 
   // Detect expired documents locally from the hydrated document state and the
@@ -183,7 +257,9 @@ export default function OfflineDashboard() {
         : vehicles[0];
 
     const personalExpired = getExpiredPersonalDocumentKeys(driverDocumentState);
-    const vehicleExpired = getExpiredVehicleDocumentKeys(activeVehicle?.vehicleDocs);
+    const vehicleExpired = getExpiredVehicleDocumentKeys(
+      activeVehicle?.vehicleDocs,
+    );
 
     return [
       ...personalExpired.map((key) => ({
@@ -201,14 +277,12 @@ export default function OfflineDashboard() {
 
   const hasExpiredDocuments = expiredDocumentBlockers.length > 0;
 
-  const routeState = (location.state as
-    | {
-        offlineGuardMessage?: string;
-        blockedPath?: string;
-        openGoOnlineConfirmation?: boolean;
-        blockers?: GoOnlineErrorBlocker[];
-      }
-    | null) || { offlineGuardMessage: "", blockedPath: "" };
+  const routeState = (location.state as {
+    offlineGuardMessage?: string;
+    blockedPath?: string;
+    openGoOnlineConfirmation?: boolean;
+    blockers?: GoOnlineErrorBlocker[];
+  } | null) || { offlineGuardMessage: "", blockedPath: "" };
   const hasOfflineGuardMessage =
     typeof routeState.offlineGuardMessage === "string" &&
     routeState.offlineGuardMessage.trim().length > 0;
@@ -241,13 +315,15 @@ export default function OfflineDashboard() {
     // the lookup times out, surface a clear message and do not call the backend.
     let locationInput: DriverBackendPresenceOnlineInput["location"];
     try {
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 5_000,
-          maximumAge: 60_000,
-        });
-      });
+      const position = await new Promise<GeolocationPosition>(
+        (resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 5_000,
+            maximumAge: 60_000,
+          });
+        },
+      );
       const coords = position.coords;
       locationInput = {
         latitude: coords.latitude,
@@ -291,7 +367,9 @@ export default function OfflineDashboard() {
       // Pull pending jobs right away so the online dashboard can display them.
       void refreshDriverJobs().catch(() => undefined);
 
-      navigate(result?.redirectPath || "/driver/dashboard/online", { replace: true });
+      navigate(result?.redirectPath || "/driver/dashboard/online", {
+        replace: true,
+      });
     } catch (error) {
       setIsGoingOnline(false);
       const apiError = error instanceof ApiRequestError ? error : null;
@@ -316,7 +394,9 @@ export default function OfflineDashboard() {
     }
 
     if (hasExpiredDocuments) {
-      const expiredLabels = expiredDocumentBlockers.map((b) => b.label).join(", ");
+      const expiredLabels = expiredDocumentBlockers
+        .map((b) => b.label)
+        .join(", ");
       const offlineGuardMessage =
         expiredDocumentBlockers.length === 1
           ? `Unable to go online: ${expiredLabels} has expired. Update it before going online.`
@@ -347,25 +427,25 @@ export default function OfflineDashboard() {
 
   return (
     <div className="flex flex-col h-full bg-transparent">
-      <PageHeader 
-        title="Offline" 
-        subtitle="Driver Status" 
-        hideBack={true} 
-      />
+      <PageHeader title="Offline" subtitle="Driver Status" hideBack={true} />
 
       {/* Content */}
       <main className="flex-1 px-6 pt-6 pb-16 space-y-6 overflow-y-auto scrollbar-hide">
         {/* Offline status card */}
         <section className="rounded-[2.5rem] bg-slate-900 text-white p-6 space-y-6 shadow-xl relative overflow-hidden group hover:scale-[1.01] transition-transform duration-500">
           <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-125 duration-700" />
-          
+
           <div className="flex items-center space-x-4 relative z-10">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500/20 backdrop-blur-md border border-amber-500/30">
               <WifiOff className="h-6 w-6 text-amber-500" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-amber-500">OFFLINE</span>
-              <p className="text-base font-black tracking-tight mt-0.5 text-white uppercase">You're Offline</p>
+              <span className="text-[10px] tracking-[0.2em] font-black uppercase text-amber-500">
+                OFFLINE
+              </span>
+              <p className="text-base font-black tracking-tight mt-0.5 text-white uppercase">
+                You're Offline
+              </p>
             </div>
           </div>
 
@@ -377,7 +457,7 @@ export default function OfflineDashboard() {
           >
             {isGoingOnline ? "Going online..." : "Go Online"}
           </button>
-          
+
           <p className="relative z-10 text-[11px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed">
             {hasExpiredDocuments
               ? "Confirm first. Expired documents must be updated before you can go online."
@@ -423,7 +503,24 @@ export default function OfflineDashboard() {
                   title={blocker.title}
                   text={blocker.description}
                   type="blocking"
-                  onClick={() => navigate(blocker.route)}
+                  onClick={() => {
+                    if (blocker.id === "documentsVerified") {
+                      navigate(
+                        getDocumentsVerifiedRedirectRoute(driverDocumentState),
+                      );
+                      return;
+                    }
+                    if (blocker.id === "vehicleReady") {
+                      navigate(
+                        getVehicleReadyRedirectRoute(
+                          vehicles,
+                          selectedVehicleIndex,
+                        ),
+                      );
+                      return;
+                    }
+                    navigate(blocker.route);
+                  }}
                 />
               ))}
             </div>
@@ -471,8 +568,6 @@ export default function OfflineDashboard() {
             ) : null}
           </section>
         ) : null}
-
-
       </main>
 
       <OfflineConfirmModal
