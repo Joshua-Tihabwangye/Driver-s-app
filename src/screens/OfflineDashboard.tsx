@@ -14,8 +14,11 @@ import { ApiRequestError } from "../services/api/httpClient";
 import type { DriverBackendPresenceOnlineInput } from "../services/api/driverApi";
 import {
   areAllRequiredDocumentsCompliant,
-  getDocumentExpiryStatus,
+  getExpiredPersonalDocumentKeys,
+  getExpiredVehicleDocumentKeys,
   readStoredDocumentState,
+  type DocumentUploadKey,
+  type RequiredVehicleDocumentKey,
 } from "../utils/documentVerificationState";
 
 // EVzone Driver App – OfflineDashboard Driver App – Dashboard (Offline State)
@@ -46,6 +49,86 @@ function IssueRow({ title, text, type, onClick }: any) {
   );
 }
 
+const BLOCKING_REASON_MESSAGES: Record<string, string> = {
+  activeVehicle: "No active vehicle selected",
+  profileVerified: "Driver profile is not verified",
+  currentLocation: "Current location is required",
+  nationalId: "National ID document is missing or not verified",
+  drivingLicense: "Driving license is missing or not verified",
+  vehicleInsurance: "Vehicle insurance is missing or not verified",
+  vehicleInspection: "Vehicle inspection is missing or not verified",
+};
+
+function formatBlockingReason(reason: string): string {
+  return BLOCKING_REASON_MESSAGES[reason] || reason;
+}
+
+const EXPIRED_DOCUMENT_LABELS: Record<string, string> = {
+  id: "National ID or Passport",
+  license: "Driver's License",
+  police: "Conduct Clearance",
+  insurance: "Proof of Insurance",
+  inspection: "Vehicle Inspection Report",
+};
+
+const BLOCKING_REASON_TO_DOCUMENT_ROUTE: Record<string, string> = {
+  nationalId: "/driver/dashboard/required-actions?document=id&filter=expired",
+  drivingLicense: "/driver/dashboard/required-actions?document=license&filter=expired",
+  vehicleInsurance: "/driver/dashboard/required-actions?document=insurance&filter=expired",
+  vehicleInspection: "/driver/dashboard/required-actions?document=inspection&filter=expired",
+};
+
+interface ExpiredDocumentBlocker {
+  id: string;
+  label: string;
+  route: string;
+}
+
+function buildExpiredDocumentRoute(
+  key: DocumentUploadKey | RequiredVehicleDocumentKey,
+): string {
+  return `/driver/dashboard/required-actions?document=${key}&filter=expired`;
+}
+
+interface GoOnlineErrorBlocker {
+  id: string;
+  label: string;
+  route?: string;
+}
+
+interface GoOnlineErrorDetails {
+  offlineGuardMessage: string;
+  blockingReasons?: string[];
+  blockers?: GoOnlineErrorBlocker[];
+}
+
+function buildGoOnlineErrorDetails(apiError: ApiRequestError | null): GoOnlineErrorDetails {
+  const details = apiError?.details && typeof apiError.details === "object"
+    ? (apiError.details as Record<string, unknown>)
+    : null;
+  const blockingReasons = Array.isArray(details?.blockingReasons)
+    ? (details.blockingReasons as string[])
+    : [];
+
+  if (blockingReasons.length > 0) {
+    const blockers = blockingReasons.map((reason) => ({
+      id: reason,
+      label: formatBlockingReason(reason),
+      route: BLOCKING_REASON_TO_DOCUMENT_ROUTE[reason],
+    }));
+    const reasons = blockers.map((b) => b.label).join("; ");
+    return {
+      offlineGuardMessage: `Unable to go online: ${reasons}.`,
+      blockingReasons,
+      blockers,
+    };
+  }
+
+  return {
+    offlineGuardMessage: apiError?.message || "Unable to go online right now. Please review required actions.",
+  };
+}
+
 export default function OfflineDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -63,6 +146,7 @@ export default function OfflineDashboard() {
     driverBootstrapReady,
     refreshBackendOnboardingState,
     refreshDriverJobs,
+    driverDocumentState,
   } = useStore();
 
   // Refresh onboarding/document status when the driver lands on this screen,
@@ -87,38 +171,42 @@ export default function OfflineDashboard() {
     blocker.id === "documentsVerified" ? !documentsVerified : true
   );
 
-  // Show the expired-docs banner immediately when backend reports docs not verified,
-  // without waiting for localStorage to hydrate.
-  const hasExpiredDocuments = useMemo(() => {
-    // Backend source — most reliable, available right after bootstrap
-    if (driverBackendEnabled && driverBootstrapReady) {
-      return onboardingCheckpoints.documentsVerified === false;
-    }
-
-    // Fallback: check localStorage personal + vehicle docs
-    const personalDocs = readStoredDocumentState();
-    const personalExpired = (["id", "license", "police"] as const).some(
-      (key) => getDocumentExpiryStatus(personalDocs[key].expiryDate) === "expired",
-    );
+  // Detect expired documents locally from the hydrated document state and the
+  // active vehicle. The backend onboarding flag does not consider expiry dates,
+  // so we must check expiry ourselves before allowing a go-online attempt.
+  const expiredDocumentBlockers = useMemo<ExpiredDocumentBlocker[]>(() => {
     const activeVehicle =
       selectedVehicleIndex !== null &&
       selectedVehicleIndex >= 0 &&
       selectedVehicleIndex < vehicles.length
         ? vehicles[selectedVehicleIndex]
         : vehicles[0];
-    const vehicleExpired = (["insurance", "inspection"] as const).some((docKey) => {
-      const group = activeVehicle?.vehicleDocs?.[docKey];
-      const expiryDate = group?.expiryDate || group?.file?.expiryDate || "";
-      return getDocumentExpiryStatus(expiryDate) === "expired";
-    });
-    return personalExpired || vehicleExpired;
-  }, [driverBackendEnabled, driverBootstrapReady, onboardingCheckpoints.documentsVerified, selectedVehicleIndex, vehicles]);
+
+    const personalExpired = getExpiredPersonalDocumentKeys(driverDocumentState);
+    const vehicleExpired = getExpiredVehicleDocumentKeys(activeVehicle?.vehicleDocs);
+
+    return [
+      ...personalExpired.map((key) => ({
+        id: key,
+        label: EXPIRED_DOCUMENT_LABELS[key],
+        route: buildExpiredDocumentRoute(key),
+      })),
+      ...vehicleExpired.map((key) => ({
+        id: key,
+        label: EXPIRED_DOCUMENT_LABELS[key],
+        route: buildExpiredDocumentRoute(key),
+      })),
+    ];
+  }, [driverDocumentState, selectedVehicleIndex, vehicles]);
+
+  const hasExpiredDocuments = expiredDocumentBlockers.length > 0;
 
   const routeState = (location.state as
     | {
         offlineGuardMessage?: string;
         blockedPath?: string;
         openGoOnlineConfirmation?: boolean;
+        blockers?: GoOnlineErrorBlocker[];
       }
     | null) || { offlineGuardMessage: "", blockedPath: "" };
   const hasOfflineGuardMessage =
@@ -149,15 +237,14 @@ export default function OfflineDashboard() {
     setIsGoingOnline(true);
     setShowGoOnlineModal(false);
 
-    // GPS is preferred but not blocking: if the driver denies location or it
-    // times out, we still let them go online and the backend will use the
-    // last known location or request updates via the heartbeat.
-    let locationInput: DriverBackendPresenceOnlineInput["location"] | undefined;
+    // Location is required before going online. If the driver denies access or
+    // the lookup times out, surface a clear message and do not call the backend.
+    let locationInput: DriverBackendPresenceOnlineInput["location"];
     try {
       const position = await new Promise<GeolocationPosition>((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(resolve, reject, {
           enableHighAccuracy: true,
-          timeout: 2_500,
+          timeout: 5_000,
           maximumAge: 60_000,
         });
       });
@@ -170,9 +257,21 @@ export default function OfflineDashboard() {
         speed: coords.speed ?? undefined,
         timestamp: Date.now(),
       };
-    } catch {
-      // Best-effort location; proceed without it.
-      locationInput = undefined;
+    } catch (locationError) {
+      setIsGoingOnline(false);
+      const isPermissionDenied =
+        locationError instanceof GeolocationPositionError &&
+        locationError.code === GeolocationPositionError.PERMISSION_DENIED;
+      navigate("/driver/dashboard/offline", {
+        replace: true,
+        state: {
+          offlineGuardMessage: isPermissionDenied
+            ? "Location access was denied. Please enable location services in your browser settings and try again."
+            : "Could not determine your location. Please turn on location services and try again.",
+          blockedPath: location.pathname,
+        },
+      });
+      return;
     }
 
     const activeVehicle =
@@ -196,22 +295,38 @@ export default function OfflineDashboard() {
     } catch (error) {
       setIsGoingOnline(false);
       const apiError = error instanceof ApiRequestError ? error : null;
-      const details =
+      const errorDetails = buildGoOnlineErrorDetails(apiError);
+      const redirectDetails =
         apiError?.details && typeof apiError.details === "object"
           ? (apiError.details as { redirectPath?: string })
           : null;
-      navigate(details?.redirectPath || "/driver/dashboard/offline", {
+      navigate(redirectDetails?.redirectPath || "/driver/dashboard/offline", {
         replace: true,
         state: {
-          offlineGuardMessage:
-            apiError?.message || "Unable to go online right now. Please review required actions.",
+          offlineGuardMessage: errorDetails.offlineGuardMessage,
           blockedPath: location.pathname,
+          blockers: errorDetails.blockers,
         },
       });
     }
   };
   const handleGoOnline = () => {
     if (isGoingOnline) {
+      return;
+    }
+
+    if (hasExpiredDocuments) {
+      const expiredLabels = expiredDocumentBlockers.map((b) => b.label).join(", ");
+      const offlineGuardMessage =
+        expiredDocumentBlockers.length === 1
+          ? `Unable to go online: ${expiredLabels} has expired. Update it before going online.`
+          : `Unable to go online: ${expiredLabels} have expired. Update them before going online.`;
+      navigate(expiredDocumentBlockers[0].route, {
+        state: {
+          offlineGuardMessage,
+          blockedPath: location.pathname,
+        },
+      });
       return;
     }
 
@@ -257,30 +372,34 @@ export default function OfflineDashboard() {
           <button
             type="button"
             onClick={handleGoOnline}
-            disabled={!canGoOnline || isGoingOnline}
+            disabled={!canGoOnline || hasExpiredDocuments || isGoingOnline}
             className="relative z-10 w-full rounded-2xl bg-brand-active py-4 text-xs font-black text-slate-900 hover:bg-brand-active/90 active:scale-95 transition-all shadow-xl shadow-brand-active/20 uppercase tracking-widest disabled:opacity-60 disabled:cursor-wait"
           >
             {isGoingOnline ? "Going online..." : "Go Online"}
           </button>
           
           <p className="relative z-10 text-[11px] text-slate-400 font-bold uppercase tracking-tight leading-relaxed">
-            {canGoOnline
-              ? "Confirm first, then you go online and start receiving requests."
-              : "Confirm first. Missing onboarding checks must be completed before you can go online."}
+            {hasExpiredDocuments
+              ? "Confirm first. Expired documents must be updated before you can go online."
+              : canGoOnline
+                ? "Confirm first, then you go online and start receiving requests."
+                : "Confirm first. Missing onboarding checks must be completed before you can go online."}
           </p>
         </section>
 
         {hasExpiredDocuments ? (
           <button
             type="button"
-            onClick={() => navigate("/driver/dashboard/required-actions?filter=expired")}
+            onClick={() => navigate(expiredDocumentBlockers[0].route)}
             className="w-full rounded-3xl border border-red-200 bg-red-50 p-4 text-left transition-all hover:border-red-300 active:scale-[0.99]"
           >
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-600">
               Documents Need Attention
             </p>
             <p className="mt-1 text-[11px] font-bold leading-relaxed text-red-700">
-              One or more required documents have expired. Tap to review and update them.
+              {expiredDocumentBlockers.length === 1
+                ? `${expiredDocumentBlockers[0].label} has expired. Tap to update it.`
+                : `${expiredDocumentBlockers.map((b) => b.label).join(", ")} have expired. Tap to review and update them.`}
             </p>
           </button>
         ) : null}
@@ -311,15 +430,40 @@ export default function OfflineDashboard() {
           </section>
         ) : null}
 
-        {/* Only show the access-restricted message when canGoOnline is still false */}
-        {hasOfflineGuardMessage && !canGoOnline ? (
+        {/* Show backend/location error messages even when canGoOnline is true, */}
+        {/* because a go-online attempt can fail for reasons outside onboarding blockers. */}
+        {hasOfflineGuardMessage ? (
           <section className="rounded-3xl border border-orange-200 bg-orange-50 p-4 space-y-2">
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-600">
-              Access Restricted
+              Could Not Go Online
             </p>
             <p className="text-[11px] font-bold text-orange-700 leading-relaxed">
               {routeState.offlineGuardMessage}
             </p>
+            {routeState.blockers && routeState.blockers.length > 0 ? (
+              <div className="space-y-2 pt-1">
+                {routeState.blockers.map((blocker) =>
+                  blocker.route ? (
+                    <button
+                      key={blocker.id}
+                      type="button"
+                      onClick={() => navigate(blocker.route)}
+                      className="flex w-full items-center justify-between rounded-xl border border-orange-200 bg-white px-3 py-2 text-left text-[11px] font-bold text-orange-700 transition-all hover:bg-orange-100 active:scale-[0.99]"
+                    >
+                      <span>Update {blocker.label}</span>
+                      <ChevronRight className="h-3.5 w-3.5 text-orange-400" />
+                    </button>
+                  ) : (
+                    <div
+                      key={blocker.id}
+                      className="rounded-xl border border-orange-200 bg-white px-3 py-2 text-[11px] font-bold text-orange-700"
+                    >
+                      {blocker.label}
+                    </div>
+                  ),
+                )}
+              </div>
+            ) : null}
             {routeState.blockedPath ? (
               <p className="text-[10px] font-semibold text-orange-500">
                 Blocked route: {routeState.blockedPath}

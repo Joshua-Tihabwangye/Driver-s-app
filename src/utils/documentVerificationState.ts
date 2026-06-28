@@ -1,4 +1,5 @@
 import { shouldUseDriverBackendWrites } from "../services/api/driverApi";
+import type { VehicleDocuments } from "../data/types";
 
 export const DOCUMENT_UPLOAD_STATE_KEY = "driver_document_upload_state";
 
@@ -410,6 +411,29 @@ export function getFirstNonCompliantDocumentKey(
     }
   }
   return null;
+}
+
+export function getExpiredPersonalDocumentKeys(
+  state: DocumentUploadState,
+  now: Date = new Date(),
+): DocumentUploadKey[] {
+  return DOCUMENT_UPLOAD_KEYS.filter(
+    (key) => getDocumentExpiryStatus(state[key].expiryDate, 30, now) === "expired",
+  );
+}
+
+export type RequiredVehicleDocumentKey = "insurance" | "inspection";
+
+export function getExpiredVehicleDocumentKeys(
+  vehicleDocs: VehicleDocuments | undefined,
+  now: Date = new Date(),
+): RequiredVehicleDocumentKey[] {
+  const keys: RequiredVehicleDocumentKey[] = ["insurance", "inspection"];
+  return keys.filter((key) => {
+    const group = vehicleDocs?.[key];
+    const expiryDate = group?.expiryDate || group?.file?.expiryDate || "";
+    return getDocumentExpiryStatus(expiryDate, 30, now) === "expired";
+  });
 }
 
 export function hasAnyRequiredDocumentEvidence(state: DocumentUploadState): boolean {

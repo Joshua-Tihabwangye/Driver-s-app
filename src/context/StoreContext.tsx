@@ -34,6 +34,8 @@ import {
 import {
 	areAllRequiredDocumentsCompliant,
 	getDocumentExpiryStatus,
+	getExpiredPersonalDocumentKeys,
+	getExpiredVehicleDocumentKeys,
 	getFirstNonCompliantDocumentKey,
 	hasAnyRequiredDocumentEvidence,
 	persistDocumentState,
@@ -243,6 +245,8 @@ export interface ActiveRideLocationSample {
 	latitude: number;
 	longitude: number;
 	accuracy?: number;
+	speed?: number | null;
+	heading?: number | null;
 	timestamp: number;
 }
 
@@ -467,6 +471,7 @@ interface StoreContextType {
 	resolveJobAccessAttempt: (nextRoute?: string) => JobAccessDecision;
 	resolveGoOnlineAttempt: (nextRoute?: string) => GoOnlineDecision;
 	driverBootstrapReady: boolean;
+	driverBackendBootstrapFailed: boolean;
 	refreshBackendOnboardingState: () => Promise<DriverBackendOnboardingStatus | null>;
 	refreshDriverJobs: () => Promise<void>;
 }
@@ -2080,6 +2085,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 	const [driverBootstrapReady, setDriverBootstrapReady] = useState<boolean>(
 		!DRIVER_BACKEND_ONLY_MODE, // If not in backend mode, no async bootstrap needed
 	);
+	const [driverBackendBootstrapFailed, setDriverBackendBootstrapFailed] =
+		useState<boolean>(false);
 	const [driverMapPreferences, setDriverMapPreferences] =
 		useState<DriverMapPreferences>(() => readStoredDriverMapPreferences());
 	const [jobAccessError, setJobAccessError] = useState<string | null>(null);
@@ -2391,6 +2398,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 		setPrimaryOnboardingRoute: setBackendPrimaryOnboardingRoute,
 		setDriverPresenceStatus,
 		setBootstrapReady: setDriverBootstrapReady,
+		setBootstrapFailed: setDriverBackendBootstrapFailed,
 		setVehicles: (next) => {
 			if (typeof next === "function") {
 				setVehicles((prev) => (next as any)(prev));
@@ -2759,6 +2767,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 		});
 	}, [getActiveVehicle]);
 
+	const hasAnyExpiredDocument = useCallback(() => {
+		const personalExpired = getExpiredPersonalDocumentKeys(driverDocumentState);
+		const activeVehicle = getActiveVehicle();
+		const vehicleExpired = getExpiredVehicleDocumentKeys(
+			activeVehicle?.vehicleDocs,
+		);
+		return personalExpired.length > 0 || vehicleExpired.length > 0;
+	}, [driverDocumentState, getActiveVehicle]);
+
 	const resolveJobAccessAttempt = useCallback(
 		(nextRoute = "/driver/jobs/list"): JobAccessDecision => {
 			if (
@@ -2817,6 +2834,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 			}
 
 			if (driverBackendEnabled) {
+				if (hasAnyExpiredDocument()) {
+					return {
+						allowed: false,
+						requiresConfirmation: false,
+						route: "/driver/dashboard/required-actions?filter=expired",
+						message: DOCUMENT_EXPIRED_API_ERROR,
+					};
+				}
+
 				if (onboardingCheckpoints.documentsVerified !== true) {
 					return {
 						allowed: false,
@@ -2890,6 +2916,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 			driverBootstrapReady,
 			driverPreferences.areaIds.length,
 			onboardingCheckpoints,
+			hasAnyExpiredDocument,
 		],
 	);
 
@@ -3386,7 +3413,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 						: undefined,
 					latitude: sample.latitude,
 					longitude: sample.longitude,
-					accuracy: sample.accuracy,
+					accuracyMeters: sample.accuracy ?? undefined,
+					speedKph: sample.speed ?? undefined,
+					heading: sample.heading ?? undefined,
 					timestamp,
 				});
 			}
@@ -5398,6 +5427,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 			onboardingCompleted: effectiveOnboardingCompleted,
 			driverPresenceStatus,
 			driverBootstrapReady,
+			driverBackendBootstrapFailed,
 			primaryOnboardingRoute,
 			// Use the pre-computed memo (already respects role config + sharedRidesEnabled)
 			assignableJobTypes,
@@ -5505,6 +5535,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 			effectiveOnboardingCompleted,
 			driverPresenceStatus,
 			driverBootstrapReady,
+			driverBackendBootstrapFailed,
 			primaryOnboardingRoute,
 			assignableJobTypes,
 			canAcceptJobType,

@@ -126,7 +126,8 @@ Status: available via Rider Vite proxy in local dev. Not implemented in backend 
 - `DELETE /drivers/me/trips/:tripId/share-contacts/:contactId` -> `SafetyController` -> Present
 - `POST /drivers/me/trips/:tripId/share-link` -> `SafetyController` -> Present
 - `GET /drivers/me/trips/:tripId/share-status` -> `SafetyController` -> Present
-- `POST /locations/heartbeat` -> `PresenceLocationController` -> Present
+- `POST /drivers/me/location/heartbeat` -> `DriverCompatibilityController` -> Present
+- `POST /locations/heartbeat` -> `PresenceLocationController` -> Compatibility alias recommended
 - `GET /drivers/me/notifications` -> `NotificationsController` (`/:userType/me/notifications`) -> Present
 - `GET /drivers/me/emergency-contacts` -> `SafetyController` -> Present
 - `POST /drivers/me/emergency-contacts` -> `SafetyController` -> Present

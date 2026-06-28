@@ -1144,10 +1144,18 @@ export async function triggerTripSos(
 export async function sendDriverLocationHeartbeat(input: DriverBackendLocationHeartbeatInput, timeoutMs?: number) {
   const token = readDriverBackendAccessToken();
   if (!isBackendAuthEnabled() || !token) return null;
-  return request<Record<string, unknown>>("/locations/heartbeat", {
+  // The backend heartbeat endpoint expects DriverLocationDto field names.
+  const body = {
+    latitude: input.latitude,
+    longitude: input.longitude,
+    accuracyMeters: input.accuracy,
+    speedKph: input.speed,
+    heading: input.heading,
+  };
+  return request<Record<string, unknown>>("/drivers/me/location/heartbeat", {
     method: "POST",
     headers: authHeaders(token),
-    body: input,
+    body,
     timeoutMs: timeoutMs ?? 5000,
   });
 }

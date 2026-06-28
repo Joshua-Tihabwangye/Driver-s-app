@@ -86,7 +86,6 @@ type MarkerTonePalette = {
 	color: string;
 };
 
-const DEFAULT_CENTER: LatLng = { lat: 0.3476, lng: 32.5825 };
 const LATITUDE_SPAN = 0.26;
 const LONGITUDE_SPAN = 0.3;
 const rawGoogleMapsKey = (
@@ -281,43 +280,16 @@ function toMapMarker(marker: DriverMapMarker, center: LatLng) {
 	};
 }
 
-const DEFAULT_EV_STATION_MARKERS: DriverMapMarker[] = [
-	{
-		id: "evzone-hub-west",
-		position: { lat: 0.351, lng: 32.536 },
-		tone: "station",
-		label: "EVzone Hub",
-		icon: BatteryCharging,
-	},
-	{
-		id: "evzone-fastcharge-north",
-		position: { lat: 0.387, lng: 32.575 },
-		tone: "station",
-		label: "Fast Charge",
-		icon: BatteryCharging,
-	},
-	{
-		id: "evzone-central",
-		position: { lat: 0.329, lng: 32.59 },
-		tone: "station",
-		label: "EVzone Central",
-		icon: BatteryCharging,
-	},
-	{
-		id: "evzone-east",
-		position: { lat: 0.36, lng: 32.635 },
-		tone: "station",
-		label: "EVzone East",
-		icon: BatteryCharging,
-	},
-	{
-		id: "evzone-south",
-		position: { lat: 0.302, lng: 32.623 },
-		tone: "station",
-		label: "Charge Point",
-		icon: BatteryCharging,
-	},
-];
+function deriveInitialCenter(
+	routePoints: LatLng[],
+	markers: DriverMapMarker[],
+): LatLng | null {
+	if (routePoints.length > 0) return routePoints[0];
+	const firstPositioned = markers.find((m) => m.position);
+	return firstPositioned?.position ?? null;
+}
+
+
 
 export default function DriverMapSurface({
 	heightClass = "h-[460px]",
@@ -341,7 +313,7 @@ export default function DriverMapSurface({
 	infoCard,
 	bottomRightSlot,
 	markers = [],
-	stationMarkers = DEFAULT_EV_STATION_MARKERS,
+	stationMarkers = [],
 	children,
 }: DriverMapSurfaceProps) {
 	const {
@@ -355,7 +327,9 @@ export default function DriverMapSurface({
 	const [zoom, setZoom] = useState(defaultZoom);
 	const [layer, setLayer] = useState<MapLayerMode>(defaultLayer);
 	const [trafficOn, setTrafficOn] = useState(defaultTrafficOn);
-	const [center, setCenter] = useState<LatLng>(DEFAULT_CENTER);
+	const [center, setCenter] = useState<LatLng | null>(() =>
+		deriveInitialCenter(routePoints, markers),
+	);
 	const [mapRef, setMapRef] = useState<any>(null);
 	const [isFollowingDevice, setIsFollowingDevice] = useState(true);
 	const [isOnline, setIsOnline] = useState(() =>
@@ -411,6 +385,29 @@ export default function DriverMapSurface({
 		};
 	}, []);
 
+	// If no route/markers provided, acquire an initial GPS center instead of
+	// defaulting to a hardcoded location.
+	useEffect(() => {
+		setCenter((current) => current ?? deriveInitialCenter(routePoints, markers));
+	}, [routePoints, markers]);
+
+	useEffect(() => {
+		if (center) return;
+		if (typeof navigator === "undefined" || !navigator.geolocation) return;
+		navigator.geolocation.getCurrentPosition(
+			(pos) => {
+				setCenter({
+					lat: pos.coords.latitude,
+					lng: pos.coords.longitude,
+				});
+			},
+			() => {
+				// Ignore permission/denial errors; the placeholder will guide the user.
+			},
+			{ enableHighAccuracy: true, maximumAge: 10000, timeout: 9000 },
+		);
+	}, [center]);
+
 	// Phase 5.2 — watch live GPS so the blue self-pin stays current
 	useEffect(() => {
 		if (typeof navigator === "undefined" || !navigator.geolocation) return;
@@ -439,15 +436,15 @@ export default function DriverMapSurface({
 					if (activeTripId) {
 						const socket = createDriverSocket();
 						if (socket.connected) {
-							socket.emit("location.update", {
-								tripId: activeTripId,
-								latitude: pos.coords.latitude,
-								longitude: pos.coords.longitude,
-								accuracy: pos.coords.accuracy,
-								heading: pos.coords.heading ?? undefined,
-								speed: pos.coords.speed ?? undefined,
-								timestamp: Date.now(),
-							});
+								socket.emit("location.update", {
+									tripId: activeTripId,
+									latitude: pos.coords.latitude,
+									longitude: pos.coords.longitude,
+									accuracyMeters: pos.coords.accuracy,
+									heading: pos.coords.heading ?? undefined,
+									speedKph: pos.coords.speed ?? undefined,
+									timestamp: Date.now(),
+								});
 						}
 					}
 				}
@@ -486,18 +483,20 @@ export default function DriverMapSurface({
 				...sample,
 				timestamp: Date.now(),
 			});
-			if (activeTripId) {
-				const socket = createDriverSocket();
-				if (socket.connected) {
-					socket.emit("location.update", {
-						tripId: activeTripId,
-						...sample,
-						heading: sample.heading ?? undefined,
-						speed: sample.speed ?? undefined,
-						timestamp: Date.now(),
-					});
+				if (activeTripId) {
+					const socket = createDriverSocket();
+					if (socket.connected) {
+						socket.emit("location.update", {
+							tripId: activeTripId,
+							latitude: sample.latitude,
+							longitude: sample.longitude,
+							accuracyMeters: sample.accuracy ?? undefined,
+							heading: sample.heading ?? undefined,
+							speedKph: sample.speed ?? undefined,
+							timestamp: Date.now(),
+						});
+					}
 				}
-			}
 		};
 
 		const interval = window.setInterval(() => {
@@ -643,7 +642,10 @@ export default function DriverMapSurface({
 	);
 
 	const visibleMarkers = useMemo(
-		() => mergedMarkers.map((marker) => toMapMarker(marker, center)),
+		() =>
+			mergedMarkers
+				.filter((marker) => center || marker.position)
+				.map((marker) => toMapMarker(marker, center ?? { lat: 0, lng: 0 })),
 		[center, mergedMarkers],
 	);
 
@@ -664,7 +666,7 @@ export default function DriverMapSurface({
 				? "offline"
 				: null;
 	const canRenderGoogleMap =
-		hasUsableMapsKey && isLoaded && !loadError && isOnline;
+		hasUsableMapsKey && isLoaded && !loadError && isOnline && center !== null;
 
 	return (
 		<section
@@ -696,6 +698,7 @@ export default function DriverMapSurface({
 								lng: nextCenter.lng(),
 							};
 							setCenter((currentCenter) =>
+								currentCenter &&
 								areLatLngClose(currentCenter, normalizedCenter)
 									? currentCenter
 									: normalizedCenter,
@@ -837,19 +840,28 @@ export default function DriverMapSurface({
 									? "Maps key missing"
 									: mapLoadFailure === "load-error"
 										? "Maps load failed"
-										: "Offline mode"}
+										: center === null
+											? "Locating..."
+											: "Offline mode"}
 							</p>
 							<p className="mt-2 text-xs font-semibold text-slate-700">
 								{mapLoadFailure === "missing-key"
 									? "Set a valid `VITE_GOOGLE_MAPS_API_KEY` to render live maps."
 									: mapLoadFailure === "load-error"
 										? "Google Maps could not load. Check the API key, billing, and network access."
-										: "The live map is paused until the network returns."}
+										: center === null
+											? "Acquiring your GPS location so the map can center on real coordinates."
+											: "The live map is paused until the network returns."}
 							</p>
 							{!hasGeolocation ? (
 								<p className="mt-2 text-[11px] font-semibold text-amber-700">
 									Location services are unavailable on this
 									device, so live recentering is disabled.
+								</p>
+							) : center === null ? (
+								<p className="mt-2 text-[11px] font-semibold text-amber-700">
+									Please allow location access so the map can
+									show your real position.
 								</p>
 							) : null}
 						</div>

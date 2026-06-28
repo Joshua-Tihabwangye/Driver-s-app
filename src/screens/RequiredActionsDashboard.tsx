@@ -270,6 +270,21 @@ export default function RequiredActionsDashboard() {
   const driverBackendEnabled = useDriverBackendEnabled();
   const personalDocumentsRef = useRef<HTMLElement | null>(null);
   const vehicleDocumentsRef = useRef<HTMLElement | null>(null);
+  const [highlightedDocument, setHighlightedDocument] = useState<string | null>(
+    searchParams.get("document"),
+  );
+
+  useEffect(() => {
+    const documentKey = searchParams.get("document");
+    setHighlightedDocument(documentKey);
+    if (!documentKey) return;
+
+    if (["id", "license", "police"].includes(documentKey)) {
+      scrollToSection(personalDocumentsRef);
+    } else if (["insurance", "inspection"].includes(documentKey)) {
+      scrollToSection(vehicleDocumentsRef);
+    }
+  }, [searchParams]);
 
   const {
     onboardingBlockers,
@@ -508,6 +523,8 @@ export default function RequiredActionsDashboard() {
         setUpdateMessage(`${succeeded} document${succeeded > 1 ? "s" : ""} updated successfully. You can now go online.`);
         // Refresh onboarding state so the go-online gate sees fresh data
         await refreshBackendOnboardingState?.();
+        // Send the driver back to the offline dashboard so they can tap Go Online.
+        window.setTimeout(() => navigate("/driver/dashboard/offline"), 1500);
       } else if (succeeded > 0) {
         setUpdateStatus("success");
         setUpdateMessage(`${succeeded} updated, ${failed} failed. Failed documents are marked in red below.`);
@@ -824,7 +841,11 @@ export default function RequiredActionsDashboard() {
               return (
                 <div
                   key={meta.key}
-                  className="rounded-2xl border-2 border-slate-200 bg-white p-4 shadow-sm"
+                  className={`rounded-2xl border-2 bg-white p-4 shadow-sm transition-all ${
+                    highlightedDocument === meta.key
+                      ? "border-orange-500 ring-2 ring-orange-500/20"
+                      : "border-slate-200"
+                  }`}
                 >
                   <div className="mb-3 flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3">
@@ -947,22 +968,38 @@ export default function RequiredActionsDashboard() {
                       ? "Vehicle documents are compliant"
                       : "Vehicle documents need update"}
                   </div>
-                  <VehicleDocumentCard
-                    icon={ShieldCheck}
-                    title="Proof of Insurance"
-                    subtitle="Upload one clear copy"
-                    documentGroup={activeVehicle.vehicleDocs?.insurance}
-                    saveError={vehicleSaveErrors.insurance}
-                    onChange={(group) => handleVehicleDocUpdate("insurance", group)}
-                  />
-                  <VehicleDocumentCard
-                    icon={FileBadge2}
-                    title="Vehicle Inspection Report"
-                    subtitle="Upload one clear copy"
-                    documentGroup={activeVehicle.vehicleDocs?.inspection}
-                    saveError={vehicleSaveErrors.inspection}
-                    onChange={(group) => handleVehicleDocUpdate("inspection", group)}
-                  />
+                  <div
+                    className={`rounded-2xl transition-all ${
+                      highlightedDocument === "insurance"
+                        ? "ring-2 ring-orange-500/20"
+                        : ""
+                    }`}
+                  >
+                    <VehicleDocumentCard
+                      icon={ShieldCheck}
+                      title="Proof of Insurance"
+                      subtitle="Upload one clear copy"
+                      documentGroup={activeVehicle.vehicleDocs?.insurance}
+                      saveError={vehicleSaveErrors.insurance}
+                      onChange={(group) => handleVehicleDocUpdate("insurance", group)}
+                    />
+                  </div>
+                  <div
+                    className={`rounded-2xl transition-all ${
+                      highlightedDocument === "inspection"
+                        ? "ring-2 ring-orange-500/20"
+                        : ""
+                    }`}
+                  >
+                    <VehicleDocumentCard
+                      icon={FileBadge2}
+                      title="Vehicle Inspection Report"
+                      subtitle="Upload one clear copy"
+                      documentGroup={activeVehicle.vehicleDocs?.inspection}
+                      saveError={vehicleSaveErrors.inspection}
+                      onChange={(group) => handleVehicleDocUpdate("inspection", group)}
+                    />
+                  </div>
                 </>
               )}
             </>
