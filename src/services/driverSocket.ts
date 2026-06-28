@@ -10,7 +10,9 @@ export function createDriverSocket(): DriverSocket {
   if (!driverSocket) {
     driverSocket = io(`${SOCKET_BASE_URL}/driver`, {
       path: SOCKET_PATH,
-      transports: ["websocket"],
+      // Prefer a resilient transport order so polling can carry the initial
+      // connection if websocket upgrade is blocked or flaky.
+      transports: ["polling", "websocket"],
       autoConnect: false,
       reconnection: true,
       reconnectionAttempts: Infinity,

@@ -26,8 +26,8 @@ Then open http://localhost:5174 in your browser.
 Copy `.env.example` to `.env.local` and configure:
 
 ```bash
-VITE_BACKEND_BASE_URL=http://localhost:3000/api/v1
-VITE_SOCKET_BASE_URL=http://localhost:3000
+VITE_BACKEND_BASE_URL=http://localhost:3001/api/v1
+VITE_SOCKET_BASE_URL=http://localhost:3001
 VITE_GOOGLE_MAPS_API_KEY=...
 VITE_BACKEND_ENABLED=true
 ```

@@ -103,7 +103,7 @@ export default function DriverProfileOnboarding() {
     onboardingCompleted,
     primaryOnboardingRoute,
     setOnboardingCheckpoint,
-    resolveGoOnlineAttempt,
+    refreshBackendOnboardingState,
     vehicles,
     selectedVehicleIndex,
     emergencyContacts,
@@ -182,10 +182,16 @@ export default function DriverProfileOnboarding() {
 
    useEffect(() => {
      if (driverBackendEnabled) {
+       // In backend mode the real onboarding status comes from the bootstrap
+       // response. Refresh it when local documents become complete so the
+       // gateway action updates without forcing the driver to leave the page.
+       if (documentsComplete) {
+         void refreshBackendOnboardingState();
+       }
        return;
      }
      setOnboardingCheckpoint("documentsVerified", documentsComplete);
-   }, [documentsComplete, driverBackendEnabled, setOnboardingCheckpoint]);
+   }, [documentsComplete, driverBackendEnabled, refreshBackendOnboardingState, setOnboardingCheckpoint]);
 
    const vehicleReady = onboardingCheckpoints.vehicleReady;
 
@@ -1092,51 +1098,30 @@ export default function DriverProfileOnboarding() {
           </section>
         )}
 
-        {/* Main Action Button — only show during onboarding */}
-        {!onboardingCompleted && (
-          <section className="pt-4 pb-12">
-            <button
-              type="button"
-              onClick={() => {
-                if (gatewayAction.kind === "next-step" || gatewayAction.kind === "training") {
-                  navigate(gatewayAction.route);
-                  return;
-                }
-                if (gatewayAction.kind === "online") {
-                  const decision = resolveGoOnlineAttempt("/driver/dashboard/online");
-                  if (decision.allowed) {
-                    navigate("/driver/dashboard/offline", {
-                      replace: true,
-                      state: {
-                        openGoOnlineConfirmation: true,
-                      },
-                    });
-                    return;
-                  }
-                  navigate(decision.route, {
-                    state: decision.allowed
-                      ? undefined
-                      : {
-                          offlineGuardMessage: decision.message,
-                        },
-                  });
-                  return;
-                }
+        {/* Main Action Button — always show so completed drivers can exit and */}
+        {/* in-progress drivers can proceed to the next onboarding step. */}
+        <section className="pt-4 pb-12">
+          <button
+            type="button"
+            onClick={() => {
+              if (gatewayAction.kind === "next-step" || gatewayAction.kind === "training") {
                 navigate(gatewayAction.route);
-              }}
-              className={`w-full rounded-2xl py-4 text-sm font-black shadow-lg transition-all active:scale-[0.98] uppercase tracking-widest ${
-                gatewayAction.kind === "online" || gatewayAction.kind === "dashboard"
-                  ? "bg-orange-500 text-white shadow-orange-500/20 hover:bg-orange-600"
-                  : "bg-slate-900 text-white shadow-slate-900/20 hover:bg-slate-800"
-              }`}
-            >
-              {gatewayAction.label}
-            </button>
-            <p className="mt-2 text-center text-[10px] text-slate-400 font-bold uppercase tracking-tight">
-              {gatewayAction.note}
-            </p>
-          </section>
-        )}
+                return;
+              }
+              navigate(gatewayAction.route);
+            }}
+            className={`w-full rounded-2xl py-4 text-sm font-black shadow-lg transition-all active:scale-[0.98] uppercase tracking-widest ${
+              gatewayAction.kind === "dashboard"
+                ? "bg-orange-500 text-white shadow-orange-500/20 hover:bg-orange-600"
+                : "bg-slate-900 text-white shadow-slate-900/20 hover:bg-slate-800"
+            }`}
+          >
+            {gatewayAction.label}
+          </button>
+          <p className="mt-2 text-center text-[10px] text-slate-400 font-bold uppercase tracking-tight">
+            {gatewayAction.note}
+          </p>
+        </section>
       </main>
     </div>
   );

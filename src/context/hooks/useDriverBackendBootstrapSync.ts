@@ -58,6 +58,7 @@ type UseDriverBackendBootstrapSyncOptions = {
   setPrimaryOnboardingRoute: AnySetter<string>;
   setDriverPresenceStatus: AnySetter;
   setBootstrapReady: AnySetter<boolean>;
+  setBootstrapFailed: AnySetter<boolean>;
   setVehicles: AnySetter;
   setSelectedVehicleIndex: AnySetter;
   setJobs: AnySetter;
@@ -92,6 +93,7 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
     setPrimaryOnboardingRoute,
     setDriverPresenceStatus,
     setBootstrapReady,
+    setBootstrapFailed,
     setVehicles,
     setSelectedVehicleIndex,
     setJobs,
@@ -123,6 +125,9 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
     let cancelled = false;
 
     const hydrateDriverBackendState = async () => {
+      if (!cancelled) {
+        setBootstrapFailed(false);
+      }
       try {
         // Phase 1.2 — single /drivers/me/bootstrap call replaces 4 separate API calls
         const bootstrapResult = await Promise.allSettled([getDriverBootstrap()]);
@@ -348,9 +353,13 @@ export function useDriverBackendBootstrapSync(options: UseDriverBackendBootstrap
         }
         console.warn("Driver backend bootstrap failed.", error);
         setJobAccessError("Unable to sync with backend. Check server/database connection.");
+        if (!cancelled) {
+          setBootstrapFailed(true);
+        }
       } finally {
         if (!cancelled) {
-          // Always mark bootstrap as ready so UI guards don't block forever.
+          // Mark bootstrap as ready so UI guards unblock, but the failed flag
+          // lets the app show a retry screen instead of forcing onboarding.
           setBootstrapReady(true);
         }
       }
@@ -587,6 +596,19 @@ async function loadOnlineData(opts: {
   const backendContacts =
     backendContactsResult.status === "fulfilled" ? backendContactsResult.value : [];
 
+  // Normalize optional singleton/null responses to arrays so the mappers below
+  // never dereference a null item.
+  const backendDeliveryOrdersList = Array.isArray(backendDeliveryOrders)
+    ? backendDeliveryOrders
+    : backendDeliveryOrders
+      ? [backendDeliveryOrders]
+      : [];
+  const backendServiceRequestsList = Array.isArray(backendServiceRequests)
+    ? backendServiceRequests
+    : backendServiceRequests
+      ? [backendServiceRequests]
+      : [];
+
   if (backendJobsResult.status === "rejected") {
     console.warn("Driver jobs bootstrap sync failed.", backendJobsResult.reason);
     setJobAccessError("Unable to sync jobs from backend right now.");
@@ -633,7 +655,7 @@ async function loadOnlineData(opts: {
           routePoints: extractBackendRoutePoints(job.route),
         };
       }),
-      ...(Array.isArray(backendDeliveryOrders) ? backendDeliveryOrders : [backendDeliveryOrders]).map((order: any) => ({
+      ...backendDeliveryOrdersList.map((order: any) => ({
         id: order.id,
         routeId: order.routeId,
         from: order.pickupAddress,
@@ -647,7 +669,7 @@ async function loadOnlineData(opts: {
         pickupLocation: order.pickup || null,
         dropoffLocation: order.dropoff || null,
       })),
-      ...backendServiceRequests.map((request: any) => ({
+      ...backendServiceRequestsList.map((request: any) => ({
         id: request.requestId,
         from: request.pickup || "Pickup",
         to: request.dropoff || "Dropoff",

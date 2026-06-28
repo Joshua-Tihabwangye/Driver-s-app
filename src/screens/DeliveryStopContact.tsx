@@ -1,4 +1,3 @@
-import { SAMPLE_IDS } from "../data/constants";
 import {
 Clock,
 MapPin,
@@ -78,7 +77,7 @@ function StopContactRow({
 
 export default function DeliveryStopContact() {
   const navigate = useNavigate();
-  const { stopId } = useParams();
+  const { routeId, stopId } = useParams();
 
   const stopsById = {
     "alpha-stop": {
@@ -127,7 +126,7 @@ export default function DeliveryStopContact() {
         topRightSlot={(
           <button
             type="button"
-            onClick={() => navigate(`/driver/delivery/route/${SAMPLE_IDS.route}/map`)}
+            onClick={() => navigate(`/driver/delivery/route/${routeId}/map`)}
             className="rounded-full border border-slate-200 bg-white/94 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-700 shadow-lg"
           >
             Open map
@@ -171,7 +170,7 @@ export default function DeliveryStopContact() {
           />
           <button
             type="button"
-            onClick={() => navigate(`/driver/delivery/route/${SAMPLE_IDS.route}/active`)}
+            onClick={() => navigate(`/driver/delivery/route/${routeId}/active`)}
             className="w-full rounded-[2rem] border-2 border-slate-900 bg-white px-6 py-4 text-[11px] font-black uppercase tracking-widest text-slate-900 active:scale-[0.98] transition-all hover:bg-slate-50 shadow-xl shadow-slate-200/50"
           >
             Back to Active Route

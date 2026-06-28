@@ -61,6 +61,59 @@ const SENSITIVE_ONBOARDING_IDS = new Set([
 
 const PHONE_WIDTH_MEDIA = "(max-width: 640px)";
 
+function BootstrapErrorScreen({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div
+      style={{
+        minHeight: "100dvh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "#0f172a",
+        padding: 24,
+        textAlign: "center",
+      }}
+    >
+      <div
+        style={{
+          width: 48,
+          height: 48,
+          borderRadius: "50%",
+          background: "rgba(239, 68, 68, 0.15)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          marginBottom: 16,
+        }}
+      >
+        <span style={{ fontSize: 24 }}>⚠️</span>
+      </div>
+      <h1 style={{ color: "#f8fafc", fontSize: 18, fontWeight: 700, marginBottom: 8 }}>
+        Could not connect to the driver backend
+      </h1>
+      <p style={{ color: "#94a3b8", fontSize: 14, maxWidth: 320, marginBottom: 24 }}>
+        We were unable to load your driver profile. Please make sure the backend is running and try again.
+      </p>
+      <button
+        type="button"
+        onClick={onRetry}
+        style={{
+          background: "#f97316",
+          color: "#fff",
+          border: "none",
+          borderRadius: 12,
+          padding: "12px 24px",
+          fontWeight: 700,
+          cursor: "pointer",
+        }}
+      >
+        Retry
+      </button>
+    </div>
+  );
+}
+
 function LoadingScreen() {
   return (
     <div
@@ -141,6 +194,27 @@ function RequireOnboarding({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
+function RedirectIfOnboardingComplete({ children }: { children: ReactNode }) {
+  const { driverBootstrapReady, onboardingCompleted, driverPresenceStatus } = useStore();
+  const location = useLocation();
+
+  if (!driverBootstrapReady) {
+    return <LoadingScreen />;
+  }
+
+  if (onboardingCompleted) {
+    const targetRoute =
+      driverPresenceStatus === "online"
+        ? "/driver/dashboard/online"
+        : "/driver/dashboard/offline";
+    if (location.pathname !== targetRoute) {
+      return <Navigate to={targetRoute} replace />;
+    }
+  }
+
+  return <>{children}</>;
+}
+
 function RequireOnlineForJobs({
   children,
   routePath,
@@ -195,6 +269,7 @@ function RequireOnlineForJobs({
 
 export default function App() {
   const { isDark } = useTheme();
+  const { driverBackendBootstrapFailed } = useStore();
   const [isPhoneView, setIsPhoneView] = useState(() => {
     if (typeof window === "undefined") return true;
     return window.matchMedia(PHONE_WIDTH_MEDIA).matches;
@@ -228,6 +303,9 @@ export default function App() {
 
   return (
     <div className={`app-root ${isDark ? "dark" : ""}`}>
+      {driverBackendBootstrapFailed ? (
+        <BootstrapErrorScreen onRetry={() => window.location.reload()} />
+      ) : (
       <Routes>
         {/* Auth Flow - No Shell */}
         <Route
@@ -305,7 +383,11 @@ export default function App() {
                 isCurrentlyPublic
                   ? onlineProtectedElement
                   : isOnboardingScreen
-                    ? <RequireAuth>{onlineProtectedElement}</RequireAuth>
+                    ? (
+                      <RequireAuth>
+                        <RedirectIfOnboardingComplete>{onlineProtectedElement}</RedirectIfOnboardingComplete>
+                      </RequireAuth>
+                    )
                     : (
                       <RequireAuth>
                         <RequireOnboarding>{onlineProtectedElement}</RequireOnboarding>
@@ -318,6 +400,7 @@ export default function App() {
 
         <Route path="*" element={<Navigate to={AUTH_LOGIN_ROUTE} replace />} />
       </Routes>
+      )}
     </div>
   );
 }

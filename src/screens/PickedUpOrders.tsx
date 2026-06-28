@@ -1,4 +1,3 @@
-import { SAMPLE_IDS } from "../data/constants";
 import {
 CheckCircle2,
 ChevronLeft,
@@ -100,7 +99,7 @@ export default function PickedUpOrders() {
               <PickedUpOrderRow
                 key={o.id}
                 {...o}
-                onClick={() => navigate(`/driver/delivery/route/${SAMPLE_IDS.route}/active`)}
+                onClick={() => navigate("/driver/delivery/orders")}
               />
             ))}
           </div>

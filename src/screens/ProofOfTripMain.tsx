@@ -1,4 +1,3 @@
-import { SAMPLE_IDS } from "../data/constants";
 import {
 AlertCircle,
 Camera,
@@ -9,7 +8,7 @@ MapPin,
 ShieldCheck
 } from "lucide-react";
 import { useRef,useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 
 // EVzone Driver App – ProofOfTripMain Driver – Proof of Trip Status Flow – Main View (v2)
@@ -49,6 +48,7 @@ export default function ProofOfTripMain() {
   const [photoCount, setPhotoCount] = useState(0);
   const [noteText, setNoteText] = useState("");
   const navigate = useNavigate();
+  const { tripId } = useParams();
   const fileInputRef = useRef(null);
 
   const jobTypeLabelMap = {
@@ -95,7 +95,7 @@ export default function ProofOfTripMain() {
     setStatus("submitting");
     setTimeout(() => {
       setStatus("submitted");
-      navigate(`/driver/trip/${SAMPLE_IDS.trip}/completed`);
+      navigate(`/driver/trip/${tripId}/completed`);
     }, 900);
   };
 

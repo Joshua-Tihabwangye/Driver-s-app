@@ -26,18 +26,6 @@ export const PERIOD_OPTIONS = [
 export const getYearOptions = (count = 7): string[] =>
   Array.from({ length: count }, (_, i) => String(new Date().getFullYear() - i));
 
-// ── Sample IDs for demo/preview routes ───────────────────
-// Keep these aligned with ids that exist in mock/store datasets.
-export const SAMPLE_IDS = {
-  vehicle: "v123",
-  trip: "3244",
-  ride: "shared-100",
-  route: "demo-route",
-  stop: "alpha-stop",
-  job: "3249",
-  tour: "3246",
-};
-
 export type JobDetailRouteBuilder = (jobId: string) => string;
 
 export type PrivateTripStageRoute =
@@ -128,17 +116,6 @@ export function buildAcceptedJobRoute(jobType: JobCategory, jobId: string): stri
     ACCEPTED_JOB_ROUTE_BUILDERS[jobType] || ACCEPTED_JOB_ROUTE_BUILDERS.default;
   return routeBuilder(jobId);
 }
-
-export const JOB_DETAIL_ROUTES: Record<JobCategory | "default", string> = {
-  ride: buildJobDetailRoute("ride", SAMPLE_IDS.trip),
-  delivery: buildJobDetailRoute("delivery", SAMPLE_IDS.job),
-  rental: buildJobDetailRoute("rental", SAMPLE_IDS.job),
-  tour: buildJobDetailRoute("tour", SAMPLE_IDS.tour),
-  ambulance: buildJobDetailRoute("ambulance", SAMPLE_IDS.job),
-  shuttle: buildJobDetailRoute("shuttle", SAMPLE_IDS.job),
-  shared: buildJobDetailRoute("shared", SAMPLE_IDS.ride),
-  default: buildJobDetailRoute("ride", SAMPLE_IDS.trip),
-};
 
 export type JobRouteBuilder = (jobId: string) => string;
 
